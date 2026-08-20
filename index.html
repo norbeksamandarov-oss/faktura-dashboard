@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faktura Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1E2761;
+    --navy-light: #2A3572;
+    --ice: #CADCFC;
+    --ice-soft: #EEF3FD;
+    --bg: #F5F7FB;
+    --card: #FFFFFF;
+    --text: #1B1F2A;
+    --muted: #6B7280;
+    --border: #E3E8F2;
+    --green-bg: #E3F5E9; --green-fg: #1E7A4C;
+    --red-bg:   #FBE7E7; --red-fg:   #B23A3A;
+    --amber-bg: #FFF3DA; --amber-fg: #93610A;
+    --gray-bg:  #EDEFF3; --gray-fg:  #5B6472;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', serif;
+  }
+
+  /* ---------- Login screen ---------- */
+  #loginScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 20% 15%, #2A3572 0%, var(--navy) 45%, #141A45 100%);
+  }
+  .login-card {
+    text-align: center;
+    color: white;
+    max-width: 420px;
+    padding: 48px 40px;
+  }
+  .login-card .mark {
+    width: 56px; height: 56px;
+    margin: 0 auto 24px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--ice), #8FB3F0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 700; color: var(--navy);
+  }
+  .login-card h1 {
+    font-size: 30px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+  .login-card p {
+    color: #B9C4E8;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 32px;
+  }
+  #googleBtnWrap { display: flex; justify-content: center; }
+  #loginError {
+    margin-top: 18px;
+    color: #FFC9C9;
+    font-size: 13px;
+    display: none;
+  }
+
+  /* ---------- App shell ---------- */
+  #app { display: none; min-height: 100vh; }
+  header.topbar {
+    background: var(--navy);
+    color: white;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--ice), #8FB3F0);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--navy); font-size: 15px;
+  }
+  .brand-text .title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
+  .brand-text .subtitle { font-size: 11px; color: var(--ice); letter-spacing: 0.04em; text-transform: uppercase; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  #userInfo { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ice); }
+  #userInfo img { width: 28px; height: 28px; border-radius: 50%; }
+  #refreshBtn, #logoutBtn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  #refreshBtn:hover, #logoutBtn:hover { background: rgba(255,255,255,0.16); }
+
+  main { padding: 28px 32px 60px; max-width: 1400px; margin: 0 auto; }
+
+  /* ---------- Stat cards ---------- */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .stat-card .num { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 600; line-height: 1; }
+  .stat-card .label { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+  .stat-card.accent-total .num { color: var(--navy); }
+  .stat-card.accent-pending .num { color: var(--amber-fg); }
+  .stat-card.accent-accepted .num { color: var(--green-fg); }
+  .stat-card.accent-rejected .num { color: var(--red-fg); }
+  .stat-card.accent-overdue { background: var(--red-bg); border-color: #F3C6C6; }
+  .stat-card.accent-overdue .num { color: var(--red-fg); }
+  .stat-card.accent-overdue .label { color: var(--red-fg); font-weight: 600; }
+
+  /* ---------- Panels ---------- */
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 980px) { .panels { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+  }
+  .panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel h2 .sub { font-family: 'Inter'; font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  table.emp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.emp-table th {
+    text-align: left; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.03em;
+    padding: 6px 4px; border-bottom: 1px solid var(--border);
+  }
+  table.emp-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+  table.emp-table tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .pill.overdue { background: var(--red-bg); color: var(--red-fg); }
+  .pill.ok { background: var(--gray-bg); color: var(--gray-fg); }
+
+  /* ---------- Search + table ---------- */
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  #searchInput {
+    flex: 1; min-width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-family: 'Inter';
+  }
+  select.status-filter {
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    font-family: 'Inter'; font-size: 13px; background: white;
+  }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
+  table.invoices { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+  table.invoices thead th {
+    background: var(--navy); color: white;
+    text-align: left; padding: 10px 12px; font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;
+    position: sticky; top: 0;
+  }
+  table.invoices tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.invoices tbody tr:hover { background: var(--ice-soft); }
+  table.invoices tbody tr:last-child td { border-bottom: none; }
+
+  select.resp-select {
+    padding: 6px 8px; border-radius: 7px; border: 1px solid var(--border);
+    font-family: 'Inter'; font-size: 12.5px; max-width: 160px;
+  }
+  input.send-check { width: 18px; height: 18px; cursor: pointer; }
+
+  .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .status-new { background: var(--gray-bg); color: var(--gray-fg); }
+  .status-sent { background: var(--amber-bg); color: var(--amber-fg); }
+  .status-accepted { background: var(--green-bg); color: var(--green-fg); }
+  .status-rejected { background: var(--red-bg); color: var(--red-fg); }
+  .status-notmine { background: #FFE7CE; color: #9A5300; }
+  .status-error { background: var(--red-bg); color: var(--red-fg); }
+
+  .days-badge { padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .days-green { background: var(--green-bg); color: var(--green-fg); }
+  .days-amber { background: var(--amber-bg); color: var(--amber-fg); }
+  .days-red { background: var(--red-bg); color: var(--red-fg); }
+
+  .save-flash { font-size: 11px; color: var(--green-fg); margin-left: 6px; opacity: 0; transition: opacity .3s; }
+  .save-flash.show { opacity: 1; }
+
+  #loadingOverlay {
+    position: fixed; inset: 0; background: rgba(245,247,251,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; font-family: 'Inter'; color: var(--navy); font-size: 14px;
+  }
+  .spinner {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 3px solid var(--ice); border-top-color: var(--navy);
+    animation: spin 0.8s linear infinite; margin-right: 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .chart-box { position: relative; height: 220px; }
+
+  footer.note {
+    text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="mark">FD</div>
+    <h1>Faktura Dashboard</h1>
+    <p>Войдите через аккаунт Google, у которого есть доступ<br>к таблице счетов-фактур.</p>
+    <div id="googleBtnWrap"></div>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">FD</div>
+      <div class="brand-text">
+        <div class="title">Faktura Dashboard</div>
+        <div class="subtitle">Счета-фактуры · онлайн</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="userInfo"></div>
+      <button id="refreshBtn">↻ Обновить</button>
+      <button id="logoutBtn">Выйти</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="panels">
+      <div class="panel">
+        <h2>Статус счетов <span class="sub" id="chartSub"></span></h2>
+        <div class="chart-box"><canvas id="statusChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h2>По сотрудникам</h2>
+        <table class="emp-table" id="empTable">
+          <thead><tr><th>Сотрудник</th><th>Всего</th><th>Ждёт</th><th>Просрочено</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="Поиск по номеру, контрагенту, покупателю...">
+        <select class="status-filter" id="statusFilter">
+          <option value="">Все статусы</option>
+          <option value="new">Не отправлено</option>
+          <option value="sent">Отправлено (ждёт)</option>
+          <option value="accepted">Принято</option>
+          <option value="rejected">Отклонено</option>
+          <option value="notmine">Не мой счёт</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices">
+          <thead>
+            <tr>
+              <th>№ счёта</th>
+              <th>Дата</th>
+              <th>Контрагент</th>
+              <th>Покупатель</th>
+              <th>Сумма</th>
+              <th>Ответственный</th>
+              <th>Отправить</th>
+              <th>Статус</th>
+              <th>Дней</th>
+              <th>Комментарий</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Последние решения <span class="sub">из листа «История»</span></h2>
+      <div class="table-wrap">
+        <table class="invoices" id="historyTable">
+          <thead>
+            <tr>
+              <th>№ счёта</th><th>Контрагент</th><th>Ответственный</th>
+              <th>Статус</th><th>Комментарий</th><th>Дата решения</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="note">Данные обновляются напрямую из Google Sheets. Изменения здесь применяются мгновенно.</footer>
+  </main>
+</div>
+
+<div id="loadingOverlay" style="display:none;">
+  <div class="spinner"></div> Загрузка данных...
+</div>
+
+<script>
+/* ============================================================
+   НАСТРОЙКИ - впишите свои значения
+   ============================================================ */
+const CLIENT_ID = "ВСТАВЬТЕ_СЮДА_OAUTH_CLIENT_ID.apps.googleusercontent.com";
+const SPREADSHEET_ID = "1PqhcM1FLe8dDON2VFVASbFfI2DFb1mWEUejDDPNSdl4";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+
+const SHEET_INVOICES = "Счета-фактуры";
+const SHEET_HISTORY = "История";
+const SHEET_EMPLOYEES = "Xodimlar";
+
+/* Индексы столбцов на листе "Счета-фактуры" (0-based) */
+const COL = {
+  ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, CONTRACT: 5,
+  SUM: 6, RESP: 7, SEND: 8, STATUS: 9, COMMENT: 10, DAYS: 11
+};
+
+let accessToken = null;
+let tokenClient = null;
+let employees = [];
+let invoiceRows = [];   // {rowIndex, ...cols}
+let historyRows = [];
+let statusChart = null;
+
+/* ============================================================
+   АВТОРИЗАЦИЯ
+   ============================================================ */
+window.onload = () => {
+  google.accounts.id.initialize({ client_id: CLIENT_ID });
+
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) {
+        showLoginError("Ошибка авторизации: " + resp.error);
+        return;
+      }
+      accessToken = resp.access_token;
+      onLoggedIn();
+    }
+  });
+
+  const btn = document.createElement("button");
+  btn.textContent = "Войти через Google";
+  btn.style.cssText = "background:#fff;color:#1E2761;border:none;padding:12px 26px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;";
+  btn.onclick = () => tokenClient.requestAccessToken();
+  document.getElementById("googleBtnWrap").appendChild(btn);
+
+  document.getElementById("logoutBtn").onclick = () => {
+    if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
+    accessToken = null;
+    document.getElementById("app").style.display = "none";
+    document.getElementById("loginScreen").style.display = "flex";
+  };
+  document.getElementById("refreshBtn").onclick = loadAllData;
+  document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
+  document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
+};
+
+function showLoginError(msg) {
+  const el = document.getElementById("loginError");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+async function onLoggedIn() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  await fetchUserInfo();
+  await loadAllData();
+}
+
+async function fetchUserInfo() {
+  try {
+    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: "Bearer " + accessToken }
+    });
+    const info = await res.json();
+    document.getElementById("userInfo").innerHTML =
+      (info.picture ? `<img src="${info.picture}">` : "") + `<span>${info.name || info.email}</span>`;
+  } catch (e) { /* не критично */ }
+}
+
+/* ============================================================
+   ЗАГРУЗКА ДАННЫХ ИЗ GOOGLE SHEETS
+   ============================================================ */
+async function sheetsGet(range) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
+  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
+  if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
+  const data = await res.json();
+  return data.values || [];
+}
+
+async function sheetsUpdateCell(range, value) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
+    body: JSON.stringify({ values: [[value]] })
+  });
+  if (!res.ok) throw new Error("Sheets API update: " + res.status + " " + (await res.text()));
+  return res.json();
+}
+
+function colLetter(i) {
+  let s = "";
+  i++;
+  while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+  return s;
+}
+
+async function loadAllData() {
+  document.getElementById("loadingOverlay").style.display = "flex";
+  try {
+    const [empRaw, invRaw, histRaw] = await Promise.all([
+      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C1000`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:L2000`),
+      sheetsGet(`'${SHEET_HISTORY}'!A2:L2000`)
+    ]);
+
+    employees = empRaw
+      .filter(r => r[2] && r[2].trim())
+      .map(r => ({ chatId: r[0] || "", username: r[1] || "", name: r[2].trim() }));
+
+    invoiceRows = invRaw.map((r, idx) => ({
+      rowIndex: idx + 2,
+      id: r[COL.ID] || "",
+      buyer: r[COL.BUYER] || "",
+      no: r[COL.NO] || "",
+      date: r[COL.DATE] || "",
+      seller: r[COL.SELLER] || "",
+      contract: r[COL.CONTRACT] || "",
+      sum: r[COL.SUM] || "",
+      resp: r[COL.RESP] || "",
+      send: String(r[COL.SEND]).toUpperCase() === "TRUE",
+      status: r[COL.STATUS] || "",
+      comment: r[COL.COMMENT] || "",
+      days: r[COL.DAYS] || ""
+    })).filter(r => r.id);
+
+    historyRows = histRaw.map(r => ({
+      no: r[2] || "", seller: r[4] || "", resp: r[7] || "",
+      status: r[8] || "", comment: r[9] || "", decidedAt: r[10] || ""
+    })).filter(r => r.no).reverse().slice(0, 20);
+
+    renderAll();
+  } catch (e) {
+    alert("Ошибка загрузки данных: " + e.message);
+    console.error(e);
+  } finally {
+    document.getElementById("loadingOverlay").style.display = "none";
+  }
+}
+
+/* ============================================================
+   РЕНДЕР
+   ============================================================ */
+function classifyStatus(status) {
+  if (!status || status.includes("Не отправлено")) return "new";
+  if (status.includes("Принято")) return "accepted";
+  if (status.includes("Отклонено")) return "rejected";
+  if (status.includes("Не мой счет") || status.includes("Не мой счёт")) return "notmine";
+  if (status.includes("Отправлено")) return "sent";
+  if (status.includes("Ошибка")) return "error";
+  return "other";
+}
+
+function statusBadge(status) {
+  const cls = classifyStatus(status);
+  const map = {
+    new: "status-new", sent: "status-sent", accepted: "status-accepted",
+    rejected: "status-rejected", notmine: "status-notmine", error: "status-error", other: "status-new"
+  };
+  return `<span class="status-badge ${map[cls]}">${status || "—"}</span>`;
+}
+
+function daysBadge(daysStr) {
+  const d = parseInt(daysStr, 10);
+  if (isNaN(d)) return "";
+  let cls = "days-green";
+  if (d >= 8) cls = "days-red";
+  else if (d >= 5) cls = "days-amber";
+  return `<span class="days-badge ${cls}">${d}</span>`;
+}
+
+function renderAll() {
+  renderStats();
+  renderChart();
+  renderEmployeeTable();
+  renderInvoicesTable();
+  renderHistoryTable();
+}
+
+function renderStats() {
+  const total = invoiceRows.length;
+  const pending = invoiceRows.filter(r => classifyStatus(r.status) === "sent").length;
+  const accepted = invoiceRows.filter(r => classifyStatus(r.status) === "accepted").length;
+  const rejected = invoiceRows.filter(r => classifyStatus(r.status) === "rejected").length;
+  const overdue = invoiceRows.filter(r => classifyStatus(r.status) === "sent" && parseInt(r.days, 10) >= 8).length;
+
+  const cards = [
+    { label: "Всего счетов", val: total, cls: "accent-total" },
+    { label: "Ожидают ответа", val: pending, cls: "accent-pending" },
+    { label: "Принято", val: accepted, cls: "accent-accepted" },
+    { label: "Отклонено", val: rejected, cls: "accent-rejected" },
+    { label: "Просрочено (8+ дн.)", val: overdue, cls: "accent-overdue" },
+  ];
+  document.getElementById("statsRow").innerHTML = cards.map(c => `
+    <div class="stat-card ${c.cls}">
+      <div class="num">${c.val}</div>
+      <div class="label">${c.label}</div>
+    </div>`).join("");
+}
+
+function renderChart() {
+  const counts = { new: 0, sent: 0, accepted: 0, rejected: 0, notmine: 0 };
+  invoiceRows.forEach(r => { const c = classifyStatus(r.status); if (counts[c] !== undefined) counts[c]++; });
+
+  const ctx = document.getElementById("statusChart");
+  if (statusChart) statusChart.destroy();
+  statusChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Не отправлено", "Ожидают", "Принято", "Отклонено", "Не мой счёт"],
+      datasets: [{
+        data: [counts.new, counts.sent, counts.accepted, counts.rejected, counts.notmine],
+        backgroundColor: ["#EDEFF3", "#FFC876", "#5FBE84", "#E8837E", "#F5A75B"],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      plugins: { legend: { position: "bottom", labels: { font: { family: "Inter", size: 11 }, boxWidth: 10 } } },
+      cutout: "62%"
+    }
+  });
+  document.getElementById("chartSub").textContent = `всего ${invoiceRows.length}`;
+}
+
+function renderEmployeeTable() {
+  const byName = {};
+  invoiceRows.forEach(r => {
+    if (!r.resp) return;
+    if (!byName[r.resp]) byName[r.resp] = { total: 0, pending: 0, overdue: 0 };
+    byName[r.resp].total++;
+    if (classifyStatus(r.status) === "sent") {
+      byName[r.resp].pending++;
+      if (parseInt(r.days, 10) >= 8) byName[r.resp].overdue++;
+    }
+  });
+  const rows = Object.entries(byName).sort((a, b) => b[1].total - a[1].total);
+  document.querySelector("#empTable tbody").innerHTML = rows.map(([name, s]) => `
+    <tr>
+      <td>${name}</td>
+      <td>${s.total}</td>
+      <td>${s.pending}</td>
+      <td>${s.overdue > 0 ? `<span class="pill overdue">${s.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
+    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
+function renderInvoicesTable() {
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+  const filter = document.getElementById("statusFilter").value;
+
+  const filtered = invoiceRows.filter(r => {
+    if (filter && classifyStatus(r.status) !== filter) return false;
+    if (!search) return true;
+    return (r.no + r.seller + r.buyer + r.comment).toLowerCase().includes(search);
+  });
+
+  document.getElementById("tableCount").textContent = `показано ${filtered.length} из ${invoiceRows.length}`;
+
+  const empOptions = employees.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join("");
+
+  document.getElementById("invoicesBody").innerHTML = filtered.map(r => `
+    <tr data-row="${r.rowIndex}">
+      <td>${escapeHtml(r.no)}</td>
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.seller)}</td>
+      <td>${escapeHtml(r.buyer)}</td>
+      <td>${escapeHtml(r.sum)}</td>
+      <td>
+        <select class="resp-select" onchange="updateResp(${r.rowIndex}, this.value, this)">
+          <option value="">—</option>
+          ${empOptions}
+        </select>
+      </td>
+      <td style="text-align:center">
+        <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
+        <span class="save-flash">✓</span>
+      </td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${daysBadge(r.days)}</td>
+      <td style="max-width:180px;font-size:12px;color:var(--muted)">${escapeHtml(r.comment)}</td>
+    </tr>`).join("");
+
+  filtered.forEach(r => {
+    const tr = document.querySelector(`tr[data-row="${r.rowIndex}"]`);
+    if (tr) {
+      const sel = tr.querySelector(".resp-select");
+      if (sel) sel.value = r.resp || "";
+    }
+  });
+}
+
+function renderHistoryTable() {
+  document.querySelector("#historyTable tbody").innerHTML = historyRows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.no)}</td>
+      <td>${escapeHtml(r.seller)}</td>
+      <td>${escapeHtml(r.resp)}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.comment)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.decidedAt)}</td>
+    </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">История пуста</td></tr>`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
+
+/* ============================================================
+   РЕДАКТИРОВАНИЕ (пишет напрямую в Google Sheets)
+   ============================================================ */
+async function updateResp(rowIndex, value, selectEl) {
+  const range = `'${SHEET_INVOICES}'!${colLetter(COL.RESP)}${rowIndex}`;
+  try {
+    await sheetsUpdateCell(range, value);
+    const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+    if (r) r.resp = value;
+    flashSaved(selectEl.closest("tr"));
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+  }
+}
+
+async function updateSend(rowIndex, checked, checkboxEl) {
+  const range = `'${SHEET_INVOICES}'!${colLetter(COL.SEND)}${rowIndex}`;
+  try {
+    await sheetsUpdateCell(range, checked);
+    const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+    if (r) r.send = checked;
+    flashSaved(checkboxEl.closest("tr"));
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+    checkboxEl.checked = !checked;
+  }
+}
+
+function flashSaved(tr) {
+  const flash = tr.querySelector(".save-flash");
+  if (!flash) return;
+  flash.classList.add("show");
+  setTimeout(() => flash.classList.remove("show"), 1200);
+}
+</script>
+</body>
+</html>
