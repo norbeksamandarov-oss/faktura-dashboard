@@ -188,19 +188,39 @@
   .pill.ok { background: var(--gray-bg); color: var(--gray-fg); }
 
   /* ---------- Search + table ---------- */
-  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-  #searchInput {
-    flex: 1; min-width: 200px;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 13.5px;
-    font-family: 'Inter';
+  .toolbar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 8px; flex-wrap: wrap; }
+  .filter-field { display: flex; flex-direction: column; gap: 4px; }
+  .filter-field label {
+    font-size: 10.5px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.03em; font-weight: 600;
   }
+  .filter-field input, .filter-field select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 13px;
+    font-family: 'Inter';
+    background: white;
+  }
+  #searchInput { min-width: 190px; }
+  #buyerFilter { min-width: 170px; }
+  #contragentFilter { min-width: 170px; }
+  #respFilter { min-width: 140px; }
+  .sum-range { display: flex; gap: 6px; align-items: center; }
+  .sum-range input { width: 90px; }
+  .date-range { display: flex; gap: 6px; align-items: center; }
+  .date-range input { width: 135px; }
   select.status-filter {
-    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border);
     font-family: 'Inter'; font-size: 13px; background: white;
   }
+  #clearFiltersBtn {
+    padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  #clearFiltersBtn:hover { background: var(--ice); }
+  .toolbar-row2 { margin-bottom: 16px; font-size: 12px; color: var(--muted); }
 
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
   table.invoices { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
@@ -306,24 +326,63 @@
     <div class="panel" style="margin-bottom:24px;">
       <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
       <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="Поиск по номеру, контрагенту, покупателю...">
-        <select class="status-filter" id="statusFilter">
-          <option value="">Все статусы</option>
-          <option value="new">Не отправлено</option>
-          <option value="sent">Отправлено (ждёт)</option>
-          <option value="accepted">Принято</option>
-          <option value="rejected">Отклонено</option>
-          <option value="notmine">Не мой счёт</option>
-        </select>
+        <div class="filter-field">
+          <label>Поиск (№, комментарий)</label>
+          <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
+        </div>
+        <div class="filter-field">
+          <label>Покупатель</label>
+          <select id="buyerFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>Контрагент (имя или ИНН)</label>
+          <input type="text" id="contragentFilter" placeholder="Нom yoki ИНН...">
+        </div>
+        <div class="filter-field">
+          <label>Сумма от / до</label>
+          <div class="sum-range">
+            <input type="number" id="sumMin" placeholder="от">
+            <input type="number" id="sumMax" placeholder="до">
+          </div>
+        </div>
+        <div class="filter-field">
+          <label>Ответственный</label>
+          <input type="text" id="respFilter" placeholder="2-3 буквы имени...">
+        </div>
+        <div class="filter-field">
+          <label>Период (дата счёта)</label>
+          <div class="date-range">
+            <input type="date" id="dateFrom">
+            <input type="date" id="dateTo">
+          </div>
+        </div>
+        <div class="filter-field">
+          <label>Статус</label>
+          <select class="status-filter" id="statusFilter">
+            <option value="">Все статусы</option>
+            <option value="new">Не отправлено</option>
+            <option value="sent">Отправлено (ждёт)</option>
+            <option value="accepted">Принято</option>
+            <option value="rejected">Отклонено</option>
+            <option value="notmine">Не мой счёт</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
+        </div>
       </div>
+      <div class="toolbar-row2" id="tableCount2"></div>
       <div class="table-wrap">
         <table class="invoices">
           <thead>
             <tr>
+              <th>Покупатель</th>
               <th>№ счёта</th>
               <th>Дата</th>
               <th>Контрагент</th>
-              <th>Покупатель</th>
+              <th>ИНН</th>
+              <th>Договор</th>
               <th>Сумма</th>
               <th>Ответственный</th>
               <th>Отправить</th>
@@ -376,9 +435,11 @@ const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 с
 
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
-  ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, CONTRACT: 5,
-  SUM: 6, RESP: 7, SEND: 8, STATUS: 9, COMMENT: 10, DAYS: 11
+  ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, INN: 5, CONTRACT: 6,
+  SUM: 7, RESP: 8, SEND: 9, STATUS: 10, COMMENT: 11, DAYS: 12
 };
+
+let uniqueBuyers = [];
 
 let accessToken = null;
 let tokenClient = null;
@@ -425,6 +486,25 @@ window.onload = () => {
   document.getElementById("refreshBtn").onclick = () => loadAllData(false);
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
+  document.getElementById("respFilter").addEventListener("input", renderInvoicesTable);
+  document.getElementById("sumMin").addEventListener("input", renderInvoicesTable);
+  document.getElementById("sumMax").addEventListener("input", renderInvoicesTable);
+  document.getElementById("dateFrom").addEventListener("change", renderInvoicesTable);
+  document.getElementById("dateTo").addEventListener("change", renderInvoicesTable);
+  document.getElementById("clearFiltersBtn").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "";
+    document.getElementById("buyerFilter").value = "";
+    document.getElementById("contragentFilter").value = "";
+    document.getElementById("respFilter").value = "";
+    document.getElementById("sumMin").value = "";
+    document.getElementById("sumMax").value = "";
+    document.getElementById("dateFrom").value = "";
+    document.getElementById("dateTo").value = "";
+    renderInvoicesTable();
+  });
 };
 
 function showLoginError(msg) {
@@ -496,9 +576,9 @@ async function loadAllData(silent) {
 
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
-      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C1000`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:L2000`),
-      sheetsGet(`'${SHEET_HISTORY}'!A2:L2000`)
+      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:M500`),
+      sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
     employees = empRaw
@@ -512,7 +592,9 @@ async function loadAllData(silent) {
       no: r[COL.NO] || "",
       date: r[COL.DATE] || "",
       seller: r[COL.SELLER] || "",
+      inn: r[COL.INN] || "",
       contract: r[COL.CONTRACT] || "",
+      sumRaw: parseFloat(String(r[COL.SUM] || "0").replace(/\s/g, "").replace(",", ".")) || 0,
       sum: r[COL.SUM] || "",
       resp: r[COL.RESP] || "",
       send: String(r[COL.SEND]).toUpperCase() === "TRUE",
@@ -586,8 +668,21 @@ function renderAll() {
   renderStats();
   renderChart();
   renderEmployeeTable();
+  renderBuyerFilterOptions();
   renderInvoicesTable();
   renderHistoryTable();
+}
+
+function renderBuyerFilterOptions() {
+  const sel = document.getElementById("buyerFilter");
+  const current = sel.value;
+  const names = [...new Set(invoiceRows.map(r => r.buyer).filter(Boolean))].sort();
+  const changed = names.length !== uniqueBuyers.length || names.some((n, i) => n !== uniqueBuyers[i]);
+  if (!changed) return; // не перестраиваем select зря (иначе может мигать при авто-обновлении)
+  uniqueBuyers = names;
+  sel.innerHTML = `<option value="">Все</option>` +
+    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  if (names.includes(current)) sel.value = current;
 }
 
 function renderStats() {
@@ -663,23 +758,41 @@ function renderInvoicesTable() {
 
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
+  const buyerVal = document.getElementById("buyerFilter").value;
+  const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
+  const respVal = document.getElementById("respFilter").value.trim().toLowerCase();
+  const sumMin = parseFloat(document.getElementById("sumMin").value);
+  const sumMax = parseFloat(document.getElementById("sumMax").value);
+  const dateFrom = document.getElementById("dateFrom").value; // YYYY-MM-DD
+  const dateTo = document.getElementById("dateTo").value;
 
   const filtered = invoiceRows.filter(r => {
     if (filter && classifyStatus(r.status) !== filter) return false;
-    if (!search) return true;
-    return (r.no + r.seller + r.buyer + r.comment).toLowerCase().includes(search);
+    if (buyerVal && r.buyer !== buyerVal) return false;
+    if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
+    if (respVal && !(r.resp || "").toLowerCase().includes(respVal)) return false;
+    if (!isNaN(sumMin) && r.sumRaw < sumMin) return false;
+    if (!isNaN(sumMax) && r.sumRaw > sumMax) return false;
+    if (dateFrom && r.date && r.date < dateFrom) return false;
+    if (dateTo && r.date && r.date > dateTo) return false;
+    if (search && !(r.no + " " + r.comment).toLowerCase().includes(search)) return false;
+    return true;
   });
 
-  document.getElementById("tableCount").textContent = `показано ${filtered.length} из ${invoiceRows.length}`;
+  const countText = `показано ${filtered.length} из ${invoiceRows.length}`;
+  document.getElementById("tableCount").textContent = countText;
+  document.getElementById("tableCount2").textContent = countText;
 
   const empOptions = employees.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join("");
 
   document.getElementById("invoicesBody").innerHTML = filtered.map(r => `
     <tr data-row="${r.rowIndex}">
+      <td><strong>${escapeHtml(r.buyer)}</strong></td>
       <td>${escapeHtml(r.no)}</td>
       <td>${escapeHtml(r.date)}</td>
       <td>${escapeHtml(r.seller)}</td>
-      <td>${escapeHtml(r.buyer)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.inn)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td>${escapeHtml(r.sum)}</td>
       <td>
         <select class="resp-select" onfocus="isEditingRow=true" onblur="isEditingRow=false" onchange="updateResp(${r.rowIndex}, this.value, this)">
