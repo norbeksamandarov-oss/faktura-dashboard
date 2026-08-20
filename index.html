@@ -283,6 +283,41 @@
   footer.note {
     text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px;
   }
+
+  /* ---------- Analytics ---------- */
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .analytics-box {
+    background: var(--ice-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .analytics-box h3 { margin: 0 0 2px; font-size: 13.5px; font-weight: 700; }
+  .analytics-note { margin: 0 0 10px; font-size: 11px; color: var(--muted); }
+  table.mini-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.mini-table th {
+    text-align: left; font-size: 10.5px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.02em;
+    padding: 4px 4px; border-bottom: 1px solid var(--border);
+  }
+  table.mini-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  table.mini-table tr:last-child td { border-bottom: none; }
+  .rank-badge {
+    display: inline-block; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--navy); color: white; font-size: 10px; font-weight: 700;
+    text-align: center; line-height: 18px; margin-right: 6px;
+  }
+  .analytics-summary {
+    margin-top: 16px; padding: 14px 18px; border-radius: 12px;
+    background: var(--navy); color: white; font-size: 13px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+  }
+  .analytics-summary .num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; }
+  .analytics-summary .lbl { font-size: 11px; color: var(--ice); }
 </style>
 </head>
 <body>
@@ -404,6 +439,56 @@
       <datalist id="employeesDatalist"></datalist>
     </div>
 
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Аналитика <span class="sub" id="analyticsSub"></span></h2>
+
+      <div class="analytics-grid">
+        <div class="analytics-box">
+          <h3>⚡ Топ-5 самых быстрых</h3>
+          <p class="analytics-note">по среднему времени принятия решения</p>
+          <table class="mini-table" id="fastEmpTable">
+            <thead><tr><th>Сотрудник</th><th>Ср. время</th><th>Решений</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="analytics-box">
+          <h3>🐢 Топ-5 самых медленных</h3>
+          <p class="analytics-note">по среднему времени принятия решения</p>
+          <table class="mini-table" id="slowEmpTable">
+            <thead><tr><th>Сотрудник</th><th>Ср. время</th><th>Решений</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="analytics-box">
+          <h3>📦 Топ-5 поставщиков</h3>
+          <p class="analytics-note">по количеству выставленных счетов</p>
+          <table class="mini-table" id="topSuppliersTable">
+            <thead><tr><th>Контрагент</th><th>Счетов</th><th>Сумма</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="analytics-box">
+          <h3>❌ Топ-5 по отказам</h3>
+          <p class="analytics-note">доля отклонённых счетов от общего числа решений</p>
+          <table class="mini-table" id="rejectRateTable">
+            <thead><tr><th>Сотрудник</th><th>% отказов</th><th>Отклонено</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="analytics-summary" id="analyticsSummary"></div>
+
+      <h3 style="margin:24px 0 12px;font-size:14px;">Нагрузка по сотрудникам</h3>
+      <table class="emp-table" id="workloadTable">
+        <thead><tr><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
     <div class="panel">
       <h2>Последние решения <span class="sub">из листа «История»</span></h2>
       <div class="table-wrap">
@@ -480,6 +565,7 @@ let tokenClient = null;
 let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
+let allHistoryRows = [];
 let statusChart = null;
 let autoRefreshTimer = null;
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
@@ -609,7 +695,7 @@ async function loadAllData(silent) {
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
       sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:M500`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:R500`),
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
@@ -632,13 +718,16 @@ async function loadAllData(silent) {
       send: String(r[COL.SEND]).toUpperCase() === "TRUE",
       status: r[COL.STATUS] || "",
       comment: r[COL.COMMENT] || "",
-      days: r[COL.DAYS] || ""
+      days: r[COL.DAYS] || "",
+      sentAt: r[15] || "" // yashirin _sent_at ustuni (P, 0-based index 15)
     })).filter(r => r.id);
 
-    historyRows = histRaw.map(r => ({
-      no: r[2] || "", seller: r[4] || "", resp: r[7] || "",
-      status: r[8] || "", comment: r[9] || "", decidedAt: r[10] || ""
-    })).filter(r => r.no).reverse().slice(0, 20);
+    allHistoryRows = histRaw.map(r => ({
+      id: r[0] || "", no: r[2] || "", seller: r[4] || "", resp: r[7] || "",
+      status: r[8] || "", comment: r[9] || "", decidedAt: r[10] || "",
+      sumRaw: parseFloat(String(r[6] || "0").replace(/\s/g, "").replace(",", ".")) || 0
+    })).filter(r => r.no);
+    historyRows = allHistoryRows.slice().reverse().slice(0, 20);
 
     renderAll();
   } catch (e) {
@@ -704,6 +793,7 @@ function renderAll() {
   renderEmployeesDatalist();
   renderInvoicesTable();
   renderHistoryTable();
+  renderAnalytics();
 }
 
 function renderEmployeesDatalist() {
@@ -851,6 +941,144 @@ function renderInvoicesTable() {
       if (sel) sel.value = r.resp || "";
     }
   });
+}
+
+/* ============================================================
+   АНАЛИТИКА
+   ============================================================ */
+function parseSheetDate(s) {
+  if (!s) return null;
+  const d = new Date(String(s).trim().replace(" ", "T"));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDuration(ms) {
+  if (ms == null || isNaN(ms) || ms < 0) return "—";
+  const hours = ms / 3600000;
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const rem = Math.round(hours % 24);
+    return `${days} дн ${rem} ч`;
+  }
+  if (hours >= 1) return `${hours.toFixed(1)} ч`;
+  return `${Math.round(ms / 60000)} мин`;
+}
+
+function renderAnalytics() {
+  // id -> отправлено-в-время (из скрытого столбца _sent_at рабочего листа)
+  const sentAtById = {};
+  invoiceRows.forEach(r => { if (r.id) sentAtById[r.id] = r.sentAt; });
+
+  // ---------- Скорость принятия решений по сотрудникам ----------
+  const speedByEmp = {}; // name -> {totalMs, count}
+  const qualityByEmp = {}; // name -> {reviewed, rejected}
+
+  allHistoryRows.forEach(h => {
+    if (!h.resp) return;
+    const cls = classifyStatus(h.status);
+
+    if (cls === "accepted" || cls === "rejected") {
+      if (!qualityByEmp[h.resp]) qualityByEmp[h.resp] = { reviewed: 0, rejected: 0 };
+      qualityByEmp[h.resp].reviewed++;
+      if (cls === "rejected") qualityByEmp[h.resp].rejected++;
+
+      const sentAt = sentAtById[h.id];
+      const sentDate = parseSheetDate(sentAt);
+      const decidedDate = parseSheetDate(h.decidedAt);
+      if (sentDate && decidedDate) {
+        const diff = decidedDate - sentDate;
+        if (diff >= 0) {
+          if (!speedByEmp[h.resp]) speedByEmp[h.resp] = { totalMs: 0, count: 0 };
+          speedByEmp[h.resp].totalMs += diff;
+          speedByEmp[h.resp].count++;
+        }
+      }
+    }
+  });
+
+  const speedRows = Object.entries(speedByEmp)
+    .map(([name, s]) => ({ name, avgMs: s.totalMs / s.count, count: s.count }))
+    .filter(r => r.count >= 1);
+
+  const fastest = [...speedRows].sort((a, b) => a.avgMs - b.avgMs).slice(0, 5);
+  const slowest = [...speedRows].sort((a, b) => b.avgMs - a.avgMs).slice(0, 5);
+
+  document.querySelector("#fastEmpTable tbody").innerHTML = fastest.map((r, i) => `
+    <tr><td><span class="rank-badge">${i + 1}</span>${escapeHtml(r.name)}</td>
+        <td>${formatDuration(r.avgMs)}</td><td>${r.count}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
+
+  document.querySelector("#slowEmpTable tbody").innerHTML = slowest.map((r, i) => `
+    <tr><td><span class="rank-badge">${i + 1}</span>${escapeHtml(r.name)}</td>
+        <td>${formatDuration(r.avgMs)}</td><td>${r.count}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
+
+  // ---------- Топ поставщиков ----------
+  const bySupplier = {};
+  invoiceRows.forEach(r => {
+    if (!r.seller) return;
+    if (!bySupplier[r.seller]) bySupplier[r.seller] = { count: 0, sum: 0 };
+    bySupplier[r.seller].count++;
+    bySupplier[r.seller].sum += r.sumRaw || 0;
+  });
+  const topSuppliers = Object.entries(bySupplier)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  document.querySelector("#topSuppliersTable tbody").innerHTML = topSuppliers.map((r, i) => `
+    <tr><td><span class="rank-badge">${i + 1}</span>${escapeHtml(r.name)}</td>
+        <td>${r.count}</td><td>${r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
+
+  // ---------- Топ по отказам (качество) ----------
+  const rejectRows = Object.entries(qualityByEmp)
+    .map(([name, q]) => ({ name, rate: q.reviewed ? (q.rejected / q.reviewed) * 100 : 0, rejected: q.rejected, reviewed: q.reviewed }))
+    .filter(r => r.reviewed >= 1)
+    .sort((a, b) => b.rate - a.rate)
+    .slice(0, 5);
+
+  document.querySelector("#rejectRateTable tbody").innerHTML = rejectRows.map((r, i) => `
+    <tr><td><span class="rank-badge">${i + 1}</span>${escapeHtml(r.name)}</td>
+        <td>${r.rate.toFixed(0)}%</td><td>${r.rejected} из ${r.reviewed}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
+
+  // ---------- Общая сводка ----------
+  const totalDecided = allHistoryRows.length;
+  const totalRejected = allHistoryRows.filter(h => classifyStatus(h.status) === "rejected").length;
+  const overallRejectRate = totalDecided ? (totalRejected / totalDecided) * 100 : 0;
+  const allDurations = speedRows.length
+    ? Object.values(speedByEmp).reduce((acc, s) => acc + s.totalMs, 0) / Object.values(speedByEmp).reduce((acc, s) => acc + s.count, 0)
+    : null;
+
+  document.getElementById("analyticsSummary").innerHTML = `
+    <div><div class="num">${totalDecided}</div><div class="lbl">Всего решений (История)</div></div>
+    <div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время по компании</div></div>
+    <div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Общая доля отказов</div></div>
+  `;
+
+  // ---------- Нагрузка по сотрудникам ----------
+  const allNames = new Set([
+    ...employees.map(e => e.name),
+    ...allHistoryRows.map(h => h.resp).filter(Boolean),
+    ...invoiceRows.map(r => r.resp).filter(Boolean),
+  ]);
+  const workload = [...allNames].map(name => {
+    const processed = allHistoryRows.filter(h => h.resp === name).length;
+    const pendingRows = invoiceRows.filter(r => r.resp === name && classifyStatus(r.status) === "sent");
+    const pending = pendingRows.length;
+    const overdue = pendingRows.filter(r => parseInt(r.days, 10) >= 8).length;
+    return { name, processed, pending, overdue };
+  }).filter(w => w.processed > 0 || w.pending > 0)
+    .sort((a, b) => (b.processed + b.pending) - (a.processed + a.pending));
+
+  document.querySelector("#workloadTable tbody").innerHTML = workload.map(w => `
+    <tr>
+      <td>${escapeHtml(w.name)}</td>
+      <td>${w.processed}</td>
+      <td>${w.pending}</td>
+      <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
+    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
 }
 
 function renderHistoryTable() {
