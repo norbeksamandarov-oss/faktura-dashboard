@@ -346,7 +346,7 @@
         </div>
         <div class="filter-field">
           <label>Контрагент (имя или ИНН)</label>
-          <input type="text" id="contragentFilter" placeholder="Нom yoki ИНН...">
+          <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
         </div>
         <div class="filter-field">
           <label>Сумма</label>
@@ -831,7 +831,7 @@ function renderInvoicesTable() {
       <td>
         <input type="text" class="resp-input" list="employeesDatalist"
                value="${escapeHtml(r.resp)}"
-               placeholder="Yozing yoki tanlang..."
+               placeholder="Введите или выберите..."
                onfocus="isEditingRow=true" onblur="isEditingRow=false"
                onchange="updateResp(${r.rowIndex}, this.value, this)">
       </td>
