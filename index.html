@@ -112,6 +112,18 @@
   }
   #refreshBtn:hover, #logoutBtn:hover { background: rgba(255,255,255,0.16); }
 
+  .live-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: #6FE39A; margin-right: 6px; vertical-align: middle;
+    box-shadow: 0 0 0 0 rgba(111,227,154,0.6);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(111,227,154,0.55); }
+    70% { box-shadow: 0 0 0 6px rgba(111,227,154,0); }
+    100% { box-shadow: 0 0 0 0 rgba(111,227,154,0); }
+  }
+
   main { padding: 28px 32px 60px; max-width: 1400px; margin: 0 auto; }
 
   /* ---------- Stat cards ---------- */
@@ -268,6 +280,7 @@
     </div>
     <div class="topbar-right">
       <div id="userInfo"></div>
+      <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
       <button id="refreshBtn">↻ Обновить</button>
       <button id="logoutBtn">Выйти</button>
     </div>
@@ -339,7 +352,7 @@
       </div>
     </div>
 
-    <footer class="note">Данные обновляются напрямую из Google Sheets. Изменения здесь применяются мгновенно.</footer>
+    <footer class="note">Данные обновляются напрямую из Google Sheets каждые 3 секунды. Изменения здесь применяются мгновенно.</footer>
   </main>
 </div>
 
@@ -349,7 +362,7 @@
 
 <script>
 /* ============================================================
-   НАСТРОЙКИ - впишите свои значения
+   НАСТРОЙКИ
    ============================================================ */
 const CLIENT_ID = "1082247406994-0v0930ahlra4hkonpv7ksafaa6nsiv6e.apps.googleusercontent.com";
 const SPREADSHEET_ID = "1PqhcM1FLe8dDON2VFVASbFfI2DFb1mWEUejDDPNSdl4";
@@ -358,6 +371,8 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
 const SHEET_EMPLOYEES = "Xodimlar";
+
+const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 секунды
 
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
@@ -371,6 +386,9 @@ let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
 let statusChart = null;
+let autoRefreshTimer = null;
+let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
+let isLoading = false;      // защита от наложения параллельных запросов
 
 /* ============================================================
    АВТОРИЗАЦИЯ
@@ -398,12 +416,13 @@ window.onload = () => {
   document.getElementById("googleBtnWrap").appendChild(btn);
 
   document.getElementById("logoutBtn").onclick = () => {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
     accessToken = null;
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "flex";
   };
-  document.getElementById("refreshBtn").onclick = loadAllData;
+  document.getElementById("refreshBtn").onclick = () => loadAllData(false);
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
 };
@@ -418,7 +437,11 @@ async function onLoggedIn() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("app").style.display = "block";
   await fetchUserInfo();
-  await loadAllData();
+  await loadAllData(false);
+
+  // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
 }
 
 async function fetchUserInfo() {
@@ -461,8 +484,16 @@ function colLetter(i) {
   return s;
 }
 
-async function loadAllData() {
-  document.getElementById("loadingOverlay").style.display = "flex";
+/**
+ * silent = true  -> фоновое авто-обновление (без оверлея, без прерывания пользователя)
+ * silent = false -> ручное обновление (кнопка/первая загрузка) - показываем оверлей
+ */
+async function loadAllData(silent) {
+  if (isLoading) return; // не накладываем параллельные запросы друг на друга
+  isLoading = true;
+
+  if (!silent) document.getElementById("loadingOverlay").style.display = "flex";
+
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
       sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C1000`),
@@ -497,11 +528,27 @@ async function loadAllData() {
 
     renderAll();
   } catch (e) {
-    alert("Ошибка загрузки данных: " + e.message);
-    console.error(e);
+    // Во время тихого авто-обновления не показываем alert (например, если токен истёк) -
+    // просто останавливаем таймер и просим войти заново один раз.
+    if (silent) {
+      console.error("Автообновление не удалось:", e.message);
+      if (String(e.message).includes("401")) {
+        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+        showSessionExpired();
+      }
+    } else {
+      alert("Ошибка загрузки данных: " + e.message);
+      console.error(e);
+    }
   } finally {
-    document.getElementById("loadingOverlay").style.display = "none";
+    if (!silent) document.getElementById("loadingOverlay").style.display = "none";
+    isLoading = false;
   }
+}
+
+function showSessionExpired() {
+  const el = document.getElementById("userInfo");
+  if (el) el.innerHTML += ` <span style="color:#FFC9C9;font-size:12px;">· сессия истекла, нажмите "Выйти" и войдите снова</span>`;
 }
 
 /* ============================================================
@@ -610,6 +657,10 @@ function renderEmployeeTable() {
 }
 
 function renderInvoicesTable() {
+  // Если пользователь только что взаимодействовал со строкой (открыт select, фокус в поле) -
+  // не перерисовываем таблицу прямо сейчас, чтобы не сбросить выбор / не закрыть выпадающий список.
+  if (isEditingRow) return;
+
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
 
@@ -631,7 +682,7 @@ function renderInvoicesTable() {
       <td>${escapeHtml(r.buyer)}</td>
       <td>${escapeHtml(r.sum)}</td>
       <td>
-        <select class="resp-select" onchange="updateResp(${r.rowIndex}, this.value, this)">
+        <select class="resp-select" onfocus="isEditingRow=true" onblur="isEditingRow=false" onchange="updateResp(${r.rowIndex}, this.value, this)">
           <option value="">—</option>
           ${empOptions}
         </select>
@@ -682,6 +733,8 @@ async function updateResp(rowIndex, value, selectEl) {
     flashSaved(selectEl.closest("tr"));
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
+  } finally {
+    isEditingRow = false;
   }
 }
 
