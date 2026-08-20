@@ -234,9 +234,9 @@
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
 
-  select.resp-select {
+  select.resp-select, input.resp-input {
     padding: 6px 8px; border-radius: 7px; border: 1px solid var(--border);
-    font-family: 'Inter'; font-size: 12.5px; max-width: 160px;
+    font-family: 'Inter'; font-size: 12.5px; max-width: 160px; width: 100%;
   }
   input.send-check { width: 18px; height: 18px; cursor: pointer; }
 
@@ -401,6 +401,7 @@
           <tbody id="invoicesBody"></tbody>
         </table>
       </div>
+      <datalist id="employeesDatalist"></datalist>
     </div>
 
     <div class="panel">
@@ -700,8 +701,14 @@ function renderAll() {
   renderChart();
   renderEmployeeTable();
   renderBuyerFilterOptions();
+  renderEmployeesDatalist();
   renderInvoicesTable();
   renderHistoryTable();
+}
+
+function renderEmployeesDatalist() {
+  const dl = document.getElementById("employeesDatalist");
+  dl.innerHTML = employees.map(e => `<option value="${escapeHtml(e.name)}"></option>`).join("");
 }
 
 function renderBuyerFilterOptions() {
@@ -812,8 +819,6 @@ function renderInvoicesTable() {
   document.getElementById("tableCount").textContent = countText;
   document.getElementById("tableCount2").textContent = countText;
 
-  const empOptions = employees.map(e => `<option value="${escapeHtml(e.name)}">${escapeHtml(e.name)}</option>`).join("");
-
   document.getElementById("invoicesBody").innerHTML = filtered.map(r => `
     <tr data-row="${r.rowIndex}">
       <td><strong class="clamp-cell" title="${escapeHtml(r.buyer)}">${escapeHtml(r.buyer)}</strong></td>
@@ -824,10 +829,11 @@ function renderInvoicesTable() {
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td>${escapeHtml(r.sum)}</td>
       <td>
-        <select class="resp-select" onfocus="isEditingRow=true" onblur="isEditingRow=false" onchange="updateResp(${r.rowIndex}, this.value, this)">
-          <option value="">—</option>
-          ${empOptions}
-        </select>
+        <input type="text" class="resp-input" list="employeesDatalist"
+               value="${escapeHtml(r.resp)}"
+               placeholder="Yozing yoki tanlang..."
+               onfocus="isEditingRow=true" onblur="isEditingRow=false"
+               onchange="updateResp(${r.rowIndex}, this.value, this)">
       </td>
       <td style="text-align:center">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
