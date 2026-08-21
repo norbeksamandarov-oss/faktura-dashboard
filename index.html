@@ -1438,13 +1438,15 @@ function renderInvoicesTable() {
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td class="num-cell">${escapeHtml(r.sum)}</td>
       <td class="num-cell" style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.vat)}</td>
-      <td>
+      <td>${classifyStatus(r.status) === "accepted" || classifyStatus(r.status) === "rejected" ? `
+        <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя">🔒 ${escapeHtml(r.resp)}</span>
+      ` : `
         <input type="text" class="resp-input" list="employeesDatalist"
                value="${escapeHtml(r.resp)}"
                placeholder="Введите или выберите..."
                onfocus="isEditingRow=true" onblur="isEditingRow=false"
                onchange="updateResp(${r.rowIndex}, this.value, this)">
-      </td>
+      `}</td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
         <span class="save-flash">✓</span>
@@ -2057,10 +2059,20 @@ function escapeHtml(s) {
    РЕДАКТИРОВАНИЕ (пишет напрямую в Google Sheets)
    ============================================================ */
 async function updateResp(rowIndex, value, selectEl) {
+  // XAVFSIZLIK: hatto UI chetlab o'tilsa ham (masalan konsoldan majburiy
+  // chaqirilsa), qaror allaqachon chiqarilgan (Принято/Отклонено) qatorda
+  // Ответственный o'zgartirilishiga yo'l qo'ymaymiz - bu tarixiy yozuv,
+  // kim qaror qabul qilgani keyinchalik almashtirilmasligi kerak.
+  const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+  const decidedCls = r ? classifyStatus(r.status) : null;
+  if (decidedCls === "accepted" || decidedCls === "rejected") {
+    alert("Решение по этому счёту уже принято - ответственного изменить нельзя.");
+    renderInvoicesTable();
+    return;
+  }
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.RESP)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, value);
-    const r = invoiceRows.find(x => x.rowIndex === rowIndex);
     if (r) r.resp = value;
     flashSaved(selectEl.closest("tr"));
   } catch (e) {
