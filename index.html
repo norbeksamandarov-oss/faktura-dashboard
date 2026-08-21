@@ -663,7 +663,6 @@
               <th>ИНН</th>
               <th>Договор</th>
               <th>Сумма</th>
-              <th>Без НДС</th>
               <th>НДС</th>
               <th>Ответственный</th>
               <th>Отправить</th>
@@ -723,7 +722,7 @@ const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 с
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
   ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, INN: 5, CONTRACT: 6,
-  SUM: 7, SUM_NO_VAT: 8, VAT: 9, RESP: 10, SEND: 11, STATUS: 12, COMMENT: 13, DAYS: 14
+  SUM: 7, VAT: 8, RESP: 9, SEND: 10, STATUS: 11, COMMENT: 12, DAYS: 13
 };
 
 let uniqueBuyers = [];
@@ -858,11 +857,11 @@ window.onload = () => {
 };
 
 function exportInvoicesCsv() {
-  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "Без НДС", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
+  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
   const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(csvEscape).join(";")];
   lastFilteredInvoices.forEach(r => {
-    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.sumNoVat, r.vat, r.resp, r.status, r.days, r.comment]
+    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]
       .map(csvEscape).join(";"));
   });
   const csvContent = "\uFEFF" + lines.join("\r\n"); // BOM - Excel'da kirill harflari to'g'ri ko'rinishi uchun
@@ -956,7 +955,7 @@ async function loadAllData(silent) {
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
       sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:T500`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:S500`),
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
@@ -975,14 +974,13 @@ async function loadAllData(silent) {
       contract: r[COL.CONTRACT] || "",
       sumRaw: parseFloat(String(r[COL.SUM] || "0").replace(/\s/g, "").replace(",", ".")) || 0,
       sum: r[COL.SUM] || "",
-      sumNoVat: r[COL.SUM_NO_VAT] || "",
       vat: r[COL.VAT] || "",
       resp: r[COL.RESP] || "",
       send: String(r[COL.SEND]).toUpperCase() === "TRUE",
       status: r[COL.STATUS] || "",
       comment: r[COL.COMMENT] || "",
       days: r[COL.DAYS] || "",
-      sentAt: r[17] || "" // yashirin _sent_at ustuni (R, 0-based index 17)
+      sentAt: r[16] || "" // yashirin _sent_at ustuni (Q, 0-based index 16)
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
@@ -1185,7 +1183,6 @@ function renderInvoicesTable() {
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.inn)}</td>
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td>${escapeHtml(r.sum)}</td>
-      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.sumNoVat)}</td>
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.vat)}</td>
       <td>
         <input type="text" class="resp-input" list="employeesDatalist"
