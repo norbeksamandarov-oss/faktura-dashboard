@@ -274,6 +274,12 @@
     font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   #clearFiltersBtn:hover { background: var(--ice); }
+  #exportCsvBtn {
+    padding: 9px 14px; border-radius: 9px; border: 1px solid var(--navy);
+    background: var(--navy); color: white; font-family: 'Inter';
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  #exportCsvBtn:hover { background: var(--navy-light); }
   #clearAnalyticsPeriodBtn {
     padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
     background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
@@ -500,6 +506,33 @@
             <tbody></tbody>
           </table>
         </div>
+
+        <div class="analytics-box">
+          <h3>⚠️ Контрагенты по отказам</h3>
+          <p class="analytics-note">от кого чаще всего приходят отклонённые счета</p>
+          <table class="mini-table" id="rejectBySupplierTable">
+            <thead><tr><th>Контрагент</th><th>% отказов</th><th>Отклонено</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="analytics-box">
+          <h3>💰 Топ-10 крупных счетов</h3>
+          <p class="analytics-note">по сумме, за выбранный период</p>
+          <table class="mini-table" id="topLargestTable">
+            <thead><tr><th>№ счёта</th><th>Контрагент</th><th>Сумма</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="analytics-box">
+          <h3>📃 По договорам</h3>
+          <p class="analytics-note">топ-5 договоров по количеству счетов</p>
+          <table class="mini-table" id="byContractTable">
+            <thead><tr><th>Договор</th><th>Счетов</th><th>Сумма</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="analytics-summary" id="analyticsSummary"></div>
@@ -512,6 +545,20 @@
         <div class="panel">
           <h2>Время ответа <span class="sub">распределение по сотрудникам</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panels" style="margin-top:20px;">
+        <div class="panel">
+          <h2>По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
+          <div class="chart-box"><canvas id="weekdayChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
+          <table class="mini-table" id="errorsTable">
+            <thead><tr><th>Ошибка</th><th>Кол-во</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
 
@@ -568,6 +615,10 @@
         <div class="filter-field">
           <label>&nbsp;</label>
           <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="exportCsvBtn">⬇ Экспорт в CSV</button>
         </div>
       </div>
       <div class="toolbar-row2" id="tableCount2"></div>
@@ -681,6 +732,8 @@ let allHistoryRows = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
+let weekdayChartInstance = null;
+let lastFilteredInvoices = []; // CSV eksport uchun - oxirgi ko'rsatilgan (filtrlangan) fakturalar
 
 /* Аналитика bo'limi uchun davr filtri (butun sahifani emas, faqat
    Аналитика bo'limidagi hisob-kitoblarni cheklaydi) */
@@ -769,7 +822,29 @@ window.onload = () => {
     document.getElementById("analyticsPeriodTo").value = "";
     renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
   });
+
+  document.getElementById("exportCsvBtn").addEventListener("click", exportInvoicesCsv);
 };
+
+function exportInvoicesCsv() {
+  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "Ответственный", "Статус", "Дней", "Комментарий"];
+  const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [headers.map(csvEscape).join(";")];
+  lastFilteredInvoices.forEach(r => {
+    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.resp, r.status, r.days, r.comment]
+      .map(csvEscape).join(";"));
+  });
+  const csvContent = "\uFEFF" + lines.join("\r\n"); // BOM - Excel'da kirill harflari to'g'ri ko'rinishi uchun
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `scheta-faktury_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function showSection(name) {
   document.querySelectorAll(".content-section").forEach(el => el.classList.remove("active"));
@@ -1065,6 +1140,7 @@ function renderInvoicesTable() {
   const countText = `показано ${filtered.length} из ${invoiceRows.length}`;
   document.getElementById("tableCount").textContent = countText;
   document.getElementById("tableCount2").textContent = countText;
+  lastFilteredInvoices = filtered;
 
   document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => `
     <tr data-row="${r.rowIndex}">
@@ -1201,6 +1277,27 @@ function renderAnalytics() {
     .map(([name, s]) => ({ name, avgMs: s.totalMs / s.count, count: s.count }))
     .filter(r => r.count >= 1);
 
+  // ---------- Kontragent (postavshik) bo'yicha rad etish ----------
+  const qualityBySupplier = {};
+  periodHistoryRows.forEach(h => {
+    if (!h.seller) return;
+    const cls = classifyStatus(h.status);
+    if (cls === "accepted" || cls === "rejected") {
+      if (!qualityBySupplier[h.seller]) qualityBySupplier[h.seller] = { reviewed: 0, rejected: 0 };
+      qualityBySupplier[h.seller].reviewed++;
+      if (cls === "rejected") qualityBySupplier[h.seller].rejected++;
+    }
+  });
+  const rejectBySupplierRows = Object.entries(qualityBySupplier)
+    .map(([name, q]) => ({ name, rate: q.reviewed ? (q.rejected / q.reviewed) * 100 : 0, rejected: q.rejected, reviewed: q.reviewed }))
+    .filter(r => r.rejected >= 1)
+    .sort((a, b) => b.rate - a.rate)
+    .slice(0, 5);
+  document.querySelector("#rejectBySupplierTable tbody").innerHTML = rejectBySupplierRows.map((r, i) => `
+    <tr><td><span class="rank-badge">${i + 1}</span>${escapeHtml(r.name)}</td>
+        <td>${r.rate.toFixed(0)}%</td><td>${r.rejected} из ${r.reviewed}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
+
   const fastest = [...speedRows].sort((a, b) => a.avgMs - b.avgMs).slice(0, 5);
   const slowest = [...speedRows].sort((a, b) => b.avgMs - a.avgMs).slice(0, 5);
 
@@ -1252,10 +1349,16 @@ function renderAnalytics() {
     ? Object.values(speedByEmp).reduce((acc, s) => acc + s.totalMs, 0) / Object.values(speedByEmp).reduce((acc, s) => acc + s.count, 0)
     : null;
 
+  const DEADLINE_MS = 8 * 24 * 3600000;
+  const allDurationValues = Object.values(durationsByEmp).flat();
+  const withinSla = allDurationValues.filter(ms => ms <= DEADLINE_MS).length;
+  const slaRate = allDurationValues.length ? (withinSla / allDurationValues.length) * 100 : null;
+
   document.getElementById("analyticsSummary").innerHTML = `
     <div><div class="num">${totalDecided}</div><div class="lbl">Всего решений (История)</div></div>
     <div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время по компании</div></div>
     <div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Общая доля отказов</div></div>
+    <div><div class="num">${slaRate != null ? slaRate.toFixed(0) + "%" : "—"}</div><div class="lbl">В срок (до 8 дней)</div></div>
   `;
 
   // ---------- Нагрузка по сотрудникам ----------
@@ -1284,11 +1387,76 @@ function renderAnalytics() {
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
 
+  // ---------- Топ-10 крупных счетов ----------
+  const topLargest = [...periodInvoiceRows].sort((a, b) => (b.sumRaw || 0) - (a.sumRaw || 0)).slice(0, 10);
+  document.querySelector("#topLargestTable tbody").innerHTML = topLargest.map(r => `
+    <tr><td>${escapeHtml(r.no)}</td><td class="clamp-cell" style="max-width:140px;">${escapeHtml(r.seller)}</td>
+        <td>${r.sum}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Нет данных</td></tr>`;
+
+  // ---------- По договорам ----------
+  const byContract = {};
+  periodInvoiceRows.forEach(r => {
+    const key = r.contract || "(без договора)";
+    if (!byContract[key]) byContract[key] = { count: 0, sum: 0 };
+    byContract[key].count++;
+    byContract[key].sum += r.sumRaw || 0;
+  });
+  const topContracts = Object.entries(byContract)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  document.querySelector("#byContractTable tbody").innerHTML = topContracts.map(r => `
+    <tr><td class="clamp-cell" style="max-width:140px;">${escapeHtml(r.name)}</td><td>${r.count}</td>
+        <td>${r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:var(--muted)">Нет данных</td></tr>`;
+
+  // ---------- Системные ошибки ----------
+  const errorCounts = {};
+  periodInvoiceRows.forEach(r => {
+    if (classifyStatus(r.status) === "error") {
+      errorCounts[r.status] = (errorCounts[r.status] || 0) + 1;
+    }
+  });
+  const errorRows = Object.entries(errorCounts).sort((a, b) => b[1] - a[1]);
+  document.querySelector("#errorsTable tbody").innerHTML = errorRows.map(([msg, count]) => `
+    <tr><td>${escapeHtml(msg)}</td><td>${count}</td></tr>`).join("")
+    || `<tr><td colspan="2" style="color:var(--muted)">Ошибок нет 🎉</td></tr>`;
+
+  renderWeekdayChart(periodInvoiceRows);
   renderTrendChart();
   renderResponseDistChart(durationsByEmp);
 }
 
 /* ---------- 30 kunlik trend grafigi ---------- */
+/* ---------- Hafta kunlari bo'yicha diagramma ---------- */
+function renderWeekdayChart(rows) {
+  const dayLabels = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  const counts = [0, 0, 0, 0, 0, 0, 0];
+  rows.forEach(r => {
+    if (!r.date) return;
+    const d = new Date(r.date + "T00:00:00");
+    if (isNaN(d.getTime())) return;
+    counts[d.getDay()]++;
+  });
+  // Dushanbadan boshlaymiz (Пн-Вс tartibida, chunki ish haftasi shunday)
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const labels = order.map(i => dayLabels[i]);
+  const data = order.map(i => counts[i]);
+
+  const ctx = document.getElementById("weekdayChart");
+  if (weekdayChartInstance) weekdayChartInstance.destroy();
+  weekdayChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: "#2A3572", borderRadius: 4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+}
+
 function renderTrendChart() {
   const today = new Date();
   const labels = [];
