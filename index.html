@@ -292,6 +292,25 @@
   .reg-approve-btn:hover { background: #175E3B; }
   .reg-reject-btn { background: var(--red-bg); color: var(--red-fg); }
   .reg-reject-btn:hover { background: #F5C9C9; }
+
+  .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #D7DCE5; border-radius: 22px; transition: .2s;
+  }
+  .toggle-slider::before {
+    content: ""; position: absolute; height: 16px; width: 16px;
+    left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--green-fg); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+  .emp-delete-btn {
+    padding: 5px 10px; border-radius: 7px; border: 1px solid var(--red-fg);
+    background: white; color: var(--red-fg); font-size: 11.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter';
+  }
+  .emp-delete-btn:hover { background: var(--red-bg); }
   #clearAnalyticsPeriodBtn {
     padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
     background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
@@ -522,6 +541,7 @@
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
       <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
     </nav>
     <main class="content-area">
 
@@ -804,6 +824,21 @@
     </div>
     </section>
 
+    <section id="section-employees" class="content-section">
+    <div class="panel">
+      <h2>Сотрудники <span class="sub" id="employeesCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Деактивированный сотрудник не будет получать новые счета (но история его решений сохраняется). Удаление - необратимо.</p>
+      <div class="table-wrap">
+        <table class="invoices" id="employeesManageTable">
+          <thead>
+            <tr><th>Имя</th><th>Username</th><th>Дата регистрации</th><th>Статус</th><th>Действия</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 3 секунды. Изменения здесь применяются мгновенно.</footer>
     </main>
   </div>
@@ -871,6 +906,7 @@ let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
 let allHistoryRows = [];
 let pendingRegistrations = [];
+let allEmployeesRaw = [];
 let processedRegistrations = [];
 let statusChart = null;
 let trendChartInstance = null;
@@ -1069,7 +1105,7 @@ async function loadAllData(silent) {
 
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
-      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
+      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:E500`),
       sheetsGet(`'${SHEET_INVOICES}'!A2:T500`),
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
@@ -1084,9 +1120,19 @@ async function loadAllData(silent) {
       console.warn("Лист 'Заявки' пока недоступен (это нормально, если бот ещё ни разу не запускался с новым кодом):", e.message);
     }
 
-    employees = empRaw
+    allEmployeesRaw = empRaw
       .filter(r => r[2] && r[2].trim())
-      .map(r => ({ chatId: r[0] || "", username: r[1] || "", name: r[2].trim() }));
+      .map((r, idx) => ({
+        rowIndex: idx + 2,
+        chatId: r[0] || "",
+        username: r[1] || "",
+        name: r[2].trim(),
+        registeredAt: r[3] || "",
+        active: String(r[4] || "TRUE").trim().toUpperCase() !== "FALSE"
+      }));
+    // Faqat FAOL xodimlar - "Ответственный" tanlash/autocomplete uchun
+    // (deaktiv qilingan xodim tanlab bo'lmasin, bot baribir rad etadi).
+    employees = allEmployeesRaw.filter(e => e.active).map(e => ({ chatId: e.chatId, username: e.username, name: e.name }));
 
     invoiceRows = invRaw.map((r, idx) => ({
       rowIndex: idx + 2,
@@ -1198,6 +1244,7 @@ function renderAll() {
   renderHistoryTable();
   renderAnalytics();
   renderRegistrations();
+  renderEmployeesManage();
 }
 
 function renderEmployeesDatalist() {
@@ -1864,6 +1911,87 @@ async function updateRegistrationStatus(rowIndex, status, btnEl) {
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
     btnEl.disabled = false;
+  }
+}
+
+/* ============================================================
+   СОТРУДНИКИ (boshqaruv paneli)
+   ============================================================ */
+let _sheetIdCache = null;
+
+async function getSheetIdByName(sheetName) {
+  if (_sheetIdCache) return _sheetIdCache[sheetName];
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`;
+  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
+  if (!res.ok) throw new Error("Не удалось получить структуру таблицы: " + res.status);
+  const data = await res.json();
+  _sheetIdCache = {};
+  (data.sheets || []).forEach(s => { _sheetIdCache[s.properties.title] = s.properties.sheetId; });
+  return _sheetIdCache[sheetName];
+}
+
+function renderEmployeesManage() {
+  document.getElementById("employeesCountSub").textContent =
+    `всего ${allEmployeesRaw.length} · активных ${allEmployeesRaw.filter(e => e.active).length}`;
+
+  document.querySelector("#employeesManageTable tbody").innerHTML = allEmployeesRaw.map(e => `
+    <tr>
+      <td><strong>${escapeHtml(e.name)}</strong></td>
+      <td>${escapeHtml(e.username)}</td>
+      <td style="font-size:12px;color:var(--muted)">${formatDateDisplay(e.registeredAt)}</td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${e.active ? "checked" : ""} onchange="updateEmployeeActive(${e.rowIndex}, this.checked, this)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${e.active ? "Активен" : "Деактивирован"}</span>
+      </td>
+      <td><button class="emp-delete-btn" onclick="deleteEmployeeRow(${e.rowIndex}, '${escapeHtml(e.name).replace(/'/g, "\\'")}', this)">🗑 Удалить</button></td>
+    </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет сотрудников</td></tr>`;
+}
+
+async function updateEmployeeActive(rowIndex, checked, checkboxEl) {
+  const range = `'${SHEET_EMPLOYEES}'!E${rowIndex}`;
+  checkboxEl.disabled = true;
+  try {
+    await sheetsUpdateCell(range, checked);
+    const emp = allEmployeesRaw.find(e => e.rowIndex === rowIndex);
+    if (emp) emp.active = checked;
+    renderEmployeesManage();
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+    checkboxEl.checked = !checked;
+  } finally {
+    checkboxEl.disabled = false;
+  }
+}
+
+async function deleteEmployeeRow(rowIndex, name, btnEl) {
+  if (!confirm(`Удалить сотрудника «${name}» безвозвратно?\n\nЕго прошлые решения останутся в «Истории», но он будет полностью удалён из списка сотрудников.`)) {
+    return;
+  }
+  btnEl.disabled = true;
+  btnEl.textContent = "...";
+  try {
+    const sheetId = await getSheetIdByName(SHEET_EMPLOYEES);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requests: [{
+          deleteDimension: {
+            range: { sheetId, dimension: "ROWS", startIndex: rowIndex - 1, endIndex: rowIndex }
+          }
+        }]
+      })
+    });
+    if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
+    await loadAllData(false);
+  } catch (e) {
+    alert("Не удалось удалить: " + e.message);
+    btnEl.disabled = false;
+    btnEl.textContent = "🗑 Удалить";
   }
 }
 
