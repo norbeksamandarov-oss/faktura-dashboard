@@ -437,6 +437,13 @@
   .org-card-total .org-vat { color: #FFD79A; }
   .org-card-total .stat-block { display: flex; flex-direction: column; gap: 2px; }
 
+  .dept-org-group { margin-top: 22px; }
+  .dept-org-group:first-of-type { margin-top: 18px; }
+  .dept-org-title {
+    font-size: 13px; font-weight: 700; color: var(--navy);
+    margin: 0 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--ice);
+  }
+
   /* ---------- Davr filtri paneli ---------- */
   .period-filter-box {
     display: flex;
@@ -1329,38 +1336,33 @@ function renderAnalyticsPeriodNote(periodInvoiceRows) {
 
 /* ---------- Tashkilotlar (Покупатель) kesimida statistika ---------- */
 function renderDepartmentBreakdown(periodInvoiceRows) {
-  const byDept = {};
+  // Avval tashkilot bo'yicha, keyin uning ICHIDA bo'linma bo'yicha guruhlaymiz -
+  // chunki bo'linma alohida emas, aynan shu tashkilotga tegishli.
+  const byOrgThenDept = {};
   periodInvoiceRows.forEach(r => {
     const dept = (r.department || "").trim();
-    if (!dept) return; // podrazdeleniya tanlanmagan qatorlar hisobga kirmaydi
-    if (!byDept[dept]) byDept[dept] = { count: 0, sum: 0, vat: 0 };
-    byDept[dept].count++;
-    byDept[dept].sum += r.sumRaw || 0;
-    byDept[dept].vat += r.vatRaw || 0;
+    if (!dept) return;
+    const org = canonicalBuyer(r.buyer);
+    if (!byOrgThenDept[org]) byOrgThenDept[org] = {};
+    if (!byOrgThenDept[org][dept]) byOrgThenDept[org][dept] = { count: 0, sum: 0, vat: 0 };
+    byOrgThenDept[org][dept].count++;
+    byOrgThenDept[org][dept].sum += r.sumRaw || 0;
+    byOrgThenDept[org][dept].vat += r.vatRaw || 0;
   });
 
-  const rows = Object.entries(byDept).sort((a, b) => b[1].count - a[1].count);
-
-  if (!rows.length) {
+  const orgNames = Object.keys(byOrgThenDept);
+  if (!orgNames.length) {
     document.getElementById("deptBreakdownGrid").innerHTML =
       `<p class="analytics-note">Пока нет данных по подразделениям за выбранный период.</p>`;
     return;
   }
 
-  const totalCount = rows.reduce((acc, [, s]) => acc + s.count, 0);
-  const totalSum = rows.reduce((acc, [, s]) => acc + s.sum, 0);
-  const totalVat = rows.reduce((acc, [, s]) => acc + s.vat, 0);
-
-  const cardsHtml = rows.map(([name, s]) => `
-    <div class="org-card">
-      <div class="org-name">${escapeHtml(name)}</div>
-      <div class="org-count">${s.count}</div>
-      <div class="org-count-lbl">счетов</div>
-      <div class="org-sum">${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
-      <div class="org-sum-lbl">сумма всего</div>
-      <div class="org-vat">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
-      <div class="org-sum-lbl">НДС</div>
-    </div>`).join("");
+  let totalCount = 0, totalSum = 0, totalVat = 0;
+  orgNames.forEach(org => {
+    Object.values(byOrgThenDept[org]).forEach(s => {
+      totalCount += s.count; totalSum += s.sum; totalVat += s.vat;
+    });
+  });
 
   const totalHtml = `
     <div class="org-card org-card-total">
@@ -1370,7 +1372,26 @@ function renderDepartmentBreakdown(periodInvoiceRows) {
       <div class="stat-block"><div class="org-vat">${totalVat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="org-sum-lbl">НДС</div></div>
     </div>`;
 
-  document.getElementById("deptBreakdownGrid").innerHTML = totalHtml + cardsHtml;
+  const groupsHtml = orgNames.map(org => {
+    const depts = Object.entries(byOrgThenDept[org]).sort((a, b) => b[1].count - a[1].count);
+    const cards = depts.map(([name, s]) => `
+      <div class="org-card">
+        <div class="org-name">${escapeHtml(name)}</div>
+        <div class="org-count">${s.count}</div>
+        <div class="org-count-lbl">счетов</div>
+        <div class="org-sum">${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
+        <div class="org-sum-lbl">сумма всего</div>
+        <div class="org-vat">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
+        <div class="org-sum-lbl">НДС</div>
+      </div>`).join("");
+    return `
+      <div class="dept-org-group">
+        <h4 class="dept-org-title">🏢 ${escapeHtml(org)}</h4>
+        <div class="org-grid">${cards}</div>
+      </div>`;
+  }).join("");
+
+  document.getElementById("deptBreakdownGrid").innerHTML = totalHtml + groupsHtml;
 }
 
 function renderOrgBreakdown(periodInvoiceRows) {
