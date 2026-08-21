@@ -333,6 +333,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .chart-box { position: relative; height: 220px; }
+  .chart-box-tall { height: 260px; }
 
   footer.note {
     text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px;
@@ -472,6 +473,17 @@
       </div>
 
       <div class="analytics-summary" id="analyticsSummary"></div>
+
+      <div class="panels" style="margin-top:20px;">
+        <div class="panel">
+          <h2>Динамика за 30 дней <span class="sub">счета по дням</span></h2>
+          <div class="chart-box chart-box-tall"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>Время ответа <span class="sub">распределение по сотрудникам</span></h2>
+          <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
+        </div>
+      </div>
 
       <h3 style="margin:24px 0 12px;font-size:14px;">Нагрузка по сотрудникам</h3>
       <table class="emp-table" id="workloadTable">
@@ -637,6 +649,8 @@ let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
 let allHistoryRows = [];
 let statusChart = null;
+let trendChartInstance = null;
+let responseDistChartInstance = null;
 let autoRefreshTimer = null;
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
 let isLoading = false;      // защита от наложения параллельных запросов
@@ -1051,6 +1065,7 @@ function renderAnalytics() {
 
   // ---------- Скорость принятия решений по сотрудникам ----------
   const speedByEmp = {}; // name -> {totalMs, count}
+  const durationsByEmp = {}; // name -> [ms, ms, ...] (har bir alohida qaror uchun)
   const qualityByEmp = {}; // name -> {reviewed, rejected}
 
   allHistoryRows.forEach(h => {
@@ -1071,6 +1086,8 @@ function renderAnalytics() {
           if (!speedByEmp[h.resp]) speedByEmp[h.resp] = { totalMs: 0, count: 0 };
           speedByEmp[h.resp].totalMs += diff;
           speedByEmp[h.resp].count++;
+          if (!durationsByEmp[h.resp]) durationsByEmp[h.resp] = [];
+          durationsByEmp[h.resp].push(diff);
         }
       }
     }
@@ -1159,6 +1176,101 @@ function renderAnalytics() {
       <td>${w.pending}</td>
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+
+  renderTrendChart();
+  renderResponseDistChart(durationsByEmp);
+}
+
+/* ---------- 30 kunlik trend grafigi ---------- */
+function renderTrendChart() {
+  const today = new Date();
+  const labels = [];
+  const dateKeys = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    dateKeys.push(key);
+    labels.push(`${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+
+  const buckets = { accepted: [], rejected: [], sent: [], new: [] };
+  dateKeys.forEach(key => {
+    const dayRows = invoiceRows.filter(r => r.date === key);
+    buckets.accepted.push(dayRows.filter(r => classifyStatus(r.status) === "accepted").length);
+    buckets.rejected.push(dayRows.filter(r => classifyStatus(r.status) === "rejected").length);
+    buckets.sent.push(dayRows.filter(r => classifyStatus(r.status) === "sent").length);
+    buckets.new.push(dayRows.filter(r => classifyStatus(r.status) === "new").length);
+  });
+
+  const ctx = document.getElementById("trendChart");
+  if (trendChartInstance) trendChartInstance.destroy();
+  trendChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Принято", data: buckets.accepted, backgroundColor: "#5FBE84", stack: "s" },
+        { label: "Отклонено", data: buckets.rejected, backgroundColor: "#E8837E", stack: "s" },
+        { label: "Ожидают", data: buckets.sent, backgroundColor: "#FFC876", stack: "s" },
+        { label: "Не отправлено", data: buckets.new, backgroundColor: "#D7DCE5", stack: "s" },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 9 }, maxRotation: 90, minRotation: 90 } },
+        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+      },
+      plugins: { legend: { position: "bottom", labels: { font: { family: "Inter", size: 10 }, boxWidth: 10 } } }
+    }
+  });
+}
+
+/* ---------- Javob vaqti taqsimoti (xodimlar bo'yicha) ---------- */
+function renderResponseDistChart(durationsByEmp) {
+  const bucketDefs = [
+    { key: "b1", label: "< 1 ч", max: 3600000 },
+    { key: "b2", label: "1-4 ч", max: 4 * 3600000 },
+    { key: "b3", label: "4-24 ч", max: 24 * 3600000 },
+    { key: "b4", label: "1-3 дня", max: 3 * 24 * 3600000 },
+    { key: "b5", label: "3+ дня", max: Infinity },
+  ];
+  const colors = ["#5FBE84", "#8FCB9E", "#FFC876", "#F5A75B", "#E8837E"];
+
+  const employeesList = Object.entries(durationsByEmp)
+    .map(([name, arr]) => ({ name, count: arr.length }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+
+  const labels = employeesList.map(e => e.name);
+  const datasets = bucketDefs.map((b, i) => ({
+    label: b.label,
+    backgroundColor: colors[i],
+    data: employeesList.map(e => {
+      const arr = durationsByEmp[e.name];
+      const prevMax = i > 0 ? bucketDefs[i - 1].max : 0;
+      const inBucket = arr.filter(ms => ms > prevMax && ms <= b.max).length;
+      return arr.length ? Math.round((inBucket / arr.length) * 100) : 0;
+    })
+  }));
+
+  const ctx = document.getElementById("responseDistChart");
+  if (responseDistChartInstance) responseDistChartInstance.destroy();
+  if (!labels.length) return;
+  responseDistChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      indexAxis: "y",
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { stacked: true, beginAtZero: true, max: 100, ticks: { callback: v => v + "%" } },
+        y: { stacked: true, ticks: { font: { size: 10 } } }
+      },
+      plugins: { legend: { position: "bottom", labels: { font: { family: "Inter", size: 10 }, boxWidth: 10 } } }
+    }
+  });
 }
 
 function renderHistoryTable() {
