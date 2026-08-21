@@ -350,19 +350,19 @@
   input.send-check { width: 18px; height: 18px; cursor: pointer; }
 
   .clamp-cell {
+    display: -webkit-box;
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.35;
   }
   .clamp-cell-comment {
+    display: -webkit-box;
     max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.35;
@@ -1405,7 +1405,7 @@ function renderInvoicesTable() {
         <div style="font-weight:600;">${escapeHtml(r.no)}</div>
         <div style="font-size:10.5px;color:var(--muted);">${formatDateDisplay(r.date)}</div>
       </td>
-      <td class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</td>
+      <td><span class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</span></td>
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.inn)}</td>
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td class="num-cell">${escapeHtml(r.sum)}</td>
@@ -1423,7 +1423,7 @@ function renderInvoicesTable() {
       </td>
       <td>${statusBadge(r.status)}</td>
       <td>${daysBadge(r.days)}</td>
-      <td class="clamp-cell-comment" style="font-size:12px;color:var(--muted)" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</td>
+      <td style="font-size:12px;color:var(--muted)"><span class="clamp-cell-comment" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</span></td>
     </tr>`).join("");
 
   filtered.forEach(r => {
