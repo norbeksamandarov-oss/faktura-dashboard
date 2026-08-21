@@ -124,7 +124,61 @@
     100% { box-shadow: 0 0 0 0 rgba(111,227,154,0); }
   }
 
-  main { padding: 28px 32px 60px; max-width: 1400px; margin: 0 auto; }
+  /* ---------- Sidebar navigatsiya ---------- */
+  .app-body { display: flex; align-items: flex-start; }
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--navy);
+    min-height: calc(100vh - 66px);
+    padding: 18px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: sticky;
+    top: 0;
+  }
+  .nav-item {
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--ice);
+    text-align: left;
+    padding: 13px 24px;
+    font-size: 13.5px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+  .nav-item.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-weight: 600;
+    border-left-color: var(--ice);
+  }
+  .content-area {
+    flex: 1;
+    min-width: 0;
+    padding: 28px 32px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .content-section { display: none; }
+  .content-section.active { display: block; }
+
+  @media (max-width: 860px) {
+    .app-body { flex-direction: column; }
+    .sidebar {
+      width: 100%; flex-direction: row; min-height: auto;
+      padding: 6px 10px; overflow-x: auto; position: static;
+    }
+    .nav-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .nav-item.active { border-left-color: transparent; border-bottom-color: var(--ice); }
+    .content-area { padding: 20px 16px 40px; }
+  }
 
   /* ---------- Stat cards ---------- */
   .stats-row {
@@ -351,7 +405,15 @@
     </div>
   </header>
 
-  <main>
+  <div class="app-body">
+    <nav class="sidebar">
+      <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')">📊 Аналитика</button>
+      <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
+      <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
+    </nav>
+    <main class="content-area">
+
+    <section id="section-analytics" class="content-section active">
     <div class="stats-row" id="statsRow"></div>
 
     <div class="panels">
@@ -366,77 +428,6 @@
           <tbody></tbody>
         </table>
       </div>
-    </div>
-
-    <div class="panel" style="margin-bottom:24px;">
-      <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
-      <div class="toolbar">
-        <div class="filter-field">
-          <label>Поиск (№, комментарий)</label>
-          <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
-        </div>
-        <div class="filter-field">
-          <label>Покупатель</label>
-          <select id="buyerFilter"><option value="">Все</option></select>
-        </div>
-        <div class="filter-field">
-          <label>Контрагент (имя или ИНН)</label>
-          <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
-        </div>
-        <div class="filter-field">
-          <label>Сумма</label>
-          <input type="text" id="sumFilter" placeholder="напр. 55490000">
-        </div>
-        <div class="filter-field">
-          <label>Ответственный</label>
-          <input type="text" id="respFilter" placeholder="2-3 буквы имени...">
-        </div>
-        <div class="filter-field">
-          <label>Период (дата счёта)</label>
-          <div class="date-range">
-            <input type="date" id="dateFrom">
-            <input type="date" id="dateTo">
-          </div>
-        </div>
-        <div class="filter-field">
-          <label>Статус</label>
-          <select class="status-filter" id="statusFilter">
-            <option value="">Все статусы</option>
-            <option value="new">Не отправлено</option>
-            <option value="sent">Отправлено (ждёт)</option>
-            <option value="accepted">Принято</option>
-            <option value="rejected">Отклонено</option>
-            <option value="notmine">Не мой счёт</option>
-          </select>
-        </div>
-        <div class="filter-field">
-          <label>&nbsp;</label>
-          <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
-        </div>
-      </div>
-      <div class="toolbar-row2" id="tableCount2"></div>
-      <div class="table-wrap">
-        <table class="invoices">
-          <thead>
-            <tr>
-              <th>Покупатель</th>
-              <th>№ счёта</th>
-              <th>Дата</th>
-              <th>Контрагент</th>
-              <th>ИНН</th>
-              <th>Договор</th>
-              <th>Сумма</th>
-              <th>Ответственный</th>
-              <th>Отправить</th>
-              <th>Статус</th>
-              <th>Дней</th>
-              <th>Комментарий</th>
-            </tr>
-          </thead>
-          <tbody id="invoicesBody"></tbody>
-        </table>
-      </div>
-      <datalist id="employeesDatalist"></datalist>
     </div>
 
     <div class="panel" style="margin-bottom:24px;">
@@ -488,7 +479,83 @@
         <tbody></tbody>
       </table>
     </div>
+    </section>
 
+    <section id="section-invoices" class="content-section">
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label>Поиск (№, комментарий)</label>
+          <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
+        </div>
+        <div class="filter-field">
+          <label>Покупатель</label>
+          <select id="buyerFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>Контрагент (имя или ИНН)</label>
+          <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
+        </div>
+        <div class="filter-field">
+          <label>Сумма</label>
+          <input type="text" id="sumFilter" placeholder="напр. 55490000">
+        </div>
+        <div class="filter-field">
+          <label>Ответственный</label>
+          <input type="text" id="respFilter" placeholder="2-3 буквы имени...">
+        </div>
+        <div class="filter-field">
+          <label>Период (дата счёта)</label>
+          <div class="date-range">
+            <input type="date" id="dateFrom">
+            <input type="date" id="dateTo">
+          </div>
+        </div>
+        <div class="filter-field">
+          <label>Статус</label>
+          <select class="status-filter" id="statusFilter">
+            <option value="">Все статусы</option>
+            <option value="new">Не отправлено</option>
+            <option value="sent">Отправлено (ждёт)</option>
+            <option value="accepted">Принято</option>
+            <option value="rejected">Отклонено</option>
+            <option value="notmine">Не мой счёт</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
+        </div>
+      </div>
+      <div class="toolbar-row2" id="tableCount2"></div>
+      <div class="table-wrap">
+        <table class="invoices">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Покупатель</th>
+              <th>№ счёта</th>
+              <th>Дата</th>
+              <th>Контрагент</th>
+              <th>ИНН</th>
+              <th>Договор</th>
+              <th>Сумма</th>
+              <th>Ответственный</th>
+              <th>Отправить</th>
+              <th>Статус</th>
+              <th>Дней</th>
+              <th>Комментарий</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesBody"></tbody>
+        </table>
+      </div>
+      <datalist id="employeesDatalist"></datalist>
+    </div>
+    </section>
+
+    <section id="section-history" class="content-section">
     <div class="panel">
       <h2>Последние решения <span class="sub">из листа «История»</span></h2>
       <div class="table-wrap">
@@ -503,10 +570,13 @@
         </table>
       </div>
     </div>
+    </section>
 
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 3 секунды. Изменения здесь применяются мгновенно.</footer>
-  </main>
+    </main>
+  </div>
 </div>
+
 
 <div id="loadingOverlay" style="display:none;">
   <div class="spinner"></div> Загрузка данных...
@@ -624,6 +694,15 @@ window.onload = () => {
     renderInvoicesTable();
   });
 };
+
+function showSection(name) {
+  document.querySelectorAll(".content-section").forEach(el => el.classList.remove("active"));
+  const target = document.getElementById("section-" + name);
+  if (target) target.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.section === name);
+  });
+}
 
 function showLoginError(msg) {
   const el = document.getElementById("loginError");
@@ -909,8 +988,9 @@ function renderInvoicesTable() {
   document.getElementById("tableCount").textContent = countText;
   document.getElementById("tableCount2").textContent = countText;
 
-  document.getElementById("invoicesBody").innerHTML = filtered.map(r => `
+  document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => `
     <tr data-row="${r.rowIndex}">
+      <td style="color:var(--muted);font-size:12px;">${idx + 1}</td>
       <td><strong class="clamp-cell" title="${escapeHtml(r.buyer)}">${escapeHtml(r.buyer)}</strong></td>
       <td>${escapeHtml(r.no)}</td>
       <td>${escapeHtml(r.date)}</td>
