@@ -650,6 +650,10 @@
           <select id="buyerFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
+          <label>Подразделение</label>
+          <select id="departmentFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
           <label>Контрагент (имя или ИНН)</label>
           <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
         </div>
@@ -695,6 +699,7 @@
             <tr>
               <th>№</th>
               <th>Покупатель</th>
+              <th>Подразделение</th>
               <th>№ / Дата</th>
               <th>Контрагент</th>
               <th>ИНН</th>
@@ -759,10 +764,11 @@ const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 с
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
   ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, INN: 5, CONTRACT: 6,
-  SUM: 7, VAT: 8, RESP: 9, SEND: 10, STATUS: 11, COMMENT: 12, DAYS: 13
+  SUM: 7, VAT: 8, RESP: 9, SEND: 10, STATUS: 11, COMMENT: 12, DEPARTMENT: 13, DAYS: 14
 };
 
 let uniqueBuyers = [];
+let uniqueDepartments = [];
 
 /* ============================================================
    O'Z TASHKILOTLARIMIZNI TANISH (Покупатель normalizatsiyasi)
@@ -861,6 +867,7 @@ window.onload = () => {
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("respFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("sumFilter").addEventListener("input", renderInvoicesTable);
@@ -870,6 +877,7 @@ window.onload = () => {
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "";
     document.getElementById("buyerFilter").value = "";
+    document.getElementById("departmentFilter").value = "";
     document.getElementById("contragentFilter").value = "";
     document.getElementById("respFilter").value = "";
     document.getElementById("sumFilter").value = "";
@@ -894,11 +902,11 @@ window.onload = () => {
 };
 
 function exportInvoicesCsv() {
-  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
+  const headers = ["Покупатель", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
   const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(csvEscape).join(";")];
   lastFilteredInvoices.forEach(r => {
-    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]
+    lines.push([r.buyer, r.department, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]
       .map(csvEscape).join(";"));
   });
   const csvContent = "\uFEFF" + lines.join("\r\n"); // BOM - Excel'da kirill harflari to'g'ri ko'rinishi uchun
@@ -992,7 +1000,7 @@ async function loadAllData(silent) {
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
       sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:S500`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:T500`),
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
@@ -1017,8 +1025,9 @@ async function loadAllData(silent) {
       send: String(r[COL.SEND]).toUpperCase() === "TRUE",
       status: r[COL.STATUS] || "",
       comment: r[COL.COMMENT] || "",
+      department: r[COL.DEPARTMENT] || "",
       days: r[COL.DAYS] || "",
-      sentAt: r[16] || "" // yashirin _sent_at ustuni (Q, 0-based index 16)
+      sentAt: r[17] || "" // yashirin _sent_at ustuni (R, 0-based index 17)
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
@@ -1089,6 +1098,7 @@ function renderAll() {
   renderChart();
   renderEmployeeTable();
   renderBuyerFilterOptions();
+  renderDepartmentFilterOptions();
   renderEmployeesDatalist();
   renderInvoicesTable();
   renderHistoryTable();
@@ -1107,6 +1117,18 @@ function renderBuyerFilterOptions() {
   const changed = names.length !== uniqueBuyers.length || names.some((n, i) => n !== uniqueBuyers[i]);
   if (!changed) return; // не перестраиваем select зря (иначе может мигать при авто-обновлении)
   uniqueBuyers = names;
+  sel.innerHTML = `<option value="">Все</option>` +
+    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  if (names.includes(current)) sel.value = current;
+}
+
+function renderDepartmentFilterOptions() {
+  const sel = document.getElementById("departmentFilter");
+  const current = sel.value;
+  const names = [...new Set(invoiceRows.map(r => r.department).filter(Boolean))].sort();
+  const changed = names.length !== uniqueDepartments.length || names.some((n, i) => n !== uniqueDepartments[i]);
+  if (!changed) return;
+  uniqueDepartments = names;
   sel.innerHTML = `<option value="">Все</option>` +
     names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
   if (names.includes(current)) sel.value = current;
@@ -1188,6 +1210,7 @@ function renderInvoicesTable() {
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
   const buyerVal = document.getElementById("buyerFilter").value;
+  const departmentVal = document.getElementById("departmentFilter").value;
   const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
   const respVal = document.getElementById("respFilter").value.trim().toLowerCase();
   const sumFilterVal = document.getElementById("sumFilter").value.trim().replace(/\s/g, "");
@@ -1197,6 +1220,7 @@ function renderInvoicesTable() {
   const filtered = invoiceRows.filter(r => {
     if (filter && classifyStatus(r.status) !== filter) return false;
     if (buyerVal && canonicalBuyer(r.buyer) !== buyerVal) return false;
+    if (departmentVal && r.department !== departmentVal) return false;
     if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
     if (respVal && !(r.resp || "").toLowerCase().includes(respVal)) return false;
     if (sumFilterVal && !r.sum.replace(/\s/g, "").includes(sumFilterVal)) return false;
@@ -1215,6 +1239,7 @@ function renderInvoicesTable() {
     <tr data-row="${r.rowIndex}">
       <td style="color:var(--muted);font-size:12px;">${idx + 1}</td>
       <td><strong class="clamp-cell" title="${escapeHtml(r.buyer)}">${escapeHtml(r.buyer)}</strong></td>
+      <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.department)}</td>
       <td>
         <div style="font-weight:600;">${escapeHtml(r.no)}</div>
         <div style="font-size:10.5px;color:var(--muted);">${formatDateDisplay(r.date)}</div>
