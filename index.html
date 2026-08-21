@@ -530,6 +530,12 @@
       </table>
       <div class="org-grid" id="orgBreakdownGrid"></div>
     </div>
+
+    <div class="panel" style="margin-bottom:20px;">
+      <h2 style="margin:0 0 4px;">По подразделениям</h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Только для счетов, где при принятии было выбрано подразделение (ДЦ)</p>
+      <div class="org-grid" id="deptBreakdownGrid"></div>
+    </div>
     <div class="stats-row" id="statsRow"></div>
 
     <div class="panels">
@@ -1322,6 +1328,51 @@ function renderAnalyticsPeriodNote(periodInvoiceRows) {
 }
 
 /* ---------- Tashkilotlar (Покупатель) kesimida statistika ---------- */
+function renderDepartmentBreakdown(periodInvoiceRows) {
+  const byDept = {};
+  periodInvoiceRows.forEach(r => {
+    const dept = (r.department || "").trim();
+    if (!dept) return; // podrazdeleniya tanlanmagan qatorlar hisobga kirmaydi
+    if (!byDept[dept]) byDept[dept] = { count: 0, sum: 0, vat: 0 };
+    byDept[dept].count++;
+    byDept[dept].sum += r.sumRaw || 0;
+    byDept[dept].vat += r.vatRaw || 0;
+  });
+
+  const rows = Object.entries(byDept).sort((a, b) => b[1].count - a[1].count);
+
+  if (!rows.length) {
+    document.getElementById("deptBreakdownGrid").innerHTML =
+      `<p class="analytics-note">Пока нет данных по подразделениям за выбранный период.</p>`;
+    return;
+  }
+
+  const totalCount = rows.reduce((acc, [, s]) => acc + s.count, 0);
+  const totalSum = rows.reduce((acc, [, s]) => acc + s.sum, 0);
+  const totalVat = rows.reduce((acc, [, s]) => acc + s.vat, 0);
+
+  const cardsHtml = rows.map(([name, s]) => `
+    <div class="org-card">
+      <div class="org-name">${escapeHtml(name)}</div>
+      <div class="org-count">${s.count}</div>
+      <div class="org-count-lbl">счетов</div>
+      <div class="org-sum">${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
+      <div class="org-sum-lbl">сумма всего</div>
+      <div class="org-vat">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
+      <div class="org-sum-lbl">НДС</div>
+    </div>`).join("");
+
+  const totalHtml = `
+    <div class="org-card org-card-total">
+      <div class="org-name">ИТОГО (все подразделения)</div>
+      <div class="stat-block"><div class="org-count">${totalCount}</div><div class="org-count-lbl">счетов</div></div>
+      <div class="stat-block"><div class="org-sum">${totalSum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="org-sum-lbl">сумма всего</div></div>
+      <div class="stat-block"><div class="org-vat">${totalVat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="org-sum-lbl">НДС</div></div>
+    </div>`;
+
+  document.getElementById("deptBreakdownGrid").innerHTML = totalHtml + cardsHtml;
+}
+
 function renderOrgBreakdown(periodInvoiceRows) {
   const byOrg = {};
   ORG_GROUPS.forEach(g => { byOrg[g.canonical] = { count: 0, sum: 0, vat: 0 }; });
@@ -1367,6 +1418,7 @@ function renderAnalytics() {
 
   renderAnalyticsPeriodNote(periodInvoiceRows);
   renderOrgBreakdown(periodInvoiceRows);
+  renderDepartmentBreakdown(periodInvoiceRows);
 
   // id -> отправлено-в-время (из скрытого столбца _sent_at рабочего листа)
   const sentAtById = {};
