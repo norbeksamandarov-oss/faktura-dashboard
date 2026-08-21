@@ -385,6 +385,34 @@
   }
   .analytics-summary .num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; }
   .analytics-summary .lbl { font-size: 11px; color: var(--ice); }
+
+  /* ---------- Tashkilotlar kartochkalari ---------- */
+  .org-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .org-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color .15s;
+  }
+  .org-card:hover { border-color: var(--ice); }
+  .org-card .org-name {
+    font-weight: 700; font-size: 12.5px; color: var(--text);
+    margin-bottom: 8px; min-height: 32px; line-height: 1.3;
+  }
+  .org-card .org-count {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--navy);
+    line-height: 1;
+  }
+  .org-card .org-count-lbl { font-size: 10.5px; color: var(--muted); margin: 2px 0 8px; }
+  .org-card .org-sum { font-size: 12.5px; font-weight: 600; color: var(--green-fg); }
+  .org-card .org-sum-lbl { font-size: 10px; color: var(--muted); }
+  .org-card.empty { opacity: 0.45; }
 </style>
 </head>
 <body>
@@ -446,10 +474,11 @@
         </div>
       </div>
       <p class="analytics-note" id="analyticsPeriodNote" style="margin-top:10px;"></p>
-      <table class="emp-table" id="orgBreakdownTable">
+      <table class="emp-table" id="orgBreakdownTable" style="display:none;">
         <thead><tr><th>Организация</th><th>Счетов</th><th>Общая сумма</th></tr></thead>
         <tbody></tbody>
       </table>
+      <div class="org-grid" id="orgBreakdownGrid"></div>
     </div>
     <div class="stats-row" id="statsRow"></div>
 
@@ -634,6 +663,8 @@
               <th>ИНН</th>
               <th>Договор</th>
               <th>Сумма</th>
+              <th>Без НДС</th>
+              <th>НДС</th>
               <th>Ответственный</th>
               <th>Отправить</th>
               <th>Статус</th>
@@ -692,7 +723,7 @@ const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 с
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
   ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, INN: 5, CONTRACT: 6,
-  SUM: 7, RESP: 8, SEND: 9, STATUS: 10, COMMENT: 11, DAYS: 12
+  SUM: 7, SUM_NO_VAT: 8, VAT: 9, RESP: 10, SEND: 11, STATUS: 12, COMMENT: 13, DAYS: 14
 };
 
 let uniqueBuyers = [];
@@ -827,11 +858,11 @@ window.onload = () => {
 };
 
 function exportInvoicesCsv() {
-  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "Ответственный", "Статус", "Дней", "Комментарий"];
+  const headers = ["Покупатель", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "Без НДС", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
   const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(csvEscape).join(";")];
   lastFilteredInvoices.forEach(r => {
-    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.resp, r.status, r.days, r.comment]
+    lines.push([r.buyer, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.sumNoVat, r.vat, r.resp, r.status, r.days, r.comment]
       .map(csvEscape).join(";"));
   });
   const csvContent = "\uFEFF" + lines.join("\r\n"); // BOM - Excel'da kirill harflari to'g'ri ko'rinishi uchun
@@ -925,7 +956,7 @@ async function loadAllData(silent) {
   try {
     const [empRaw, invRaw, histRaw] = await Promise.all([
       sheetsGet(`'${SHEET_EMPLOYEES}'!A2:C500`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:R500`),
+      sheetsGet(`'${SHEET_INVOICES}'!A2:T500`),
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
@@ -944,12 +975,14 @@ async function loadAllData(silent) {
       contract: r[COL.CONTRACT] || "",
       sumRaw: parseFloat(String(r[COL.SUM] || "0").replace(/\s/g, "").replace(",", ".")) || 0,
       sum: r[COL.SUM] || "",
+      sumNoVat: r[COL.SUM_NO_VAT] || "",
+      vat: r[COL.VAT] || "",
       resp: r[COL.RESP] || "",
       send: String(r[COL.SEND]).toUpperCase() === "TRUE",
       status: r[COL.STATUS] || "",
       comment: r[COL.COMMENT] || "",
       days: r[COL.DAYS] || "",
-      sentAt: r[15] || "" // yashirin _sent_at ustuni (P, 0-based index 15)
+      sentAt: r[17] || "" // yashirin _sent_at ustuni (R, 0-based index 17)
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
@@ -1152,6 +1185,8 @@ function renderInvoicesTable() {
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.inn)}</td>
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.contract)}</td>
       <td>${escapeHtml(r.sum)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.sumNoVat)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.vat)}</td>
       <td>
         <input type="text" class="resp-input" list="employeesDatalist"
                value="${escapeHtml(r.resp)}"
@@ -1224,12 +1259,14 @@ function renderOrgBreakdown(periodInvoiceRows) {
 
   const rows = Object.entries(byOrg).sort((a, b) => b[1].count - a[1].count);
 
-  document.querySelector("#orgBreakdownTable tbody").innerHTML = rows.map(([name, s]) => `
-    <tr>
-      <td>${escapeHtml(name)}</td>
-      <td>${s.count}</td>
-      <td>${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
-    </tr>`).join("") || `<tr><td colspan="3" style="color:var(--muted)">Нет данных</td></tr>`;
+  document.getElementById("orgBreakdownGrid").innerHTML = rows.map(([name, s]) => `
+    <div class="org-card ${s.count === 0 ? "empty" : ""}">
+      <div class="org-name">${escapeHtml(name)}</div>
+      <div class="org-count">${s.count}</div>
+      <div class="org-count-lbl">счетов</div>
+      <div class="org-sum">${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
+      <div class="org-sum-lbl">сум общая сумма</div>
+    </div>`).join("");
 }
 
 function renderAnalytics() {
