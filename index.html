@@ -299,7 +299,7 @@
   table.invoices tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
-  table.invoices td.num-cell, table.invoices th.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  table.invoices td.num-cell, table.invoices th.num-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   select.resp-select, input.resp-input {
     padding: 6px 8px; border-radius: 7px; border: 1px solid var(--border);
@@ -426,6 +426,33 @@
   .org-card-total .org-sum { color: #A9E6BC; }
   .org-card-total .org-vat { color: #FFD79A; }
   .org-card-total .stat-block { display: flex; flex-direction: column; gap: 2px; }
+
+  /* ---------- Davr filtri paneli ---------- */
+  .period-filter-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+    background: var(--ice-soft);
+    border: 1.5px solid var(--ice);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+  }
+  .period-filter-icon { font-size: 22px; margin-bottom: 6px; }
+  .period-filter-box .filter-field label {
+    color: var(--navy); font-weight: 700; font-size: 11px;
+  }
+  .period-filter-box .date-range { display: flex; align-items: center; gap: 6px; }
+  .period-filter-box #clearAnalyticsPeriodBtn {
+    background: white; border: 1px solid var(--navy); color: var(--navy);
+  }
+  .period-filter-box #clearAnalyticsPeriodBtn:hover { background: var(--navy); color: white; }
+  #analyticsPeriodNote { font-weight: 600; color: var(--navy); }
+  @media (max-width: 700px) {
+    .period-filter-box { flex-direction: column; align-items: stretch; }
+    #analyticsPeriodNote { margin-left: 0 !important; }
+  }
 </style>
 </head>
 <body>
@@ -470,23 +497,23 @@
     <section id="section-analytics" class="content-section active">
 
     <div class="panel" style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <h2 style="margin:0;">По организациям <span class="sub">сколько счетов и на какую сумму пришло каждой из наших компаний</span></h2>
-        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
-          <div class="filter-field">
-            <label>Период анализа</label>
-            <div class="date-range">
-              <input type="date" id="analyticsPeriodFrom">
-              <input type="date" id="analyticsPeriodTo">
-            </div>
-          </div>
-          <div class="filter-field">
-            <label>&nbsp;</label>
-            <button id="clearAnalyticsPeriodBtn">✕ Весь период</button>
+      <h2 style="margin:0 0 4px;">По организациям</h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Сколько счетов и на какую сумму пришло каждой из наших компаний</p>
+
+      <div class="period-filter-box">
+        <span class="period-filter-icon">📅</span>
+        <div class="filter-field">
+          <label>Показать за период</label>
+          <div class="date-range">
+            <input type="date" id="analyticsPeriodFrom">
+            <span style="color:var(--muted);">—</span>
+            <input type="date" id="analyticsPeriodTo">
           </div>
         </div>
+        <button id="clearAnalyticsPeriodBtn">✕ Весь период</button>
+        <span class="analytics-note" id="analyticsPeriodNote" style="margin-left:auto;"></span>
       </div>
-      <p class="analytics-note" id="analyticsPeriodNote" style="margin-top:10px;"></p>
+
       <table class="emp-table" id="orgBreakdownTable" style="display:none;">
         <thead><tr><th>Организация</th><th>Счетов</th><th>Общая сумма</th></tr></thead>
         <tbody></tbody>
