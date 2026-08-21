@@ -274,6 +274,12 @@
     font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   #clearFiltersBtn:hover { background: var(--ice); }
+  #clearAnalyticsPeriodBtn {
+    padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  #clearAnalyticsPeriodBtn:hover { background: var(--ice); }
   .toolbar-row2 { margin-bottom: 16px; font-size: 12px; color: var(--muted); }
 
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; }
@@ -415,6 +421,30 @@
     <main class="content-area">
 
     <section id="section-analytics" class="content-section active">
+
+    <div class="panel" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <h2 style="margin:0;">По организациям <span class="sub">сколько счетов и на какую сумму пришло каждой из наших компаний</span></h2>
+        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+          <div class="filter-field">
+            <label>Период анализа</label>
+            <div class="date-range">
+              <input type="date" id="analyticsPeriodFrom">
+              <input type="date" id="analyticsPeriodTo">
+            </div>
+          </div>
+          <div class="filter-field">
+            <label>&nbsp;</label>
+            <button id="clearAnalyticsPeriodBtn">✕ Весь период</button>
+          </div>
+        </div>
+      </div>
+      <p class="analytics-note" id="analyticsPeriodNote" style="margin-top:10px;"></p>
+      <table class="emp-table" id="orgBreakdownTable">
+        <thead><tr><th>Организация</th><th>Счетов</th><th>Общая сумма</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <div class="stats-row" id="statsRow"></div>
 
     <div class="panels">
@@ -651,6 +681,26 @@ let allHistoryRows = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
+
+/* Аналитика bo'limi uchun davr filtri (butun sahifani emas, faqat
+   Аналитика bo'limidagi hisob-kitoblarni cheklaydi) */
+function getAnalyticsPeriod() {
+  return {
+    from: document.getElementById("analyticsPeriodFrom")?.value || "",
+    to: document.getElementById("analyticsPeriodTo")?.value || "",
+  };
+}
+function filterByPeriod(rows, dateField) {
+  const { from, to } = getAnalyticsPeriod();
+  if (!from && !to) return rows;
+  return rows.filter(r => {
+    const d = (r[dateField] || "").slice(0, 10);
+    if (!d) return false;
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  });
+}
 let autoRefreshTimer = null;
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
 let isLoading = false;      // защита от наложения параллельных запросов
@@ -706,6 +756,18 @@ window.onload = () => {
     document.getElementById("dateFrom").value = "";
     document.getElementById("dateTo").value = "";
     renderInvoicesTable();
+  });
+
+  document.getElementById("analyticsPeriodFrom").addEventListener("change", () => {
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
+  });
+  document.getElementById("analyticsPeriodTo").addEventListener("change", () => {
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
+  });
+  document.getElementById("clearAnalyticsPeriodBtn").addEventListener("click", () => {
+    document.getElementById("analyticsPeriodFrom").value = "";
+    document.getElementById("analyticsPeriodTo").value = "";
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
   });
 };
 
@@ -907,11 +969,12 @@ function renderBuyerFilterOptions() {
 }
 
 function renderStats() {
-  const total = invoiceRows.length;
-  const pending = invoiceRows.filter(r => classifyStatus(r.status) === "sent").length;
-  const accepted = invoiceRows.filter(r => classifyStatus(r.status) === "accepted").length;
-  const rejected = invoiceRows.filter(r => classifyStatus(r.status) === "rejected").length;
-  const overdue = invoiceRows.filter(r => classifyStatus(r.status) === "sent" && parseInt(r.days, 10) >= 8).length;
+  const rows = filterByPeriod(invoiceRows, "date");
+  const total = rows.length;
+  const pending = rows.filter(r => classifyStatus(r.status) === "sent").length;
+  const accepted = rows.filter(r => classifyStatus(r.status) === "accepted").length;
+  const rejected = rows.filter(r => classifyStatus(r.status) === "rejected").length;
+  const overdue = rows.filter(r => classifyStatus(r.status) === "sent" && parseInt(r.days, 10) >= 8).length;
 
   const cards = [
     { label: "Всего счетов", val: total, cls: "accent-total" },
@@ -928,8 +991,9 @@ function renderStats() {
 }
 
 function renderChart() {
+  const rows = filterByPeriod(invoiceRows, "date");
   const counts = { new: 0, sent: 0, accepted: 0, rejected: 0, notmine: 0 };
-  invoiceRows.forEach(r => { const c = classifyStatus(r.status); if (counts[c] !== undefined) counts[c]++; });
+  rows.forEach(r => { const c = classifyStatus(r.status); if (counts[c] !== undefined) counts[c]++; });
 
   const ctx = document.getElementById("statusChart");
   if (statusChart) statusChart.destroy();
@@ -948,12 +1012,12 @@ function renderChart() {
       cutout: "62%"
     }
   });
-  document.getElementById("chartSub").textContent = `всего ${invoiceRows.length}`;
+  document.getElementById("chartSub").textContent = `всего ${rows.length}`;
 }
 
 function renderEmployeeTable() {
   const byName = {};
-  invoiceRows.forEach(r => {
+  filterByPeriod(invoiceRows, "date").forEach(r => {
     if (!r.resp) return;
     if (!byName[r.resp]) byName[r.resp] = { total: 0, pending: 0, overdue: 0 };
     byName[r.resp].total++;
@@ -1058,7 +1122,47 @@ function formatDuration(ms) {
   return `${Math.round(ms / 60000)} мин`;
 }
 
+/* ---------- Davr izohi ---------- */
+function renderAnalyticsPeriodNote(periodInvoiceRows) {
+  const { from, to } = getAnalyticsPeriod();
+  const el = document.getElementById("analyticsPeriodNote");
+  if (!from && !to) {
+    el.textContent = `Показан весь период · ${periodInvoiceRows.length} счетов`;
+  } else {
+    const fromTxt = from || "начала";
+    const toTxt = to || "сегодня";
+    el.textContent = `Период: ${fromTxt} — ${toTxt} · ${periodInvoiceRows.length} счетов`;
+  }
+}
+
+/* ---------- Tashkilotlar (Покупатель) kesimida statistika ---------- */
+function renderOrgBreakdown(periodInvoiceRows) {
+  const byOrg = {};
+  ORG_GROUPS.forEach(g => { byOrg[g.canonical] = { count: 0, sum: 0 }; });
+  periodInvoiceRows.forEach(r => {
+    const org = canonicalBuyer(r.buyer);
+    if (!byOrg[org]) byOrg[org] = { count: 0, sum: 0 };
+    byOrg[org].count++;
+    byOrg[org].sum += r.sumRaw || 0;
+  });
+
+  const rows = Object.entries(byOrg).sort((a, b) => b[1].count - a[1].count);
+
+  document.querySelector("#orgBreakdownTable tbody").innerHTML = rows.map(([name, s]) => `
+    <tr>
+      <td>${escapeHtml(name)}</td>
+      <td>${s.count}</td>
+      <td>${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
+    </tr>`).join("") || `<tr><td colspan="3" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
 function renderAnalytics() {
+  const periodInvoiceRows = filterByPeriod(invoiceRows, "date");
+  const periodHistoryRows = filterByPeriod(allHistoryRows, "decidedAt");
+
+  renderAnalyticsPeriodNote(periodInvoiceRows);
+  renderOrgBreakdown(periodInvoiceRows);
+
   // id -> отправлено-в-время (из скрытого столбца _sent_at рабочего листа)
   const sentAtById = {};
   invoiceRows.forEach(r => { if (r.id) sentAtById[r.id] = r.sentAt; });
@@ -1068,7 +1172,7 @@ function renderAnalytics() {
   const durationsByEmp = {}; // name -> [ms, ms, ...] (har bir alohida qaror uchun)
   const qualityByEmp = {}; // name -> {reviewed, rejected}
 
-  allHistoryRows.forEach(h => {
+  periodHistoryRows.forEach(h => {
     if (!h.resp) return;
     const cls = classifyStatus(h.status);
 
@@ -1112,7 +1216,7 @@ function renderAnalytics() {
 
   // ---------- Топ поставщиков ----------
   const bySupplier = {};
-  invoiceRows.forEach(r => {
+  periodInvoiceRows.forEach(r => {
     if (!r.seller) return;
     if (!bySupplier[r.seller]) bySupplier[r.seller] = { count: 0, sum: 0 };
     bySupplier[r.seller].count++;
@@ -1141,8 +1245,8 @@ function renderAnalytics() {
     || `<tr><td colspan="3" style="color:var(--muted)">Пока нет данных</td></tr>`;
 
   // ---------- Общая сводка ----------
-  const totalDecided = allHistoryRows.length;
-  const totalRejected = allHistoryRows.filter(h => classifyStatus(h.status) === "rejected").length;
+  const totalDecided = periodHistoryRows.length;
+  const totalRejected = periodHistoryRows.filter(h => classifyStatus(h.status) === "rejected").length;
   const overallRejectRate = totalDecided ? (totalRejected / totalDecided) * 100 : 0;
   const allDurations = speedRows.length
     ? Object.values(speedByEmp).reduce((acc, s) => acc + s.totalMs, 0) / Object.values(speedByEmp).reduce((acc, s) => acc + s.count, 0)
@@ -1155,13 +1259,16 @@ function renderAnalytics() {
   `;
 
   // ---------- Нагрузка по сотрудникам ----------
+  // "Обработано" - davr bo'yicha filtrlanadi. "Ожидает сейчас" - bu HOZIRGI
+  // real vaqtdagi holat, shuning uchun davr filtriga qaramaydi (har doim
+  // joriy kutayotganlarni ko'rsatadi).
   const allNames = new Set([
     ...employees.map(e => e.name),
     ...allHistoryRows.map(h => h.resp).filter(Boolean),
     ...invoiceRows.map(r => r.resp).filter(Boolean),
   ]);
   const workload = [...allNames].map(name => {
-    const processed = allHistoryRows.filter(h => h.resp === name).length;
+    const processed = periodHistoryRows.filter(h => h.resp === name).length;
     const pendingRows = invoiceRows.filter(r => r.resp === name && classifyStatus(r.status) === "sent");
     const pending = pendingRows.length;
     const overdue = pendingRows.filter(r => parseInt(r.days, 10) >= 8).length;
