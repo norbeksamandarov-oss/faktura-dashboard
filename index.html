@@ -753,8 +753,8 @@
         <table class="invoices" id="historyTable">
           <thead>
             <tr>
-              <th>№ счёта</th><th>Контрагент</th><th>Ответственный</th>
-              <th>Статус</th><th>Комментарий</th><th>Дата решения</th>
+              <th>№ / Дата счёта</th><th>Контрагент</th><th>Подразделение</th><th>Ответственный</th>
+              <th>Статус</th><th>Комментарий</th><th>Дата и время решения</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -1057,8 +1057,8 @@ async function loadAllData(silent) {
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
-      id: r[0] || "", no: r[2] || "", seller: r[4] || "", resp: r[7] || "",
-      status: r[8] || "", comment: r[9] || "", decidedAt: r[10] || "",
+      id: r[0] || "", no: r[2] || "", date: r[3] || "", seller: r[4] || "", resp: r[7] || "",
+      status: r[8] || "", comment: r[9] || "", department: r[10] || "", decidedAt: r[11] || "",
       sumRaw: parseFloat(String(r[6] || "0").replace(/\s/g, "").replace(",", ".")) || 0
     })).filter(r => r.no);
     historyRows = allHistoryRows.slice().reverse().slice(0, 20);
@@ -1753,13 +1753,17 @@ function renderResponseDistChart(durationsByEmp) {
 function renderHistoryTable() {
   document.querySelector("#historyTable tbody").innerHTML = historyRows.map(r => `
     <tr>
-      <td>${escapeHtml(r.no)}</td>
+      <td>
+        <div style="font-weight:600;">${escapeHtml(r.no)}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${formatDateDisplay(r.date)}</div>
+      </td>
       <td>${escapeHtml(r.seller)}</td>
+      <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.department)}</td>
       <td>${escapeHtml(r.resp)}</td>
       <td>${statusBadge(r.status)}</td>
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.comment)}</td>
-      <td style="font-size:12px;color:var(--muted)">${formatDateDisplay(r.decidedAt)}</td>
-    </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">История пуста</td></tr>`;
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.decidedAt)}</td>
+    </tr>`).join("") || `<tr><td colspan="7" style="color:var(--muted)">История пуста</td></tr>`;
 }
 
 function formatDateDisplay(s) {
