@@ -338,7 +338,7 @@
     text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;
     position: sticky; top: 0;
   }
-  table.invoices tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.invoices tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
   table.invoices td.num-cell, table.invoices th.num-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -351,6 +351,15 @@
 
   .clamp-cell {
     max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.35;
+  }
+  .clamp-cell-comment {
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -469,12 +478,24 @@
   .org-card-total .org-vat { color: #FFD79A; }
   .org-card-total .stat-block { display: flex; flex-direction: column; gap: 2px; }
 
-  .dept-org-group { margin-top: 22px; }
-  .dept-org-group:first-of-type { margin-top: 18px; }
-  .dept-org-title {
-    font-size: 13px; font-weight: 700; color: var(--navy);
-    margin: 0 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--ice);
+  .org-dept-toggle {
+    margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);
+    font-size: 11px; font-weight: 600; color: var(--navy);
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+    user-select: none;
   }
+  .org-dept-toggle:hover { color: var(--navy-light); }
+  .org-dept-toggle .chevron { display: inline-block; transition: transform .15s; font-size: 9px; }
+  .org-dept-list { display: none; margin-top: 6px; }
+  .org-dept-list.open { display: block; }
+  .org-dept-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 11px;
+  }
+  .org-dept-row:last-child { border-bottom: none; }
+  .org-dept-row .dept-name { color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-dept-row .dept-stats { color: var(--muted); text-align: right; white-space: nowrap; font-size: 10.5px; }
+  .org-dept-row .dept-stats b { color: var(--green-fg); font-weight: 700; }
 
   /* ---------- Davr filtri paneli ---------- */
   .period-filter-box {
@@ -572,11 +593,6 @@
       <div class="org-grid" id="orgBreakdownGrid"></div>
     </div>
 
-    <div class="panel" style="margin-bottom:20px;">
-      <h2 style="margin:0 0 4px;">По подразделениям</h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Только для счетов, где при принятии было выбрано подразделение (ДЦ)</p>
-      <div class="org-grid" id="deptBreakdownGrid"></div>
-    </div>
     <div class="stats-row" id="statsRow"></div>
 
     <div class="panels">
@@ -1401,13 +1417,13 @@ function renderInvoicesTable() {
                onfocus="isEditingRow=true" onblur="isEditingRow=false"
                onchange="updateResp(${r.rowIndex}, this.value, this)">
       </td>
-      <td style="text-align:center">
+      <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
         <span class="save-flash">✓</span>
       </td>
       <td>${statusBadge(r.status)}</td>
       <td>${daysBadge(r.days)}</td>
-      <td style="max-width:180px;font-size:12px;color:var(--muted)">${escapeHtml(r.comment)}</td>
+      <td class="clamp-cell-comment" style="font-size:12px;color:var(--muted)" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</td>
     </tr>`).join("");
 
   filtered.forEach(r => {
@@ -1453,66 +1469,6 @@ function renderAnalyticsPeriodNote(periodInvoiceRows) {
   }
 }
 
-/* ---------- Tashkilotlar (Покупатель) kesimida statistika ---------- */
-function renderDepartmentBreakdown(periodInvoiceRows) {
-  // Avval tashkilot bo'yicha, keyin uning ICHIDA bo'linma bo'yicha guruhlaymiz -
-  // chunki bo'linma alohida emas, aynan shu tashkilotga tegishli.
-  const byOrgThenDept = {};
-  periodInvoiceRows.forEach(r => {
-    const dept = (r.department || "").trim();
-    if (!dept) return;
-    const org = canonicalBuyer(r.buyer);
-    if (!byOrgThenDept[org]) byOrgThenDept[org] = {};
-    if (!byOrgThenDept[org][dept]) byOrgThenDept[org][dept] = { count: 0, sum: 0, vat: 0 };
-    byOrgThenDept[org][dept].count++;
-    byOrgThenDept[org][dept].sum += r.sumRaw || 0;
-    byOrgThenDept[org][dept].vat += r.vatRaw || 0;
-  });
-
-  const orgNames = Object.keys(byOrgThenDept);
-  if (!orgNames.length) {
-    document.getElementById("deptBreakdownGrid").innerHTML =
-      `<p class="analytics-note">Пока нет данных по подразделениям за выбранный период.</p>`;
-    return;
-  }
-
-  let totalCount = 0, totalSum = 0, totalVat = 0;
-  orgNames.forEach(org => {
-    Object.values(byOrgThenDept[org]).forEach(s => {
-      totalCount += s.count; totalSum += s.sum; totalVat += s.vat;
-    });
-  });
-
-  const totalHtml = `
-    <div class="org-card org-card-total">
-      <div class="org-name">ИТОГО (все подразделения)</div>
-      <div class="stat-block"><div class="org-count">${totalCount}</div><div class="org-count-lbl">счетов</div></div>
-      <div class="stat-block"><div class="org-sum">${totalSum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="org-sum-lbl">сумма всего</div></div>
-      <div class="stat-block"><div class="org-vat">${totalVat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="org-sum-lbl">НДС</div></div>
-    </div>`;
-
-  const groupsHtml = orgNames.map(org => {
-    const depts = Object.entries(byOrgThenDept[org]).sort((a, b) => b[1].count - a[1].count);
-    const cards = depts.map(([name, s]) => `
-      <div class="org-card">
-        <div class="org-name">${escapeHtml(name)}</div>
-        <div class="org-count">${s.count}</div>
-        <div class="org-count-lbl">счетов</div>
-        <div class="org-sum">${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
-        <div class="org-sum-lbl">сумма всего</div>
-        <div class="org-vat">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
-        <div class="org-sum-lbl">НДС</div>
-      </div>`).join("");
-    return `
-      <div class="dept-org-group">
-        <h4 class="dept-org-title">🏢 ${escapeHtml(org)}</h4>
-        <div class="org-grid">${cards}</div>
-      </div>`;
-  }).join("");
-
-  document.getElementById("deptBreakdownGrid").innerHTML = totalHtml + groupsHtml;
-}
-
 function renderOrgBreakdown(periodInvoiceRows) {
   const byOrg = {};
   ORG_GROUPS.forEach(g => { byOrg[g.canonical] = { count: 0, sum: 0, vat: 0 }; });
@@ -1524,13 +1480,43 @@ function renderOrgBreakdown(periodInvoiceRows) {
     byOrg[org].vat += r.vatRaw || 0;
   });
 
+  // Har bir tashkilot ICHIDA bo'linma (ДЦ) bo'yicha statistika - karta ichiga
+  // joylashtirish uchun (avval alohida panel edi, endi tegishli tashkilot
+  // kartasi ichida "kerak bo'lsa ochiladigan" ro'yxat sifatida ko'rsatiladi).
+  const deptsByOrg = {};
+  periodInvoiceRows.forEach(r => {
+    const dept = (r.department || "").trim();
+    if (!dept) return;
+    const org = canonicalBuyer(r.buyer);
+    if (!deptsByOrg[org]) deptsByOrg[org] = {};
+    if (!deptsByOrg[org][dept]) deptsByOrg[org][dept] = { count: 0, sum: 0, vat: 0 };
+    deptsByOrg[org][dept].count++;
+    deptsByOrg[org][dept].sum += r.sumRaw || 0;
+    deptsByOrg[org][dept].vat += r.vatRaw || 0;
+  });
+
   const rows = Object.entries(byOrg).sort((a, b) => b[1].count - a[1].count);
 
   const totalCount = rows.reduce((acc, [, s]) => acc + s.count, 0);
   const totalSum = rows.reduce((acc, [, s]) => acc + s.sum, 0);
   const totalVat = rows.reduce((acc, [, s]) => acc + s.vat, 0);
 
-  const cardsHtml = rows.map(([name, s]) => `
+  const cardsHtml = rows.map(([name, s]) => {
+    const depts = deptsByOrg[name]
+      ? Object.entries(deptsByOrg[name]).sort((a, b) => b[1].count - a[1].count)
+      : [];
+    const deptToggleHtml = depts.length ? `
+      <div class="org-dept-toggle" onclick="toggleOrgDept(this)">
+        <span class="chevron">▸</span> По ДЦ (${depts.length})
+      </div>
+      <div class="org-dept-list">
+        ${depts.map(([dName, d]) => `
+          <div class="org-dept-row">
+            <span class="dept-name" title="${escapeHtml(dName)}">${escapeHtml(dName)}</span>
+            <span class="dept-stats">${d.count} сч · <b>${d.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</b></span>
+          </div>`).join("")}
+      </div>` : "";
+    return `
     <div class="org-card ${s.count === 0 ? "empty" : ""}">
       <div class="org-name">${escapeHtml(name)}</div>
       <div class="org-count">${s.count}</div>
@@ -1539,7 +1525,9 @@ function renderOrgBreakdown(periodInvoiceRows) {
       <div class="org-sum-lbl">сумма всего</div>
       <div class="org-vat">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div>
       <div class="org-sum-lbl">НДС</div>
-    </div>`).join("");
+      ${deptToggleHtml}
+    </div>`;
+  }).join("");
 
   const totalHtml = `
     <div class="org-card org-card-total">
@@ -1552,13 +1540,19 @@ function renderOrgBreakdown(periodInvoiceRows) {
   document.getElementById("orgBreakdownGrid").innerHTML = totalHtml + cardsHtml;
 }
 
+function toggleOrgDept(el) {
+  const list = el.nextElementSibling;
+  const chevron = el.querySelector(".chevron");
+  const isOpen = list.classList.toggle("open");
+  chevron.textContent = isOpen ? "▾" : "▸";
+}
+
 function renderAnalytics() {
   const periodInvoiceRows = filterByPeriod(invoiceRows, "date");
   const periodHistoryRows = filterByPeriod(allHistoryRows, "decidedAt");
 
   renderAnalyticsPeriodNote(periodInvoiceRows);
   renderOrgBreakdown(periodInvoiceRows);
-  renderDepartmentBreakdown(periodInvoiceRows);
 
   // id -> отправлено-в-время (из скрытого столбца _sent_at рабочего листа)
   const sentAtById = {};
