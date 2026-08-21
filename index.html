@@ -1069,7 +1069,10 @@ async function fetchUserInfo() {
    ============================================================ */
 async function sheetsGet(range) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
-  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
+  const res = await fetch(url, {
+    headers: { Authorization: "Bearer " + accessToken, "Cache-Control": "no-cache" },
+    cache: "no-store"
+  });
   if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
   const data = await res.json();
   return data.values || [];
@@ -1987,7 +1990,11 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
       })
     });
     if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
-    await loadAllData(false);
+    // Darhol mahalliy ro'yxatdan olib tashlaymiz (keyingi auto-yangilanish
+    // qolgan qatorlarning rowIndex'ini to'g'irlab qo'yadi - 3 soniyada).
+    allEmployeesRaw = allEmployeesRaw.filter(e => e.rowIndex !== rowIndex);
+    renderEmployeesManage();
+    loadAllData(true).catch(() => {}); // fonda yangilab olamiz, xatoni ko'rsatmaymiz
   } catch (e) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
