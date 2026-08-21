@@ -871,7 +871,17 @@
    ============================================================ */
 const CLIENT_ID = "1082247406994-0v0930ahlra4hkonpv7ksafaa6nsiv6e.apps.googleusercontent.com";
 const SPREADSHEET_ID = "1PqhcM1FLe8dDON2VFVASbFfI2DFb1mWEUejDDPNSdl4";
-const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
+const SCOPES = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
+
+// MUHIM: faqat shu ro'yxatdagi Google email'lar "Сотрудники" va "Заявки"
+// bo'limlarini (admin funksiyalari) ko'ra oladi. Boshqa hamma (masalan
+// oddiy xodimlar) faqat Аналитика/Счета-фактуры/История'ni ko'radi.
+// E'TIBOR: bu faqat interfeysni yashiradi - haqiqiy himoya Google Sheets'ning
+// "Защищённые диапазоны" (Protected ranges) orqali "Xodimlar" va "Заявки"
+// varaqlarini faqat egasiga tahrirlashga ruxsat berish bilan ta'minlanadi.
+const ADMIN_EMAILS = [
+  "norbeksamandarov@gmail.com",
+];
 
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
@@ -1076,8 +1086,26 @@ async function fetchUserInfo() {
     });
     const info = await res.json();
     document.getElementById("userInfo").innerHTML =
-      (info.picture ? `<img src="${info.picture}">` : "") + `<span>${info.name || info.email}</span>`;
-  } catch (e) { /* не критично */ }
+      (info.picture ? `<img src="${info.picture}">` : "") + `<span>${info.name || info.email || "Пользователь"}</span>`;
+    applyRolePermissions(info.email || "");
+  } catch (e) {
+    applyRolePermissions(""); // xato bo'lsa ham - xavfsizlik tomoni uchun standart bo'yicha ADMIN EMAS deb hisoblaymiz
+  }
+}
+
+/* Admin bo'lmagan foydalanuvchidan "Сотрудники" va "Заявки" bo'limlarini
+   yashiradi (ular faqat interfeys darajasida yashiriladi - haqiqiy himoya
+   Google Sheets'ning Protected ranges orqali ta'minlanishi kerak). */
+function applyRolePermissions(email) {
+  const isAdmin = ADMIN_EMAILS.includes((email || "").toLowerCase());
+  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"]')
+    .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
+  if (!isAdmin) {
+    const active = document.querySelector(".nav-item.active");
+    if (active && (active.dataset.section === "employees" || active.dataset.section === "requests")) {
+      showSection("analytics");
+    }
+  }
 }
 
 /* ============================================================
