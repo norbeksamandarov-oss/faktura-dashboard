@@ -160,6 +160,10 @@
     font-weight: 600;
     border-left-color: var(--ice);
   }
+  .nav-badge {
+    background: #E8837E; color: white; font-size: 10.5px; font-weight: 700;
+    border-radius: 10px; padding: 1px 7px; margin-left: auto;
+  }
   .content-area {
     flex: 1;
     min-width: 0;
@@ -279,6 +283,15 @@
     font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   #exportCsvBtn:hover { background: var(--navy-light); }
+
+  .reg-btn {
+    padding: 6px 12px; border-radius: 7px; border: none; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: 'Inter'; margin-right: 6px;
+  }
+  .reg-approve-btn { background: var(--green-fg); color: white; }
+  .reg-approve-btn:hover { background: #175E3B; }
+  .reg-reject-btn { background: var(--red-bg); color: var(--red-fg); }
+  .reg-reject-btn:hover { background: #F5C9C9; }
   #clearAnalyticsPeriodBtn {
     padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
     background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
@@ -508,6 +521,7 @@
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')">📊 Аналитика</button>
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
       <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
+      <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
     </nav>
     <main class="content-area">
 
@@ -763,6 +777,33 @@
     </div>
     </section>
 
+    <section id="section-requests" class="content-section">
+    <div class="panel" style="margin-bottom:20px;">
+      <h2>Заявки на регистрацию <span class="sub" id="pendingRegSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Новые сотрудники, ожидающие вашего решения (пишут боту /start)</p>
+      <div class="table-wrap">
+        <table class="invoices" id="pendingRegTable">
+          <thead>
+            <tr><th>Имя</th><th>Username</th><th>Дата подачи</th><th>Действие</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>История заявок <span class="sub">уже обработанные</span></h2>
+      <div class="table-wrap">
+        <table class="invoices" id="processedRegTable">
+          <thead>
+            <tr><th>Имя</th><th>Username</th><th>Дата подачи</th><th>Статус</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 3 секунды. Изменения здесь применяются мгновенно.</footer>
     </main>
   </div>
@@ -783,6 +824,7 @@ const SCOPES = "https://www.googleapis.com/auth/spreadsheets";
 
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
+const SHEET_REGISTRATIONS = "Заявки";
 const SHEET_EMPLOYEES = "Xodimlar";
 
 const AUTO_REFRESH_MS = 3000; // авто-обновление каждые 3 секунды
@@ -828,6 +870,8 @@ let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
 let allHistoryRows = [];
+let pendingRegistrations = [];
+let processedRegistrations = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
@@ -1030,6 +1074,16 @@ async function loadAllData(silent) {
       sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
     ]);
 
+    // "Заявки" varag'i faqat bot birinchi marta ishga tushgandan keyin
+    // yaratiladi - shuning uchun alohida, xatoga chidamli holda o'qiymiz
+    // (agar hali yaratilmagan bo'lsa, dashboard'ning qolgan qismi baribir ishlaydi).
+    let regRaw = [];
+    try {
+      regRaw = await sheetsGet(`'${SHEET_REGISTRATIONS}'!A2:F500`);
+    } catch (e) {
+      console.warn("Лист 'Заявки' пока недоступен (это нормально, если бот ещё ни разу не запускался с новым кодом):", e.message);
+    }
+
     employees = empRaw
       .filter(r => r[2] && r[2].trim())
       .map(r => ({ chatId: r[0] || "", username: r[1] || "", name: r[2].trim() }));
@@ -1062,6 +1116,20 @@ async function loadAllData(silent) {
       sumRaw: parseFloat(String(r[6] || "0").replace(/\s/g, "").replace(",", ".")) || 0
     })).filter(r => r.no);
     historyRows = allHistoryRows.slice().reverse().slice(0, 20);
+
+    // Заявки: A=Chat ID, B=Username, C=Имя, D=Дата подачи, E=Статус, F=Обработано
+    const regParsed = regRaw.map((r, idx) => ({
+      rowIndex: idx + 2,
+      chatId: r[0] || "",
+      username: r[1] || "",
+      name: r[2] || "",
+      submittedAt: r[3] || "",
+      status: r[4] || "",
+      processed: String(r[5] || "").toUpperCase() === "TRUE"
+    })).filter(r => r.name);
+    pendingRegistrations = regParsed.filter(r => !r.processed && (r.status === "" || r.status === "Ожидает"));
+    processedRegistrations = regParsed.filter(r => r.processed || (r.status && r.status !== "Ожидает"))
+      .slice().reverse();
 
     renderAll();
   } catch (e) {
@@ -1129,6 +1197,7 @@ function renderAll() {
   renderInvoicesTable();
   renderHistoryTable();
   renderAnalytics();
+  renderRegistrations();
 }
 
 function renderEmployeesDatalist() {
@@ -1748,6 +1817,54 @@ function renderResponseDistChart(durationsByEmp) {
       plugins: { legend: { position: "bottom", labels: { font: { family: "Inter", size: 10 }, boxWidth: 10 } } }
     }
   });
+}
+
+/* ============================================================
+   ЗАЯВКИ НА РЕГИСТРАЦИЮ
+   ============================================================ */
+function renderRegistrations() {
+  const badge = document.getElementById("pendingRegBadge");
+  const count = pendingRegistrations.length;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = "inline-block";
+  } else {
+    badge.style.display = "none";
+  }
+  document.getElementById("pendingRegSub").textContent = count ? `ожидает: ${count}` : "";
+
+  document.querySelector("#pendingRegTable tbody").innerHTML = pendingRegistrations.map(r => `
+    <tr>
+      <td><strong>${escapeHtml(r.name)}</strong></td>
+      <td>${escapeHtml(r.username)}</td>
+      <td style="font-size:12px;color:var(--muted)">${formatDateDisplay(r.submittedAt)}</td>
+      <td>
+        <button class="reg-btn reg-approve-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Одобрено', this)">✅ Одобрить</button>
+        <button class="reg-btn reg-reject-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Отклонено', this)">❌ Отклонить</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет новых заявок</td></tr>`;
+
+  document.querySelector("#processedRegTable tbody").innerHTML = processedRegistrations.map(r => `
+    <tr>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.username)}</td>
+      <td style="font-size:12px;color:var(--muted)">${formatDateDisplay(r.submittedAt)}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Пока пусто</td></tr>`;
+}
+
+async function updateRegistrationStatus(rowIndex, status, btnEl) {
+  const range = `'${SHEET_REGISTRATIONS}'!E${rowIndex}`;
+  btnEl.disabled = true;
+  try {
+    await sheetsUpdateCell(range, status);
+    // Локально сразу убираем из списка "ожидающих", чтобы не ждать 3 секунды
+    pendingRegistrations = pendingRegistrations.filter(r => r.rowIndex !== rowIndex);
+    renderRegistrations();
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+    btnEl.disabled = false;
+  }
 }
 
 function renderHistoryTable() {
