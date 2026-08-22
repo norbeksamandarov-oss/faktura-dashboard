@@ -534,7 +534,8 @@
     <div class="mark">FD</div>
     <h1>Faktura Dashboard</h1>
     <p>Войдите через аккаунт Google, у которого есть доступ<br>к таблице счетов-фактур.</p>
-    <div id="googleBtnWrap"></div>
+    <div id="googleBtnWrap" style="display:none;"></div>
+    <div id="sessionCheck" style="color:#B9C4E8;font-size:14px;">Проверка сеанса...</div>
     <div id="loginError"></div>
   </div>
 </div>
@@ -930,6 +931,7 @@ function canonicalBuyer(name) {
 
 let accessToken = null;
 let tokenClient = null;
+let silentRefreshTimer = null;
 let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
@@ -967,8 +969,61 @@ let isEditingRow = false;   // приостанавливаем перерисо
 let isLoading = false;      // защита от наложения параллельных запросов
 
 /* ============================================================
-   АВТОРИЗАЦИЯ
+   АВТОРИЗАЦИЯ (bir marta kiritilgan sessiya keyin JIMGINA yangilanadi -
+   har safar "Войти через Google" bosish shart emas)
    ============================================================ */
+const SESSION_KEY = "faktura_dashboard_session_v1";
+
+function saveSession(token, expiresInSeconds) {
+  const expiresAt = Date.now() + (Number(expiresInSeconds || 3600) * 1000);
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ token, expiresAt }));
+  } catch (e) { /* localStorage o'chirilgan bo'lishi mumkin - muammo emas, shunchaki har safar so'raladi */ }
+}
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+function hideSessionChecking() {
+  const el = document.getElementById("sessionCheck");
+  if (el) el.style.display = "none";
+}
+function showLoginButtonNow() {
+  hideSessionChecking();
+  const wrap = document.getElementById("googleBtnWrap");
+  if (wrap) wrap.style.display = "flex";
+}
+function startSilentRefreshTimer() {
+  if (silentRefreshTimer) clearInterval(silentRefreshTimer);
+  // Google tokeni ~1 soatga beriladi - sessiya hech qachon "eskirmasin" deb
+  // har 50 daqiqada jimgina (foydalanuvchi sezmasdan) yangilaymiz.
+  silentRefreshTimer = setInterval(() => {
+    tokenClient.requestAccessToken({ prompt: "" });
+  }, 50 * 60 * 1000);
+}
+function attemptSessionRestore() {
+  const session = loadSession();
+  const now = Date.now();
+  // 5 daqiqalik zaxira bilan - muddati tugashidan oldinroq yangilaymiz
+  if (session && session.token && session.expiresAt - now > 5 * 60 * 1000) {
+    accessToken = session.token;
+    hideSessionChecking();
+    onLoggedIn();
+    startSilentRefreshTimer();
+    return;
+  }
+  // Token yo'q yoki eskirgan - OYNASIZ (jimgina) qayta olishga harakat qilamiz.
+  // Agar avval ruxsat berilgan bo'lsa - bu sukut ostida muvaffaqiyatli bo'ladi
+  // va foydalanuvchi hech narsa sezmaydi. Faqat chindan ham birinchi marta
+  // yoki ruxsat bekor qilingan bo'lsa - pastda tugma ko'rinadi.
+  tokenClient.requestAccessToken({ prompt: "" });
+}
+
 window.onload = () => {
   google.accounts.id.initialize({ client_id: CLIENT_ID });
 
@@ -977,27 +1032,43 @@ window.onload = () => {
     scope: SCOPES,
     callback: (resp) => {
       if (resp.error) {
-        showLoginError("Ошибка авторизации: " + resp.error);
+        // Sessiyani jimgina tiklab bo'lmadi (ruxsat bekor qilingan yoki
+        // chindan ham birinchi marta) - qaytadan kirishni so'raymiz.
+        clearSession();
+        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+        if (silentRefreshTimer) clearInterval(silentRefreshTimer);
+        document.getElementById("app").style.display = "none";
+        document.getElementById("loginScreen").style.display = "flex";
+        showLoginButtonNow();
         return;
       }
       accessToken = resp.access_token;
+      saveSession(accessToken, resp.expires_in);
+      hideSessionChecking();
       onLoggedIn();
+      startSilentRefreshTimer();
     }
   });
 
   const btn = document.createElement("button");
   btn.textContent = "Войти через Google";
   btn.style.cssText = "background:#fff;color:#1E2761;border:none;padding:12px 26px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;";
-  btn.onclick = () => tokenClient.requestAccessToken();
+  btn.onclick = () => tokenClient.requestAccessToken({ prompt: "select_account" });
   document.getElementById("googleBtnWrap").appendChild(btn);
 
   document.getElementById("logoutBtn").onclick = () => {
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    if (silentRefreshTimer) clearInterval(silentRefreshTimer);
     if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
     accessToken = null;
+    clearSession();
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "flex";
+    showLoginButtonNow();
   };
+
+  attemptSessionRestore();
+
   document.getElementById("refreshBtn").onclick = () => loadAllData(false);
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
@@ -1258,8 +1329,9 @@ async function loadAllData(silent) {
     if (silent) {
       console.error("Автообновление не удалось:", e.message);
       if (String(e.message).includes("401")) {
-        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-        showSessionExpired();
+        // Token eskirgan bo'lishi mumkin - jimgina qayta olishga harakat qilamiz
+        // (muvaffaqiyatli bo'lsa - foydalanuvchi hech narsa sezmaydi).
+        tokenClient.requestAccessToken({ prompt: "" });
       }
     } else {
       alert("Ошибка загрузки данных: " + e.message);
@@ -1271,10 +1343,6 @@ async function loadAllData(silent) {
   }
 }
 
-function showSessionExpired() {
-  const el = document.getElementById("userInfo");
-  if (el) el.innerHTML += ` <span style="color:#FFC9C9;font-size:12px;">· сессия истекла, нажмите "Выйти" и войдите снова</span>`;
-}
 
 /* ============================================================
    РЕНДЕР
