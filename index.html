@@ -6,7 +6,6 @@
 <title>Faktura Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -72,6 +71,32 @@
     margin: 0 0 32px;
   }
   #googleBtnWrap { display: flex; justify-content: center; }
+  .login-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+    color: white;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+  }
+  .login-input::placeholder { color: #8FA3D9; }
+  .login-input:focus { outline: none; border-color: var(--ice); background: rgba(255,255,255,0.1); }
+  .login-submit-btn {
+    width: 100%;
+    background: #fff; color: #1E2761; border: none;
+    padding: 12px 26px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; margin-top: 4px;
+  }
+  .login-submit-btn:hover { background: #EEF3FD; }
+  .login-submit-btn:disabled { opacity: 0.6; cursor: default; }
+  .user-create-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .user-create-form .login-input { margin-bottom: 0; color: var(--text); background: #fff; border: 1px solid var(--border); }
+  .user-create-form .login-input::placeholder { color: var(--muted); }
   #loginError {
     margin-top: 18px;
     color: #FFC9C9;
@@ -533,9 +558,12 @@
   <div class="login-card">
     <div class="mark">FD</div>
     <h1>Faktura Dashboard</h1>
-    <p>Войдите через аккаунт Google, у которого есть доступ<br>к таблице счетов-фактур.</p>
-    <div id="googleBtnWrap" style="display:none;"></div>
-    <div id="sessionCheck" style="color:#B9C4E8;font-size:14px;">Проверка сеанса...</div>
+    <p>Введите логин и пароль, выданные администратором.</p>
+    <form id="loginForm" onsubmit="return false;">
+      <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username" class="login-input">
+      <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password" class="login-input">
+      <button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button>
+    </form>
     <div id="loginError"></div>
   </div>
 </div>
@@ -566,6 +594,7 @@
       <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
+      <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
     </nav>
     <main class="content-area">
 
@@ -858,6 +887,34 @@
     </div>
     </section>
 
+    <section id="section-users" class="content-section">
+    <div class="panel">
+      <h2>Пользователи dashboard <span class="sub">логин/пароль для входа</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Здесь вы создаёте логин и пароль для каждого сотрудника, который должен заходить в этот dashboard. Роль «admin» даёт полный доступ (включая этот раздел), «employee» - обычный доступ.</p>
+
+      <div class="user-create-form">
+        <input type="text" id="newUserUsername" placeholder="Логин (например: shaxrux)" class="login-input" style="max-width:200px;">
+        <input type="text" id="newUserPassword" placeholder="Пароль (мин. 4 символа)" class="login-input" style="max-width:200px;">
+        <input type="text" id="newUserName" placeholder="Имя (для отображения)" class="login-input" style="max-width:220px;">
+        <select id="newUserRole" class="login-input" style="max-width:160px;">
+          <option value="employee">employee (обычный)</option>
+          <option value="admin">admin (полный доступ)</option>
+        </select>
+        <button id="createUserBtn" onclick="handleCreateUser()" class="login-submit-btn" style="width:auto;padding:12px 22px;">+ Создать</button>
+      </div>
+      <div id="createUserError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
+
+      <div class="table-wrap" style="margin-top:20px;">
+        <table class="invoices" id="usersManageTable">
+          <thead>
+            <tr><th>№</th><th>Логин</th><th>Имя</th><th>Роль</th><th>Статус</th><th>Действия</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 8 секунд. Изменения здесь применяются почти мгновенно.</footer>
     </main>
   </div>
@@ -872,19 +929,9 @@
 /* ============================================================
    НАСТРОЙКИ
    ============================================================ */
-const CLIENT_ID = "1082247406994-0v0930ahlra4hkonpv7ksafaa6nsiv6e.apps.googleusercontent.com";
-const SPREADSHEET_ID = "1PqhcM1FLe8dDON2VFVASbFfI2DFb1mWEUejDDPNSdl4";
-const SCOPES = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
-
-// MUHIM: faqat shu ro'yxatdagi Google email'lar "Сотрудники" va "Заявки"
-// bo'limlarini (admin funksiyalari) ko'ra oladi. Boshqa hamma (masalan
-// oddiy xodimlar) faqat Аналитика/Счета-фактуры/История'ni ko'radi.
-// E'TIBOR: bu faqat interfeysni yashiradi - haqiqiy himoya Google Sheets'ning
-// "Защищённые диапазоны" (Protected ranges) orqali "Xodimlar" va "Заявки"
-// varaqlarini faqat egasiga tahrirlashga ruxsat berish bilan ta'minlanadi.
-const ADMIN_EMAILS = [
-  "norbeksamandarov@gmail.com",
-];
+// Apps Script Web App URL - deploy qilingandan keyin shu yerga qo'yiladi
+// (Extensions > Apps Script > Deploy > New deployment > Web app).
+const API_URL = "https://script.google.com/macros/s/AKfycbywEvwnG5iRjCnBbWvIQNlxc3wnZ0XQUoBwx6HZOJK-J_7H_h_F46YvxRT-8QVGdGMY/exec";
 
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
@@ -929,10 +976,10 @@ function canonicalBuyer(name) {
   return n; // notanish nom bo'lsa - o'zgarishsiz qoldiramiz
 }
 
-let accessToken = null;
-let tokenClient = null;
-let silentRefreshTimer = null;
-let sessionRestoreFallbackTimer = null;
+let authToken = null;
+let currentRole = null;
+let currentUserName = null;
+let currentUsername = null;
 let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
@@ -970,16 +1017,15 @@ let isEditingRow = false;   // приостанавливаем перерисо
 let isLoading = false;      // защита от наложения параллельных запросов
 
 /* ============================================================
-   АВТОРИЗАЦИЯ (bir marta kiritilgan sessiya keyin JIMGINA yangilanadi -
-   har safar "Войти через Google" bosish shart emas)
+   АВТОРИЗАЦИЯ (login/parol - Apps Script backend orqali).
+   Google akkaunt endi kerak emas - har bir xodim uchun alohida
+   login/parol admin panel orqali beriladi. Sessiya bir marta
+   kiritilgach brauzerda saqlanadi - F5/qayta ochishda qayta so'ralmaydi.
    ============================================================ */
-const SESSION_KEY = "faktura_dashboard_session_v1";
+const SESSION_KEY = "faktura_dashboard_session_v2";
 
-function saveSession(token, expiresInSeconds) {
-  const expiresAt = Date.now() + (Number(expiresInSeconds || 3600) * 1000);
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ token, expiresAt }));
-  } catch (e) { /* localStorage o'chirilgan bo'lishi mumkin - muammo emas, shunchaki har safar so'raladi */ }
+function saveSession(data) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch (e) {}
 }
 function loadSession() {
   try {
@@ -990,91 +1036,65 @@ function loadSession() {
 function clearSession() {
   try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
 }
-function hideSessionChecking() {
-  const el = document.getElementById("sessionCheck");
-  if (el) el.style.display = "none";
+
+function showLoginScreen() {
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  authToken = null; currentRole = null; currentUserName = null; currentUsername = null;
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("loginSubmitBtn").disabled = false;
+  document.getElementById("loginSubmitBtn").textContent = "Войти";
 }
-function showLoginButtonNow() {
-  hideSessionChecking();
-  const wrap = document.getElementById("googleBtnWrap");
-  if (wrap) wrap.style.display = "flex";
-}
-function startSilentRefreshTimer() {
-  if (silentRefreshTimer) clearInterval(silentRefreshTimer);
-  // Google tokeni ~1 soatga beriladi - sessiya hech qachon "eskirmasin" deb
-  // har 50 daqiqada jimgina (foydalanuvchi sezmasdan) yangilaymiz.
-  silentRefreshTimer = setInterval(() => {
-    tokenClient.requestAccessToken({ prompt: "" });
-  }, 50 * 60 * 1000);
-}
-function attemptSessionRestore() {
-  const session = loadSession();
-  const now = Date.now();
-  // 5 daqiqalik zaxira bilan - muddati tugashidan oldinroq yangilaymiz
-  if (session && session.token && session.expiresAt - now > 5 * 60 * 1000) {
-    accessToken = session.token;
-    hideSessionChecking();
-    onLoggedIn();
-    startSilentRefreshTimer();
+
+async function handleLoginSubmit() {
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+  errEl.textContent = "";
+  if (!username || !password) {
+    errEl.textContent = "Введите логин и пароль";
     return;
   }
-  // Token yo'q yoki eskirgan - OYNASIZ (jimgina) qayta olishga harakat qilamiz.
-  // Agar avval ruxsat berilgan bo'lsa - bu sukut ostida muvaffaqiyatli bo'ladi
-  // va foydalanuvchi hech narsa sezmaydi. Faqat chindan ham birinchi marta
-  // yoki ruxsat bekor qilingan bo'lsa - pastda tugma ko'rinadi.
-  //
-  // XAVFSIZLIK CHEGARASI: ba'zi brauzerlarda (uchinchi tomon cookie'lar
-  // bloklangan bo'lsa) "jimgina" urinish umuman javob qaytarmasligi mumkin -
-  // ekran "qotib qolgandek" ko'rinadi. Shuning uchun 4 soniyadan keyin
-  // baribir tugmani ko'rsatamiz.
-  sessionRestoreFallbackTimer = setTimeout(() => {
-    showLoginButtonNow();
-  }, 4000);
-  tokenClient.requestAccessToken({ prompt: "" });
+  const btn = document.getElementById("loginSubmitBtn");
+  btn.disabled = true;
+  btn.textContent = "Вход...";
+  try {
+    const data = await apiCall("login", { username, password }, /*skipToken=*/true);
+    authToken = data.token;
+    currentRole = data.role;
+    currentUserName = data.name;
+    currentUsername = username;
+    saveSession({ token: authToken, role: currentRole, name: currentUserName, username: currentUsername });
+    document.getElementById("loginPassword").value = "";
+    onLoggedIn();
+  } catch (e) {
+    errEl.textContent = e.message || "Ошибка входа";
+    btn.disabled = false;
+    btn.textContent = "Войти";
+  }
+}
+
+function attemptSessionRestore() {
+  const session = loadSession();
+  if (session && session.token) {
+    authToken = session.token;
+    currentRole = session.role;
+    currentUserName = session.name;
+    currentUsername = session.username;
+    onLoggedIn();
+  } else {
+    showLoginScreen();
+  }
 }
 
 window.onload = () => {
-  google.accounts.id.initialize({ client_id: CLIENT_ID });
-
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (resp) => {
-      if (sessionRestoreFallbackTimer) { clearTimeout(sessionRestoreFallbackTimer); sessionRestoreFallbackTimer = null; }
-      if (resp.error) {
-        // Sessiyani jimgina tiklab bo'lmadi (ruxsat bekor qilingan yoki
-        // chindan ham birinchi marta) - qaytadan kirishni so'raymiz.
-        clearSession();
-        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-        if (silentRefreshTimer) clearInterval(silentRefreshTimer);
-        document.getElementById("app").style.display = "none";
-        document.getElementById("loginScreen").style.display = "flex";
-        showLoginButtonNow();
-        return;
-      }
-      accessToken = resp.access_token;
-      saveSession(accessToken, resp.expires_in);
-      hideSessionChecking();
-      onLoggedIn();
-      startSilentRefreshTimer();
-    }
-  });
-
-  const btn = document.createElement("button");
-  btn.textContent = "Войти через Google";
-  btn.style.cssText = "background:#fff;color:#1E2761;border:none;padding:12px 26px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;";
-  btn.onclick = () => tokenClient.requestAccessToken({ prompt: "select_account" });
-  document.getElementById("googleBtnWrap").appendChild(btn);
+  document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
+  document.getElementById("loginSubmitBtn").addEventListener("click", handleLoginSubmit);
 
   document.getElementById("logoutBtn").onclick = () => {
-    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-    if (silentRefreshTimer) clearInterval(silentRefreshTimer);
-    if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
-    accessToken = null;
+    apiCall("logout", {}).catch(() => {}); // fonda, natijasini kutmasdan
     clearSession();
-    document.getElementById("app").style.display = "none";
-    document.getElementById("loginScreen").style.display = "flex";
-    showLoginButtonNow();
+    showLoginScreen();
   };
 
   attemptSessionRestore();
@@ -1144,6 +1164,9 @@ function showSection(name) {
   document.querySelectorAll(".nav-item").forEach(el => {
     el.classList.toggle("active", el.dataset.section === name);
   });
+  if (name === "users" && currentRole === "admin") {
+    renderUsersManage();
+  }
 }
 
 function showLoginError(msg) {
@@ -1155,7 +1178,8 @@ function showLoginError(msg) {
 async function onLoggedIn() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("app").style.display = "block";
-  await fetchUserInfo();
+  document.getElementById("userInfo").innerHTML = `<span>${escapeHtml(currentUserName || currentUsername || "Пользователь")}</span>`;
+  applyRolePermissions(currentRole);
   await loadAllData(false);
 
   // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
@@ -1163,32 +1187,19 @@ async function onLoggedIn() {
   autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
 }
 
-async function fetchUserInfo() {
-  try {
-    const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: { Authorization: "Bearer " + accessToken }
-    });
-    const info = await res.json();
-    document.getElementById("userInfo").innerHTML =
-      (info.picture ? `<img src="${info.picture}">` : "") + `<span>${info.name || info.email || "Пользователь"}</span>`;
-    applyRolePermissions(info.email || "");
-  } catch (e) {
-    applyRolePermissions(""); // xato bo'lsa ham - xavfsizlik tomoni uchun standart bo'yicha ADMIN EMAS deb hisoblaymiz
-  }
-}
-
-/* Admin bo'lmagan foydalanuvchidan "Сотрудники" va "Заявки" bo'limlarini
-   yashiradi (ular faqat interfeys darajasida yashiriladi - haqiqiy himoya
-   Google Sheets'ning Protected ranges orqali ta'minlanishi kerak). */
-function applyRolePermissions(email) {
-  const isAdmin = ADMIN_EMAILS.includes((email || "").toLowerCase());
-  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"]')
+/* Admin bo'lmagan foydalanuvchidan "Сотрудники", "Заявки" va
+   "Пользователи" bo'limlarini yashiradi. Bu endi shunchaki interfeys emas -
+   Apps Script backend'ning o'zi ham har bir admin-only amalni serverda
+   qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
+function applyRolePermissions(role) {
+  const isAdmin = role === "admin";
+  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && (active.dataset.section === "employees" || active.dataset.section === "requests")) {
+    if (active && ["employees", "requests", "users"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -1217,28 +1228,44 @@ async function triggerStartupNotify() {
 }
 
 /* ============================================================
-   ЗАГРУЗКА ДАННЫХ ИЗ GOOGLE SHEETS
+   APPS SCRIPT BACKEND BILAN ALOQA (login/parol autentifikatsiyasi,
+   audit-log bilan) - Google Sheets API'ga endi TO'G'RIDAN-TO'G'RI
+   murojaat qilinmaydi, faqat shu backend orqali.
    ============================================================ */
-async function sheetsGet(range) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}`;
-  const res = await fetch(url, {
-    headers: { Authorization: "Bearer " + accessToken, "Cache-Control": "no-cache" },
-    cache: "no-store"
+async function apiCall(action, params, skipToken) {
+  const body = Object.assign({ action }, params || {});
+  if (!skipToken) body.token = authToken;
+  const res = await fetch(API_URL, {
+    method: "POST",
+    // MUHIM: text/plain - brauzer CORS "preflight" so'rovini yubormasligi
+    // uchun (Apps Script buni JSON sifatida to'g'ri o'qiydi).
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
+  if (!res.ok) throw new Error("Сервер недоступен: " + res.status);
   const data = await res.json();
+  if (data && data.error) {
+    if (data.error === "AUTH_REQUIRED") {
+      clearSession();
+      showLoginScreen();
+    }
+    throw new Error(data.error);
+  }
+  return data;
+}
+
+async function sheetsGet(range) {
+  const data = await apiCall("getValues", { range });
   return data.values || [];
 }
 
+async function sheetsGetBatch(ranges) {
+  const data = await apiCall("getBatch", { ranges });
+  return data.results || ranges.map(() => []);
+}
+
 async function sheetsUpdateCell(range, value) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
-    body: JSON.stringify({ values: [[value]] })
-  });
-  if (!res.ok) throw new Error("Sheets API update: " + res.status + " " + (await res.text()));
-  return res.json();
+  return apiCall("updateCell", { range, value });
 }
 
 function colLetter(i) {
@@ -1259,21 +1286,16 @@ async function loadAllData(silent) {
   if (!silent) document.getElementById("loadingOverlay").style.display = "flex";
 
   try {
-    const [empRaw, invRaw, histRaw] = await Promise.all([
-      sheetsGet(`'${SHEET_EMPLOYEES}'!A2:E500`),
-      sheetsGet(`'${SHEET_INVOICES}'!A2:T500`),
-      sheetsGet(`'${SHEET_HISTORY}'!A2:L500`)
+    // Bitta so'rov bilan barcha varaqlarni olamiz (tezlik uchun - Apps
+    // Script'ga har bir yangilanishda faqat 1 marta murojaat qilinadi).
+    // "Заявки" hali yaratilmagan bo'lsa ham (bot birinchi marta ishga
+    // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
+    const [empRaw, invRaw, histRaw, regRaw] = await sheetsGetBatch([
+      `'${SHEET_EMPLOYEES}'!A2:E500`,
+      `'${SHEET_INVOICES}'!A2:T500`,
+      `'${SHEET_HISTORY}'!A2:L500`,
+      `'${SHEET_REGISTRATIONS}'!A2:F500`,
     ]);
-
-    // "Заявки" varag'i faqat bot birinchi marta ishga tushgandan keyin
-    // yaratiladi - shuning uchun alohida, xatoga chidamli holda o'qiymiz
-    // (agar hali yaratilmagan bo'lsa, dashboard'ning qolgan qismi baribir ishlaydi).
-    let regRaw = [];
-    try {
-      regRaw = await sheetsGet(`'${SHEET_REGISTRATIONS}'!A2:F500`);
-    } catch (e) {
-      console.warn("Лист 'Заявки' пока недоступен (это нормально, если бот ещё ни разу не запускался с новым кодом):", e.message);
-    }
 
     allEmployeesRaw = empRaw
       .filter(r => r[2] && r[2].trim())
@@ -1334,16 +1356,11 @@ async function loadAllData(silent) {
 
     renderAll();
   } catch (e) {
-    // Во время тихого авто-обновления не показываем alert (например, если токен истёк) -
-    // просто останавливаем таймер и просим войти заново один раз.
+    // Во время тихого авто-обновления не показываем alert (например, если сессия
+    // истекла - apiCall() уже сам обработал это и показал экран входа заново).
     if (silent) {
       console.error("Автообновление не удалось:", e.message);
-      if (String(e.message).includes("401")) {
-        // Token eskirgan bo'lishi mumkin - jimgina qayta olishga harakat qilamiz
-        // (muvaffaqiyatli bo'lsa - foydalanuvchi hech narsa sezmaydi).
-        tokenClient.requestAccessToken({ prompt: "" });
-      }
-    } else {
+    } else if (e.message !== "AUTH_REQUIRED") {
       alert("Ошибка загрузки данных: " + e.message);
       console.error(e);
     }
@@ -2049,19 +2066,6 @@ async function updateRegistrationStatus(rowIndex, status, btnEl) {
 /* ============================================================
    СОТРУДНИКИ (boshqaruv paneli)
    ============================================================ */
-let _sheetIdCache = null;
-
-async function getSheetIdByName(sheetName) {
-  if (_sheetIdCache) return _sheetIdCache[sheetName];
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?fields=sheets.properties`;
-  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
-  if (!res.ok) throw new Error("Не удалось получить структуру таблицы: " + res.status);
-  const data = await res.json();
-  _sheetIdCache = {};
-  (data.sheets || []).forEach(s => { _sheetIdCache[s.properties.title] = s.properties.sheetId; });
-  return _sheetIdCache[sheetName];
-}
-
 function renderEmployeesManage() {
   document.getElementById("employeesCountSub").textContent =
     `всего ${allEmployeesRaw.length} · активных ${allEmployeesRaw.filter(e => e.active).length}`;
@@ -2106,20 +2110,7 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
   btnEl.disabled = true;
   btnEl.textContent = "...";
   try {
-    const sheetId = await getSheetIdByName(SHEET_EMPLOYEES);
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}:batchUpdate`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { Authorization: "Bearer " + accessToken, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        requests: [{
-          deleteDimension: {
-            range: { sheetId, dimension: "ROWS", startIndex: rowIndex - 1, endIndex: rowIndex }
-          }
-        }]
-      })
-    });
-    if (!res.ok) throw new Error("Sheets API: " + res.status + " " + (await res.text()));
+    await apiCall("deleteRow", { sheetName: SHEET_EMPLOYEES, rowIndex });
     // Darhol mahalliy ro'yxatdan olib tashlaymiz (keyingi auto-yangilanish
     // qolgan qatorlarning rowIndex'ini to'g'irlab qo'yadi - 3 soniyada).
     allEmployeesRaw = allEmployeesRaw.filter(e => e.rowIndex !== rowIndex);
@@ -2129,6 +2120,110 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
     btnEl.textContent = "🗑 Удалить";
+  }
+}
+
+/* ============================================================
+   ПОЛЬЗОВАТЕЛИ DASHBOARD (login/parol - faqat admin ko'radi)
+   ============================================================ */
+let usersListCache = [];
+
+async function renderUsersManage() {
+  const tbody = document.querySelector("#usersManageTable tbody");
+  tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Загрузка...</td></tr>`;
+  try {
+    const data = await apiCall("adminListUsers", {});
+    usersListCache = data.users || [];
+    renderUsersTable();
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+function renderUsersTable() {
+  document.querySelector("#usersManageTable tbody").innerHTML = usersListCache.map((u, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td><strong>${escapeHtml(u.username)}</strong></td>
+      <td>${escapeHtml(u.name)}</td>
+      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : "employee"}</td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${u.active ? "checked" : ""} onchange="handleSetUserActive(${u.rowIndex}, this.checked, this)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${u.active ? "Активен" : "Деактивирован"}</span>
+      </td>
+      <td>
+        <button class="emp-delete-btn" style="background:var(--ice-soft);color:var(--navy);border-color:var(--border);" onclick="handleResetPassword(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}')">🔑 Новый пароль</button>
+        <button class="emp-delete-btn" onclick="handleDeleteUser(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}', this)">🗑 Удалить</button>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Пока нет пользователей</td></tr>`;
+}
+
+async function handleCreateUser() {
+  const username = document.getElementById("newUserUsername").value.trim();
+  const password = document.getElementById("newUserPassword").value;
+  const name = document.getElementById("newUserName").value.trim();
+  const role = document.getElementById("newUserRole").value;
+  const errEl = document.getElementById("createUserError");
+  errEl.textContent = "";
+
+  if (!username || !password) {
+    errEl.textContent = "Введите логин и пароль";
+    return;
+  }
+  const btn = document.getElementById("createUserBtn");
+  btn.disabled = true;
+  try {
+    await apiCall("adminCreateUser", { username, password, name, role });
+    document.getElementById("newUserUsername").value = "";
+    document.getElementById("newUserPassword").value = "";
+    document.getElementById("newUserName").value = "";
+    await renderUsersManage();
+  } catch (e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function handleSetUserActive(rowIndex, checked, checkboxEl) {
+  checkboxEl.disabled = true;
+  try {
+    await apiCall("adminSetUserActive", { rowIndex, active: checked });
+    const u = usersListCache.find(x => x.rowIndex === rowIndex);
+    if (u) u.active = checked;
+    renderUsersTable();
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+    checkboxEl.checked = !checked;
+  } finally {
+    checkboxEl.disabled = false;
+  }
+}
+
+async function handleResetPassword(rowIndex, username) {
+  const newPassword = prompt(`Новый пароль для «${username}» (минимум 4 символа):`);
+  if (!newPassword) return;
+  try {
+    await apiCall("adminSetPassword", { rowIndex, newPassword });
+    alert("Пароль обновлён. Сообщите новый пароль сотруднику лично (не через общий чат).");
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+  }
+}
+
+async function handleDeleteUser(rowIndex, username, btnEl) {
+  if (!confirm(`Удалить пользователя «${username}»? Он больше не сможет войти в dashboard.`)) return;
+  btnEl.disabled = true;
+  try {
+    await apiCall("adminDeleteUser", { rowIndex });
+    usersListCache = usersListCache.filter(u => u.rowIndex !== rowIndex);
+    renderUsersTable();
+  } catch (e) {
+    alert("Не удалось удалить: " + e.message);
+    btnEl.disabled = false;
   }
 }
 
