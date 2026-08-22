@@ -640,6 +640,13 @@
           <tbody></tbody>
         </table>
       </div>
+      <div class="panel" id="loginStatsPanel" style="display:none;">
+        <h2>По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
+        <table class="emp-table" id="loginStatsTable">
+          <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="panel" style="margin-bottom:24px;">
@@ -1125,15 +1132,15 @@ window.onload = () => {
   });
 
   document.getElementById("analyticsPeriodFrom").addEventListener("change", () => {
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("analyticsPeriodTo").addEventListener("change", () => {
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("clearAnalyticsPeriodBtn").addEventListener("click", () => {
     document.getElementById("analyticsPeriodFrom").value = "";
     document.getElementById("analyticsPeriodTo").value = "";
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics();
+    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
   });
 
   document.getElementById("exportCsvBtn").addEventListener("click", exportInvoicesCsv);
@@ -1199,6 +1206,8 @@ function applyRolePermissions(role) {
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
+  const loginStatsPanel = document.getElementById("loginStatsPanel");
+  if (loginStatsPanel) loginStatsPanel.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
     if (active && ["employees", "requests", "users"].includes(active.dataset.section)) {
@@ -1357,6 +1366,17 @@ async function loadAllData(silent) {
       .slice().reverse();
 
     renderAll();
+
+    // "По логинам dashboard" paneli - alohida so'rov (АудитЛог'ni davr
+    // bo'yicha filtrlash kerak), shuning uchun har bir 3-soniyalik
+    // yangilanishda emas, faqat birinchi yuklashda va har 4-chi "jim"
+    // yangilanishda so'raymiz (Apps Script'ga ortiqcha yuklama tushmasin).
+    if (currentRole === "admin") {
+      loginStatsTickCounter = (loginStatsTickCounter + 1) % 4;
+      if (!silent || loginStatsTickCounter === 0) {
+        renderLoginStatsPanel();
+      }
+    }
   } catch (e) {
     // Во время тихого авто-обновления не показываем alert (например, если сессия
     // истекла - apiCall() уже сам обработал это и показал экран входа заново).
@@ -1515,6 +1535,36 @@ function renderEmployeeTable() {
       <td>${s.pending}</td>
       <td>${s.overdue > 0 ? `<span class="pill overdue">${s.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
+/* "По логинам dashboard" paneli (faqat admin) - Аналитика davr filtriga
+   bo'ysunadi. "🔐 Пользователи" bo'limidagi jadvaldan farqli o'laroq (u
+   doim BARCHA vaqt bo'yicha ko'rsatadi), bu yerda faqat tanlangan davr
+   ichidagi amallar hisoblanadi. Server'ga alohida so'rov yuboradi
+   (АудитЛог'ni davr bo'yicha filtrlash uchun). */
+let loginStatsFetchToken = 0;
+let loginStatsTickCounter = 0;
+async function renderLoginStatsPanel() {
+  if (currentRole !== "admin") return;
+  const panel = document.getElementById("loginStatsPanel");
+  if (!panel || panel.style.display === "none") return;
+
+  const { from, to } = getAnalyticsPeriod();
+  const myToken = ++loginStatsFetchToken; // eski (kechikkan) javob yangisini bosib qo'ymasin
+  try {
+    const data = await apiCall("adminListUsers", { from, to });
+    if (myToken !== loginStatsFetchToken) return; // bu javob eskirgan, e'tiborsiz qoldiramiz
+    const rows = (data.users || []).slice().sort((a, b) => b.invoiceCount - a.invoiceCount);
+    document.querySelector("#loginStatsTable tbody").innerHTML = rows.map(u => `
+      <tr>
+        <td><strong>${escapeHtml(u.username)}</strong></td>
+        <td>${escapeHtml(u.name)}</td>
+        <td>${u.invoiceCount || 0}</td>
+        <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
+      </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+  } catch (e) {
+    console.warn("Не удалось загрузить статистику по логинам:", e.message);
+  }
 }
 
 function renderInvoicesTable() {
