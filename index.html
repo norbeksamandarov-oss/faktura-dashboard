@@ -126,7 +126,7 @@
   .topbar-right { display: flex; align-items: center; gap: 16px; }
   #userInfo { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ice); }
   #userInfo img { width: 28px; height: 28px; border-radius: 50%; }
-  #refreshBtn, #logoutBtn, #notifyBtn {
+  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     color: white;
@@ -136,7 +136,7 @@
     cursor: pointer;
     font-family: 'Inter', sans-serif;
   }
-  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover { background: rgba(255,255,255,0.16); }
+  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover { background: rgba(255,255,255,0.16); }
   #notifyBtn:disabled { opacity: 0.6; cursor: default; }
 
   .live-dot {
@@ -582,6 +582,7 @@
       <div id="userInfo"></div>
       <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
       <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает">🔔 Уведомить сотрудников</button>
+      <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль">🔑 Пароль</button>
       <button id="refreshBtn">↻ Обновить</button>
       <button id="logoutBtn">Выйти</button>
     </div>
@@ -931,7 +932,7 @@
    ============================================================ */
 // Apps Script Web App URL - deploy qilingandan keyin shu yerga qo'yiladi
 // (Extensions > Apps Script > Deploy > New deployment > Web app).
-const API_URL = "https://script.google.com/macros/s/AKfycbywEvwnG5iRjCnBbWvIQNlxc3wnZ0XQUoBwx6HZOJK-J_7H_h_F46YvxRT-8QVGdGMY/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzi9RqBAUtexFo4SW0ZVvCq6kjkmLKMCX8_1L6pS5eBYbqDrffaak2yqTveuMPqxadl/exec";
 
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
@@ -2211,6 +2212,32 @@ async function handleResetPassword(rowIndex, username) {
     alert("Пароль обновлён. Сообщите новый пароль сотруднику лично (не через общий чат).");
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
+  }
+}
+
+/* Har qanday kirgan foydalanuvchi (admin ham, oddiy xodim ham) o'z parolini
+   o'zi almashtira oladi - admin yordamisiz. Joriy parolni bilishi shart -
+   shuning uchun boshqa birov (kompyuterga vaqtincha kirgan odam) parolni
+   o'zgartirib qo'ya olmaydi. */
+async function handleChangeOwnPassword() {
+  const oldPassword = prompt("Введите ТЕКУЩИЙ пароль:");
+  if (!oldPassword) return;
+  const newPassword = prompt("Введите НОВЫЙ пароль (минимум 4 символа):");
+  if (!newPassword) return;
+  if (newPassword.length < 4) {
+    alert("Пароль слишком короткий (минимум 4 символа).");
+    return;
+  }
+  const confirmPassword = prompt("Повторите новый пароль ещё раз:");
+  if (newPassword !== confirmPassword) {
+    alert("Пароли не совпадают. Попробуйте снова.");
+    return;
+  }
+  try {
+    await apiCall("changeOwnPassword", { oldPassword, newPassword });
+    alert("✅ Пароль успешно изменён. Используйте его при следующем входе.");
+  } catch (e) {
+    alert("Не удалось изменить пароль: " + e.message);
   }
 }
 
