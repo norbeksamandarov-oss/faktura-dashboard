@@ -932,6 +932,7 @@ function canonicalBuyer(name) {
 let accessToken = null;
 let tokenClient = null;
 let silentRefreshTimer = null;
+let sessionRestoreFallbackTimer = null;
 let employees = [];
 let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
@@ -1021,6 +1022,14 @@ function attemptSessionRestore() {
   // Agar avval ruxsat berilgan bo'lsa - bu sukut ostida muvaffaqiyatli bo'ladi
   // va foydalanuvchi hech narsa sezmaydi. Faqat chindan ham birinchi marta
   // yoki ruxsat bekor qilingan bo'lsa - pastda tugma ko'rinadi.
+  //
+  // XAVFSIZLIK CHEGARASI: ba'zi brauzerlarda (uchinchi tomon cookie'lar
+  // bloklangan bo'lsa) "jimgina" urinish umuman javob qaytarmasligi mumkin -
+  // ekran "qotib qolgandek" ko'rinadi. Shuning uchun 4 soniyadan keyin
+  // baribir tugmani ko'rsatamiz.
+  sessionRestoreFallbackTimer = setTimeout(() => {
+    showLoginButtonNow();
+  }, 4000);
   tokenClient.requestAccessToken({ prompt: "" });
 }
 
@@ -1031,6 +1040,7 @@ window.onload = () => {
     client_id: CLIENT_ID,
     scope: SCOPES,
     callback: (resp) => {
+      if (sessionRestoreFallbackTimer) { clearTimeout(sessionRestoreFallbackTimer); sessionRestoreFallbackTimer = null; }
       if (resp.error) {
         // Sessiyani jimgina tiklab bo'lmadi (ruxsat bekor qilingan yoki
         // chindan ham birinchi marta) - qaytadan kirishni so'raymiz.
