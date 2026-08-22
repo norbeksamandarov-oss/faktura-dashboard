@@ -126,7 +126,7 @@
   .topbar-right { display: flex; align-items: center; gap: 16px; }
   #userInfo { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ice); }
   #userInfo img { width: 28px; height: 28px; border-radius: 50%; }
-  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn {
+  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn, #announcementBtn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     color: white;
@@ -136,7 +136,28 @@
     cursor: pointer;
     font-family: 'Inter', sans-serif;
   }
-  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover { background: rgba(255,255,255,0.16); }
+  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover, #announcementBtn:hover { background: rgba(255,255,255,0.16); }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(20,24,45,0.6);
+    display: none; align-items: center; justify-content: center; z-index: 500;
+  }
+  .modal-card {
+    background: #fff; border-radius: 16px; padding: 28px;
+    width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-card h3 { margin: 0 0 14px; color: var(--navy); font-family: 'Fraunces', serif; }
+  .modal-card textarea {
+    width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px;
+    border: 1px solid var(--border); font-family: 'Inter', sans-serif; font-size: 14px;
+    resize: vertical; min-height: 110px;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+  .modal-actions button {
+    padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer;
+    font-family: 'Inter', sans-serif; border: 1px solid var(--border); background: #fff; color: var(--text);
+  }
+  .modal-actions .btn-primary { background: var(--navy); color: #fff; border: none; }
+  .modal-actions .btn-primary:hover { background: var(--navy-light); }
   #notifyBtn:disabled { opacity: 0.6; cursor: default; }
 
   .live-dot {
@@ -582,6 +603,7 @@
       <div id="userInfo"></div>
       <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
       <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает">🔔 Уведомить сотрудников</button>
+      <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам">📢 Объявление</button>
       <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль">🔑 Пароль</button>
       <button id="refreshBtn">↻ Обновить</button>
       <button id="logoutBtn">Выйти</button>
@@ -930,6 +952,18 @@
 </div>
 
 
+<div id="announcementModal" class="modal-overlay">
+  <div class="modal-card">
+    <h3>📢 Объявление всем сотрудникам</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 10px;">Сообщение придёт в Telegram каждому активному сотруднику (не только тем, у кого есть доступ к dashboard).</p>
+    <textarea id="announcementText" placeholder="Например: С понедельника меняется срок рассмотрения счетов..."></textarea>
+    <div class="modal-actions">
+      <button onclick="closeAnnouncementModal()">Отмена</button>
+      <button class="btn-primary" onclick="sendAnnouncement()">Отправить всем</button>
+    </div>
+  </div>
+</div>
+
 <div id="loadingOverlay" style="display:none;">
   <div class="spinner"></div> Загрузка данных...
 </div>
@@ -1206,6 +1240,8 @@ function applyRolePermissions(role) {
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
+  const announcementBtn = document.getElementById("announcementBtn");
+  if (announcementBtn) announcementBtn.style.display = isAdmin ? "" : "none";
   const loginStatsPanel = document.getElementById("loginStatsPanel");
   if (loginStatsPanel) loginStatsPanel.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
@@ -1235,6 +1271,37 @@ async function triggerStartupNotify() {
     alert("Не удалось отправить уведомление: " + e.message + "\n\nВозможно, лист «Управление» ещё не создан - убедитесь, что бот запущен хотя бы раз после обновления.");
     btn.textContent = original;
     btn.disabled = false;
+  }
+}
+
+/* "📢 Объявление" - admin istalgan vaqt, istalgan matnli xabarni BARCHA
+   faol xodimlarga (Xodimlar varag'idagi, dashboard huquqi bor-yo'qligidan
+   qat'iy nazar) yuborishi mumkin - masalan tizim o'zgarishlari, e'lonlar
+   va h.k. haqida. Bot tokeniga bu yerda ham ehtiyoj yo'q - faqat Sheets'ga
+   yozamiz, bot buni kuzatib o'zi yuboradi. */
+function openAnnouncementModal() {
+  document.getElementById("announcementText").value = "";
+  document.getElementById("announcementModal").style.display = "flex";
+}
+function closeAnnouncementModal() {
+  document.getElementById("announcementModal").style.display = "none";
+}
+async function sendAnnouncement() {
+  const text = document.getElementById("announcementText").value.trim();
+  if (!text) {
+    alert("Введите текст объявления.");
+    return;
+  }
+  if (!confirm("Отправить это сообщение ВСЕМ активным сотрудникам в Telegram?\n\nЭто действие нельзя отменить.")) {
+    return;
+  }
+  try {
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B5`, text);
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B4`, new Date().toISOString());
+    closeAnnouncementModal();
+    alert("✅ Объявление поставлено в очередь. Бот отправит его всем активным сотрудникам в течение ~8 секунд.");
+  } catch (e) {
+    alert("Не удалось отправить объявление: " + e.message);
   }
 }
 
