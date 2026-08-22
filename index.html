@@ -2418,9 +2418,17 @@ async function updateResp(rowIndex, value, selectEl) {
   const decidedCls = r ? classifyStatus(r.status) : null;
   if (decidedCls === "accepted" || decidedCls === "rejected") {
     alert("Решение по этому счёту уже принято - ответственного изменить нельзя.");
+    isEditingRow = false;
     renderInvoicesTable();
     return;
   }
+  // MUHIM: onblur (fokusdan chiqish) saqlash tugashidan OLDINROQ sodir
+  // bo'lishi mumkin (masalan ro'yxatdan tanlaganda) - shuning uchun
+  // isEditingRow'ni shu yerda ham TRUE qilib qo'yamiz, saqlash butunlay
+  // tugaguncha (finally'da) o'chirmaymiz. Aks holda auto-yangilanish
+  // saqlash davom etayotganida jadvalni eski holatga qaytarib qo'yishi
+  // mumkin edi (tanlagan qiymat "yo'qolgandek" ko'rinardi).
+  isEditingRow = true;
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.RESP)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, value);
@@ -2434,6 +2442,9 @@ async function updateResp(rowIndex, value, selectEl) {
 }
 
 async function updateSend(rowIndex, checked, checkboxEl) {
+  // Xuddi shu sabab bilan (yuqoridagi izohga qarang) - checkbox uchun ham
+  // saqlash tugaguncha jadval qayta chizilmasin.
+  isEditingRow = true;
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.SEND)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, checked);
@@ -2443,6 +2454,8 @@ async function updateSend(rowIndex, checked, checkboxEl) {
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
     checkboxEl.checked = !checked;
+  } finally {
+    isEditingRow = false;
   }
 }
 
