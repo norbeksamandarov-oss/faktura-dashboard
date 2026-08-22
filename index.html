@@ -636,7 +636,7 @@
       <div class="panel">
         <h2>По сотрудникам</h2>
         <table class="emp-table" id="empTable">
-          <thead><tr><th>Сотрудник</th><th>Всего</th><th>Ждёт</th><th>Просрочено</th></tr></thead>
+          <thead><tr><th>Сотрудник</th><th>Всего</th><th>Сумма</th><th>Ждёт</th><th>Просрочено</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -896,19 +896,20 @@
       <div class="user-create-form">
         <input type="text" id="newUserUsername" placeholder="Логин (например: shaxrux)" class="login-input" style="max-width:200px;">
         <input type="text" id="newUserPassword" placeholder="Пароль (мин. 4 символа)" class="login-input" style="max-width:200px;">
-        <input type="text" id="newUserName" placeholder="Имя (для отображения)" class="login-input" style="max-width:220px;">
+        <input type="text" id="newUserName" placeholder="Имя (как в Ответственный)" class="login-input" style="max-width:220px;">
         <select id="newUserRole" class="login-input" style="max-width:160px;">
           <option value="employee">employee (обычный)</option>
           <option value="admin">admin (полный доступ)</option>
         </select>
         <button id="createUserBtn" onclick="handleCreateUser()" class="login-submit-btn" style="width:auto;padding:12px 22px;">+ Создать</button>
       </div>
+      <p class="analytics-note" style="margin:8px 0 0;">Колонки «Счетов» и «Сумма» показывают, сколько счетов этот логин лично изменил через dashboard (checkbox, ответственный и т.д.) - на основе журнала «АудитЛог».</p>
       <div id="createUserError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
 
       <div class="table-wrap" style="margin-top:20px;">
         <table class="invoices" id="usersManageTable">
           <thead>
-            <tr><th>№</th><th>Логин</th><th>Имя</th><th>Роль</th><th>Статус</th><th>Действия</th></tr>
+            <tr><th>№</th><th>Логин</th><th>Имя</th><th>Роль</th><th>Счетов</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -1497,8 +1498,9 @@ function renderEmployeeTable() {
   const byName = {};
   filterByPeriod(invoiceRows, "date").forEach(r => {
     if (!r.resp) return;
-    if (!byName[r.resp]) byName[r.resp] = { total: 0, pending: 0, overdue: 0 };
+    if (!byName[r.resp]) byName[r.resp] = { total: 0, sum: 0, pending: 0, overdue: 0 };
     byName[r.resp].total++;
+    byName[r.resp].sum += r.sumRaw || 0;
     if (classifyStatus(r.status) === "sent") {
       byName[r.resp].pending++;
       if (parseInt(r.days, 10) >= 8) byName[r.resp].overdue++;
@@ -1509,9 +1511,10 @@ function renderEmployeeTable() {
     <tr>
       <td>${name}</td>
       <td>${s.total}</td>
+      <td>${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
       <td>${s.pending}</td>
       <td>${s.overdue > 0 ? `<span class="pill overdue">${s.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
-    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет данных</td></tr>`;
 }
 
 function renderInvoicesTable() {
@@ -2142,12 +2145,15 @@ async function renderUsersManage() {
 }
 
 function renderUsersTable() {
-  document.querySelector("#usersManageTable tbody").innerHTML = usersListCache.map((u, i) => `
+  document.querySelector("#usersManageTable tbody").innerHTML = usersListCache.map((u, i) => {
+    return `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
       <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : "employee"}</td>
+      <td>${u.invoiceCount || 0}</td>
+      <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
       <td>
         <label class="toggle-switch">
           <input type="checkbox" ${u.active ? "checked" : ""} onchange="handleSetUserActive(${u.rowIndex}, this.checked, this)">
@@ -2159,7 +2165,8 @@ function renderUsersTable() {
         <button class="emp-delete-btn" style="background:var(--ice-soft);color:var(--navy);border-color:var(--border);" onclick="handleResetPassword(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}')">🔑 Новый пароль</button>
         <button class="emp-delete-btn" onclick="handleDeleteUser(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}', this)">🗑 Удалить</button>
       </td>
-    </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Пока нет пользователей</td></tr>`;
+    </tr>`;
+  }).join("") || `<tr><td colspan="8" style="color:var(--muted)">Пока нет пользователей</td></tr>`;
 }
 
 async function handleCreateUser() {
