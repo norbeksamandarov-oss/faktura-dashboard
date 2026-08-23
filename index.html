@@ -473,6 +473,22 @@
   .chart-box-tall { height: 220px; min-height: 0; }
   .chart-box canvas, .chart-box-tall canvas { max-height: 100%; }
 
+  .status-chart-layout {
+    display: grid; grid-template-columns: 1fr 280px; gap: 32px; align-items: center;
+  }
+  .status-chart-canvas { height: 230px; }
+  @media (max-width: 760px) { .status-chart-layout { grid-template-columns: 1fr; } }
+  .status-breakdown { display: flex; flex-direction: column; gap: 4px; }
+  .status-breakdown-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-breakdown-row:last-child { border-bottom: none; }
+  .status-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+  .status-breakdown-name { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
+  .status-breakdown-count { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .status-breakdown-pct { font-size: 11px; color: var(--muted); width: 38px; text-align: right; }
+
   footer.note {
     text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px;
   }
@@ -718,7 +734,10 @@
 
     <div class="panel" style="margin-bottom:24px;">
       <h2>📊 Статус счетов <span class="sub" id="chartSub"></span></h2>
-      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+      <div class="status-chart-layout">
+        <div class="chart-box status-chart-canvas"><canvas id="statusChart"></canvas></div>
+        <div class="status-breakdown" id="statusBreakdown"></div>
+      </div>
     </div>
 
     <div class="panel" style="margin-bottom:24px;">
@@ -1659,24 +1678,33 @@ function renderChart() {
   const counts = { new: 0, sent: 0, accepted: 0, rejected: 0, notmine: 0 };
   rows.forEach(r => { const c = classifyStatus(r.status); if (counts[c] !== undefined) counts[c]++; });
 
+  const labels = ["Не отправлено", "Ожидают", "Принято", "Отклонено", "Не мой счёт"];
+  const colors = ["#D7DCE5", "#FFC876", "#5FBE84", "#E8837E", "#F5A75B"];
+  const values = [counts.new, counts.sent, counts.accepted, counts.rejected, counts.notmine];
+  const total = values.reduce((a, b) => a + b, 0) || 1;
+
   const ctx = document.getElementById("statusChart");
   if (statusChart) statusChart.destroy();
   statusChart = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Не отправлено", "Ожидают", "Принято", "Отклонено", "Не мой счёт"],
-      datasets: [{
-        data: [counts.new, counts.sent, counts.accepted, counts.rejected, counts.notmine],
-        backgroundColor: ["#EDEFF3", "#FFC876", "#5FBE84", "#E8837E", "#F5A75B"],
-        borderWidth: 0
-      }]
+      labels,
+      datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }]
     },
     options: {
-      plugins: { legend: { position: "bottom", labels: { font: { family: "Inter", size: 11 }, boxWidth: 10 } } },
-      cutout: "62%"
+      plugins: { legend: { display: false } },
+      cutout: "66%"
     }
   });
   document.getElementById("chartSub").textContent = `всего ${rows.length}`;
+
+  document.getElementById("statusBreakdown").innerHTML = labels.map((name, i) => `
+    <div class="status-breakdown-row">
+      <span class="status-dot" style="background:${colors[i]};"></span>
+      <span class="status-breakdown-name">${name}</span>
+      <span class="status-breakdown-pct">${Math.round(values[i] / total * 100)}%</span>
+      <span class="status-breakdown-count">${values[i]}</span>
+    </div>`).join("");
 }
 
 /* "По логинам dashboard" paneli (faqat admin) - Аналитика davr filtriga
