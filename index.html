@@ -319,11 +319,15 @@
   .pill.ok { background: var(--gray-bg); color: var(--gray-fg); }
 
   /* ---------- Search + table ---------- */
-  .toolbar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 8px; flex-wrap: wrap; }
-  .filter-field { display: flex; flex-direction: column; gap: 4px; }
+  .toolbar {
+    display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
+    background: var(--ice-soft); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 18px;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 5px; }
   .filter-field label {
     font-size: 10.5px; color: var(--muted); text-transform: uppercase;
-    letter-spacing: 0.03em; font-weight: 600;
+    letter-spacing: 0.03em; font-weight: 700;
   }
   .filter-field input, .filter-field select {
     padding: 9px 12px;
@@ -332,6 +336,10 @@
     font-size: 13px;
     font-family: 'Inter';
     background: white;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .filter-field input:focus, .filter-field select:focus {
+    outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1);
   }
   #searchInput { min-width: 190px; }
   #buyerFilter { min-width: 170px; }
@@ -344,17 +352,19 @@
   select.status-filter {
     padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border);
     font-family: 'Inter'; font-size: 13px; background: white;
+    transition: border-color .15s, box-shadow .15s;
   }
+  select.status-filter:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
   #clearFiltersBtn {
-    padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
-    background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
+    padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
+    background: white; color: var(--navy); font-family: 'Inter';
+    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
   #clearFiltersBtn:hover { background: var(--ice); }
   #exportCsvBtn {
-    padding: 9px 14px; border-radius: 9px; border: 1px solid var(--navy);
+    padding: 9px 16px; border-radius: 9px; border: 1px solid var(--navy);
     background: var(--navy); color: white; font-family: 'Inter';
-    font-size: 12.5px; font-weight: 600; cursor: pointer;
+    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
   #exportCsvBtn:hover { background: var(--navy-light); }
 
@@ -846,38 +856,38 @@
       <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
       <div class="toolbar">
         <div class="filter-field">
-          <label>Поиск (№, комментарий)</label>
+          <label>🔍 Поиск (№, комментарий)</label>
           <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
         </div>
         <div class="filter-field">
-          <label>Покупатель</label>
+          <label>🏢 Покупатель</label>
           <select id="buyerFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>Подразделение</label>
+          <label>🏬 Подразделение</label>
           <select id="departmentFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>Контрагент (имя или ИНН)</label>
+          <label>🤝 Контрагент (имя или ИНН)</label>
           <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
         </div>
         <div class="filter-field">
-          <label>Сумма</label>
+          <label>💰 Сумма</label>
           <input type="text" id="sumFilter" placeholder="напр. 55490000">
         </div>
         <div class="filter-field">
-          <label>Ответственный</label>
+          <label>👤 Ответственный</label>
           <input type="text" id="respFilter" placeholder="2-3 буквы имени...">
         </div>
         <div class="filter-field">
-          <label>Период (дата счёта)</label>
+          <label>📅 Период (дата счёта)</label>
           <div class="date-range">
             <input type="date" id="dateFrom">
             <input type="date" id="dateTo">
           </div>
         </div>
         <div class="filter-field">
-          <label>Статус</label>
+          <label>🏷️ Статус</label>
           <select class="status-filter" id="statusFilter">
             <option value="">Все статусы</option>
             <option value="new">Не отправлено</option>
@@ -896,7 +906,6 @@
           <button id="exportCsvBtn">⬇ Экспорт в CSV</button>
         </div>
       </div>
-      <div class="toolbar-row2" id="tableCount2"></div>
       <div class="table-wrap">
         <table class="invoices">
           <thead>
@@ -1726,7 +1735,6 @@ function renderInvoicesTable() {
 
   const countText = `показано ${filtered.length} из ${invoiceRows.length}`;
   document.getElementById("tableCount").textContent = countText;
-  document.getElementById("tableCount2").textContent = countText;
   lastFilteredInvoices = filtered;
 
   document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => `
