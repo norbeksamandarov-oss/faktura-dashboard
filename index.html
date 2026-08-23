@@ -704,6 +704,7 @@
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
       <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
+      <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')">📋 Журнал действий</button>
       <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
     </nav>
     <main class="content-area">
@@ -1017,6 +1018,39 @@
             <tr><th>№</th><th>Логин</th><th>Имя</th><th>Роль</th><th>Счетов</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr>
           </thead>
           <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
+    <section id="section-auditlog" class="content-section">
+    <div class="panel">
+      <h2>Журнал действий <span class="sub">кто, когда и что изменил в системе</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Показаны последние действия в dashboard (изменения счетов, вход в систему, управление сотрудниками/пользователями). Данные берутся из листа «АудитЛог».</p>
+
+      <div class="toolbar">
+        <div class="filter-field">
+          <label>📅 С даты</label>
+          <input type="date" id="auditLogFrom">
+        </div>
+        <div class="filter-field">
+          <label>📅 По дату</label>
+          <input type="date" id="auditLogTo">
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="auditLogLoadBtn" onclick="loadAuditLog()" class="login-submit-btn" style="width:auto;padding:9px 20px;">🔄 Загрузить</button>
+        </div>
+      </div>
+
+      <div id="auditLogError" style="color:#C0392B;font-size:13px;margin-bottom:10px;"></div>
+
+      <div class="table-wrap">
+        <table class="invoices" id="auditLogTable">
+          <thead>
+            <tr><th>Время</th><th>Пользователь</th><th>Действие</th></tr>
+          </thead>
+          <tbody><tr><td colspan="3" style="color:var(--muted)">Нажмите «Загрузить»</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1353,7 +1387,7 @@ async function onLoggedIn() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
-  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"]')
+  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="auditlog"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
@@ -1363,7 +1397,7 @@ function applyRolePermissions(role) {
   if (loginStatsPanel) loginStatsPanel.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["employees", "requests", "users"].includes(active.dataset.section)) {
+    if (active && ["employees", "requests", "users", "auditlog"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -2469,6 +2503,70 @@ async function handleDeleteUser(rowIndex, username, btnEl) {
   } catch (e) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
+  }
+}
+
+/* ============================================================
+   ЖУРНАЛ ДЕЙСТВИЙ (faqat admin) - "АудитЛог" ma'lumotini o'qish
+   oson matnga aylantirib ko'rsatadi.
+   ============================================================ */
+const AUDIT_ACTION_LABELS = {
+  LOGIN_OK: () => "✅ Успешный вход",
+  LOGIN_FAILED: () => "⚠️ Неверный пароль при входе",
+  LOGIN_FAILED_NO_USER: () => "⚠️ Попытка входа с несуществующим логином",
+  CHANGE_OWN_PASSWORD: () => "🔑 Сменил свой пароль",
+  CREATE_USER: d => `➕ Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
+  RESET_PASSWORD: d => `🔑 Сбросил пароль пользователю (строка ${d.rowIndex})`,
+  DELETE_USER: d => `🗑 Удалил пользователя (строка ${d.rowIndex})`,
+  SET_USER_ACTIVE: d => `🔁 Изменил статус пользователя: ${d.active ? "включён" : "отключён"}`,
+  SET_EMPLOYEE_ACTIVE: d => `🔁 Изменил статус сотрудника: ${d.active ? "активен" : "деактивирован"}`,
+  DELETE_ROW: d => `🗑 Удалил строку ${d.rowIndex} из листа «${d.sheetName || "?"}»`,
+  TRIGGER_NOTIFY: () => `🔔 Нажал «Уведомить сотрудников»`,
+  TRIGGER_BROADCAST: d => `📢 Отправил объявление: «${(d.message || "").slice(0, 70)}${(d.message || "").length > 70 ? "…" : ""}»`,
+  UPDATE_CELL: d => {
+    const sheet = d.sheetName || "?";
+    if (sheet === "Счета-фактуры" && /^J\d+$/.test(d.a1 || "")) {
+      return `✏️ Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
+    }
+    if (sheet === "Счета-фактуры" && /^K\d+$/.test(d.a1 || "")) {
+      return `☑️ Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
+    }
+    return `✏️ Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
+  },
+};
+
+function formatAuditEntry(e) {
+  const fn = AUDIT_ACTION_LABELS[e.action];
+  try {
+    return fn ? fn(e.details || {}) : `${e.action} ${JSON.stringify(e.details || {})}`;
+  } catch (err) {
+    return e.action;
+  }
+}
+
+async function loadAuditLog() {
+  const btn = document.getElementById("auditLogLoadBtn");
+  const errEl = document.getElementById("auditLogError");
+  const tbody = document.querySelector("#auditLogTable tbody");
+  errEl.textContent = "";
+  btn.disabled = true;
+  tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">Загрузка...</td></tr>`;
+  try {
+    const from = document.getElementById("auditLogFrom").value;
+    const to = document.getElementById("auditLogTo").value;
+    const data = await apiCall("adminGetAuditLog", { from, to, limit: 300 });
+    const entries = data.entries || [];
+    tbody.innerHTML = entries.map(e => `
+      <tr>
+        <td style="white-space:nowrap;color:var(--muted);font-size:12px;">${escapeHtml(e.time)}</td>
+        <td><strong>${escapeHtml(e.username)}</strong></td>
+        <td>${escapeHtml(formatAuditEntry(e))}</td>
+      </tr>`).join("") || `<tr><td colspan="3" style="color:var(--muted)">Нет записей за выбранный период</td></tr>`;
+  } catch (e) {
+    errEl.textContent = "Не удалось загрузить журнал: " + e.message;
+    tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted)">Ошибка загрузки</td></tr>`;
+  } finally {
+    btn.disabled = false;
   }
 }
 
