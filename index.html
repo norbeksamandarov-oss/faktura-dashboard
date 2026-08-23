@@ -488,6 +488,11 @@
   }
   .analytics-box h3 { margin: 0; font-size: 13.5px; font-weight: 700; }
   .analytics-note { margin: 0 0 12px; font-size: 11px; color: var(--muted); }
+  .analytics-group-title {
+    font-size: 15px; font-weight: 700; color: var(--navy);
+    margin: 30px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--ice);
+    display: flex; align-items: center; gap: 8px;
+  }
 
   /* Reyting ro'yxati (mini-table o'rniga) - Топ-5 bloklari uchun */
   .rank-list { display: flex; flex-direction: column; }
@@ -699,13 +704,6 @@
         <h2>📊 Статус счетов <span class="sub" id="chartSub"></span></h2>
         <div class="chart-box"><canvas id="statusChart"></canvas></div>
       </div>
-      <div class="panel">
-        <h2>👥 По сотрудникам</h2>
-        <table class="emp-table" id="empTable">
-          <thead><tr><th>Сотрудник</th><th>Всего</th><th>Сумма</th><th>Ждёт</th><th>Просрочено</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
       <div class="panel" id="loginStatsPanel" style="display:none;">
         <h2>🔐 По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
         <table class="emp-table" id="loginStatsTable">
@@ -716,8 +714,40 @@
     </div>
 
     <div class="panel" style="margin-bottom:24px;">
-      <h2>📈 Аналитика <span class="sub" id="analyticsSub"></span></h2>
+      <h2>📈 Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
+      <div class="analytics-summary" id="analyticsSummary"></div>
 
+      <div class="analytics-grid" style="margin-top:20px;">
+        <div class="analytics-box" style="grid-column: span 2;">
+          <div class="analytics-box-head">
+            <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
+            <h3>Топ-10 крупных счетов</h3>
+          </div>
+          <p class="analytics-note">по сумме, за выбранный период</p>
+          <div class="rank-list" id="topLargestTable"></div>
+        </div>
+      </div>
+
+      <div class="panels" style="margin-top:20px;">
+        <div class="panel">
+          <h2>📆 Динамика за 30 дней <span class="sub">счета по дням</span></h2>
+          <div class="chart-box chart-box-tall"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>🗓️ По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
+          <div class="chart-box chart-box-tall"><canvas id="weekdayChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:20px;">
+        <h2>🛠️ Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
+        <table class="mini-table" id="errorsTable">
+          <thead><tr><th>Ошибка</th><th>Кол-во</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="analytics-group-title">👥 Аналитика по сотрудникам</div>
       <div class="analytics-grid">
         <div class="analytics-box">
           <div class="analytics-box-head">
@@ -739,20 +769,37 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--ice-soft);">📦</div>
-            <h3>Топ-5 поставщиков</h3>
-          </div>
-          <p class="analytics-note">по количеству выставленных счетов</p>
-          <div class="rank-list" id="topSuppliersTable"></div>
-        </div>
-
-        <div class="analytics-box">
-          <div class="analytics-box-head">
             <div class="analytics-box-icon" style="background:var(--red-bg);">❌</div>
             <h3>Топ-5 по отказам</h3>
           </div>
           <p class="analytics-note">доля отклонённых счетов от общего числа решений</p>
           <div class="rank-list" id="rejectRateTable"></div>
+        </div>
+      </div>
+
+      <div class="panels" style="margin-top:16px;">
+        <div class="panel">
+          <h2>⏱️ Время ответа <span class="sub">распределение по сотрудникам</span></h2>
+          <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>📦 Нагрузка по сотрудникам</h2>
+          <table class="emp-table" id="workloadTable">
+            <thead><tr><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="analytics-group-title">🏭 Аналитика по поставщикам</div>
+      <div class="analytics-grid">
+        <div class="analytics-box">
+          <div class="analytics-box-head">
+            <div class="analytics-box-icon" style="background:var(--ice-soft);">📦</div>
+            <h3>Топ-5 поставщиков</h3>
+          </div>
+          <p class="analytics-note">по количеству выставленных счетов</p>
+          <div class="rank-list" id="topSuppliersTable"></div>
         </div>
 
         <div class="analytics-box">
@@ -763,49 +810,7 @@
           <p class="analytics-note">от кого чаще всего приходят отклонённые счета</p>
           <div class="rank-list" id="rejectBySupplierTable"></div>
         </div>
-
-        <div class="analytics-box">
-          <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
-            <h3>Топ-10 крупных счетов</h3>
-          </div>
-          <p class="analytics-note">по сумме, за выбранный период</p>
-          <div class="rank-list" id="topLargestTable"></div>
-        </div>
       </div>
-
-      <div class="analytics-summary" id="analyticsSummary"></div>
-
-      <div class="panels" style="margin-top:20px;">
-        <div class="panel">
-          <h2>📆 Динамика за 30 дней <span class="sub">счета по дням</span></h2>
-          <div class="chart-box chart-box-tall"><canvas id="trendChart"></canvas></div>
-        </div>
-        <div class="panel">
-          <h2>⏱️ Время ответа <span class="sub">распределение по сотрудникам</span></h2>
-          <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
-        </div>
-      </div>
-
-      <div class="panels" style="margin-top:20px;">
-        <div class="panel">
-          <h2>🗓️ По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
-          <div class="chart-box"><canvas id="weekdayChart"></canvas></div>
-        </div>
-        <div class="panel">
-          <h2>🛠️ Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
-          <table class="mini-table" id="errorsTable">
-            <thead><tr><th>Ошибка</th><th>Кол-во</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <h3 style="margin:24px 0 12px;font-size:14px;">📦 Нагрузка по сотрудникам</h3>
-      <table class="emp-table" id="workloadTable">
-        <thead><tr><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
-        <tbody></tbody>
-      </table>
     </div>
     </section>
 
@@ -1201,15 +1206,15 @@ window.onload = () => {
   });
 
   document.getElementById("analyticsPeriodFrom").addEventListener("change", () => {
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("analyticsPeriodTo").addEventListener("change", () => {
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("clearAnalyticsPeriodBtn").addEventListener("click", () => {
     document.getElementById("analyticsPeriodFrom").value = "";
     document.getElementById("analyticsPeriodTo").value = "";
-    renderStats(); renderChart(); renderEmployeeTable(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
 
   document.getElementById("exportCsvBtn").addEventListener("click", exportInvoicesCsv);
@@ -1529,7 +1534,6 @@ function daysBadge(daysStr) {
 function renderAll() {
   renderStats();
   renderChart();
-  renderEmployeeTable();
   renderBuyerFilterOptions();
   renderDepartmentFilterOptions();
   renderEmployeesDatalist();
@@ -1617,29 +1621,6 @@ function renderChart() {
     }
   });
   document.getElementById("chartSub").textContent = `всего ${rows.length}`;
-}
-
-function renderEmployeeTable() {
-  const byName = {};
-  filterByPeriod(invoiceRows, "date").forEach(r => {
-    if (!r.resp) return;
-    if (!byName[r.resp]) byName[r.resp] = { total: 0, sum: 0, pending: 0, overdue: 0 };
-    byName[r.resp].total++;
-    byName[r.resp].sum += r.sumRaw || 0;
-    if (classifyStatus(r.status) === "sent") {
-      byName[r.resp].pending++;
-      if (parseInt(r.days, 10) >= 8) byName[r.resp].overdue++;
-    }
-  });
-  const rows = Object.entries(byName).sort((a, b) => b[1].total - a[1].total);
-  document.querySelector("#empTable tbody").innerHTML = rows.map(([name, s]) => `
-    <tr>
-      <td>${name}</td>
-      <td>${s.total}</td>
-      <td>${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
-      <td>${s.pending}</td>
-      <td>${s.overdue > 0 ? `<span class="pill overdue">${s.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
-    </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет данных</td></tr>`;
 }
 
 /* "По логинам dashboard" paneli (faqat admin) - Аналитика davr filtriga
