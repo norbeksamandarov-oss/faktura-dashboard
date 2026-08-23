@@ -1005,6 +1005,8 @@
       <div class="reconcile-upload">
         <input type="file" id="reconcileFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleReconcileFile(event)">
         <button class="login-submit-btn" style="width:auto;padding:12px 24px;" onclick="document.getElementById('reconcileFileInput').click()">📂 Выбрать файл из 1С</button>
+        <button id="reconcileExportBtn" class="login-submit-btn" style="width:auto;padding:12px 24px;background:var(--green-fg);display:none;" onclick="exportReconcileExcel()">📥 Скачать отчёт (Excel)</button>
+        <button id="reconcileClearBtn" onclick="clearReconcile()" style="display:none;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;">🗑 Очистить</button>
         <span id="reconcileFileName" style="color:var(--muted);font-size:13px;"></span>
       </div>
       <div id="reconcileError" style="color:#C0392B;font-size:13px;margin-top:10px;"></div>
@@ -2340,6 +2342,7 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
    ПОЛЬЗОВАТЕЛИ DASHBOARD (login/parol - faqat admin ko'radi)
    ============================================================ */
 let usersListCache = [];
+let reconcileResultsCache = null;
 
 async function renderUsersManage() {
   const tbody = document.querySelector("#usersManageTable tbody");
@@ -2552,13 +2555,54 @@ async function handleReconcileFile(event) {
       return { ...r, status1c };
     });
 
+    reconcileResultsCache = results;
     renderReconcileResults(results);
+    document.getElementById("reconcileExportBtn").style.display = "";
+    document.getElementById("reconcileClearBtn").style.display = "";
   } catch (e) {
     console.error(e);
     document.getElementById("reconcileError").textContent = "Не удалось прочитать файл: " + e.message;
   } finally {
     event.target.value = "";
   }
+}
+
+function clearReconcile() {
+  reconcileResultsCache = null;
+  document.getElementById("reconcileFileInput").value = "";
+  document.getElementById("reconcileFileName").textContent = "";
+  document.getElementById("reconcileError").textContent = "";
+  document.getElementById("reconcileSummary").style.display = "none";
+  document.getElementById("reconcileSummary").innerHTML = "";
+  document.getElementById("reconcileTable").style.display = "none";
+  document.querySelector("#reconcileTable tbody").innerHTML = "";
+  document.getElementById("reconcileExportBtn").style.display = "none";
+  document.getElementById("reconcileClearBtn").style.display = "none";
+}
+
+const RECONCILE_STATUS_LABEL = { ok: "Найден в 1С", datediff: "Найден, дата отличается", missing: "Не найден в 1С" };
+const RECONCILE_ORDER = { missing: 0, datediff: 1, ok: 2 };
+
+function exportReconcileExcel() {
+  if (!reconcileResultsCache || !reconcileResultsCache.length) return;
+  const sorted = [...reconcileResultsCache].sort((a, b) => RECONCILE_ORDER[a.status1c] - RECONCILE_ORDER[b.status1c]);
+  const data = sorted.map((r, i) => ({
+    "№": i + 1,
+    "Покупатель": r.buyer,
+    "Номер": r.no,
+    "Дата": r.date,
+    "Контрагент": r.seller,
+    "ИНН": r.inn,
+    "Сумма": r.sumRaw,
+    "Ответственный": r.resp,
+    "Статус в 1С": RECONCILE_STATUS_LABEL[r.status1c],
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws["!cols"] = [{ wch: 4 }, { wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 26 }, { wch: 14 }, { wch: 14 }, { wch: 20 }, { wch: 24 }];
+  const wbOut = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbOut, ws, "Сверка с 1С");
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wbOut, `Сверка_с_1С_${dateStr}.xlsx`);
 }
 
 function renderReconcileResults(results) {
@@ -2575,12 +2619,8 @@ function renderReconcileResults(results) {
     <div><span class="sum-icon">❌</span><div><div class="num">${missing}</div><div class="lbl">Не найдено в 1С</div></div></div>
   `;
 
-  const statusLabel = { ok: "✅ Найден в 1С", datediff: "⚠️ Найден, дата отличается", missing: "❌ Не найден в 1С" };
   const statusCls = { ok: "status-1c-ok", datediff: "status-1c-datediff", missing: "status-1c-missing" };
-
-  // Avval "topilmaganlar", keyin "sana boshqacha", oxirida "topilganlar"
-  const order = { missing: 0, datediff: 1, ok: 2 };
-  const sorted = [...results].sort((a, b) => order[a.status1c] - order[b.status1c]);
+  const sorted = [...results].sort((a, b) => RECONCILE_ORDER[a.status1c] - RECONCILE_ORDER[b.status1c]);
 
   const table = document.getElementById("reconcileTable");
   table.style.display = "";
@@ -2594,7 +2634,7 @@ function renderReconcileResults(results) {
       <td>${escapeHtml(r.inn)}</td>
       <td>${escapeHtml(r.sum)}</td>
       <td>${escapeHtml(r.resp)}</td>
-      <td class="${statusCls[r.status1c]}">${statusLabel[r.status1c]}</td>
+      <td class="${statusCls[r.status1c]}">${RECONCILE_STATUS_LABEL[r.status1c]}</td>
     </tr>`).join("");
 }
 
