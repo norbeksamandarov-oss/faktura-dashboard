@@ -256,7 +256,8 @@
     width: 42px; height: 42px; border-radius: 12px; flex: 0 0 auto;
     display: flex; align-items: center; justify-content: center; font-size: 19px;
   }
-  .stat-card .num { font-family: 'Fraunces', serif; font-size: 27px; font-weight: 600; line-height: 1; }
+  .stat-card .num { font-family: 'Fraunces', serif; font-size: 27px; font-weight: 600; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .stat-card .stat-pct { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
   .stat-card .label { margin-top: 4px; font-size: 12px; color: var(--muted); }
   .stat-card.accent-total .stat-icon { background: var(--ice-soft); }
   .stat-card.accent-total .num { color: var(--navy); }
@@ -689,11 +690,11 @@
     <nav class="sidebar">
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')">📊 Аналитика</button>
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
-      <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
+      <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
       <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
-      <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
+      <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
     </nav>
     <main class="content-area">
 
@@ -731,14 +732,6 @@
     </div>
 
     <div class="stats-row" id="statsRow"></div>
-
-    <div class="panel" style="margin-bottom:24px;">
-      <h2>📊 Статус счетов <span class="sub" id="chartSub"></span></h2>
-      <div class="status-chart-layout">
-        <div class="chart-box status-chart-canvas"><canvas id="statusChart"></canvas></div>
-        <div class="status-breakdown" id="statusBreakdown"></div>
-      </div>
-    </div>
 
     <div class="panel" style="margin-bottom:24px;">
       <h2>📈 Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
@@ -1277,19 +1270,19 @@ window.onload = () => {
     ORG_GROUPS.map(g => `<option value="${escapeHtml(g.canonical)}">${escapeHtml(g.canonical)}</option>`).join("");
 
   document.getElementById("analyticsPeriodFrom").addEventListener("change", () => {
-    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("analyticsPeriodTo").addEventListener("change", () => {
-    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("analyticsOrgFilter").addEventListener("change", () => {
-    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("clearAnalyticsPeriodBtn").addEventListener("click", () => {
     document.getElementById("analyticsPeriodFrom").value = "";
     document.getElementById("analyticsPeriodTo").value = "";
     document.getElementById("analyticsOrgFilter").value = "";
-    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
+    renderStats(); renderAnalytics(); renderLoginStatsPanel();
   });
 
   document.getElementById("exportCsvBtn").addEventListener("click", exportInvoicesCsv);
@@ -1608,7 +1601,6 @@ function daysBadge(daysStr) {
 
 function renderAll() {
   renderStats();
-  renderChart();
   renderBuyerFilterOptions();
   renderDepartmentFilterOptions();
   renderEmployeesDatalist();
@@ -1655,55 +1647,22 @@ function renderStats() {
   const accepted = rows.filter(r => classifyStatus(r.status) === "accepted").length;
   const rejected = rows.filter(r => classifyStatus(r.status) === "rejected").length;
   const overdue = rows.filter(r => classifyStatus(r.status) === "sent" && parseInt(r.days, 10) >= 8).length;
+  const pct = v => total ? Math.round(v / total * 100) + "%" : "—";
 
   const cards = [
-    { label: "Всего счетов", val: total, cls: "accent-total", icon: "📄" },
-    { label: "Ожидают ответа", val: pending, cls: "accent-pending", icon: "⏳" },
-    { label: "Принято", val: accepted, cls: "accent-accepted", icon: "✅" },
-    { label: "Отклонено", val: rejected, cls: "accent-rejected", icon: "❌" },
-    { label: "Просрочено (8+ дн.)", val: overdue, cls: "accent-overdue", icon: "⚠️" },
+    { label: "Всего счетов", val: total, pct: null, cls: "accent-total", icon: "📄" },
+    { label: "Ожидают ответа", val: pending, pct: pct(pending), cls: "accent-pending", icon: "⏳" },
+    { label: "Принято", val: accepted, pct: pct(accepted), cls: "accent-accepted", icon: "✅" },
+    { label: "Отклонено", val: rejected, pct: pct(rejected), cls: "accent-rejected", icon: "❌" },
+    { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "⚠️" },
   ];
   document.getElementById("statsRow").innerHTML = cards.map(c => `
     <div class="stat-card ${c.cls}">
       <div class="stat-icon">${c.icon}</div>
       <div>
-        <div class="num">${c.val}</div>
+        <div class="num">${c.val}${c.pct ? `<span class="stat-pct">${c.pct}</span>` : ""}</div>
         <div class="label">${c.label}</div>
       </div>
-    </div>`).join("");
-}
-
-function renderChart() {
-  const rows = filterByPeriod(invoiceRows, "date");
-  const counts = { new: 0, sent: 0, accepted: 0, rejected: 0, notmine: 0 };
-  rows.forEach(r => { const c = classifyStatus(r.status); if (counts[c] !== undefined) counts[c]++; });
-
-  const labels = ["Не отправлено", "Ожидают", "Принято", "Отклонено", "Не мой счёт"];
-  const colors = ["#D7DCE5", "#FFC876", "#5FBE84", "#E8837E", "#F5A75B"];
-  const values = [counts.new, counts.sent, counts.accepted, counts.rejected, counts.notmine];
-  const total = values.reduce((a, b) => a + b, 0) || 1;
-
-  const ctx = document.getElementById("statusChart");
-  if (statusChart) statusChart.destroy();
-  statusChart = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }]
-    },
-    options: {
-      plugins: { legend: { display: false } },
-      cutout: "66%"
-    }
-  });
-  document.getElementById("chartSub").textContent = `всего ${rows.length}`;
-
-  document.getElementById("statusBreakdown").innerHTML = labels.map((name, i) => `
-    <div class="status-breakdown-row">
-      <span class="status-dot" style="background:${colors[i]};"></span>
-      <span class="status-breakdown-name">${name}</span>
-      <span class="status-breakdown-pct">${Math.round(values[i] / total * 100)}%</span>
-      <span class="status-breakdown-count">${values[i]}</span>
     </div>`).join("");
 }
 
