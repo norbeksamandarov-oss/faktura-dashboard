@@ -1353,7 +1353,7 @@ async function onLoggedIn() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
-  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="reconcile"]')
+  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
@@ -1363,7 +1363,7 @@ function applyRolePermissions(role) {
   if (loginStatsPanel) loginStatsPanel.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["employees", "requests", "users", "reconcile"].includes(active.dataset.section)) {
+    if (active && ["employees", "requests", "users"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
