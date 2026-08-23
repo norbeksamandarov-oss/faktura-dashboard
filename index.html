@@ -686,6 +686,12 @@
             <input type="date" id="analyticsPeriodTo">
           </div>
         </div>
+        <div class="filter-field">
+          <label>Организация</label>
+          <select id="analyticsOrgFilter">
+            <option value="">Все организации</option>
+          </select>
+        </div>
         <button id="clearAnalyticsPeriodBtn">✕ Весь период</button>
         <span class="analytics-note" id="analyticsPeriodNote" style="margin-left:auto;"></span>
       </div>
@@ -699,34 +705,14 @@
 
     <div class="stats-row" id="statsRow"></div>
 
-    <div class="panels">
-      <div class="panel">
-        <h2>📊 Статус счетов <span class="sub" id="chartSub"></span></h2>
-        <div class="chart-box"><canvas id="statusChart"></canvas></div>
-      </div>
-      <div class="panel" id="loginStatsPanel" style="display:none;">
-        <h2>🔐 По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
-        <table class="emp-table" id="loginStatsTable">
-          <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>📊 Статус счетов <span class="sub" id="chartSub"></span></h2>
+      <div class="chart-box"><canvas id="statusChart"></canvas></div>
     </div>
 
     <div class="panel" style="margin-bottom:24px;">
       <h2>📈 Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
       <div class="analytics-summary" id="analyticsSummary"></div>
-
-      <div class="analytics-grid" style="margin-top:20px;">
-        <div class="analytics-box" style="grid-column: span 2;">
-          <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
-            <h3>Топ-10 крупных счетов</h3>
-          </div>
-          <p class="analytics-note">по сумме, за выбранный период</p>
-          <div class="rank-list" id="topLargestTable"></div>
-        </div>
-      </div>
 
       <div class="panels" style="margin-top:20px;">
         <div class="panel">
@@ -748,6 +734,15 @@
       </div>
 
       <div class="analytics-group-title">👥 Аналитика по сотрудникам</div>
+
+      <div class="panel" id="loginStatsPanel" style="display:none; margin-bottom:16px;">
+        <h2>🔐 По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
+        <table class="emp-table" id="loginStatsTable">
+          <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
       <div class="analytics-grid">
         <div class="analytics-box">
           <div class="analytics-box-head">
@@ -793,6 +788,15 @@
 
       <div class="analytics-group-title">🏭 Аналитика по поставщикам</div>
       <div class="analytics-grid">
+        <div class="analytics-box" style="grid-column: span 2;">
+          <div class="analytics-box-head">
+            <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
+            <h3>Топ-10 крупных счетов</h3>
+          </div>
+          <p class="analytics-note">по сумме, за выбранный период</p>
+          <div class="rank-list" id="topLargestTable"></div>
+        </div>
+
         <div class="analytics-box">
           <div class="analytics-box-head">
             <div class="analytics-box-icon" style="background:var(--ice-soft);">📦</div>
@@ -1084,14 +1088,20 @@ function getAnalyticsPeriod() {
     to: document.getElementById("analyticsPeriodTo")?.value || "",
   };
 }
+function getAnalyticsOrgFilter() {
+  return document.getElementById("analyticsOrgFilter")?.value || "";
+}
 function filterByPeriod(rows, dateField) {
   const { from, to } = getAnalyticsPeriod();
-  if (!from && !to) return rows;
+  const org = getAnalyticsOrgFilter();
   return rows.filter(r => {
-    const d = (r[dateField] || "").slice(0, 10);
-    if (!d) return false;
-    if (from && d < from) return false;
-    if (to && d > to) return false;
+    if (from || to) {
+      const d = (r[dateField] || "").slice(0, 10);
+      if (!d) return false;
+      if (from && d < from) return false;
+      if (to && d > to) return false;
+    }
+    if (org && canonicalBuyer(r.buyer) !== org) return false;
     return true;
   });
 }
@@ -1205,15 +1215,23 @@ window.onload = () => {
     renderInvoicesTable();
   });
 
+  document.getElementById("analyticsOrgFilter").innerHTML =
+    '<option value="">Все организации</option>' +
+    ORG_GROUPS.map(g => `<option value="${escapeHtml(g.canonical)}">${escapeHtml(g.canonical)}</option>`).join("");
+
   document.getElementById("analyticsPeriodFrom").addEventListener("change", () => {
     renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
   document.getElementById("analyticsPeriodTo").addEventListener("change", () => {
     renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
+  document.getElementById("analyticsOrgFilter").addEventListener("change", () => {
+    renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
+  });
   document.getElementById("clearAnalyticsPeriodBtn").addEventListener("click", () => {
     document.getElementById("analyticsPeriodFrom").value = "";
     document.getElementById("analyticsPeriodTo").value = "";
+    document.getElementById("analyticsOrgFilter").value = "";
     renderStats(); renderChart(); renderAnalytics(); renderLoginStatsPanel();
   });
 
@@ -1452,7 +1470,7 @@ async function loadAllData(silent) {
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
-      id: r[0] || "", no: r[2] || "", date: r[3] || "", seller: r[4] || "", resp: r[7] || "",
+      id: r[0] || "", buyer: r[1] || "", no: r[2] || "", date: r[3] || "", seller: r[4] || "", resp: r[7] || "",
       status: r[8] || "", comment: r[9] || "", department: r[10] || "", decidedAt: r[11] || "",
       sumRaw: parseFloat(String(r[6] || "0").replace(/\s/g, "").replace(",", ".")) || 0
     })).filter(r => r.no);
@@ -2038,7 +2056,7 @@ function renderAnalytics() {
   renderRankList("topLargestTable", topLargest, {
     name: r => r.seller,
     value: r => r.sum,
-    meta: r => `№ ${r.no}`,
+    meta: r => `Договор: ${r.contract || "-"}`,
   });
 
   // ---------- Системные ошибки ----------
