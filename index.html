@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --navy: #1E2761;
@@ -97,6 +98,11 @@
   .user-create-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .user-create-form .login-input { margin-bottom: 0; color: var(--text); background: #fff; border: 1px solid var(--border); }
   .user-create-form .login-input::placeholder { color: var(--muted); }
+  .reconcile-upload { display: flex; align-items: center; gap: 14px; }
+  #reconcileTable .status-1c-ok { color: var(--green-fg); font-weight: 600; }
+  #reconcileTable .status-1c-datediff { color: var(--amber-fg); font-weight: 600; }
+  #reconcileTable .status-1c-missing { color: var(--red-fg); font-weight: 700; }
+  #reconcileTable tr.row-missing { background: var(--red-bg); }
   #loginError {
     margin-top: 18px;
     color: #FFC9C9;
@@ -667,6 +673,7 @@
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
       <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
+      <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
     </nav>
     <main class="content-area">
 
@@ -990,6 +997,31 @@
     </div>
     </section>
 
+    <section id="section-reconcile" class="content-section">
+    <div class="panel">
+      <h2>Сверка с 1С <span class="sub">какие принятые счета ещё не занесены в 1С</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Загрузите файл, выгруженный из 1С (Excel). Сверка сопоставит каждый ПРИНЯТЫЙ счёт-фактуру по 4 признакам: ИНН + Сумма + Номер счёта + Дата. Файл нигде не сохраняется - обработка происходит только у вас в браузере.</p>
+
+      <div class="reconcile-upload">
+        <input type="file" id="reconcileFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleReconcileFile(event)">
+        <button class="login-submit-btn" style="width:auto;padding:12px 24px;" onclick="document.getElementById('reconcileFileInput').click()">📂 Выбрать файл из 1С</button>
+        <span id="reconcileFileName" style="color:var(--muted);font-size:13px;"></span>
+      </div>
+      <div id="reconcileError" style="color:#C0392B;font-size:13px;margin-top:10px;"></div>
+
+      <div id="reconcileSummary" class="analytics-summary" style="display:none;margin-top:20px;"></div>
+
+      <div class="table-wrap" style="margin-top:20px;">
+        <table class="invoices" id="reconcileTable" style="display:none;">
+          <thead>
+            <tr><th>№</th><th>Покупатель</th><th>Номер</th><th>Дата</th><th>Контрагент</th><th>ИНН</th><th>Сумма</th><th>Ответственный</th><th>Статус в 1С</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 8 секунд. Изменения здесь применяются почти мгновенно.</footer>
     </main>
   </div>
@@ -1294,7 +1326,7 @@ async function onLoggedIn() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
-  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"]')
+  document.querySelectorAll('.nav-item[data-section="employees"], .nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="reconcile"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const notifyBtn = document.getElementById("notifyBtn");
   if (notifyBtn) notifyBtn.style.display = isAdmin ? "" : "none";
@@ -1304,7 +1336,7 @@ function applyRolePermissions(role) {
   if (loginStatsPanel) loginStatsPanel.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["employees", "requests", "users"].includes(active.dataset.section)) {
+    if (active && ["employees", "requests", "users", "reconcile"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -2436,6 +2468,134 @@ async function handleDeleteUser(rowIndex, username, btnEl) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
   }
+}
+
+/* ============================================================
+   СВЕРКА С 1С (faqat brauzerda, hech narsa serverga yuborilmaydi)
+   Moslashtirish 4 mezon bo'yicha: ИНН + Сумма + Номер + Дата.
+   ============================================================ */
+function reconcileNormInn(v) {
+  return String(v == null ? "" : v).replace(/\.0+$/, "").replace(/\D/g, "");
+}
+function reconcileNormNumber(v) {
+  return String(v == null ? "" : v).trim()
+    .replace(/^№\s*/i, "")
+    .replace(/^0+(?=\d)/, "")
+    .toLowerCase();
+}
+function reconcileNormSum(v) {
+  if (v == null || v === "") return null;
+  const n = parseFloat(String(v).replace(/\s/g, "").replace(",", "."));
+  return isNaN(n) ? null : Math.round(n);
+}
+function reconcileNormDate(v) {
+  if (v == null || v === "") return "";
+  if (v instanceof Date && !isNaN(v)) {
+    return v.toISOString().slice(0, 10);
+  }
+  const s = String(v).trim();
+  // 1C odatda "DD.MM.YYYY" yoki "DD.MM.YYYY HH:MM:SS" beradi
+  const m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  // Sheets'dan kelgan "YYYY-MM-DD..." formatlar uchun
+  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
+  return s.slice(0, 10);
+}
+
+async function handleReconcileFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById("reconcileFileName").textContent = file.name;
+  document.getElementById("reconcileError").textContent = "";
+  document.getElementById("reconcileSummary").style.display = "none";
+  document.getElementById("reconcileTable").style.display = "none";
+
+  try {
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, { type: "array", cellDates: true });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows1c = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    if (!rows1c.length) {
+      document.getElementById("reconcileError").textContent = "Файл пуст или не удалось его прочитать.";
+      return;
+    }
+
+    // 1C qatorlaridan ikkita qidiruv indeksi yasaymiz: to'liq (4 mezon) va
+    // qisman (sanasiz) - shunda "topilmadi" bilan "sana boshqacha" holatlarini
+    // ajratib bera olamiz.
+    const fullIndex = new Set();
+    const noDateIndex = new Set();
+    rows1c.forEach(row => {
+      const inn = reconcileNormInn(row["ИНН"]);
+      const num = reconcileNormNumber(row["Номер вх."]);
+      const sum = reconcileNormSum(row["Сумма"]);
+      const date = reconcileNormDate(row["Дата"]);
+      if (!inn || !num) return;
+      noDateIndex.add(`${inn}|${num}|${sum}`);
+      fullIndex.add(`${inn}|${num}|${sum}|${date}`);
+    });
+
+    const accepted = invoiceRows.filter(r => classifyStatus(r.status) === "accepted");
+    const results = accepted.map(r => {
+      const inn = reconcileNormInn(r.inn);
+      const num = reconcileNormNumber(r.no);
+      const sum = reconcileNormSum(r.sumRaw);
+      const date = reconcileNormDate(r.date);
+      const fullKey = `${inn}|${num}|${sum}|${date}`;
+      const noDateKey = `${inn}|${num}|${sum}`;
+      let status1c;
+      if (fullIndex.has(fullKey)) status1c = "ok";
+      else if (noDateIndex.has(noDateKey)) status1c = "datediff";
+      else status1c = "missing";
+      return { ...r, status1c };
+    });
+
+    renderReconcileResults(results);
+  } catch (e) {
+    console.error(e);
+    document.getElementById("reconcileError").textContent = "Не удалось прочитать файл: " + e.message;
+  } finally {
+    event.target.value = "";
+  }
+}
+
+function renderReconcileResults(results) {
+  const ok = results.filter(r => r.status1c === "ok").length;
+  const datediff = results.filter(r => r.status1c === "datediff").length;
+  const missing = results.filter(r => r.status1c === "missing").length;
+
+  const summaryEl = document.getElementById("reconcileSummary");
+  summaryEl.style.display = "";
+  summaryEl.innerHTML = `
+    <div><span class="sum-icon">📄</span><div><div class="num">${results.length}</div><div class="lbl">Всего принятых счетов</div></div></div>
+    <div><span class="sum-icon">✅</span><div><div class="num">${ok}</div><div class="lbl">Найдено в 1С</div></div></div>
+    <div><span class="sum-icon">⚠️</span><div><div class="num">${datediff}</div><div class="lbl">Найдено, но дата отличается</div></div></div>
+    <div><span class="sum-icon">❌</span><div><div class="num">${missing}</div><div class="lbl">Не найдено в 1С</div></div></div>
+  `;
+
+  const statusLabel = { ok: "✅ Найден в 1С", datediff: "⚠️ Найден, дата отличается", missing: "❌ Не найден в 1С" };
+  const statusCls = { ok: "status-1c-ok", datediff: "status-1c-datediff", missing: "status-1c-missing" };
+
+  // Avval "topilmaganlar", keyin "sana boshqacha", oxirida "topilganlar"
+  const order = { missing: 0, datediff: 1, ok: 2 };
+  const sorted = [...results].sort((a, b) => order[a.status1c] - order[b.status1c]);
+
+  const table = document.getElementById("reconcileTable");
+  table.style.display = "";
+  table.querySelector("tbody").innerHTML = sorted.map((r, i) => `
+    <tr class="${r.status1c === "missing" ? "row-missing" : ""}">
+      <td>${i + 1}</td>
+      <td>${escapeHtml(r.buyer)}</td>
+      <td>${escapeHtml(r.no)}</td>
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.seller)}</td>
+      <td>${escapeHtml(r.inn)}</td>
+      <td>${escapeHtml(r.sum)}</td>
+      <td>${escapeHtml(r.resp)}</td>
+      <td class="${statusCls[r.status1c]}">${statusLabel[r.status1c]}</td>
+    </tr>`).join("");
 }
 
 function renderHistoryTable() {
