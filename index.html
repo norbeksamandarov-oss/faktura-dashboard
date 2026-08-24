@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Faktura Dashboard</title>
+<title>Royal Motors</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -48,22 +48,47 @@
   .login-card {
     text-align: center;
     color: white;
-    max-width: 420px;
-    padding: 48px 40px;
+    max-width: 400px;
+    width: 100%;
+    padding: 44px 40px 36px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ice) 30%, #E4C78A 70%, transparent);
   }
   .login-card .mark {
     width: 56px; height: 56px;
-    margin: 0 auto 24px;
+    margin: 0 auto 22px;
     border-radius: 14px;
     background: linear-gradient(135deg, var(--ice), #8FB3F0);
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px; font-weight: 700; color: var(--navy);
+    font-size: 22px; font-weight: 700; color: var(--navy);
+    letter-spacing: 0.01em;
   }
   .login-card h1 {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 600;
-    margin: 0 0 12px;
+    margin: 0 0 4px;
     letter-spacing: -0.01em;
+  }
+  .login-card .brand-sub {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    color: #8FA3D9;
+    margin: 0 0 26px;
   }
   .login-card p {
     color: #B9C4E8;
@@ -72,6 +97,12 @@
     margin: 0 0 32px;
   }
   #googleBtnWrap { display: flex; justify-content: center; }
+  .login-input-wrap { position: relative; margin-bottom: 12px; }
+  .login-input-wrap .icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 14px; opacity: 0.5; pointer-events: none;
+  }
+  .login-input-wrap .login-input { padding-left: 38px; margin-bottom: 0; }
   .login-input {
     width: 100%;
     box-sizing: border-box;
@@ -95,6 +126,12 @@
   }
   .login-submit-btn:hover { background: #EEF3FD; }
   .login-submit-btn:disabled { opacity: 0.6; cursor: default; }
+  .login-footer {
+    margin-top: 26px;
+    font-size: 11px;
+    color: #5F6FA0;
+    letter-spacing: 0.03em;
+  }
   .user-create-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .user-create-form .login-input { margin-bottom: 0; color: var(--text); background: #fff; border: 1px solid var(--border); }
   .user-create-form .login-input::placeholder { color: var(--muted); }
@@ -663,15 +700,23 @@
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="mark">FD</div>
-    <h1>Faktura Dashboard</h1>
+    <div class="mark">RM</div>
+    <h1>Royal Motors</h1>
+    <div class="brand-sub">dashboard</div>
     <p>Введите логин и пароль, выданные администратором.</p>
     <form id="loginForm" onsubmit="return false;">
-      <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username" class="login-input">
-      <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password" class="login-input">
+      <div class="login-input-wrap">
+        <span class="icon">👤</span>
+        <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username" class="login-input">
+      </div>
+      <div class="login-input-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password" class="login-input">
+      </div>
       <button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button>
     </form>
     <div id="loginError"></div>
+    <div class="login-footer">Faktura · Внутренняя система</div>
   </div>
 </div>
 
@@ -679,9 +724,9 @@
 <div id="app">
   <header class="topbar">
     <div class="brand">
-      <div class="mark">FD</div>
+      <div class="mark">RM</div>
       <div class="brand-text">
-        <div class="title">Faktura Dashboard</div>
+        <div class="title">Royal Motors</div>
         <div class="subtitle">Счета-фактуры · онлайн</div>
       </div>
     </div>
