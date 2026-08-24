@@ -205,6 +205,30 @@
   .modal-actions .btn-primary:hover { background: var(--navy-light); }
   #notifyBtn:disabled { opacity: 0.6; cursor: default; }
 
+  /* ---------- Контрагенты ---------- */
+  .contragent-search {
+    width: 100%; box-sizing: border-box; padding: 12px 16px; margin-bottom: 16px;
+    border-radius: 10px; border: 1px solid var(--border); font-size: 14px;
+    font-family: 'Inter', sans-serif; background: #fff;
+  }
+  .contragent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .contragent-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .contragent-card:hover { box-shadow: 0 6px 20px rgba(30,39,97,0.1); border-color: var(--ice); }
+  .contragent-card .cc-name { font-weight: 600; font-size: 14.5px; margin-bottom: 4px; }
+  .contragent-card .cc-inn { color: var(--muted); font-size: 11.5px; margin-bottom: 10px; }
+  .contragent-card .cc-stats { display: flex; justify-content: space-between; font-size: 12.5px; }
+  .contragent-card .cc-stats .num { font-weight: 700; color: var(--navy); }
+  .contragent-card .cc-stats .lbl { color: var(--muted); font-size: 10.5px; }
+  .contragent-card .cc-reject { margin-top: 8px; font-size: 11.5px; }
+  .modal-card.wide { max-width: 780px; max-height: 85vh; overflow-y: auto; }
+  .cc-detail-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 16px 0 20px; }
+  .cc-detail-summary > div { background: var(--ice-soft); border-radius: 10px; padding: 10px 12px; }
+  .cc-detail-summary .num { font-size: 17px; font-weight: 700; color: var(--navy); }
+  .cc-detail-summary .lbl { font-size: 11px; color: var(--muted); }
+
   .live-dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
     background: #6FE39A; margin-right: 6px; vertical-align: middle;
@@ -749,6 +773,7 @@
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')">🏢 Контрагенты</button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
       <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')">📋 Журнал действий</button>
@@ -1034,6 +1059,15 @@
     </div>
     </section>
 
+    <section id="section-suppliers" class="content-section">
+    <div class="panel">
+      <h2>Контрагенты <span class="sub" id="suppliersCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Карточка каждого контрагента: история, суммы, качество (отказы), скорость обработки. Нажмите на карточку, чтобы открыть подробности.</p>
+      <input type="text" id="contragentSearchInput" class="contragent-search" placeholder="🔍 Поиск по названию или ИНН...">
+      <div class="contragent-grid" id="contragentsGrid"></div>
+    </div>
+    </section>
+
     <section id="section-employees" class="content-section">
     <div class="panel">
       <h2>Сотрудники <span class="sub" id="employeesCountSub"></span></h2>
@@ -1153,6 +1187,12 @@
       <button onclick="closeAnnouncementModal()">Отмена</button>
       <button class="btn-primary" onclick="sendAnnouncement()">Отправить всем</button>
     </div>
+  </div>
+</div>
+
+<div id="contragentModal" class="modal-overlay">
+  <div class="modal-card wide" id="contragentModalCard">
+    <!-- JS orqali to'ldiriladi (renderContragentModal) -->
   </div>
 </div>
 
@@ -1377,6 +1417,7 @@ window.onload = () => {
   document.getElementById("sumFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("dateFrom").addEventListener("change", renderInvoicesTable);
   document.getElementById("dateTo").addEventListener("change", renderInvoicesTable);
+  document.getElementById("contragentSearchInput").addEventListener("input", renderContragentsList);
   document.getElementById("clearFiltersBtn").addEventListener("click", () => {
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "";
@@ -1734,6 +1775,7 @@ function renderAll() {
   renderAnalytics();
   renderRegistrations();
   renderEmployeesManage();
+  renderContragentsList();
 }
 
 function renderEmployeesDatalist() {
@@ -2863,6 +2905,135 @@ function renderHistoryTable() {
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.comment)}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.decidedAt)}</td>
     </tr>`).join("") || `<tr><td colspan="7" style="color:var(--muted)">История пуста</td></tr>`;
+}
+
+/* ============================================================
+   КОНТРАГЕНТЫ - kartochka: har bir kontragent (Контрагент) bo'yicha
+   umumiy tarix, summa va sifat ko'rsatkichlari.
+   ============================================================ */
+function computeContragentStats() {
+  const bySeller = {};
+  invoiceRows.forEach(r => {
+    if (!r.seller) return;
+    if (!bySeller[r.seller]) {
+      bySeller[r.seller] = {
+        name: r.seller, inn: r.inn || "", count: 0, sum: 0,
+        firstDate: r.date || "", lastDate: r.date || "",
+        accepted: 0, rejected: 0, notmine: 0, decided: 0, durations: [],
+      };
+    }
+    const c = bySeller[r.seller];
+    c.count++;
+    c.sum += r.sumRaw || 0;
+    if (!c.inn && r.inn) c.inn = r.inn;
+    if (r.date && (!c.firstDate || r.date < c.firstDate)) c.firstDate = r.date;
+    if (r.date && (!c.lastDate || r.date > c.lastDate)) c.lastDate = r.date;
+  });
+
+  const sentAtById = {};
+  invoiceRows.forEach(r => { if (r.id) sentAtById[r.id] = r.sentAt; });
+
+  allHistoryRows.forEach(h => {
+    const c = bySeller[h.seller];
+    if (!c) return;
+    const cls = classifyStatus(h.status);
+    if (cls === "accepted") c.accepted++;
+    else if (cls === "rejected") c.rejected++;
+    else if (cls === "notmine") c.notmine++;
+    if (cls === "accepted" || cls === "rejected" || cls === "notmine") c.decided++;
+
+    const sentAt = sentAtById[h.id];
+    if (sentAt) {
+      const sentDate = parseSheetDate(sentAt);
+      const decidedDate = parseSheetDate(h.decidedAt);
+      if (sentDate && decidedDate) {
+        const diff = decidedDate - sentDate;
+        if (diff >= 0) c.durations.push(diff);
+      }
+    }
+  });
+
+  return Object.values(bySeller).map(c => ({
+    ...c,
+    rejectRate: c.decided ? (c.rejected / c.decided) * 100 : 0,
+    avgMs: c.durations.length ? c.durations.reduce((a, b) => a + b, 0) / c.durations.length : null,
+  })).sort((a, b) => b.sum - a.sum);
+}
+
+let contragentStatsCache = [];
+
+function renderContragentsList() {
+  contragentStatsCache = computeContragentStats();
+  const search = (document.getElementById("contragentSearchInput")?.value || "").trim().toLowerCase();
+  const filtered = contragentStatsCache.filter(c =>
+    !search || c.name.toLowerCase().includes(search) || c.inn.toLowerCase().includes(search)
+  );
+
+  const sub = document.getElementById("suppliersCountSub");
+  if (sub) sub.textContent = `всего: ${contragentStatsCache.length}`;
+
+  const grid = document.getElementById("contragentsGrid");
+  if (!grid) return;
+  grid.innerHTML = filtered.map(c => `
+    <div class="contragent-card" onclick="openContragentCard('${encodeURIComponent(c.name)}')">
+      <div class="cc-name clamp-cell" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</div>
+      <div class="cc-inn">${c.inn ? "ИНН: " + escapeHtml(c.inn) : "ИНН не указан"}</div>
+      <div class="cc-stats">
+        <div><div class="num">${c.count}</div><div class="lbl">счетов</div></div>
+        <div><div class="num">${c.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="lbl">сумма</div></div>
+      </div>
+      ${c.decided ? `<div class="cc-reject" style="color:${c.rejectRate >= 30 ? "var(--red-fg)" : "var(--muted)"};">${c.rejectRate.toFixed(0)}% отказов (${c.rejected} из ${c.decided})</div>` : ""}
+    </div>`).join("") || `<p style="color:var(--muted);">Ничего не найдено</p>`;
+}
+
+function openContragentCard(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  const c = contragentStatsCache.find(x => x.name === name);
+  if (!c) return;
+
+  const rows = invoiceRows.filter(r => r.seller === name).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  const card = document.getElementById("contragentModalCard");
+  card.innerHTML = `
+    <h3>${escapeHtml(c.name)}</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 4px;">${c.inn ? "ИНН: " + escapeHtml(c.inn) : "ИНН не указан"}</p>
+    <p style="color:var(--muted);font-size:12px;margin:0;">Первый счёт: ${formatDateOnly(c.firstDate) || "—"} · Последний: ${formatDateOnly(c.lastDate) || "—"}</p>
+
+    <div class="cc-detail-summary">
+      <div><div class="num">${c.count}</div><div class="lbl">Всего счетов</div></div>
+      <div><div class="num">${c.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="lbl">Общая сумма</div></div>
+      <div><div class="num">${c.count ? Math.round(c.sum / c.count).toLocaleString("ru-RU") : 0}</div><div class="lbl">Средний счёт</div></div>
+      <div><div class="num">${c.accepted}</div><div class="lbl">Принято</div></div>
+      <div><div class="num">${c.rejected}</div><div class="lbl">Отклонено</div></div>
+      <div><div class="num">${c.decided ? c.rejectRate.toFixed(0) + "%" : "—"}</div><div class="lbl">Доля отказов</div></div>
+      <div><div class="num">${c.avgMs != null ? formatDuration(c.avgMs) : "—"}</div><div class="lbl">Среднее время ответа</div></div>
+    </div>
+
+    <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
+      <table class="invoices">
+        <thead><tr><th>№ / Дата</th><th>Организация</th><th>Сумма</th><th>Ответственный</th><th>Статус</th></tr></thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr>
+              <td><div style="font-weight:600;">${escapeHtml(r.no)}</div><div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div></td>
+              <td>${escapeHtml(r.buyer)}</td>
+              <td class="num-cell">${escapeHtml(r.sum)}</td>
+              <td>${escapeHtml(r.resp)}</td>
+              <td>${statusBadge(r.status)}</td>
+            </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет счетов</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeContragentModal()">Закрыть</button>
+    </div>
+  `;
+  document.getElementById("contragentModal").style.display = "flex";
+}
+
+function closeContragentModal() {
+  document.getElementById("contragentModal").style.display = "none";
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
