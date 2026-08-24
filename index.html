@@ -825,9 +825,9 @@
         <div class="analytics-box" style="grid-column: span 2;">
           <div class="analytics-box-head">
             <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
-            <h3>Топ-10 крупных счетов</h3>
+            <h3>Топ-10 поставщиков по сумме</h3>
           </div>
-          <p class="analytics-note">по сумме, за выбранный период</p>
+          <p class="analytics-note">общая сумма всех счетов поставщика за выбранный период</p>
           <div class="rank-list" id="topLargestTable"></div>
         </div>
 
@@ -861,7 +861,7 @@
           <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
         </div>
         <div class="filter-field">
-          <label>🏢 Покупатель</label>
+          <label>🏢 Организация</label>
           <select id="buyerFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
@@ -912,7 +912,7 @@
           <thead>
             <tr>
               <th>№</th>
-              <th>Покупатель</th>
+              <th>Организация</th>
               <th>Подразделение</th>
               <th>№ / Дата</th>
               <th>Контрагент</th>
@@ -1075,7 +1075,7 @@
       <div class="table-wrap" style="margin-top:20px;">
         <table class="invoices" id="reconcileTable" style="display:none;">
           <thead>
-            <tr><th>№</th><th>Покупатель</th><th>Номер</th><th>Дата</th><th>Контрагент</th><th>ИНН</th><th>Сумма</th><th>Ответственный</th><th>Статус в 1С</th></tr>
+            <tr><th>№</th><th>Организация</th><th>№ / Дата счёта</th><th>Контрагент</th><th>ИНН</th><th>Сумма</th><th>Пользователь</th><th>Статус в 1С</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -1332,7 +1332,7 @@ window.onload = () => {
 };
 
 function exportInvoicesCsv() {
-  const headers = ["Покупатель", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
+  const headers = ["Организация", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
   const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [headers.map(csvEscape).join(";")];
   lastFilteredInvoices.forEach(r => {
@@ -1778,7 +1778,7 @@ function renderInvoicesTable() {
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.department)}</td>
       <td>
         <div style="font-weight:600;">${escapeHtml(r.no)}</div>
-        <div style="font-size:10.5px;color:var(--muted);">${formatDateDisplay(r.date)}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div>
       </td>
       <td><span class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</span></td>
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.inn)}</td>
@@ -2118,12 +2118,24 @@ function renderAnalytics() {
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
 
-  // ---------- Топ-10 крупных счетов ----------
-  const topLargest = [...periodInvoiceRows].sort((a, b) => (b.sumRaw || 0) - (a.sumRaw || 0)).slice(0, 10);
+  // ---------- Топ-10 поставщиков по сумме ----------
+  // Har bir postavshikning shu davrdagi BARCHA счетlari yig'indisi bo'yicha
+  // reyting (bitta yirik счet emas, postavshikning umumiy summasi).
+  const supplierTotals = {};
+  periodInvoiceRows.forEach(r => {
+    if (!r.seller) return;
+    if (!supplierTotals[r.seller]) supplierTotals[r.seller] = { count: 0, sum: 0 };
+    supplierTotals[r.seller].count++;
+    supplierTotals[r.seller].sum += r.sumRaw || 0;
+  });
+  const topLargest = Object.entries(supplierTotals)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.sum - a.sum)
+    .slice(0, 10);
   renderRankList("topLargestTable", topLargest, {
-    name: r => r.seller,
-    value: r => r.sum,
-    meta: r => `Договор: ${r.contract || "-"}`,
+    name: r => r.name,
+    value: r => r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 }),
+    meta: r => `${r.count} счёт(ов)`,
   });
 
   // ---------- Системные ошибки ----------
@@ -2685,13 +2697,13 @@ function exportReconcileExcel() {
   const sorted = [...reconcileResultsCache].sort((a, b) => RECONCILE_ORDER[a.status1c] - RECONCILE_ORDER[b.status1c]);
   const data = sorted.map((r, i) => ({
     "№": i + 1,
-    "Покупатель": r.buyer,
-    "Номер": r.no,
-    "Дата": r.date,
+    "Организация": r.buyer,
+    "Номер счёта": r.no,
+    "Дата счёта": formatDateOnly(r.date),
     "Контрагент": r.seller,
     "ИНН": r.inn,
     "Сумма": r.sumRaw,
-    "Ответственный": r.resp,
+    "Пользователь": r.resp,
     "Статус в 1С": RECONCILE_STATUS_LABEL[r.status1c],
   }));
   const ws = XLSX.utils.json_to_sheet(data);
@@ -2725,8 +2737,10 @@ function renderReconcileResults(results) {
     <tr class="${r.status1c === "missing" ? "row-missing" : ""}">
       <td>${i + 1}</td>
       <td>${escapeHtml(r.buyer)}</td>
-      <td>${escapeHtml(r.no)}</td>
-      <td>${escapeHtml(r.date)}</td>
+      <td>
+        <div style="font-weight:600;">${escapeHtml(r.no)}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div>
+      </td>
       <td>${escapeHtml(r.seller)}</td>
       <td>${escapeHtml(r.inn)}</td>
       <td>${escapeHtml(r.sum)}</td>
@@ -2740,7 +2754,7 @@ function renderHistoryTable() {
     <tr>
       <td>
         <div style="font-weight:600;">${escapeHtml(r.no)}</div>
-        <div style="font-size:10.5px;color:var(--muted);">${formatDateDisplay(r.date)}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div>
       </td>
       <td>${escapeHtml(r.seller)}</td>
       <td style="font-size:12px;color:var(--muted)">${escapeHtml(r.department)}</td>
@@ -2751,12 +2765,25 @@ function renderHistoryTable() {
     </tr>`).join("") || `<tr><td colspan="7" style="color:var(--muted)">История пуста</td></tr>`;
 }
 
+// Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
+// vaqt qismi (masalan "T19:00:00.000Z") Google Sheets sana obyekti UTC'ga
+// aylantirilganda paydo bo'ladigan texnik chiqindi, haqiqiy vaqt emas -
+// shuning uchun ko'rsatilmaydi.
+function formatDateOnly(s) {
+  if (!s) return "";
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return s;
+  return `${m[3]}.${m[2]}.${m[1]}`;
+}
+// Sana + haqiqiy vaqt (masalan ariza berilgan/qaror qilingan payt) uchun -
+// bu yerda vaqt ma'noli, shuning uchun "DD.MM.YYYY HH:MM" ko'rinishida saqlab qolinadi.
 function formatDateDisplay(s) {
   if (!s) return "";
-  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})(.*)$/);
-  if (!m) return s;
-  const rest = m[4] ? m[4].trim() : "";
-  return `${m[3]}.${m[2]}.${m[1]}${rest ? " " + rest : ""}`;
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}`;
+  const m2 = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m2) return `${m2[3]}.${m2[2]}.${m2[1]}`;
+  return s;
 }
 
 function escapeHtml(s) {
