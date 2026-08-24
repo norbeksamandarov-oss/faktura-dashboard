@@ -867,6 +867,14 @@
         </div>
       </div>
 
+      <div class="panel" style="margin-top:16px;">
+        <h2>🏆 Уровни сотрудников
+          <span class="sub" style="cursor:help;border-bottom:1px dashed var(--muted);" title="Уровень растёт по мере того, сколько счетов вы обработали за ВСЁ время работы (не за месяц) - это просто элемент мотивации, не влияет на зарплату или оценку работы. Тот же уровень указывается в вашем ежемесячном личном отчёте в Telegram.">ℹ️ что это?</span>
+        </h2>
+        <p class="analytics-note">за всё время работы: 🏁 Новичок → 🚗 Водитель (15) → 🏎️ Профи (40) → 🏆 Гонщик (80) → 🥇 Ас (130) → 👑 Чемпион (190) → 💎 Легенда (250)</p>
+        <div class="rank-list" id="empLevelsTable"></div>
+      </div>
+
       <div class="analytics-group-title">🏭 Аналитика по поставщикам</div>
       <div class="analytics-grid">
         <div class="analytics-box" style="grid-column: span 2;">
@@ -1176,6 +1184,30 @@ const COL = {
 
 let uniqueBuyers = [];
 let uniqueDepartments = [];
+
+/* ============================================================
+   УРОВНИ СОТРУДНИКОВ (haydovchi darajasi) - bot.py'dagi RANK_TIERS bilan
+   BIR XIL bo'lishi kerak (Telegram'dagi oylik hisobot bilan mos kelishi
+   uchun). Chegaralar - "Ответственный" bo'yicha butun vaqt davomidagi
+   (barcha oylar) qabul+rad qilingan счетlar soni.
+   ============================================================ */
+const RANK_TIERS = [
+  { min: 0, name: "Новичок", icon: "🏁" },
+  { min: 15, name: "Водитель", icon: "🚗" },
+  { min: 40, name: "Профи", icon: "🏎️" },
+  { min: 80, name: "Гонщик", icon: "🏆" },
+  { min: 130, name: "Ас", icon: "🥇" },
+  { min: 190, name: "Чемпион", icon: "👑" },
+  { min: 250, name: "Легенда", icon: "💎" },
+];
+function rankForTotal(total) {
+  let idx = 0;
+  for (let i = 0; i < RANK_TIERS.length; i++) {
+    if (total >= RANK_TIERS[i].min) idx = i; else break;
+  }
+  const next = RANK_TIERS[idx + 1] || null;
+  return { ...RANK_TIERS[idx], next };
+}
 
 /* ============================================================
    O'Z TASHKILOTLARIMIZNI TANISH (Покупатель normalizatsiyasi)
@@ -2167,6 +2199,24 @@ function renderAnalytics() {
       <td>${w.pending}</td>
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+
+  // ---------- Уровни сотрудников (за ВСЁ время, не зависит от фильтра периода) ----------
+  const lifetimeCounts = {};
+  allHistoryRows.forEach(h => {
+    const cls = classifyStatus(h.status);
+    if ((cls === "accepted" || cls === "rejected") && h.resp) {
+      lifetimeCounts[h.resp] = (lifetimeCounts[h.resp] || 0) + 1;
+    }
+  });
+  const empLevels = Object.entries(lifetimeCounts)
+    .map(([name, total]) => ({ name, total, rank: rankForTotal(total) }))
+    .sort((a, b) => b.total - a.total);
+
+  renderRankList("empLevelsTable", empLevels, {
+    name: r => r.name,
+    value: r => `${r.rank.icon} ${r.rank.name}`,
+    meta: r => r.rank.next ? `${r.total} счётов · до «${r.rank.next.name}»: ${r.rank.next.min - r.total}` : `${r.total} счётов · максимальный уровень`,
+  });
 
   // ---------- Топ-10 поставщиков по сумме ----------
   // Har bir postavshikning shu davrdagi BARCHA счетlari yig'indisi bo'yicha
