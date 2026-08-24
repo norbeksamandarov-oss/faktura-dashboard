@@ -1216,6 +1216,20 @@
   </div>
 </div>
 
+<div id="forcePasswordModal" class="modal-overlay">
+  <div class="modal-card">
+    <h3>🔑 Смените пароль</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 14px;">Это ваш первый вход (или пароль был сброшен администратором). Пожалуйста, задайте свой собственный пароль, прежде чем продолжить.</p>
+    <input type="password" id="forceOldPassword" class="login-input" placeholder="Текущий (временный) пароль" style="color:var(--text);border:1px solid var(--border);background:#fff;">
+    <input type="password" id="forceNewPassword" class="login-input" placeholder="Новый пароль (минимум 4 символа)" style="color:var(--text);border:1px solid var(--border);background:#fff;margin-top:10px;">
+    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Повторите новый пароль" style="color:var(--text);border:1px solid var(--border);background:#fff;margin-top:10px;">
+    <div id="forcePasswordError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="forcePasswordSubmitBtn" onclick="submitForcePasswordChange()">Сохранить и продолжить</button>
+    </div>
+  </div>
+</div>
+
 <div id="loadingOverlay" style="display:none;">
   <div class="spinner"></div> Загрузка данных...
 </div>
@@ -1390,11 +1404,14 @@ async function handleLoginSubmit() {
     currentRole = data.role;
     currentUserName = data.name;
     currentUsername = username;
-    saveSession({ token: authToken, role: currentRole, name: currentUserName, username: currentUsername });
+    saveSession({
+      token: authToken, role: currentRole, name: currentUserName, username: currentUsername,
+      mustChangePassword: !!data.mustChangePassword,
+    });
     document.getElementById("loginPassword").value = "";
     btn.classList.add("success");
     btn.textContent = "✓ Готово";
-    setTimeout(onLoggedIn, 350);
+    setTimeout(() => onLoggedIn(!!data.mustChangePassword), 350);
   } catch (e) {
     errEl.textContent = e.message || "Ошибка входа";
     btn.disabled = false;
@@ -1409,7 +1426,7 @@ function attemptSessionRestore() {
     currentRole = session.role;
     currentUserName = session.name;
     currentUsername = session.username;
-    onLoggedIn();
+    onLoggedIn(!!session.mustChangePassword);
   } else {
     showLoginScreen();
   }
@@ -1515,7 +1532,7 @@ function showLoginError(msg) {
   el.style.display = "block";
 }
 
-async function onLoggedIn() {
+async function onLoggedIn(forcePasswordChange) {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("app").style.display = "block";
   document.getElementById("userInfo").innerHTML = `<span>${escapeHtml(currentUserName || currentUsername || "Пользователь")}</span>`;
@@ -1525,6 +1542,51 @@ async function onLoggedIn() {
   // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
   autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
+
+  if (forcePasswordChange) {
+    document.getElementById("forcePasswordModal").style.display = "flex";
+  }
+}
+
+async function submitForcePasswordChange() {
+  const oldPassword = document.getElementById("forceOldPassword").value;
+  const newPassword = document.getElementById("forceNewPassword").value;
+  const newPassword2 = document.getElementById("forceNewPassword2").value;
+  const errEl = document.getElementById("forcePasswordError");
+  errEl.textContent = "";
+
+  if (!oldPassword || !newPassword || !newPassword2) {
+    errEl.textContent = "Заполните все поля";
+    return;
+  }
+  if (newPassword.length < 4) {
+    errEl.textContent = "Новый пароль слишком короткий (минимум 4 символа)";
+    return;
+  }
+  if (newPassword !== newPassword2) {
+    errEl.textContent = "Новые пароли не совпадают";
+    return;
+  }
+
+  const btn = document.getElementById("forcePasswordSubmitBtn");
+  btn.disabled = true;
+  btn.textContent = "Сохранение...";
+  try {
+    await apiCall("changeOwnPassword", { oldPassword, newPassword });
+    // Sessiyadagi "majburiy o'zgartirish" belgisini ham olib tashlaymiz -
+    // aks holda keyingi sahifa yangilanganda modal yana chiqib qoladi.
+    const session = loadSession();
+    if (session) saveSession({ ...session, mustChangePassword: false });
+    document.getElementById("forcePasswordModal").style.display = "none";
+    document.getElementById("forceOldPassword").value = "";
+    document.getElementById("forceNewPassword").value = "";
+    document.getElementById("forceNewPassword2").value = "";
+  } catch (e) {
+    errEl.textContent = e.message || "Не удалось изменить пароль";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Сохранить и продолжить";
+  }
 }
 
 /* Admin bo'lmagan foydalanuvchidan "Сотрудники", "Заявки" va
@@ -2586,7 +2648,9 @@ function renderUsersTable() {
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
-      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : "employee"}</td>
+      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : "employee"}
+        ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;">⏳ ждёт смены пароля</div>' : ""}
+      </td>
       <td>${u.invoiceCount || 0}</td>
       <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
       <td>
