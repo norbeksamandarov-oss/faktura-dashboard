@@ -430,6 +430,13 @@
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
   #exportCsvBtn:hover { background: var(--navy-light); }
+  #suggestRespBtn {
+    padding: 9px 16px; border-radius: 9px; border: 1px solid var(--amber-fg);
+    background: var(--amber-bg); color: var(--amber-fg); font-family: 'Inter';
+    font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
+  }
+  #suggestRespBtn:hover { background: #FFE9BC; }
+  #suggestRespBtn:disabled { opacity: 0.6; cursor: default; }
 
   .reg-btn {
     padding: 6px 12px; border-radius: 7px; border: none; font-size: 12px;
@@ -979,12 +986,25 @@
           </select>
         </div>
         <div class="filter-field">
+          <label>⏳ Дней с даты</label>
+          <select class="status-filter" id="daysFilter">
+            <option value="">Все</option>
+            <option value="green">🟢 В норме (&lt; 5 дней)</option>
+            <option value="amber">🟡 Скоро истекает (5-7)</option>
+            <option value="red">🔴 Просрочено (8+)</option>
+          </select>
+        </div>
+        <div class="filter-field">
           <label>&nbsp;</label>
           <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
           <button id="exportCsvBtn">⬇ Экспорт в CSV</button>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="suggestRespBtn" title="Для счетов без ответственного - подставляет того, кто чаще всего обрабатывал счета этого контрагента по этому договору">🎯 Подсказать ответственных</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1410,6 +1430,7 @@ window.onload = () => {
   document.getElementById("refreshBtn").onclick = () => loadAllData(false);
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("daysFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
@@ -1418,9 +1439,11 @@ window.onload = () => {
   document.getElementById("dateFrom").addEventListener("change", renderInvoicesTable);
   document.getElementById("dateTo").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentSearchInput").addEventListener("input", renderContragentsList);
+  document.getElementById("suggestRespBtn").addEventListener("click", suggestResponsibles);
   document.getElementById("clearFiltersBtn").addEventListener("click", () => {
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "";
+    document.getElementById("daysFilter").value = "";
     document.getElementById("buyerFilter").value = "";
     document.getElementById("departmentFilter").value = "";
     document.getElementById("contragentFilter").value = "";
@@ -1686,7 +1709,8 @@ async function loadAllData(silent) {
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
-      id: r[0] || "", buyer: r[1] || "", no: r[2] || "", date: r[3] || "", seller: r[4] || "", resp: r[7] || "",
+      id: r[0] || "", buyer: r[1] || "", no: r[2] || "", date: r[3] || "", seller: r[4] || "",
+      contract: r[5] || "", resp: r[7] || "",
       status: r[8] || "", comment: r[9] || "", department: r[10] || "", decidedAt: r[11] || "",
       sumRaw: parseFloat(String(r[6] || "0").replace(/\s/g, "").replace(",", ".")) || 0
     })).filter(r => r.no);
@@ -1763,6 +1787,16 @@ function daysBadge(daysStr) {
   if (d >= 8) cls = "days-red";
   else if (d >= 5) cls = "days-amber";
   return `<span class="days-badge ${cls}">${d}</span>`;
+}
+
+// daysBadge bilan BIR XIL mantiq, lekin faqat rang kategoriyasini qaytaradi
+// (green/amber/red) - "Дней с даты" filtri shuni ishlatadi.
+function daysColorClass(daysStr) {
+  const d = parseInt(daysStr, 10);
+  if (isNaN(d)) return null;
+  if (d >= 8) return "red";
+  if (d >= 5) return "amber";
+  return "green";
 }
 
 function renderAll() {
@@ -1870,6 +1904,7 @@ function renderInvoicesTable() {
 
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
+  const daysFilterVal = document.getElementById("daysFilter").value;
   const buyerVal = document.getElementById("buyerFilter").value;
   const departmentVal = document.getElementById("departmentFilter").value;
   const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
@@ -1880,6 +1915,7 @@ function renderInvoicesTable() {
 
   const filtered = invoiceRows.filter(r => {
     if (filter && classifyStatus(r.status) !== filter) return false;
+    if (daysFilterVal && daysColorClass(r.days) !== daysFilterVal) return false;
     if (buyerVal && canonicalBuyer(r.buyer) !== buyerVal) return false;
     if (departmentVal && r.department !== departmentVal) return false;
     if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
@@ -3064,6 +3100,90 @@ function escapeHtml(s) {
 /* ============================================================
    РЕДАКТИРОВАНИЕ (пишет напрямую в Google Sheets)
    ============================================================ */
+
+/* ---------- Подсказка ответственных (на основе истории по контрагенту+договору) ---------- */
+function buildRespSuggestionMaps() {
+  const byContract = {}; // "контрагент|договор" -> {имя: сколько раз}
+  const bySeller = {};   // "контрагент" -> {имя: сколько раз} (захира variant, agar договor bo'yicha topilmasa)
+  allHistoryRows.forEach(h => {
+    if (!h.seller || !h.resp) return;
+    const cls = classifyStatus(h.status);
+    if (cls !== "accepted" && cls !== "rejected") return; // faqat haqiqiy yakunlangan qarorlar
+    const contractKey = `${h.seller}|${h.contract || ""}`;
+    byContract[contractKey] = byContract[contractKey] || {};
+    byContract[contractKey][h.resp] = (byContract[contractKey][h.resp] || 0) + 1;
+    bySeller[h.seller] = bySeller[h.seller] || {};
+    bySeller[h.seller][h.resp] = (bySeller[h.seller][h.resp] || 0) + 1;
+  });
+  return { byContract, bySeller };
+}
+
+function pickTopName(counts) {
+  let best = null, bestCount = 0;
+  Object.entries(counts).forEach(([name, count]) => {
+    if (count > bestCount) { best = name; bestCount = count; }
+  });
+  return best;
+}
+
+async function applyRespSilent(rowIndex, value) {
+  const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+  const decidedCls = r ? classifyStatus(r.status) : null;
+  if (decidedCls === "accepted" || decidedCls === "rejected") return false;
+  const range = `'${SHEET_INVOICES}'!${colLetter(COL.RESP)}${rowIndex}`;
+  try {
+    await sheetsUpdateCell(range, value);
+    if (r) r.resp = value;
+    return true;
+  } catch (e) {
+    console.error(`Не удалось сохранить ответственного для строки ${rowIndex}:`, e);
+    return false;
+  }
+}
+
+async function suggestResponsibles() {
+  const { byContract, bySeller } = buildRespSuggestionMaps();
+  const targets = invoiceRows.filter(r => !r.resp && classifyStatus(r.status) === "new" && r.seller);
+  if (!targets.length) {
+    alert("Нет счетов без ответственного, которым можно подобрать подсказку.");
+    return;
+  }
+
+  const suggestions = targets.map(r => {
+    const contractKey = `${r.seller}|${r.contract || ""}`;
+    const suggested = (byContract[contractKey] && pickTopName(byContract[contractKey]))
+      || (bySeller[r.seller] && pickTopName(bySeller[r.seller]));
+    return { row: r, suggested };
+  }).filter(x => x.suggested);
+
+  if (!suggestions.length) {
+    alert("Для незаполненных счетов пока нет истории по этому контрагенту/договору - подсказать некому.");
+    return;
+  }
+
+  const preview = suggestions.slice(0, 8).map(s => `№${s.row.no} (${s.row.seller}) → ${s.suggested}`).join("\n");
+  const more = suggestions.length > 8 ? `\n...и ещё ${suggestions.length - 8}` : "";
+  const confirmed = confirm(
+    `Подобрано ${suggestions.length} совпадений по истории (кто чаще всего обрабатывал счета этого контрагента/договора). Заполнить поле «Ответственный» автоматически?\n\n${preview}${more}`
+  );
+  if (!confirmed) return;
+
+  const btn = document.getElementById("suggestRespBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ Применяю...";
+  isEditingRow = true;
+  let applied = 0;
+  for (const s of suggestions) {
+    const ok = await applyRespSilent(s.row.rowIndex, s.suggested);
+    if (ok) applied++;
+  }
+  isEditingRow = false;
+  btn.disabled = false;
+  btn.textContent = "🎯 Подсказать ответственных";
+  renderInvoicesTable();
+  alert(`Готово: заполнено ${applied} из ${suggestions.length}.`);
+}
+
 async function updateResp(rowIndex, value, selectEl) {
   // XAVFSIZLIK: hatto UI chetlab o'tilsa ham (masalan konsoldan majburiy
   // chaqirilsa), qaror allaqachon chiqarilgan (Принято/Отклонено) qatorda
