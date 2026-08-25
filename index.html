@@ -502,6 +502,13 @@
     font-family: 'Inter'; font-size: 12.5px; max-width: 160px; width: 100%;
   }
   input.send-check { width: 18px; height: 18px; cursor: pointer; }
+  .remind-btn {
+    margin-left: 6px; border: none; background: none; cursor: pointer;
+    font-size: 13px; opacity: 0.6; transition: opacity .15s, transform .15s;
+    vertical-align: middle;
+  }
+  .remind-btn:hover { opacity: 1; transform: scale(1.15); }
+  .remind-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
 
   /* ---------- "Ответственный" uchun o'zimiz chizgan dropdown ---------- */
   .resp-suggest-box {
@@ -2225,7 +2232,12 @@ function renderInvoicesTable() {
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
         <span class="save-flash">✓</span>
       </td>
-      <td>${statusBadge(r.status)}</td>
+      <td>
+        ${statusBadge(r.status)}
+        ${currentRole === "admin" && classifyStatus(r.status) === "sent" ? `
+          <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)">🔔</button>
+        ` : ""}
+      </td>
       <td>${daysBadge(r.days)}</td>
       <td style="font-size:12px;color:var(--muted)"><span class="clamp-cell-comment" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</span></td>
     </tr>`).join("");
@@ -3516,6 +3528,22 @@ function flashSaved(tr) {
   if (!flash) return;
   flash.classList.add("show");
   setTimeout(() => flash.classList.remove("show"), 1200);
+}
+
+async function sendManualReminder(facturaid, btnEl) {
+  btnEl.disabled = true;
+  const original = btnEl.textContent;
+  btnEl.textContent = "⏳";
+  try {
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B7`, facturaid);
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B8`, new Date().toISOString());
+    btnEl.textContent = "✅";
+    setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 2000);
+  } catch (e) {
+    alert("Не удалось отправить напоминание: " + e.message);
+    btnEl.textContent = original;
+    btnEl.disabled = false;
+  }
 }
 </script>
 </body>
