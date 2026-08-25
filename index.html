@@ -503,6 +503,24 @@
   }
   input.send-check { width: 18px; height: 18px; cursor: pointer; }
 
+  /* ---------- "Ответственный" uchun o'zimiz chizgan dropdown ---------- */
+  .resp-suggest-box {
+    position: absolute;
+    z-index: 500;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 14px 32px rgba(30,39,97,0.18);
+    max-height: 260px;
+    overflow-y: auto;
+    display: none;
+    padding: 4px;
+  }
+  .resp-suggest-item { padding: 7px 10px; border-radius: 7px; cursor: pointer; }
+  .resp-suggest-item:hover, .resp-suggest-item.active { background: var(--ice-soft); }
+  .resp-suggest-item .rsi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .resp-suggest-item .rsi-username { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
   .clamp-cell {
     display: -webkit-box;
     max-width: 200px;
@@ -1033,7 +1051,6 @@
         </table>
       </div>
       <p class="scroll-hint">↔️ Прокрутите таблицу вправо/влево (или используйте полосу прокрутки внизу), чтобы увидеть все столбцы</p>
-      <datalist id="employeesDatalist"></datalist>
     </div>
     </section>
 
@@ -1871,7 +1888,6 @@ function renderAll() {
   renderStats();
   renderBuyerFilterOptions();
   renderDepartmentFilterOptions();
-  renderEmployeesDatalist();
   renderInvoicesTable();
   renderHistoryTable();
   renderAnalytics();
@@ -1928,32 +1944,117 @@ function approximateCyrillic(s) {
   return out;
 }
 
-function renderEmployeesDatalist() {
-  const dl = document.getElementById("employeesDatalist");
-  const opts = [];
+/* ============================================================
+   "Ответственный" maydoni uchun O'ZIMIZ CHIZGAN, chiroyli dropdown
+   (brauzerning tabiiy <datalist>'i o'rniga - u dizayn qilib bo'lmaydi va
+   har bir odamni bir necha marta ko'rsatib, chalkashtirar edi).
+   Sichqoncha, klaviatura (↑↓ Enter Esc) - hammasi ishlaydi. Har bir xodim
+   FAQAT BIR MARTA ko'rinadi (ism + pastida kulrang @username).
+   ============================================================ */
+let respSuggestBoxEl = null;
+let respSuggestActiveInput = null;
+let respSuggestHighlightIndex = -1;
+let respSuggestItems = [];
+
+function ensureRespSuggestBox() {
+  if (respSuggestBoxEl) return respSuggestBoxEl;
+  const box = document.createElement("div");
+  box.className = "resp-suggest-box";
+  document.body.appendChild(box);
+  respSuggestBoxEl = box;
+  return box;
+}
+
+function buildRespSuggestItems(query) {
+  const norm = normalizeForSearch(query);
+  const items = [];
   employees.forEach(e => {
     if (!e.name) return;
-    opts.push(`<option value="${escapeHtml(e.name)}"></option>`);
     const uname = String(e.username || "").replace(/^@/, "").trim();
-    // Username bo'yicha ham qidirish/tanlash mumkin bo'lishi uchun -
-    // alohida variant (value = username), lekin tanlanganda maydonga
-    // baribir ISM yoziladi (resolveRespInput orqali, pastda).
-    if (uname && uname.toLowerCase() !== e.name.toLowerCase()) {
-      opts.push(`<option value="${escapeHtml(uname)}">${escapeHtml(e.name)} (@${escapeHtml(uname)})</option>`);
-    }
-    // Kirill/lotin alifbosi bo'yicha ham topilishi uchun - taxminiy
-    // qarama-qarshi alifbodagi variant ham qo'shiladi (faqat native
-    // datalist takliflarida ko'rinishi uchun; tanlanganda baribir asl
-    // ism qo'yiladi - pastdagi resolveRespInput orqali).
-    const hasCyrillic = /[а-яёўғқҳ]/i.test(e.name);
-    if (!hasCyrillic) {
-      const cyrGuess = approximateCyrillic(e.name);
-      if (cyrGuess && cyrGuess.toLowerCase() !== e.name.toLowerCase()) {
-        opts.push(`<option value="${escapeHtml(cyrGuess)}">${escapeHtml(e.name)}</option>`);
-      }
+    const nameNorm = normalizeForSearch(e.name);
+    const unameNorm = normalizeForSearch(uname);
+    const cyrGuessNorm = normalizeForSearch(approximateCyrillic(e.name));
+    if (!norm || nameNorm.includes(norm) || (uname && unameNorm.includes(norm)) || cyrGuessNorm.includes(norm)) {
+      items.push({ name: e.name, username: uname });
     }
   });
-  dl.innerHTML = opts.join("");
+  return items;
+}
+
+function showRespSuggestions(inputEl) {
+  respSuggestActiveInput = inputEl;
+  const items = buildRespSuggestItems(inputEl.value.trim());
+  respSuggestItems = items;
+  respSuggestHighlightIndex = -1;
+
+  const box = ensureRespSuggestBox();
+  if (!items.length) {
+    box.style.display = "none";
+    return;
+  }
+  box.innerHTML = items.map((it, i) => `
+    <div class="resp-suggest-item" data-idx="${i}" onmousedown="event.preventDefault(); selectRespSuggestion(${i})">
+      <div class="rsi-name">${escapeHtml(it.name)}</div>
+      ${it.username ? `<div class="rsi-username">@${escapeHtml(it.username)}</div>` : ""}
+    </div>`).join("");
+
+  const rect = inputEl.getBoundingClientRect();
+  box.style.left = `${rect.left + window.scrollX}px`;
+  box.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  box.style.width = `${Math.max(rect.width, 230)}px`;
+  box.style.display = "block";
+}
+
+function selectRespSuggestion(idx) {
+  const item = respSuggestItems[idx];
+  const inputEl = respSuggestActiveInput;
+  if (!item || !inputEl) return;
+  inputEl.value = item.name;
+  hideRespSuggestions();
+  updateResp(parseInt(inputEl.dataset.rowIndex, 10), item.name, inputEl);
+}
+
+function hideRespSuggestions() {
+  if (respSuggestBoxEl) respSuggestBoxEl.style.display = "none";
+  respSuggestHighlightIndex = -1;
+}
+
+function updateRespHighlight() {
+  if (!respSuggestBoxEl) return;
+  [...respSuggestBoxEl.children].forEach((el, i) => el.classList.toggle("active", i === respSuggestHighlightIndex));
+  const activeEl = respSuggestBoxEl.children[respSuggestHighlightIndex];
+  if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
+}
+
+function handleRespKeydown(event, inputEl) {
+  const visible = respSuggestBoxEl && respSuggestBoxEl.style.display !== "none" && respSuggestItems.length;
+  if (event.key === "ArrowDown" && visible) {
+    event.preventDefault();
+    respSuggestHighlightIndex = Math.min(respSuggestHighlightIndex + 1, respSuggestItems.length - 1);
+    updateRespHighlight();
+  } else if (event.key === "ArrowUp" && visible) {
+    event.preventDefault();
+    respSuggestHighlightIndex = Math.max(respSuggestHighlightIndex - 1, 0);
+    updateRespHighlight();
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    if (visible && respSuggestHighlightIndex >= 0) {
+      selectRespSuggestion(respSuggestHighlightIndex);
+    } else {
+      resolveRespInput(inputEl);
+      updateResp(parseInt(inputEl.dataset.rowIndex, 10), inputEl.value, inputEl);
+      hideRespSuggestions();
+    }
+  } else if (event.key === "Escape") {
+    hideRespSuggestions();
+  }
+}
+
+function handleRespBlur(inputEl) {
+  isEditingRow = false;
+  hideRespSuggestions();
+  resolveRespInput(inputEl);
+  updateResp(parseInt(inputEl.dataset.rowIndex, 10), inputEl.value, inputEl);
 }
 
 function resolveRespInput(inputEl) {
@@ -2111,11 +2212,14 @@ function renderInvoicesTable() {
       <td>${classifyStatus(r.status) === "accepted" || classifyStatus(r.status) === "rejected" ? `
         <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя">🔒 ${escapeHtml(r.resp)}</span>
       ` : `
-        <input type="text" class="resp-input" list="employeesDatalist"
+        <input type="text" class="resp-input" data-row-index="${r.rowIndex}"
                value="${escapeHtml(r.resp)}"
                placeholder="Введите имя или @username..."
-               onfocus="isEditingRow=true" onblur="isEditingRow=false"
-               onchange="resolveRespInput(this); updateResp(${r.rowIndex}, this.value, this)">
+               autocomplete="off"
+               onfocus="isEditingRow=true; showRespSuggestions(this)"
+               oninput="showRespSuggestions(this)"
+               onkeydown="handleRespKeydown(event, this)"
+               onblur="handleRespBlur(this)">
       `}</td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
