@@ -529,6 +529,7 @@
   .status-rejected { background: var(--red-bg); color: var(--red-fg); }
   .status-notmine { background: #FFE7CE; color: #9A5300; }
   .status-error { background: var(--red-bg); color: var(--red-fg); }
+  .status-pendingboss { background: #E4D9FA; color: #5B3AA6; }
 
   .days-badge { padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 700; }
   .days-green { background: var(--green-bg); color: var(--green-fg); }
@@ -980,6 +981,7 @@
             <option value="">Все статусы</option>
             <option value="new">Не отправлено</option>
             <option value="sent">Отправлено (ждёт)</option>
+            <option value="pendingboss">На согласовании у руководителя</option>
             <option value="accepted">Принято</option>
             <option value="rejected">Отклонено</option>
             <option value="notmine">Не мой счёт</option>
@@ -1828,6 +1830,7 @@ function classifyStatus(status) {
   if (status.includes("Принято")) return "accepted";
   if (status.includes("Отклонено")) return "rejected";
   if (status.includes("Не мой счет") || status.includes("Не мой счёт")) return "notmine";
+  if (status.includes("согласовании")) return "pendingboss";
   if (status.includes("Отправлено")) return "sent";
   if (status.includes("Ошибка")) return "error";
   return "other";
@@ -1837,7 +1840,8 @@ function statusBadge(status) {
   const cls = classifyStatus(status);
   const map = {
     new: "status-new", sent: "status-sent", accepted: "status-accepted",
-    rejected: "status-rejected", notmine: "status-notmine", error: "status-error", other: "status-new"
+    rejected: "status-rejected", notmine: "status-notmine", error: "status-error",
+    pendingboss: "status-pendingboss", other: "status-new"
   };
   return `<span class="status-badge ${map[cls]}">${status || "—"}</span>`;
 }
