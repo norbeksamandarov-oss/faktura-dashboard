@@ -509,6 +509,7 @@
   }
   .remind-btn:hover { opacity: 1; transform: scale(1.15); }
   .remind-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
+  .recall-btn:hover { transform: scale(1.15); filter: drop-shadow(0 0 2px var(--red-fg)); }
 
   /* ---------- "Ответственный" uchun o'zimiz chizgan dropdown ---------- */
   .resp-suggest-box {
@@ -2234,8 +2235,11 @@ function renderInvoicesTable() {
       </td>
       <td>
         ${statusBadge(r.status)}
-        ${currentRole === "admin" && classifyStatus(r.status) === "sent" ? `
+        ${classifyStatus(r.status) === "sent" ? `
           <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)">🔔</button>
+          ${currentRole === "admin" ? `
+            <button class="remind-btn recall-btn" title="Отозвать - если счёт отправлен не тому сотруднику. Удалит сообщение у него в чате и вернёт счёт в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)">🗑️</button>
+          ` : ""}
         ` : ""}
       </td>
       <td>${daysBadge(r.days)}</td>
@@ -3541,6 +3545,30 @@ async function sendManualReminder(facturaid, btnEl) {
     setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 2000);
   } catch (e) {
     alert("Не удалось отправить напоминание: " + e.message);
+    btnEl.textContent = original;
+    btnEl.disabled = false;
+  }
+}
+
+async function recallInvoice(facturaid, btnEl) {
+  const confirmed = confirm(
+    "Отозвать этот счёт?\n\n" +
+    "Сообщение будет удалено из чата сотрудника, счёт вернётся в статус " +
+    "«Не отправлено», поле «Ответственный» очистится - вы сможете назначить " +
+    "правильного сотрудника и отправить заново."
+  );
+  if (!confirmed) return;
+
+  btnEl.disabled = true;
+  const original = btnEl.textContent;
+  btnEl.textContent = "⏳";
+  try {
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B10`, facturaid);
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B11`, new Date().toISOString());
+    btnEl.textContent = "✅";
+    setTimeout(() => { loadAllData(true); }, 1500);
+  } catch (e) {
+    alert("Не удалось отозвать счёт: " + e.message);
     btnEl.textContent = original;
     btnEl.disabled = false;
   }
