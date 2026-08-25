@@ -44,6 +44,11 @@
     align-items: center;
     justify-content: center;
     background: radial-gradient(circle at 20% 15%, #2A3572 0%, var(--navy) 45%, #141A45 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  #confettiContainer {
+    position: absolute; inset: 0; overflow: hidden; pointer-events: none;
   }
   .login-card {
     text-align: center;
@@ -67,6 +72,158 @@
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--ice) 30%, #E4C78A 70%, transparent);
   }
+
+  /* ---------- MUSTAQILLIK BAYRAMI (25.08 - 04.09.2026, avtomatik) ---------- */
+  #loginScreen.holiday {
+    background: radial-gradient(circle at 20% 15%, #1a3a5c 0%, var(--navy) 40%, #141A45 100%);
+  }
+  #loginScreen.holiday::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,153,181,0.35), transparent 35%),
+      radial-gradient(circle at 85% 25%, rgba(30,181,58,0.3), transparent 35%),
+      radial-gradient(circle at 50% 90%, rgba(206,17,38,0.22), transparent 40%);
+    animation: holiday-glow 6s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes holiday-glow {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+  #loginScreen.holiday .login-card {
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 0 30px 70px -25px rgba(0,0,0,0.6), 0 0 60px -10px rgba(30,181,58,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    animation: holiday-card-pulse 4s ease-in-out infinite;
+  }
+  @keyframes holiday-card-pulse {
+    0%, 100% { box-shadow: 0 30px 70px -25px rgba(0,0,0,0.6), 0 0 55px -12px rgba(0,153,181,0.4), inset 0 1px 0 rgba(255,255,255,0.08); }
+    50% { box-shadow: 0 30px 70px -25px rgba(0,0,0,0.6), 0 0 70px -8px rgba(30,181,58,0.5), inset 0 1px 0 rgba(255,255,255,0.08); }
+  }
+  #loginScreen.holiday .login-card::before {
+    background: linear-gradient(90deg, transparent, #0099B5 15%, #FFFFFF 38%, #1EB53A 55%, #CE1126 78%, transparent);
+    height: 4px;
+    background-size: 200% 100%;
+    animation: holiday-shimmer 3s linear infinite;
+  }
+  @keyframes holiday-shimmer {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+  }
+  #loginScreen.holiday .holiday-banner {
+    display: block;
+    font-size: 14px;
+    padding: 9px 18px;
+    background: linear-gradient(90deg, #0099B5, #1EB53A, #0099B5);
+    background-size: 200% 100%;
+    animation: holiday-banner-shift 3.5s ease-in-out infinite, holiday-banner-pop 0.5s ease-out;
+    box-shadow: 0 4px 18px -4px rgba(30,181,58,0.6);
+  }
+  @keyframes holiday-banner-shift {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+  }
+  @keyframes holiday-banner-pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .holiday-banner {
+    display: none;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #FFFFFF;
+    border-radius: 20px;
+    margin: 0 auto 22px;
+    width: fit-content;
+  }
+  #loginScreen.holiday .mark {
+    background: linear-gradient(135deg, #0099B5, #1EB53A);
+    animation: holiday-mark-spin 5s ease-in-out infinite;
+  }
+  @keyframes holiday-mark-spin {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(4deg) scale(1.04); }
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -30px;
+    opacity: 0.9;
+    animation: confetti-fall linear infinite;
+    pointer-events: none;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    85% { opacity: 0.8; }
+    100% { transform: translateY(115vh) rotate(420deg); opacity: 0; }
+  }
+  .firework {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: firework-burst 1.4s ease-out infinite;
+  }
+  @keyframes firework-burst {
+    0% { transform: scale(0); opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+    60% { opacity: 1; }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+      box-shadow:
+        0 -60px 0 -1px currentColor, 42px -42px 0 -1px currentColor,
+        60px 0 0 -1px currentColor, 42px 42px 0 -1px currentColor,
+        0 60px 0 -1px currentColor, -42px 42px 0 -1px currentColor,
+        -60px 0 0 -1px currentColor, -42px -42px 0 -1px currentColor;
+    }
+  }
+
+  /* --- An'anaviy o'zbek naqshi (burchak bezagi) --- */
+  .ornament-corner {
+    position: absolute;
+    top: -18px; left: -18px;
+    width: 160px; height: 160px;
+    display: none;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: -1;
+  }
+  #loginScreen.holiday .ornament-corner { display: block; }
+  .ornament-corner.br { top: auto; left: auto; bottom: -18px; right: -18px; transform: rotate(180deg); opacity: 0.35; }
+
+  /* --- "35 йил" nishoni --- */
+  .anniversary-badge {
+    display: none;
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FFE9A8, #D4AF37 70%);
+    box-shadow: 0 4px 14px -3px rgba(212,175,55,0.6), inset 0 0 0 2px rgba(255,255,255,0.4);
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    z-index: 2;
+    animation: badge-pop 0.6s ease-out;
+  }
+  #loginScreen.holiday .anniversary-badge { display: flex; }
+  .anniversary-badge .num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #1E2761; line-height: 1; }
+  .anniversary-badge .txt { font-size: 7.5px; font-weight: 700; color: #1E2761; letter-spacing: 0.04em; text-transform: uppercase; }
+  @keyframes badge-pop {
+    0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .holiday-quote {
+    display: none;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: #B7E4C7;
+    text-align: center;
+    margin: -6px 0 20px;
+    line-height: 1.4;
+    position: relative; z-index: 1;
+  }
+  #loginScreen.holiday .holiday-quote { display: block; }
+
   .login-card .mark {
     width: 56px; height: 56px;
     margin: 0 auto 22px;
@@ -759,7 +916,58 @@
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="loginScreen">
+  <div id="confettiContainer"></div>
   <div class="login-card">
+    <svg class="ornament-corner tl" viewBox="0 0 220 220" fill="#2DD4A7">
+      <path d="M117.6,107.5 Q135.3,99.0 156.0,110.0 Q135.3,121.0 117.6,112.5 Z"/>
+      <path d="M117.1,113.6 Q135.7,120.2 142.5,142.5 Q120.2,135.7 113.6,117.1 Z"/>
+      <path d="M112.5,117.6 Q121.0,135.3 110.0,156.0 Q99.0,135.3 107.5,117.6 Z"/>
+      <path d="M106.4,117.1 Q99.8,135.7 77.5,142.5 Q84.3,120.2 102.9,113.6 Z"/>
+      <path d="M102.4,112.5 Q84.7,121.0 64.0,110.0 Q84.7,99.0 102.4,107.5 Z"/>
+      <path d="M102.9,106.4 Q84.3,99.8 77.5,77.5 Q99.8,84.3 106.4,102.9 Z"/>
+      <path d="M107.5,102.4 Q99.0,84.7 110.0,64.0 Q121.0,84.7 112.5,102.4 Z"/>
+      <path d="M113.6,102.9 Q120.2,84.3 142.5,77.5 Q135.7,99.8 117.1,106.4 Z"/>
+      <path d="M159.8,114.4 Q156.8,111.6 185.3,130.2 Q151.3,132.0 155.3,131.1 Z"/>
+      <path d="M151.0,138.7 Q149.7,134.8 165.2,165.2 Q134.8,149.7 138.7,151.0 Z"/>
+      <path d="M131.1,155.3 Q132.0,151.3 130.2,185.3 Q111.6,156.8 114.4,159.8 Z"/>
+      <path d="M105.6,159.8 Q108.4,156.8 89.8,185.3 Q88.0,151.3 88.9,155.3 Z"/>
+      <path d="M81.3,151.0 Q85.2,149.7 54.8,165.2 Q70.3,134.8 69.0,138.7 Z"/>
+      <path d="M64.7,131.1 Q68.7,132.0 34.7,130.2 Q63.2,111.6 60.2,114.4 Z"/>
+      <path d="M60.2,105.6 Q63.2,108.4 34.7,89.8 Q68.7,88.0 64.7,88.9 Z"/>
+      <path d="M69.0,81.3 Q70.3,85.2 54.8,54.8 Q85.2,70.3 81.3,69.0 Z"/>
+      <path d="M88.9,64.7 Q88.0,68.7 89.8,34.7 Q108.4,63.2 105.6,60.2 Z"/>
+      <path d="M114.4,60.2 Q111.6,63.2 130.2,34.7 Q132.0,68.7 131.1,64.7 Z"/>
+      <path d="M138.7,69.0 Q134.8,70.3 165.2,54.8 Q149.7,85.2 151.0,81.3 Z"/>
+      <path d="M155.3,88.9 Q151.3,88.0 185.3,89.8 Q156.8,108.4 159.8,105.6 Z"/>
+      <circle cx="110" cy="110" r="9"/>
+    </svg>
+    <svg class="ornament-corner br" viewBox="0 0 220 220" fill="#2DD4A7">
+      <path d="M117.6,107.5 Q135.3,99.0 156.0,110.0 Q135.3,121.0 117.6,112.5 Z"/>
+      <path d="M117.1,113.6 Q135.7,120.2 142.5,142.5 Q120.2,135.7 113.6,117.1 Z"/>
+      <path d="M112.5,117.6 Q121.0,135.3 110.0,156.0 Q99.0,135.3 107.5,117.6 Z"/>
+      <path d="M106.4,117.1 Q99.8,135.7 77.5,142.5 Q84.3,120.2 102.9,113.6 Z"/>
+      <path d="M102.4,112.5 Q84.7,121.0 64.0,110.0 Q84.7,99.0 102.4,107.5 Z"/>
+      <path d="M102.9,106.4 Q84.3,99.8 77.5,77.5 Q99.8,84.3 106.4,102.9 Z"/>
+      <path d="M107.5,102.4 Q99.0,84.7 110.0,64.0 Q121.0,84.7 112.5,102.4 Z"/>
+      <path d="M113.6,102.9 Q120.2,84.3 142.5,77.5 Q135.7,99.8 117.1,106.4 Z"/>
+      <path d="M159.8,114.4 Q156.8,111.6 185.3,130.2 Q151.3,132.0 155.3,131.1 Z"/>
+      <path d="M151.0,138.7 Q149.7,134.8 165.2,165.2 Q134.8,149.7 138.7,151.0 Z"/>
+      <path d="M131.1,155.3 Q132.0,151.3 130.2,185.3 Q111.6,156.8 114.4,159.8 Z"/>
+      <path d="M105.6,159.8 Q108.4,156.8 89.8,185.3 Q88.0,151.3 88.9,155.3 Z"/>
+      <path d="M81.3,151.0 Q85.2,149.7 54.8,165.2 Q70.3,134.8 69.0,138.7 Z"/>
+      <path d="M64.7,131.1 Q68.7,132.0 34.7,130.2 Q63.2,111.6 60.2,114.4 Z"/>
+      <path d="M60.2,105.6 Q63.2,108.4 34.7,89.8 Q68.7,88.0 64.7,88.9 Z"/>
+      <path d="M69.0,81.3 Q70.3,85.2 54.8,54.8 Q85.2,70.3 81.3,69.0 Z"/>
+      <path d="M88.9,64.7 Q88.0,68.7 89.8,34.7 Q108.4,63.2 105.6,60.2 Z"/>
+      <path d="M114.4,60.2 Q111.6,63.2 130.2,34.7 Q132.0,68.7 131.1,64.7 Z"/>
+      <path d="M138.7,69.0 Q134.8,70.3 165.2,54.8 Q149.7,85.2 151.0,81.3 Z"/>
+      <path d="M155.3,88.9 Q151.3,88.0 185.3,89.8 Q156.8,108.4 159.8,105.6 Z"/>
+      <circle cx="110" cy="110" r="9"/>
+    </svg>
+    <div class="anniversary-badge"><span class="num">35</span><span class="txt">йил</span></div>
+
+    <div class="holiday-banner">🎉 С Днём Независимости Узбекистана! 🎉</div>
+    <div class="holiday-quote">Мустақиллик байрамингиз муборак бўлсин!</div>
     <div class="mark">RM</div>
     <h1>Royal Motors</h1>
     <div class="brand-sub">dashboard</div>
@@ -1459,7 +1667,53 @@ function attemptSessionRestore() {
   }
 }
 
+// ---------- MUSTAQILLIK BAYRAMI (25.08 - 04.09.2026) ----------
+// Shu oraliqda avtomatik yoqiladi, sanadan keyin QO'LDA o'chirish shart
+// emas - o'zi oddiy dizaynga qaytadi.
+function applyHolidayThemeIfNeeded() {
+  const now = new Date();
+  const start = new Date(2026, 7, 25); // oy 0-indeksli: 7 = avgust
+  const end = new Date(2026, 8, 4, 23, 59, 59); // 8 = sentabr
+  if (now < start || now > end) return;
+
+  document.getElementById("loginScreen").classList.add("holiday");
+
+  const container = document.getElementById("confettiContainer");
+
+  // Konfetti - avvalgidan ko'proq va rang-barang
+  const pieces = ["🎉", "🎊", "⭐", "🎈", "✨", "🇺🇿"];
+  const count = 45;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    el.style.left = `${Math.random() * 100}%`;
+    el.style.animationDuration = `${5 + Math.random() * 6}s`;
+    el.style.animationDelay = `${Math.random() * 6}s`;
+    el.style.fontSize = `${14 + Math.random() * 16}px`;
+    container.appendChild(el);
+  }
+
+  // Fireworks - bir necha nuqtada portlab turadigan rangli halqalar
+  const fwColors = ["#0099B5", "#1EB53A", "#CE1126", "#FFD700", "#FFFFFF"];
+  const fwSpots = [
+    { top: "12%", left: "15%" }, { top: "18%", left: "80%" },
+    { top: "8%", left: "50%" }, { top: "25%", left: "65%" },
+    { top: "15%", left: "30%" },
+  ];
+  fwSpots.forEach((spot, i) => {
+    const el = document.createElement("div");
+    el.className = "firework";
+    el.style.top = spot.top;
+    el.style.left = spot.left;
+    el.style.color = fwColors[i % fwColors.length];
+    el.style.animationDelay = `${i * 0.9}s`;
+    container.appendChild(el);
+  });
+}
+
 window.onload = () => {
+  applyHolidayThemeIfNeeded();
   document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
   document.getElementById("loginSubmitBtn").addEventListener("click", handleLoginSubmit);
 
