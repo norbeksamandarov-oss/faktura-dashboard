@@ -1880,7 +1880,33 @@ function renderAll() {
 
 function renderEmployeesDatalist() {
   const dl = document.getElementById("employeesDatalist");
-  dl.innerHTML = employees.map(e => `<option value="${escapeHtml(e.name)}"></option>`).join("");
+  const opts = [];
+  employees.forEach(e => {
+    if (!e.name) return;
+    opts.push(`<option value="${escapeHtml(e.name)}"></option>`);
+    const uname = String(e.username || "").replace(/^@/, "").trim();
+    // Username bo'yicha ham qidirish/tanlash mumkin bo'lishi uchun -
+    // alohida variant (value = username), lekin tanlanganda maydonga
+    // baribir ISM yoziladi (resolveRespInput orqali, pastda).
+    if (uname && uname.toLowerCase() !== e.name.toLowerCase()) {
+      opts.push(`<option value="${escapeHtml(uname)}">${escapeHtml(e.name)} (@${escapeHtml(uname)})</option>`);
+    }
+  });
+  dl.innerHTML = opts.join("");
+}
+
+function resolveRespInput(inputEl) {
+  // Agar admin datalist'dan username variantini tanlagan (yoki qo'lda
+  // username kiritgan) bo'lsa - maydonni avtomatik xodimning ISMIGA
+  // almashtiradi, chunki "Ответственный" ustunida har doim ISM saqlanishi
+  // kerak (statistikalar, oylik hisobot, boshliqqa yuborish va h.k. shu
+  // ism bo'yicha ishlaydi).
+  const raw = inputEl.value.trim().replace(/^@/, "");
+  if (!raw) return;
+  const match = employees.find(e => String(e.username || "").replace(/^@/, "").toLowerCase() === raw.toLowerCase());
+  if (match && match.name.toLowerCase() !== inputEl.value.trim().toLowerCase()) {
+    inputEl.value = match.name;
+  }
 }
 
 function renderBuyerFilterOptions() {
@@ -2016,9 +2042,9 @@ function renderInvoicesTable() {
       ` : `
         <input type="text" class="resp-input" list="employeesDatalist"
                value="${escapeHtml(r.resp)}"
-               placeholder="Введите или выберите..."
+               placeholder="Введите имя или @username..."
                onfocus="isEditingRow=true" onblur="isEditingRow=false"
-               onchange="updateResp(${r.rowIndex}, this.value, this)">
+               onchange="resolveRespInput(this); updateResp(${r.rowIndex}, this.value, this)">
       `}</td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
