@@ -1343,6 +1343,10 @@
           <select class="status-filter" id="dogovorOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
+          <label>👤 Кому</label>
+          <select class="status-filter" id="dogovorApproverFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
           <label>🏷️ Статус</label>
           <select class="status-filter" id="dogovorStatusFilter">
             <option value="">Все</option>
@@ -1354,7 +1358,7 @@
       <div class="table-wrap">
         <table class="invoices" id="dogovorTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -1773,6 +1777,7 @@ window.onload = () => {
   document.getElementById("daysFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("didoxFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("dogovorOrgFilter")?.addEventListener("change", renderDogovorTable);
+  document.getElementById("dogovorApproverFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
@@ -2061,7 +2066,7 @@ async function loadAllData(silent) {
       `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L500`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
-      `'${SHEET_DOGOVOR}'!A2:I500`,
+      `'${SHEET_DOGOVOR}'!A2:L500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2133,6 +2138,7 @@ async function loadAllData(silent) {
       status: r[5] || "",
       doneAt: r[6] || "",
       comment: r[8] || "",
+      approverName: r[10] || "",
     })).filter(r => r.description).reverse(); // eng yangisi tepada
 
     renderAll();
@@ -3704,11 +3710,22 @@ function renderDogovorTable() {
     orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
   }
 
+  // "Кому" filtrini ham xuddi shunday yangilaymiz.
+  const approverSelect = document.getElementById("dogovorApproverFilter");
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(dogovorRows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
   const orgFilterVal = document.getElementById("dogovorOrgFilter")?.value || "";
+  const approverFilterVal = document.getElementById("dogovorApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("dogovorStatusFilter")?.value || "";
 
   const filtered = dogovorRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     return true;
@@ -3760,11 +3777,12 @@ function renderDogovorTable() {
       <td>${escapeHtml(r.org)}</td>
       <td style="max-width:320px;">${escapeHtml(r.description)}</td>
       <td>${escapeHtml(r.employeeName)}</td>
+      <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${adminStatusBadge(r.status)}</td>
       <td>${employeeStatusBadge(r)}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="8" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
