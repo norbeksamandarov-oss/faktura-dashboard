@@ -3806,11 +3806,21 @@ async function suggestResponsibles() {
 }
 
 async function updateResp(rowIndex, value, selectEl) {
+  const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+
+  // Agar qiymat AMALDA o'zgarmagan bo'lsa (masalan shunchaki maydonga
+  // bosib, hech narsa yozmasdan chetga chiqilgan bo'lsa) - hech narsa
+  // qilmaymiz, hatto "Отправлено" holatida ham. Faqat HAQIQIY o'zgarish
+  // bo'lganda pastdagi tekshiruvlar ishga tushadi.
+  if (r && (r.resp || "").trim() === (value || "").trim()) {
+    isEditingRow = false;
+    return;
+  }
+
   // XAVFSIZLIK: hatto UI chetlab o'tilsa ham (masalan konsoldan majburiy
   // chaqirilsa), qaror allaqachon chiqarilgan (Принято/Отклонено) qatorda
   // Ответственный o'zgartirilishiga yo'l qo'ymaymiz - bu tarixiy yozuv,
   // kim qaror qabul qilgani keyinchalik almashtirilmasligi kerak.
-  const r = invoiceRows.find(x => x.rowIndex === rowIndex);
   const decidedCls = r ? classifyStatus(r.status) : null;
   if (decidedCls === "accepted" || decidedCls === "rejected") {
     alert("Решение по этому счёту уже принято - ответственного изменить нельзя.");
