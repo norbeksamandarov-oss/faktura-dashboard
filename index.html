@@ -1358,7 +1358,7 @@
       <div class="table-wrap">
         <table class="invoices" id="dogovorTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -3763,10 +3763,7 @@ function renderDogovorTable() {
       return `<span class="status-badge status-accepted">✅ Согласился</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
-    return `
-      <span class="status-badge ${cls}">${escapeHtml(r.status)}</span>
-      ${r.comment ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${escapeHtml(r.comment)}</div>` : ""}
-    `;
+    return `<span class="status-badge ${cls}">${escapeHtml(r.status)}</span>`;
   }
 
   const tbody = document.querySelector("#dogovorTable tbody");
@@ -3781,8 +3778,9 @@ function renderDogovorTable() {
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${adminStatusBadge(r.status)}</td>
       <td>${employeeStatusBadge(r)}</td>
+      <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
