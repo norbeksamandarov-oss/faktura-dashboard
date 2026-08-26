@@ -2561,9 +2561,9 @@ function renderInvoicesTable() {
         ${statusBadge(r.status)}
         ${classifyStatus(r.status) === "sent" ? `
           <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)">🔔</button>
-          ${currentRole === "admin" ? `
-            <button class="remind-btn recall-btn" title="Отозвать - если счёт отправлен не тому сотруднику. Удалит сообщение у него в чате и вернёт счёт в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)">🗑️</button>
-          ` : ""}
+        ` : ""}
+        ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
+          <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)">🗑️</button>
         ` : ""}
       </td>
       <td>${daysBadge(r.days)}</td>
@@ -4019,9 +4019,10 @@ async function sendManualReminder(facturaid, btnEl) {
 async function recallInvoice(facturaid, btnEl) {
   const confirmed = confirm(
     "Отозвать этот счёт?\n\n" +
-    "Сообщение будет удалено из чата сотрудника, счёт вернётся в статус " +
-    "«Не отправлено», поле «Ответственный» очистится - вы сможете назначить " +
-    "правильного сотрудника и отправить заново."
+    "Сообщение будет удалено (у сотрудника или у руководителя - смотря на " +
+    "каком этапе счёт), он вернётся в статус «Не отправлено», поле " +
+    "«Ответственный» очистится - вы сможете назначить правильного сотрудника " +
+    "и отправить заново."
   );
   if (!confirmed) return;
 
