@@ -1016,6 +1016,7 @@
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')">🏢 Контрагенты</button>
+      <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')">📄 Договоры</button>
       <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
       <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')">📋 Журнал действий</button>
@@ -1332,6 +1333,21 @@
     </div>
     </section>
 
+    <section id="section-dogovor" class="content-section">
+    <div class="panel">
+      <h2>Договоры <span class="sub" id="dogovorCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Запросы по договорам через Telegram-бот (команда /dogovor) - вместо переписки. Как только PDF отправлен сотруднику, статус меняется на «Выполнено».</p>
+      <div class="table-wrap">
+        <table class="invoices" id="dogovorTable">
+          <thead>
+            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Дата запроса</th><th>Статус</th><th>Дата выполнения</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-employees" class="content-section">
     <div class="panel">
       <h2>Сотрудники <span class="sub" id="employeesCountSub"></span></h2>
@@ -1490,6 +1506,7 @@ const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
 const SHEET_REGISTRATIONS = "Заявки";
 const SHEET_EMPLOYEES = "Xodimlar";
+const SHEET_DOGOVOR = "Договоры";
 const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu yerga vaqt yozadi
 
 const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 секунд (bot bilan bir xil - Google Sheets API limitiga tegmaslik uchun)
@@ -1565,6 +1582,7 @@ let allHistoryRows = [];
 let pendingRegistrations = [];
 let allEmployeesRaw = [];
 let processedRegistrations = [];
+let dogovorRows = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
@@ -2022,11 +2040,12 @@ async function loadAllData(silent) {
     // Script'ga har bir yangilanishda faqat 1 marta murojaat qilinadi).
     // "Заявки" hali yaratilmagan bo'lsa ham (bot birinchi marta ishga
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
-    const [empRaw, invRaw, histRaw, regRaw] = await sheetsGetBatch([
+    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
       `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L500`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
+      `'${SHEET_DOGOVOR}'!A2:H500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2087,6 +2106,17 @@ async function loadAllData(silent) {
     pendingRegistrations = regParsed.filter(r => !r.processed && (r.status === "" || r.status === "Ожидает"));
     processedRegistrations = regParsed.filter(r => r.processed || (r.status && r.status !== "Ожидает"))
       .slice().reverse();
+
+    // Договоры: A=Организация, B=Описание, C=Сотрудник, D=ChatID, E=Дата запроса, F=Статус, G=Дата выполнения
+    dogovorRows = dogovorRaw.map((r, idx) => ({
+      rowIndex: idx + 2,
+      org: r[0] || "",
+      description: r[1] || "",
+      employeeName: r[2] || "",
+      requestedAt: r[4] || "",
+      status: r[5] || "",
+      doneAt: r[6] || "",
+    })).filter(r => r.description).reverse(); // eng yangisi tepada
 
     renderAll();
 
@@ -2169,6 +2199,7 @@ function renderAll() {
   renderRegistrations();
   renderEmployeesManage();
   renderContragentsList();
+  renderDogovorTable();
 }
 
 /* ============================================================
@@ -3637,6 +3668,29 @@ function openContragentCard(encodedName) {
 
 function closeContragentModal() {
   document.getElementById("contragentModal").style.display = "none";
+}
+
+function renderDogovorTable() {
+  const sub = document.getElementById("dogovorCountSub");
+  const pendingCount = dogovorRows.filter(r => r.status !== "Выполнено").length;
+  if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
+
+  const tbody = document.querySelector("#dogovorTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = dogovorRows.map((r, i) => {
+    const isDone = r.status === "Выполнено";
+    const badgeCls = isDone ? "status-accepted" : "status-sent";
+    return `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td>${escapeHtml(r.org)}</td>
+      <td style="max-width:320px;">${escapeHtml(r.description)}</td>
+      <td>${escapeHtml(r.employeeName)}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
+      <td><span class="status-badge ${badgeCls}">${escapeHtml(r.status || "В ожидании")}</span></td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Запросов пока нет</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
