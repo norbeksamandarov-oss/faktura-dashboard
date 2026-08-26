@@ -1231,6 +1231,14 @@
           </select>
         </div>
         <div class="filter-field">
+          <label>📌 DIDOX</label>
+          <select class="status-filter" id="didoxFilter">
+            <option value="">Все</option>
+            <option value="done">✅ Отмечено</option>
+            <option value="pending">⏳ Не отмечено</option>
+          </select>
+        </div>
+        <div class="filter-field">
           <label>&nbsp;</label>
           <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
         </div>
@@ -1731,6 +1739,7 @@ window.onload = () => {
   document.getElementById("searchInput").addEventListener("input", renderInvoicesTable);
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("daysFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("didoxFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
@@ -1744,6 +1753,7 @@ window.onload = () => {
     document.getElementById("searchInput").value = "";
     document.getElementById("statusFilter").value = "";
     document.getElementById("daysFilter").value = "";
+    document.getElementById("didoxFilter").value = "";
     document.getElementById("buyerFilter").value = "";
     document.getElementById("departmentFilter").value = "";
     document.getElementById("contragentFilter").value = "";
@@ -2434,6 +2444,7 @@ function renderInvoicesTable() {
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
   const daysFilterVal = document.getElementById("daysFilter").value;
+  const didoxFilterVal = document.getElementById("didoxFilter").value;
   const buyerVal = document.getElementById("buyerFilter").value;
   const departmentVal = document.getElementById("departmentFilter").value;
   const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
@@ -2445,6 +2456,8 @@ function renderInvoicesTable() {
   const filtered = invoiceRows.filter(r => {
     if (filter && classifyStatus(r.status) !== filter) return false;
     if (daysFilterVal && daysColorClass(r.days) !== daysFilterVal) return false;
+    if (didoxFilterVal === "done" && !r.didoxDone) return false;
+    if (didoxFilterVal === "pending" && r.didoxDone) return false;
     if (buyerVal && canonicalBuyer(r.buyer) !== buyerVal) return false;
     if (departmentVal && r.department !== departmentVal) return false;
     if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
