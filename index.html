@@ -3818,6 +3818,23 @@ async function updateResp(rowIndex, value, selectEl) {
     renderInvoicesTable();
     return;
   }
+  // MUHIM: счет ALLAQACHON "Отправлено" bo'lsa (xodimga xabar ketgan) -
+  // shu yerda oddiy o'zgartirishga yo'l QO'YMAYMIZ. Sabab: xabar hali ham
+  // xato xodimning Telegram chatida turaveradi va u baribir "Принять/
+  // Отклонить" bosa oladi - shunda qaror kimga tegishli ekani chalkashib
+  // qoladi. To'g'ri yo'l - avval 🗑️ "Отозвать" tugmasi bilan eski xabarni
+  // butunlay bekor qilish, keyin to'g'ri odamni tanlab qayta yuborish.
+  if (decidedCls === "sent") {
+    alert(
+      "Этот счёт уже отправлен сотруднику - просто изменить ответственного нельзя " +
+      "(сообщение всё ещё у него в Telegram, и решение может неправильно " +
+      "приписаться).\n\nСначала нажмите 🗑️ «Отозвать» в столбце «Статус», " +
+      "затем назначьте нужного сотрудника и отправьте заново."
+    );
+    isEditingRow = false;
+    renderInvoicesTable();
+    return;
+  }
   // MUHIM: onblur (fokusdan chiqish) saqlash tugashidan OLDINROQ sodir
   // bo'lishi mumkin (masalan ro'yxatdan tanlaganda) - shuning uchun
   // isEditingRow'ni shu yerda ham TRUE qilib qo'yamiz, saqlash butunlay
