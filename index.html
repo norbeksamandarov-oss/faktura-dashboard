@@ -1337,6 +1337,20 @@
     <div class="panel">
       <h2>Договоры <span class="sub" id="dogovorCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Запросы по договорам через Telegram-бот (команда /dogovor) - вместо переписки. Как только PDF отправлен сотруднику, статус меняется на «Выполнено».</p>
+      <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field">
+          <label>🏢 Организация</label>
+          <select class="status-filter" id="dogovorOrgFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>🏷️ Статус</label>
+          <select class="status-filter" id="dogovorStatusFilter">
+            <option value="">Все</option>
+            <option value="pending">⏳ В ожидании</option>
+            <option value="done">✅ Выполнено</option>
+          </select>
+        </div>
+      </div>
       <div class="table-wrap">
         <table class="invoices" id="dogovorTable">
           <thead>
@@ -1758,6 +1772,8 @@ window.onload = () => {
   document.getElementById("statusFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("daysFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("didoxFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("dogovorOrgFilter")?.addEventListener("change", renderDogovorTable);
+  document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
@@ -3675,9 +3691,30 @@ function renderDogovorTable() {
   const pendingCount = dogovorRows.filter(r => r.status !== "Выполнено").length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
+  // Организация filtrini har safar yangilaymiz (yangi tashkilotlar
+  // qo'shilgan bo'lishi mumkin), lekin foydalanuvchi allaqachon tanlagan
+  // qiymatni saqlab qolamiz.
+  const orgSelect = document.getElementById("dogovorOrgFilter");
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(dogovorRows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
+
+  const orgFilterVal = document.getElementById("dogovorOrgFilter")?.value || "";
+  const statusFilterVal = document.getElementById("dogovorStatusFilter")?.value || "";
+
+  const filtered = dogovorRows.filter(r => {
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (statusFilterVal === "done" && r.status !== "Выполнено") return false;
+    if (statusFilterVal === "pending" && r.status === "Выполнено") return false;
+    return true;
+  });
+
   const tbody = document.querySelector("#dogovorTable tbody");
   if (!tbody) return;
-  tbody.innerHTML = dogovorRows.map((r, i) => {
+  tbody.innerHTML = filtered.map((r, i) => {
     const isDone = r.status === "Выполнено";
     const badgeCls = isDone ? "status-accepted" : "status-sent";
     return `
@@ -3690,7 +3727,7 @@ function renderDogovorTable() {
       <td><span class="status-badge ${badgeCls}">${escapeHtml(r.status || "В ожидании")}</span></td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
     </tr>`;
-  }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Запросов пока нет</td></tr>`;
+  }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
