@@ -1260,6 +1260,7 @@
               <th>Отправить</th>
               <th>Статус</th>
               <th>Дней</th>
+              <th title="Отмечено ли в самом DIDOX (отдельно от этого бота)">DIDOX</th>
               <th>Комментарий</th>
             </tr>
           </thead>
@@ -1488,7 +1489,8 @@ const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 с
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
   ID: 0, BUYER: 1, NO: 2, DATE: 3, SELLER: 4, INN: 5, CONTRACT: 6,
-  SUM: 7, VAT: 8, RESP: 9, SEND: 10, STATUS: 11, COMMENT: 12, DEPARTMENT: 13, DAYS: 14
+  SUM: 7, VAT: 8, RESP: 9, SEND: 10, STATUS: 11, COMMENT: 12, DEPARTMENT: 13, DAYS: 14,
+  DIDOX: 20
 };
 
 let uniqueBuyers = [];
@@ -2012,7 +2014,7 @@ async function loadAllData(silent) {
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
     const [empRaw, invRaw, histRaw, regRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
-      `'${SHEET_INVOICES}'!A2:T500`,
+      `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L500`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
     ]);
@@ -2050,7 +2052,8 @@ async function loadAllData(silent) {
       comment: r[COL.COMMENT] || "",
       department: r[COL.DEPARTMENT] || "",
       days: r[COL.DAYS] || "",
-      sentAt: r[17] || "" // yashirin _sent_at ustuni (R, 0-based index 17)
+      sentAt: r[17] || "", // yashirin _sent_at ustuni (R, 0-based index 17)
+      didoxDone: String(r[COL.DIDOX] || "").toUpperCase() === "TRUE"
     })).filter(r => r.id);
 
     allHistoryRows = histRaw.map(r => ({
@@ -2497,6 +2500,10 @@ function renderInvoicesTable() {
         ` : ""}
       </td>
       <td>${daysBadge(r.days)}</td>
+      <td style="text-align:center;vertical-align:middle">
+        <input type="checkbox" class="didox-check" ${r.didoxDone ? "checked" : ""} onchange="updateDidoxDone(${r.rowIndex}, this.checked, this)">
+        <span class="save-flash">✓</span>
+      </td>
       <td style="font-size:12px;color:var(--muted)"><span class="clamp-cell-comment" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</span></td>
     </tr>`).join("");
 
@@ -3772,6 +3779,25 @@ async function updateSend(rowIndex, checked, checkboxEl) {
     await sheetsUpdateCell(range, checked);
     const r = invoiceRows.find(x => x.rowIndex === rowIndex);
     if (r) r.send = checked;
+    flashSaved(checkboxEl.closest("tr"));
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+    checkboxEl.checked = !checked;
+  } finally {
+    isEditingRow = false;
+  }
+}
+
+async function updateDidoxDone(rowIndex, checked, checkboxEl) {
+  // "DIDOX" belgisi - счetning o'zi DIDOX tizimida (bizning botdan mustaqil,
+  // alohida) qabul qilinganmi yo'qmi, buni FAQAT o'zimiz qo'lda belgilaymiz -
+  // hamma foydalanuvchi (admin ham, oddiy xodim ham) belgilashi mumkin.
+  isEditingRow = true;
+  const range = `'${SHEET_INVOICES}'!${colLetter(COL.DIDOX)}${rowIndex}`;
+  try {
+    await sheetsUpdateCell(range, checked);
+    const r = invoiceRows.find(x => x.rowIndex === rowIndex);
+    if (r) r.didoxDone = checked;
     flashSaved(checkboxEl.closest("tr"));
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
