@@ -3689,7 +3689,8 @@ function closeContragentModal() {
 
 function renderDogovorTable() {
   const sub = document.getElementById("dogovorCountSub");
-  const pendingCount = dogovorRows.filter(r => r.status !== "Выполнено").length;
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё"];
+  const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
   // Организация filtrini har safar yangilaymiz (yangi tashkilotlar
@@ -3703,7 +3704,6 @@ function renderDogovorTable() {
     orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
   }
 
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё"];
   const orgFilterVal = document.getElementById("dogovorOrgFilter")?.value || "";
   const statusFilterVal = document.getElementById("dogovorStatusFilter")?.value || "";
 
@@ -3723,11 +3723,15 @@ function renderDogovorTable() {
   }
 
   // Ikkita alohida status: (1) АДМИН - PDF'ni DIDOX'dan olib xodimga
-  // yuborganmi yoki hali yo'qmi; (2) СОТРУДНИК - xodim PDF'ni ko'rib,
-  // qaror qabul qilganmi (Принято/Отклонено/Не моё) yoki hali kutilmoqda.
+  // yuborganmi yoki hali yo'qmi (2 marta yuborishi kerak - 1) xodim ko'rishi
+  // uchun, 2) xodim rozi bo'lgandan keyin YAKUNIY PDF); (2) СОТРУДНИК -
+  // xodim qaror qabul qilganmi (Принято/Отклонено/Не моё) yoki kutilmoqda.
   function adminStatusBadge(status) {
     if (!status || status === "В ожидании") {
       return `<span class="status-badge status-new">⏳ Не отправлено</span>`;
+    }
+    if (status === "Принято - ожидает финального PDF") {
+      return `<span class="status-badge status-sent">⏳ Ждём финальный PDF от вас</span>`;
     }
     return `<span class="status-badge status-accepted">✅ Отправлено</span>`;
   }
@@ -3737,6 +3741,9 @@ function renderDogovorTable() {
     }
     if (r.status === "Ожидает решения сотрудника") {
       return `<span class="status-badge status-sent">⏳ Ожидает</span>`;
+    }
+    if (r.status === "Принято - ожидает финального PDF") {
+      return `<span class="status-badge status-accepted">✅ Согласился</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `
