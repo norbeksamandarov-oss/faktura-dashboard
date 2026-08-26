@@ -3695,7 +3695,7 @@ function closeContragentModal() {
 
 function renderDogovorTable() {
   const sub = document.getElementById("dogovorCountSub");
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё"];
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Договор не найден в DIDOX"];
   const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
@@ -3750,6 +3750,9 @@ function renderDogovorTable() {
     if (status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-sent">⏳ Ждём финальный PDF от вас</span>`;
     }
+    if (status === "Договор не найден в DIDOX") {
+      return `<span class="status-badge status-rejected">📩 Ответил (не найден)</span>`;
+    }
     return `<span class="status-badge status-accepted">✅ Отправлено</span>`;
   }
   function employeeStatusBadge(r) {
@@ -3761,6 +3764,9 @@ function renderDogovorTable() {
     }
     if (r.status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-accepted">✅ Согласился</span>`;
+    }
+    if (r.status === "Договор не найден в DIDOX") {
+      return `<span class="status-badge status-rejected">📩 Не найден в DIDOX</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `<span class="status-badge ${cls}">${escapeHtml(r.status)}</span>`;
