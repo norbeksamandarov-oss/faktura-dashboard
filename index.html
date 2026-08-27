@@ -1313,7 +1313,12 @@
           <table class="emp-table" id="workloadTable">
             <thead><tr><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
             <tbody></tbody>
+            <tbody id="workloadMoreBody"></tbody>
           </table>
+          <button class="rank-toggle-btn" id="workloadToggleBtn" style="display:none;" onclick="toggleWorkloadTable()">
+            <span class="rank-toggle-label">Показать ещё</span>
+            <svg class="rank-toggle-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
         </div>
       </div>
 
@@ -2954,6 +2959,17 @@ function toggleRankList(uid, hiddenCount) {
   btn.classList.toggle("expanded", willShow);
 }
 
+function toggleWorkloadTable() {
+  const body = document.getElementById("workloadMoreBody");
+  const btn = document.getElementById("workloadToggleBtn");
+  if (!body || !btn) return;
+  const willShow = body.style.display === "none";
+  body.style.display = willShow ? "table-row-group" : "none";
+  const hiddenCount = body.children.length;
+  btn.querySelector(".rank-toggle-label").textContent = willShow ? "Скрыть" : `Показать ещё ${hiddenCount}`;
+  btn.classList.toggle("expanded", willShow);
+}
+
 function renderAnalytics() {
   const periodInvoiceRows = filterByPeriod(invoiceRows, "date");
   const periodHistoryRows = filterByPeriod(allHistoryRows, "decidedAt");
@@ -3107,13 +3123,31 @@ function renderAnalytics() {
   }).filter(w => w.processed > 0 || w.pending > 0)
     .sort((a, b) => (b.processed + b.pending) - (a.processed + a.pending));
 
-  document.querySelector("#workloadTable tbody").innerHTML = workload.map(w => `
+  const rowHtml = w => `
     <tr>
       <td>${escapeHtml(w.name)}</td>
       <td>${w.processed}</td>
       <td>${w.pending}</td>
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
-    </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+    </tr>`;
+  const workloadInitial = 5;
+  const workloadHasMore = workload.length > workloadInitial;
+  document.querySelector("#workloadTable tbody").innerHTML =
+    workload.slice(0, workloadInitial).map(rowHtml).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+
+  const workloadMoreBody = document.getElementById("workloadMoreBody");
+  const workloadBtn = document.getElementById("workloadToggleBtn");
+  if (workloadMoreBody && workloadBtn) {
+    if (workloadHasMore) {
+      workloadMoreBody.innerHTML = workload.slice(workloadInitial).map(rowHtml).join("");
+      workloadMoreBody.style.display = "none";
+      workloadBtn.style.display = "";
+      workloadBtn.querySelector(".rank-toggle-label").textContent = `Показать ещё ${workload.length - workloadInitial}`;
+      workloadBtn.classList.remove("expanded");
+    } else {
+      workloadBtn.style.display = "none";
+    }
+  }
 
   // ---------- Уровни сотрудников (за ВСЁ время, не зависит от фильтра периода) ----------
   const lifetimeCounts = {};
