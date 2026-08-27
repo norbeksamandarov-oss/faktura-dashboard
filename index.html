@@ -2738,7 +2738,12 @@ function renderInvoicesTable() {
 
   document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => {
     const cls = classifyStatus(r.status);
-    const isUndecided = cls !== "accepted" && cls !== "rejected" && cls !== "notmine";
+    // "Не моё" HAM hisobga olinadi - agar kimdir bossa-yu, hech kim qayta
+    // tayinlamasa, счet "yo'qolib" qolmasligi kerak. Qayta tayinlanib
+    // (yangi ответственный + qayta yuborilgach) status o'zgaradi va kunlar
+    // qaytadan 0'dan boshlanadi - shuning uchun bu yerda alohida tekshiruv
+    // shart emas.
+    const isUndecided = cls !== "accepted" && cls !== "rejected";
     const isOverdue = isUndecided && parseInt(r.days, 10) >= 9;
     return `
     <tr data-row="${r.rowIndex}" class="${isOverdue ? "row-overdue" : ""}">
