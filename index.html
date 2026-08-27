@@ -1226,8 +1226,8 @@
         <button class="nav-item nav-sub-item" data-section="invoices" onclick="showSection('invoices')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></span><span class="nav-label">Счета-фактуры</span></button>
         <button class="nav-item nav-sub-item" data-section="dogovor" onclick="showSection('dogovor')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договоры</span> <span id="pendingDogovorBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="doverennost" onclick="showSection('doverennost')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg></span><span class="nav-label">Доверенности</span> <span id="pendingDoverennostBadge" class="nav-badge" style="display:none;"></span></button>
-        <button class="nav-item nav-sub-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
+      <button class="nav-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item nav-group-toggle" id="personalToggle" onclick="togglePersonalGroup()">
@@ -1659,7 +1659,7 @@
       <div class="table-wrap">
         <table class="invoices" id="bankTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Тип</th><th>Контрагент</th><th>Договор</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Тип</th><th>Контрагент</th><th>Договор</th><th>Сумма</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -2175,7 +2175,7 @@ function exportInvoicesCsv() {
   URL.revokeObjectURL(url);
 }
 
-const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "bank"];
+const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost"];
 const PERSONAL_SECTIONS = ["requests", "employees", "users"];
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
@@ -2223,13 +2223,11 @@ function togglePersonalGroup() { toggleNavGroup("personalToggle", "personalSubgr
 function updatePostupleniyaBadge() {
   const dogovorBadge = document.getElementById("pendingDogovorBadge");
   const doverennostBadge = document.getElementById("pendingDoverennostBadge");
-  const bankBadge = document.getElementById("pendingBankBadge");
   const groupBadge = document.getElementById("postupleniyaBadge");
   if (!groupBadge) return;
   const dogovorCount = dogovorBadge && dogovorBadge.style.display !== "none" ? parseInt(dogovorBadge.textContent, 10) || 0 : 0;
   const doverennostCount = doverennostBadge && doverennostBadge.style.display !== "none" ? parseInt(doverennostBadge.textContent, 10) || 0 : 0;
-  const bankCount = bankBadge && bankBadge.style.display !== "none" ? parseInt(bankBadge.textContent, 10) || 0 : 0;
-  const total = dogovorCount + doverennostCount + bankCount;
+  const total = dogovorCount + doverennostCount;
   if (total > 0) {
     groupBadge.textContent = total;
     groupBadge.style.display = "inline-block";
@@ -2450,7 +2448,7 @@ async function loadAllData(silent) {
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
       `'${SHEET_DOGOVOR}'!A2:L500`,
       `'${SHEET_DOVERENNOST}'!A2:K500`,
-      `'${SHEET_BANK}'!A2:M500`,
+      `'${SHEET_BANK}'!A2:O500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2543,12 +2541,14 @@ async function loadAllData(silent) {
       type: r[1] || "",
       kontragent: r[2] || "",
       dogovor: r[3] || "",
-      employeeName: r[4] || "",
-      requestedAt: r[6] || "",
-      status: r[7] || "",
-      doneAt: r[8] || "",
-      comment: r[10] || "",
-      approverName: r[11] || "",
+      sum: r[4] || "",
+      extraComment: r[5] || "",
+      employeeName: r[6] || "",
+      requestedAt: r[8] || "",
+      status: r[9] || "",
+      doneAt: r[10] || "",
+      comment: r[12] || "",
+      approverName: r[13] || "",
     })).filter(r => r.kontragent).reverse();
 
     renderAll();
@@ -4408,20 +4408,27 @@ function renderBankTable() {
 
   const tbody = document.querySelector("#bankTable tbody");
   if (!tbody) return;
-  tbody.innerHTML = filtered.map((r, i) => `
+  tbody.innerHTML = filtered.map((r, i) => {
+    const commentParts = [];
+    if (r.extraComment) commentParts.push(r.extraComment);
+    if (r.comment) commentParts.push(r.comment);
+    const commentText = commentParts.join(" · ");
+    return `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td>${escapeHtml(r.org)}</td>
       <td>${bankTypeBadge(r.type)}</td>
       <td style="max-width:200px;">${escapeHtml(r.kontragent)}</td>
       <td style="max-width:200px;">${escapeHtml(r.dogovor)}</td>
+      <td style="white-space:nowrap;">${escapeHtml(r.sum)}</td>
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${bankStatusBadge(r.status)}</td>
-      <td style="max-width:200px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
+      <td style="max-width:200px;font-size:12px;color:var(--muted);">${commentText ? escapeHtml(commentText) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`;
+  }).join("") || `<tr><td colspan="12" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
