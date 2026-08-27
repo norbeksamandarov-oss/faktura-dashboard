@@ -1200,7 +1200,7 @@
       </button>
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-label">Аналитика</span></button>
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></span><span class="nav-label">Счета-фактуры</span></button>
-      <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договоры</span></button>
+      <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договоры</span> <span id="pendingDogovorBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span><span class="nav-label">Заявки</span> <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
@@ -3973,6 +3973,16 @@ function renderDogovorTable() {
   const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Договор не найден в DIDOX"];
   const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
+
+  const dogovorBadge = document.getElementById("pendingDogovorBadge");
+  if (dogovorBadge) {
+    if (pendingCount > 0) {
+      dogovorBadge.textContent = pendingCount;
+      dogovorBadge.style.display = "inline-block";
+    } else {
+      dogovorBadge.style.display = "none";
+    }
+  }
 
   // Организация filtrini har safar yangilaymiz (yangi tashkilotlar
   // qo'shilgan bo'lishi mumkin), lekin foydalanuvchi allaqachon tanlagan
