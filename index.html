@@ -488,6 +488,32 @@
   .content-section { display: none; }
   .content-section.active { display: block; }
 
+  /* ---------- Sidebar'ni yig'ish/ochish (kollaps) ---------- */
+  .sidebar { transition: width 0.22s ease; }
+  .sidebar.collapsed { width: 64px; }
+  .sidebar.collapsed .nav-item { padding: 13px 0; justify-content: center; }
+  .sidebar.collapsed .nav-item .nav-label,
+  .sidebar.collapsed .nav-item .nav-badge { display: none; }
+  #sidebarToggleBtn {
+    position: sticky;
+    top: 0;
+    align-self: flex-end;
+    margin: 0 8px 6px 0;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: var(--ice);
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.22s;
+  }
+  #sidebarToggleBtn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+  .sidebar.collapsed #sidebarToggleBtn { transform: rotate(180deg); align-self: center; margin: 0 0 6px; }
+
   @media (max-width: 860px) {
     .app-body { flex-direction: column; }
     .sidebar {
@@ -1133,17 +1159,18 @@
   </header>
 
   <div class="app-body">
-    <nav class="sidebar">
-      <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')">📊 Аналитика</button>
-      <button class="nav-item" data-section="invoices" onclick="showSection('invoices')">📄 Счета-фактуры</button>
-      <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')">📄 Договоры</button>
-      <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')">🏢 Контрагенты</button>
-      <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')">🔄 Сверка с 1С</button>
-      <button class="nav-item" data-section="requests" onclick="showSection('requests')">🆕 Заявки <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
-      <button class="nav-item" data-section="employees" onclick="showSection('employees')">👥 Сотрудники</button>
-      <button class="nav-item" data-section="users" onclick="showSection('users')">🔐 Пользователи</button>
-      <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')">📋 Журнал действий</button>
-      <button class="nav-item" data-section="history" onclick="showSection('history')">🕐 История</button>
+    <nav class="sidebar" id="sidebarNav">
+      <button id="sidebarToggleBtn" title="Свернуть/развернуть меню" onclick="toggleSidebar()">☰</button>
+      <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span>📊</span><span class="nav-label">Аналитика</span></button>
+      <button class="nav-item" data-section="invoices" onclick="showSection('invoices')"><span>📄</span><span class="nav-label">Счета-фактуры</span></button>
+      <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')"><span>📄</span><span class="nav-label">Договоры</span></button>
+      <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span>🏢</span><span class="nav-label">Контрагенты</span></button>
+      <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span>🔄</span><span class="nav-label">Сверка с 1С</span></button>
+      <button class="nav-item" data-section="requests" onclick="showSection('requests')"><span>🆕</span><span class="nav-label">Заявки</span> <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="employees" onclick="showSection('employees')"><span>👥</span><span class="nav-label">Сотрудники</span></button>
+      <button class="nav-item" data-section="users" onclick="showSection('users')"><span>🔐</span><span class="nav-label">Пользователи</span></button>
+      <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')"><span>📋</span><span class="nav-label">Журнал действий</span></button>
+      <button class="nav-item" data-section="history" onclick="showSection('history')"><span>🕐</span><span class="nav-label">История</span></button>
     </nav>
     <main class="content-area">
 
@@ -1881,8 +1908,21 @@ function applyHolidayThemeIfNeeded() {
   });
 }
 
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebarNav");
+  const collapsed = sidebar.classList.toggle("collapsed");
+  localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+}
+
+function restoreSidebarState() {
+  if (localStorage.getItem("sidebarCollapsed") === "1") {
+    document.getElementById("sidebarNav").classList.add("collapsed");
+  }
+}
+
 window.onload = () => {
   applyHolidayThemeIfNeeded();
+  restoreSidebarState();
   document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
   document.getElementById("loginSubmitBtn").addEventListener("click", handleLoginSubmit);
 
