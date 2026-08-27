@@ -791,6 +791,11 @@
     -webkit-box-orient: vertical;
     line-height: 1.35;
   }
+  /* Счет 9+ kun hal qilinmasdan turgan bo'lsa - butun qator qizil rangda
+     ajralib tursin, buxgalter darhol payqasin ("Дней" ustunidagi kichik
+     belgiga alohida qarab o'tirmasdan). */
+  tr.row-overdue { background: var(--red-bg) !important; }
+  tr.row-overdue:hover { background: #F7D5D0 !important; }
 
   .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
   .status-new { background: var(--gray-bg); color: var(--gray-fg); }
@@ -2731,8 +2736,12 @@ function renderInvoicesTable() {
   document.getElementById("tableCount").textContent = countText;
   lastFilteredInvoices = filtered;
 
-  document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => `
-    <tr data-row="${r.rowIndex}">
+  document.getElementById("invoicesBody").innerHTML = filtered.map((r, idx) => {
+    const cls = classifyStatus(r.status);
+    const isUndecided = cls !== "accepted" && cls !== "rejected" && cls !== "notmine";
+    const isOverdue = isUndecided && parseInt(r.days, 10) >= 9;
+    return `
+    <tr data-row="${r.rowIndex}" class="${isOverdue ? "row-overdue" : ""}">
       <td style="color:var(--muted);font-size:12px;">${idx + 1}</td>
       <td><strong class="clamp-cell" title="${escapeHtml(r.buyer)}">${escapeHtml(r.buyer)}</strong></td>
       <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.department)}</td>
@@ -2776,7 +2785,8 @@ function renderInvoicesTable() {
         <span class="save-flash">✓</span>
       </td>
       <td style="font-size:12px;color:var(--muted)"><span class="clamp-cell-comment" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</span></td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
 
   filtered.forEach(r => {
     const tr = document.querySelector(`tr[data-row="${r.rowIndex}"]`);
