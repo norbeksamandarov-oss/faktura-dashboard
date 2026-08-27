@@ -442,7 +442,7 @@
   }
 
   /* ---------- Sidebar navigatsiya ---------- */
-  .app-body { display: flex; align-items: flex-start; }
+  .app-body { display: flex; align-items: stretch; }
   .sidebar {
     width: 220px;
     flex-shrink: 0;
@@ -899,6 +899,16 @@
   .rank-value { font-size: 12.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
   .rank-meta { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
   .rank-empty { color: var(--muted); font-size: 12.5px; padding: 10px 2px; }
+  .rank-toggle-btn {
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    width: 100%; margin-top: 6px; padding: 7px 0;
+    background: var(--ice-soft); border: none; border-radius: 8px;
+    color: var(--navy); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .rank-toggle-btn:hover { background: var(--ice); }
+  .rank-toggle-arrow { transition: transform 0.2s; }
+  .rank-toggle-btn.expanded .rank-toggle-arrow { transform: rotate(180deg); }
 
   .analytics-summary {
     margin-top: 16px; padding: 4px; border-radius: 14px;
@@ -2893,7 +2903,9 @@ function renderRankList(containerId, rows, opts) {
     el.innerHTML = `<div class="rank-empty">Пока нет данных</div>`;
     return;
   }
-  el.innerHTML = rows.map((r, i) => {
+  const initialCount = opts.initialCount || 5;
+
+  const renderRow = (r, i) => {
     const rankCls = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "rank-n";
     const nameText = opts.name(r);
     const bar = opts.barPercent != null
@@ -2911,7 +2923,35 @@ function renderRankList(containerId, rows, opts) {
           ${opts.meta ? `<div class="rank-meta">${opts.meta(r)}</div>` : ""}
         </div>
       </div>`;
-  }).join("");
+  };
+
+  const visibleHtml = rows.slice(0, initialCount).map(renderRow).join("");
+  const hasMore = rows.length > initialCount;
+  const hiddenHtml = hasMore
+    ? rows.slice(initialCount).map((r, idx) => renderRow(r, idx + initialCount)).join("")
+    : "";
+  const uid = "rk_" + containerId;
+
+  el.innerHTML = `
+    ${visibleHtml}
+    ${hasMore ? `
+      <div class="rank-hidden" id="${uid}_hidden" style="display:none;">${hiddenHtml}</div>
+      <button class="rank-toggle-btn" id="${uid}_btn" onclick="toggleRankList('${uid}', ${rows.length - initialCount})">
+        <span class="rank-toggle-label">Показать ещё ${rows.length - initialCount}</span>
+        <svg class="rank-toggle-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    ` : ""}
+  `;
+}
+
+function toggleRankList(uid, hiddenCount) {
+  const hidden = document.getElementById(uid + "_hidden");
+  const btn = document.getElementById(uid + "_btn");
+  if (!hidden || !btn) return;
+  const willShow = hidden.style.display === "none";
+  hidden.style.display = willShow ? "block" : "none";
+  btn.querySelector(".rank-toggle-label").textContent = willShow ? "Скрыть" : `Показать ещё ${hiddenCount}`;
+  btn.classList.toggle("expanded", willShow);
 }
 
 function renderAnalytics() {
@@ -2973,8 +3013,7 @@ function renderAnalytics() {
   const rejectBySupplierRows = Object.entries(qualityBySupplier)
     .map(([name, q]) => ({ name, rate: q.reviewed ? (q.rejected / q.reviewed) * 100 : 0, rejected: q.rejected, reviewed: q.reviewed }))
     .filter(r => r.rejected >= 1)
-    .sort((a, b) => b.rate - a.rate)
-    .slice(0, 5);
+    .sort((a, b) => b.rate - a.rate);
   renderRankList("rejectBySupplierTable", rejectBySupplierRows, {
     name: r => r.name,
     value: r => r.rate.toFixed(0) + "%",
@@ -2983,8 +3022,8 @@ function renderAnalytics() {
     barColor: "var(--red-fg)",
   });
 
-  const fastest = [...speedRows].sort((a, b) => a.avgMs - b.avgMs).slice(0, 5);
-  const slowest = [...speedRows].sort((a, b) => b.avgMs - a.avgMs).slice(0, 5);
+  const fastest = [...speedRows].sort((a, b) => a.avgMs - b.avgMs);
+  const slowest = [...speedRows].sort((a, b) => b.avgMs - a.avgMs);
 
   renderRankList("fastEmpTable", fastest, {
     name: r => r.name,
@@ -3008,8 +3047,7 @@ function renderAnalytics() {
   });
   const topSuppliers = Object.entries(bySupplier)
     .map(([name, s]) => ({ name, ...s }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    .sort((a, b) => b.count - a.count);
 
   renderRankList("topSuppliersTable", topSuppliers, {
     name: r => r.name,
@@ -3021,8 +3059,7 @@ function renderAnalytics() {
   const rejectRows = Object.entries(qualityByEmp)
     .map(([name, q]) => ({ name, rate: q.reviewed ? (q.rejected / q.reviewed) * 100 : 0, rejected: q.rejected, reviewed: q.reviewed }))
     .filter(r => r.reviewed >= 1)
-    .sort((a, b) => b.rate - a.rate)
-    .slice(0, 5);
+    .sort((a, b) => b.rate - a.rate);
 
   renderRankList("rejectRateTable", rejectRows, {
     name: r => r.name,
@@ -3108,12 +3145,12 @@ function renderAnalytics() {
   });
   const topLargest = Object.entries(supplierTotals)
     .map(([name, s]) => ({ name, ...s }))
-    .sort((a, b) => b.sum - a.sum)
-    .slice(0, 10);
+    .sort((a, b) => b.sum - a.sum);
   renderRankList("topLargestTable", topLargest, {
     name: r => r.name,
     value: r => r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 }),
     meta: r => `${r.count} счёт(ов)`,
+    initialCount: 10,
   });
 
   // ---------- Системные ошибки ----------
