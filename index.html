@@ -1201,6 +1201,7 @@
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-label">Аналитика</span></button>
       <button class="nav-item" data-section="invoices" onclick="showSection('invoices')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></span><span class="nav-label">Счета-фактуры</span></button>
       <button class="nav-item" data-section="dogovor" onclick="showSection('dogovor')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договоры</span> <span id="pendingDogovorBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="doverennost" onclick="showSection('doverennost')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg></span><span class="nav-label">Доверенности</span> <span id="pendingDoverennostBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item" data-section="requests" onclick="showSection('requests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span><span class="nav-label">Заявки</span> <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
@@ -1558,6 +1559,39 @@
     </div>
     </section>
 
+    <section id="section-doverennost" class="content-section">
+    <div class="panel">
+      <h2>Доверенности <span class="sub" id="doverennostCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Запросы по доверенностям через Telegram-бот (команда /doverennost). Сотрудник присылает файл/скриншот и указывает, кому нужна доверенность - вы оформляете и отправляете готовый документ в ответ.</p>
+      <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field">
+          <label>🏢 Организация</label>
+          <select class="status-filter" id="doverennostOrgFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>👤 Кому направлено</label>
+          <select class="status-filter" id="doverennostApproverFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>🏷️ Статус</label>
+          <select class="status-filter" id="doverennostStatusFilter">
+            <option value="">Все</option>
+            <option value="pending">⏳ В ожидании</option>
+            <option value="done">✅ Выполнено</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="doverennostTable">
+          <thead>
+            <tr><th>№</th><th>Организация</th><th>Кому нужна</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-employees" class="content-section">
     <div class="panel">
       <h2>Сотрудники <span class="sub" id="employeesCountSub"></span></h2>
@@ -1717,6 +1751,7 @@ const SHEET_HISTORY = "История";
 const SHEET_REGISTRATIONS = "Заявки";
 const SHEET_EMPLOYEES = "Xodimlar";
 const SHEET_DOGOVOR = "Договоры";
+const SHEET_DOVERENNOST = "Доверенности";
 const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu yerga vaqt yozadi
 
 const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 секунд (bot bilan bir xil - Google Sheets API limitiga tegmaslik uchun)
@@ -1793,6 +1828,7 @@ let pendingRegistrations = [];
 let allEmployeesRaw = [];
 let processedRegistrations = [];
 let dogovorRows = [];
+let doverennostRows = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
@@ -1987,6 +2023,9 @@ window.onload = () => {
   document.getElementById("didoxFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("dogovorOrgFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("dogovorApproverFilter")?.addEventListener("change", renderDogovorTable);
+  document.getElementById("doverennostOrgFilter")?.addEventListener("change", renderDoverennostTable);
+  document.getElementById("doverennostApproverFilter")?.addEventListener("change", renderDoverennostTable);
+  document.getElementById("doverennostStatusFilter")?.addEventListener("change", renderDoverennostTable);
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
@@ -2270,12 +2309,13 @@ async function loadAllData(silent) {
     // Script'ga har bir yangilanishda faqat 1 marta murojaat qilinadi).
     // "Заявки" hali yaratilmagan bo'lsa ham (bot birinchi marta ishga
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
-    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw] = await sheetsGetBatch([
+    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, doverennostRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
       `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L500`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
       `'${SHEET_DOGOVOR}'!A2:L500`,
+      `'${SHEET_DOVERENNOST}'!A2:K500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2349,6 +2389,18 @@ async function loadAllData(silent) {
       comment: r[8] || "",
       approverName: r[10] || "",
     })).filter(r => r.description).reverse(); // eng yangisi tepada
+
+    doverennostRows = doverennostRaw.map((r, idx) => ({
+      rowIndex: idx + 2,
+      org: r[0] || "",
+      kого: r[1] || "",
+      employeeName: r[2] || "",
+      requestedAt: r[4] || "",
+      status: r[5] || "",
+      doneAt: r[6] || "",
+      comment: r[8] || "",
+      approverName: r[9] || "",
+    })).filter(r => r.kого).reverse();
 
     renderAll();
 
@@ -2432,6 +2484,7 @@ function renderAll() {
   renderEmployeesManage();
   renderContragentsList();
   renderDogovorTable();
+  renderDoverennostTable();
 }
 
 /* ============================================================
@@ -3970,7 +4023,7 @@ function closeContragentModal() {
 
 function renderDogovorTable() {
   const sub = document.getElementById("dogovorCountSub");
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Договор не найден в DIDOX"];
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
   const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
@@ -4035,8 +4088,8 @@ function renderDogovorTable() {
     if (status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-sent">⏳ Ждём финальный PDF от вас</span>`;
     }
-    if (status === "Договор не найден в DIDOX") {
-      return `<span class="status-badge status-rejected">📩 Ответил (не найден)</span>`;
+    if (status === "Закрыто (см. комментарий)") {
+      return `<span class="status-badge status-rejected">📩 Ответил текстом</span>`;
     }
     return `<span class="status-badge status-accepted">✅ Отправлено</span>`;
   }
@@ -4050,8 +4103,8 @@ function renderDogovorTable() {
     if (r.status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-accepted">✅ Согласился</span>`;
     }
-    if (r.status === "Договор не найден в DIDOX") {
-      return `<span class="status-badge status-rejected">📩 Не найден в DIDOX</span>`;
+    if (r.status === "Закрыто (см. комментарий)") {
+      return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `<span class="status-badge ${cls}">${escapeHtml(r.status)}</span>`;
@@ -4072,6 +4125,73 @@ function renderDogovorTable() {
       <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+}
+
+function renderDoverennostTable() {
+  const sub = document.getElementById("doverennostCountSub");
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const pendingCount = doverennostRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
+  if (sub) sub.textContent = `всего: ${doverennostRows.length} · в ожидании: ${pendingCount}`;
+
+  const badge = document.getElementById("pendingDoverennostBadge");
+  if (badge) {
+    if (pendingCount > 0) {
+      badge.textContent = pendingCount;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  const orgSelect = document.getElementById("doverennostOrgFilter");
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(doverennostRows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
+
+  const approverSelect = document.getElementById("doverennostApproverFilter");
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(doverennostRows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
+  const orgFilterVal = document.getElementById("doverennostOrgFilter")?.value || "";
+  const approverFilterVal = document.getElementById("doverennostApproverFilter")?.value || "";
+  const statusFilterVal = document.getElementById("doverennostStatusFilter")?.value || "";
+
+  const filtered = doverennostRows.filter(r => {
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
+    if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
+    if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
+    return true;
+  });
+
+  function statusBadge2(status) {
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+  }
+
+  const tbody = document.querySelector("#doverennostTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td>${escapeHtml(r.org)}</td>
+      <td style="max-width:280px;">${escapeHtml(r.kого)}</td>
+      <td>${escapeHtml(r.employeeName)}</td>
+      <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
+      <td>${statusBadge2(r.status)}</td>
+      <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
+    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
