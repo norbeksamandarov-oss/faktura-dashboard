@@ -1749,7 +1749,7 @@
       <div class="table-wrap">
         <table class="invoices" id="realschetTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>Договор (авто)</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -2602,7 +2602,7 @@ async function loadAllData(silent) {
       `'${SHEET_DOGOVOR}'!A2:L500`,
       `'${SHEET_DOVERENNOST}'!A2:K500`,
       `'${SHEET_BANK}'!A2:L500`,
-      `'${SHEET_REALSCHET}'!A2:K500`,
+      `'${SHEET_REALSCHET}'!A2:N500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2712,6 +2712,9 @@ async function loadAllData(silent) {
       doneAt: r[6] || "",
       comment: r[8] || "",
       approverName: r[9] || "",
+      autoNumber: r[11] || "",
+      autoDate: r[12] || "",
+      autoSum: r[13] || "",
     })).filter(r => r.kontragent).reverse();
 
     renderAll();
@@ -4578,7 +4581,7 @@ function renderRealschetTable() {
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
-      const haystack = [r.org, r.kontragent, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      const haystack = [r.org, r.kontragent, r.employeeName, r.approverName, r.comment, r.status, r.autoNumber, r.autoSum].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
     }
     return true;
@@ -4594,23 +4597,33 @@ function renderRealschetTable() {
 
   const tbody = document.querySelector("#realschetTable tbody");
   if (!tbody) return;
-  tbody.innerHTML = filtered.map((r, i) => `
+  tbody.innerHTML = filtered.map((r, i) => {
+    const autoParts = [];
+    if (r.autoNumber) autoParts.push(`№${escapeHtml(r.autoNumber)}`);
+    if (r.autoDate) autoParts.push(`от ${escapeHtml(r.autoDate)}`);
+    if (r.autoSum) autoParts.push(`${escapeHtml(r.autoSum)} сум`);
+    const autoText = autoParts.length
+      ? `<span title="Прочитано автоматически из PDF - проверьте">${autoParts.join(" · ")}</span>`
+      : `<span style="color:var(--muted)">—</span>`;
+    return `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td>${escapeHtml(r.org)}</td>
       <td style="max-width:280px;">${escapeHtml(r.kontragent)}</td>
+      <td style="font-size:12px;white-space:nowrap;">${autoText}</td>
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${statusBadgeRealschet(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`;
+  }).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function exportRealschetExcel() {
-  const headers = ["Организация", "Контрагент", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
-  const rows = lastFilteredRealschet.map(r => [r.org, r.kontragent, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
+  const headers = ["Организация", "Контрагент", "№ договора (авто)", "Дата договора (авто)", "Сумма (авто)", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredRealschet.map(r => [r.org, r.kontragent, r.autoNumber, r.autoDate, r.autoSum, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
   exportTableToExcel(headers, rows, "schet_realizacii");
 }
 
