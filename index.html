@@ -685,12 +685,12 @@
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
   #clearFiltersBtn:hover { background: var(--ice); }
-  #exportCsvBtn {
+  #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--navy);
     background: var(--navy); color: white; font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #exportCsvBtn:hover { background: var(--navy-light); }
+  #exportCsvBtn:hover, #dogovorExportBtn:hover, #doverennostExportBtn:hover, #bankExportBtn:hover { background: var(--navy-light); }
   #suggestRespBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--amber-fg);
     background: var(--amber-bg); color: var(--amber-fg); font-family: 'Inter';
@@ -1472,7 +1472,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="exportCsvBtn">⬇ Экспорт в CSV</button>
+          <button id="exportCsvBtn">⬇ Экспорт в Excel</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1565,6 +1565,10 @@
       <h2>Договоры <span class="sub" id="dogovorCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Запросы по договорам через Telegram-бот (команда /dogovor) - вместо переписки. Как только PDF отправлен сотруднику, статус меняется на «Выполнено».</p>
       <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="min-width:200px;">
+          <label>🔍 Поиск</label>
+          <input type="text" class="status-filter" id="dogovorSearchInput" placeholder="Поиск по всем полям...">
+        </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
           <select class="status-filter" id="dogovorOrgFilter"><option value="">Все</option></select>
@@ -1580,6 +1584,10 @@
             <option value="pending">⏳ В ожидании</option>
             <option value="done">✅ Выполнено</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="dogovorExportBtn">⬇ Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1598,6 +1606,10 @@
       <h2>Доверенности <span class="sub" id="doverennostCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Запросы по доверенностям через Telegram-бот (команда /doverennost). Сотрудник присылает файл/скриншот и указывает, кому нужна доверенность - вы оформляете и отправляете готовый документ в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="min-width:200px;">
+          <label>🔍 Поиск</label>
+          <input type="text" class="status-filter" id="doverennostSearchInput" placeholder="Поиск по всем полям...">
+        </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
           <select class="status-filter" id="doverennostOrgFilter"><option value="">Все</option></select>
@@ -1613,6 +1625,10 @@
             <option value="pending">⏳ В ожидании</option>
             <option value="done">✅ Выполнено</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="doverennostExportBtn">⬇ Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1631,6 +1647,10 @@
       <h2>Банк <span class="sub" id="bankCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Банковские запросы через Telegram-бот (команда /bank). Сотрудник указывает организацию, тип операции, контрагента и договор - вы присылаете подтверждающий документ в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="min-width:200px;">
+          <label>🔍 Поиск</label>
+          <input type="text" class="status-filter" id="bankSearchInput" placeholder="Поиск по всем полям...">
+        </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
           <select class="status-filter" id="bankOrgFilter"><option value="">Все</option></select>
@@ -1654,6 +1674,10 @@
             <option value="pending">⏳ В ожидании</option>
             <option value="done">✅ Выполнено</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="bankExportBtn">⬇ Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1906,6 +1930,9 @@ let processedRegistrations = [];
 let dogovorRows = [];
 let doverennostRows = [];
 let bankRows = [];
+let lastFilteredDogovor = [];
+let lastFilteredDoverennost = [];
+let lastFilteredBank = [];
 let statusChart = null;
 let trendChartInstance = null;
 let responseDistChartInstance = null;
@@ -2107,6 +2134,12 @@ window.onload = () => {
   document.getElementById("bankTypeFilter")?.addEventListener("change", renderBankTable);
   document.getElementById("bankApproverFilter")?.addEventListener("change", renderBankTable);
   document.getElementById("bankStatusFilter")?.addEventListener("change", renderBankTable);
+  document.getElementById("dogovorSearchInput")?.addEventListener("input", renderDogovorTable);
+  document.getElementById("doverennostSearchInput")?.addEventListener("input", renderDoverennostTable);
+  document.getElementById("bankSearchInput")?.addEventListener("input", renderBankTable);
+  document.getElementById("dogovorExportBtn")?.addEventListener("click", exportDogovorExcel);
+  document.getElementById("doverennostExportBtn")?.addEventListener("click", exportDoverennostExcel);
+  document.getElementById("bankExportBtn")?.addEventListener("click", exportBankExcel);
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
@@ -2157,22 +2190,37 @@ window.onload = () => {
 
 function exportInvoicesCsv() {
   const headers = ["Организация", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
-  const csvEscape = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lines = [headers.map(csvEscape).join(";")];
-  lastFilteredInvoices.forEach(r => {
-    lines.push([r.buyer, r.department, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]
-      .map(csvEscape).join(";"));
-  });
-  const csvContent = "\uFEFF" + lines.join("\r\n"); // BOM - Excel'da kirill harflari to'g'ri ko'rinishi uchun
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `scheta-faktury_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const rows = lastFilteredInvoices.map(r => [r.buyer, r.department, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]);
+  exportTableToExcel(headers, rows, "scheta-faktury");
+}
+
+// Umumiy Excel eksport funksiyasi - istalgan jadval uchun ishlatiladi
+// (Счета-фактуры, Договоры, Доверенности, Банк). SheetJS (XLSX) kutubxonasi
+// orqali haqiqiy .xlsx fayl yasaydi (oddiy CSV emas).
+function exportTableToExcel(headers, rows, filenamePrefix) {
+  const data = [headers, ...rows];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, filenamePrefix.slice(0, 31));
+  XLSX.writeFile(wb, `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
+function exportDogovorExcel() {
+  const headers = ["Организация", "Описание", "Сотрудник", "Кому", "Дата запроса", "Статус (админ)", "Статус (сотрудник)", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredDogovor.map(r => [r.org, r.description, r.employeeName, r.approverName, r.requestedAt, r.status, r.status, r.comment, r.doneAt]);
+  exportTableToExcel(headers, rows, "dogovory");
+}
+
+function exportDoverennostExcel() {
+  const headers = ["Организация", "Кому нужна", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredDoverennost.map(r => [r.org, r.kого, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
+  exportTableToExcel(headers, rows, "doverennosti");
+}
+
+function exportBankExcel() {
+  const headers = ["Организация", "Тип", "Детали", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredBank.map(r => [r.org, r.type, r.details, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
+  exportTableToExcel(headers, rows, "bank");
 }
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost"];
@@ -4211,14 +4259,20 @@ function renderDogovorTable() {
   const orgFilterVal = document.getElementById("dogovorOrgFilter")?.value || "";
   const approverFilterVal = document.getElementById("dogovorApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("dogovorStatusFilter")?.value || "";
+  const searchVal = (document.getElementById("dogovorSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = dogovorRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
     if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
+    if (searchVal) {
+      const haystack = [r.org, r.description, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      if (!haystack.includes(searchVal)) return false;
+    }
     return true;
   });
+  lastFilteredDogovor = filtered;
 
   function dogovorBadgeClass(status) {
     if (status === "Принято") return "status-accepted";
@@ -4313,14 +4367,20 @@ function renderDoverennostTable() {
   const orgFilterVal = document.getElementById("doverennostOrgFilter")?.value || "";
   const approverFilterVal = document.getElementById("doverennostApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("doverennostStatusFilter")?.value || "";
+  const searchVal = (document.getElementById("doverennostSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = doverennostRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
     if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
+    if (searchVal) {
+      const haystack = [r.org, r.kого, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      if (!haystack.includes(searchVal)) return false;
+    }
     return true;
   });
+  lastFilteredDoverennost = filtered;
 
   function statusBadge2(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
@@ -4381,6 +4441,7 @@ function renderBankTable() {
   const typeFilterVal = document.getElementById("bankTypeFilter")?.value || "";
   const approverFilterVal = document.getElementById("bankApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("bankStatusFilter")?.value || "";
+  const searchVal = (document.getElementById("bankSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = bankRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
@@ -4388,8 +4449,13 @@ function renderBankTable() {
     if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
+    if (searchVal) {
+      const haystack = [r.org, r.type, r.details, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      if (!haystack.includes(searchVal)) return false;
+    }
     return true;
   });
+  lastFilteredBank = filtered;
 
   function bankStatusBadge(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
