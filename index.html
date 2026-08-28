@@ -1309,7 +1309,7 @@
       <div class="panel" id="loginStatsPanel" style="display:none; margin-bottom:16px;">
         <h2>🔐 По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
         <table class="emp-table" id="loginStatsTable">
-          <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th></tr></thead>
+          <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th><th>Договоров</th><th>Доверенностей</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -2976,7 +2976,9 @@ async function renderLoginStatsPanel() {
         <td>${escapeHtml(u.name)}</td>
         <td>${u.invoiceCount || 0}</td>
         <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
-      </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет данных</td></tr>`;
+        <td>${u.dogovorCount || 0}</td>
+        <td>${u.doverennostCount || 0}</td>
+      </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Нет данных</td></tr>`;
   } catch (e) {
     console.warn("Не удалось загрузить статистику по логинам:", e.message);
   }
