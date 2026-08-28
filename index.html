@@ -4593,9 +4593,13 @@ async function applyRespSilent(rowIndex, value) {
 
 async function suggestResponsibles() {
   const { byContract, bySeller } = buildRespSuggestionMaps();
-  const targets = invoiceRows.filter(r => !r.resp && classifyStatus(r.status) === "new" && r.seller);
+  // MUHIM: barcha счetlar (invoiceRows) emas, HOZIRGI FILTRLANGAN
+  // ro'yxatdan (lastFilteredInvoices) foydalanamiz - shunda foydalanuvchi
+  // masalan bitta tashkilotni filtrlab qo'ygan bo'lsa, faqat o'sha
+  // tashkilot счetlariga taklif beriladi, boshqalariga tegilmaydi.
+  const targets = lastFilteredInvoices.filter(r => !r.resp && classifyStatus(r.status) === "new" && r.seller);
   if (!targets.length) {
-    alert("Нет счетов без ответственного, которым можно подобрать подсказку.");
+    alert("Нет счетов без ответственного (в текущей выборке с учётом фильтров), которым можно подобрать подсказку.");
     return;
   }
 
