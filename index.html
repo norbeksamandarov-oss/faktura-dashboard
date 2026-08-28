@@ -679,12 +679,12 @@
     transition: border-color .15s, box-shadow .15s;
   }
   select.status-filter:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
-  #clearFiltersBtn {
+  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
     background: white; color: var(--navy); font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #clearFiltersBtn:hover { background: var(--ice); }
+  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover { background: var(--ice); }
   #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--navy);
     background: var(--navy); color: white; font-family: 'Inter';
@@ -1587,6 +1587,10 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
+          <button id="dogovorClearFiltersBtn">✕ Сбросить фильтры</button>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
           <button id="dogovorExportBtn">⬇ Экспорт в Excel</button>
         </div>
       </div>
@@ -1625,6 +1629,10 @@
             <option value="pending">⏳ В ожидании</option>
             <option value="done">✅ Выполнено</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="doverennostClearFiltersBtn">✕ Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1674,6 +1682,10 @@
             <option value="pending">⏳ В ожидании</option>
             <option value="done">✅ Выполнено</option>
           </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="bankClearFiltersBtn">✕ Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -2140,6 +2152,28 @@ window.onload = () => {
   document.getElementById("dogovorExportBtn")?.addEventListener("click", exportDogovorExcel);
   document.getElementById("doverennostExportBtn")?.addEventListener("click", exportDoverennostExcel);
   document.getElementById("bankExportBtn")?.addEventListener("click", exportBankExcel);
+  document.getElementById("dogovorClearFiltersBtn")?.addEventListener("click", () => {
+    document.getElementById("dogovorSearchInput").value = "";
+    document.getElementById("dogovorOrgFilter").value = "";
+    document.getElementById("dogovorApproverFilter").value = "";
+    document.getElementById("dogovorStatusFilter").value = "";
+    renderDogovorTable();
+  });
+  document.getElementById("doverennostClearFiltersBtn")?.addEventListener("click", () => {
+    document.getElementById("doverennostSearchInput").value = "";
+    document.getElementById("doverennostOrgFilter").value = "";
+    document.getElementById("doverennostApproverFilter").value = "";
+    document.getElementById("doverennostStatusFilter").value = "";
+    renderDoverennostTable();
+  });
+  document.getElementById("bankClearFiltersBtn")?.addEventListener("click", () => {
+    document.getElementById("bankSearchInput").value = "";
+    document.getElementById("bankOrgFilter").value = "";
+    document.getElementById("bankTypeFilter").value = "";
+    document.getElementById("bankApproverFilter").value = "";
+    document.getElementById("bankStatusFilter").value = "";
+    renderBankTable();
+  });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
