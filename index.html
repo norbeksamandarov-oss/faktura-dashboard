@@ -679,18 +679,18 @@
     transition: border-color .15s, box-shadow .15s;
   }
   select.status-filter:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
-  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn {
+  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
     background: white; color: var(--navy); font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover { background: var(--ice); }
-  #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn {
+  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover { background: var(--ice); }
+  #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn, #realschetExportBtn, #zakaznaryadExportBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--navy);
     background: var(--navy); color: white; font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #exportCsvBtn:hover, #dogovorExportBtn:hover, #doverennostExportBtn:hover, #bankExportBtn:hover { background: var(--navy-light); }
+  #exportCsvBtn:hover, #dogovorExportBtn:hover, #doverennostExportBtn:hover, #bankExportBtn:hover, #realschetExportBtn:hover, #zakaznaryadExportBtn:hover { background: var(--navy-light); }
   #suggestRespBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--amber-fg);
     background: var(--amber-bg); color: var(--amber-fg); font-family: 'Inter';
@@ -1750,7 +1750,7 @@
       <div class="table-wrap">
         <table class="invoices" id="realschetTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -1795,7 +1795,7 @@
       <div class="table-wrap">
         <table class="invoices" id="zakaznaryadTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -2663,8 +2663,8 @@ async function loadAllData(silent) {
       `'${SHEET_DOGOVOR}'!A2:L500`,
       `'${SHEET_DOVERENNOST}'!A2:K500`,
       `'${SHEET_BANK}'!A2:L500`,
-      `'${SHEET_REALSCHET}'!A2:K500`,
-      `'${SHEET_ZAKAZNARYAD}'!A2:K500`,
+      `'${SHEET_REALSCHET}'!A2:L500`,
+      `'${SHEET_ZAKAZNARYAD}'!A2:L500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2774,6 +2774,7 @@ async function loadAllData(silent) {
       doneAt: r[6] || "",
       comment: r[8] || "",
       approverName: r[9] || "",
+      innPnfl: r[11] || "",
     })).filter(r => r.kontragent).reverse();
 
     zakaznaryadRows = zakaznaryadRaw.map((r, idx) => ({
@@ -2786,6 +2787,7 @@ async function loadAllData(silent) {
       doneAt: r[6] || "",
       comment: r[8] || "",
       approverName: r[9] || "",
+      innPnfl: r[11] || "",
     })).filter(r => r.kontragent).reverse();
 
     renderAll();
@@ -4660,7 +4662,7 @@ function renderRealschetTable() {
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
-      const haystack = [r.org, r.kontragent, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      const haystack = [r.org, r.kontragent, r.innPnfl, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
     }
     return true;
@@ -4680,19 +4682,20 @@ function renderRealschetTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td>${escapeHtml(r.org)}</td>
-      <td style="max-width:280px;">${escapeHtml(r.kontragent)}</td>
+      <td style="max-width:220px;">${escapeHtml(r.kontragent)}</td>
+      <td style="font-size:12px;white-space:nowrap;">${r.innPnfl ? escapeHtml(r.innPnfl) : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${statusBadgeRealschet(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function exportRealschetExcel() {
-  const headers = ["Организация", "Контрагент", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
-  const rows = lastFilteredRealschet.map(r => [r.org, r.kontragent, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
+  const headers = ["Организация", "Контрагент", "ИНН/ПНФЛ", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredRealschet.map(r => [r.org, r.kontragent, r.innPnfl, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
   exportTableToExcel(headers, rows, "schet_realizacii");
 }
 
@@ -4739,7 +4742,7 @@ function renderZakaznaryadTable() {
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
-      const haystack = [r.org, r.kontragent, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      const haystack = [r.org, r.kontragent, r.innPnfl, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
     }
     return true;
@@ -4759,19 +4762,20 @@ function renderZakaznaryadTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td>${escapeHtml(r.org)}</td>
-      <td style="max-width:280px;">${escapeHtml(r.kontragent)}</td>
+      <td style="max-width:220px;">${escapeHtml(r.kontragent)}</td>
+      <td style="font-size:12px;white-space:nowrap;">${r.innPnfl ? escapeHtml(r.innPnfl) : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
       <td>${statusBadgeZakaznaryad(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function exportZakaznaryadExcel() {
-  const headers = ["Организация", "Контрагент", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
-  const rows = lastFilteredZakaznaryad.map(r => [r.org, r.kontragent, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
+  const headers = ["Организация", "Контрагент", "ИНН/ПНФЛ", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredZakaznaryad.map(r => [r.org, r.kontragent, r.innPnfl, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
   exportTableToExcel(headers, rows, "zakaz_naryad");
 }
 
