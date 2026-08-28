@@ -2738,10 +2738,24 @@ async function sendAnnouncement() {
 function renderWriteEmpEmployeeOptions() {
   const select = document.getElementById("writeempEmployeeSelect");
   if (!select) return;
+  // MUHIM: agar ro'yxat OLDINGIDEK bo'lsa - HECH NARSA qilmaymiz (DOM'ni
+  // qayta qurmaymiz). Aks holda har 8 soniyalik yangilanishda tanlangan
+  // qiymat "uchib ketishi" yoki xodim yozayotgan payti to'satdan
+  // qayta o'rnatilishi mumkin edi.
+  const signature = employees.map(e => `${e.chatId}:${e.name}`).join("|");
+  if (select.dataset.signature === signature) return;
+  select.dataset.signature = signature;
+
   const prevVal = select.value;
   select.innerHTML = `<option value="">Выберите сотрудника...</option>`
-    + employees.map(e => `<option value="${escapeHtml(e.chatId)}">${escapeHtml(e.name)}</option>`).join("");
-  if (employees.some(e => e.chatId === prevVal)) select.value = prevVal;
+    + employees.map(e => `<option value="${escapeHtml(String(e.chatId))}">${escapeHtml(e.name)}</option>`).join("");
+  // MUHIM: chatId Google Sheets'dan RAQAM sifatida kelishi mumkin, prevVal
+  // esa har doim MATN (select.value) - shuning uchun String() bilan
+  // ikkalasini ham matnga aylantirib solishtiramiz (aks holda "===" mos
+  // kelmay, tanlangan xodim tasodifan tashlanib ketardi).
+  if (employees.some(e => String(e.chatId) === prevVal)) {
+    select.value = prevVal;
+  }
 }
 
 async function sendWriteEmp() {
