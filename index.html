@@ -1271,12 +1271,12 @@
           <input type="text" class="status-filter" id="summarySearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>📂 Тип</label>
-          <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
+          <label>📂 Тип <span style="font-weight:400;color:var(--muted);">(Ctrl/Cmd - для нескольких)</span></label>
+          <select class="status-filter" id="summaryTypeFilter" multiple size="4" style="min-height:38px;"></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
-          <select class="status-filter" id="summaryTargetFilter"><option value="">Все</option></select>
+          <label>👤 Кому направлено <span style="font-weight:400;color:var(--muted);">(Ctrl/Cmd - для нескольких)</span></label>
+          <select class="status-filter" id="summaryTargetFilter" multiple size="4" style="min-height:38px;"></select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1778,6 +1778,10 @@
           <select class="status-filter" id="realschetOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
+          <label>🤝 Контрагент</label>
+          <input type="text" class="status-filter" id="realschetKontragentFilter" placeholder="Название...">
+        </div>
+        <div class="filter-field">
           <label>👤 Кому направлено</label>
           <select class="status-filter" id="realschetApproverFilter"><option value="">Все</option></select>
         </div>
@@ -1821,6 +1825,10 @@
         <div class="filter-field">
           <label>🏢 Организация</label>
           <select class="status-filter" id="zakaznaryadOrgFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>🤝 Контрагент</label>
+          <input type="text" class="status-filter" id="zakaznaryadKontragentFilter" placeholder="Название...">
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
@@ -2469,6 +2477,7 @@ window.onload = () => {
   document.getElementById("realschetOrgFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetApproverFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetStatusFilter")?.addEventListener("change", renderRealschetTable);
+  document.getElementById("realschetKontragentFilter")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetSearchInput")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetExportBtn")?.addEventListener("click", exportRealschetExcel);
   document.getElementById("realschetClearFiltersBtn")?.addEventListener("click", () => {
@@ -2476,6 +2485,7 @@ window.onload = () => {
     document.getElementById("realschetOrgFilter").value = "";
     document.getElementById("realschetApproverFilter").value = "";
     document.getElementById("realschetStatusFilter").value = "";
+    document.getElementById("realschetKontragentFilter").value = "";
     renderRealschetTable();
   });
   document.getElementById("zakaznaryadOrgFilter")?.addEventListener("change", renderZakaznaryadTable);
@@ -2483,11 +2493,13 @@ window.onload = () => {
   document.getElementById("zakaznaryadStatusFilter")?.addEventListener("change", renderZakaznaryadTable);
   document.getElementById("zakaznaryadSearchInput")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadExportBtn")?.addEventListener("click", exportZakaznaryadExcel);
+  document.getElementById("zakaznaryadKontragentFilter")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("zakaznaryadSearchInput").value = "";
     document.getElementById("zakaznaryadOrgFilter").value = "";
     document.getElementById("zakaznaryadApproverFilter").value = "";
     document.getElementById("zakaznaryadStatusFilter").value = "";
+    document.getElementById("zakaznaryadKontragentFilter").value = "";
     renderZakaznaryadTable();
   });
   document.getElementById("otherreqPostOrgFilter")?.addEventListener("change", renderOtherreqPostTable);
@@ -2519,8 +2531,8 @@ window.onload = () => {
   document.getElementById("summaryTargetFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summaryClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("summarySearchInput").value = "";
-    document.getElementById("summaryTypeFilter").value = "";
-    document.getElementById("summaryTargetFilter").value = "";
+    Array.from(document.getElementById("summaryTypeFilter").options).forEach(o => o.selected = false);
+    Array.from(document.getElementById("summaryTargetFilter").options).forEach(o => o.selected = false);
     renderSummaryTable();
   });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
@@ -3354,29 +3366,29 @@ function renderSummaryTable() {
   const sub = document.getElementById("summaryCountSub");
   if (sub) sub.textContent = `всего ожидающих: ${allItems.length}`;
 
-  const typeSelect = document.getElementById("summaryTypeFilter");
-  if (typeSelect) {
-    const prevVal = typeSelect.value;
-    const types = [...new Set(allItems.map(it => it.type))].sort();
-    typeSelect.innerHTML = `<option value="">Все</option>` + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
-    if (types.includes(prevVal)) typeSelect.value = prevVal;
+  function getSelectedValues(selectEl) {
+    return selectEl ? Array.from(selectEl.selectedOptions).map(o => o.value) : [];
   }
+  function rebuildMultiSelect(selectEl, values) {
+    if (!selectEl) return;
+    const prevSelected = getSelectedValues(selectEl);
+    selectEl.innerHTML = values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    Array.from(selectEl.options).forEach(o => { if (prevSelected.includes(o.value)) o.selected = true; });
+  }
+
+  const typeSelect = document.getElementById("summaryTypeFilter");
+  rebuildMultiSelect(typeSelect, [...new Set(allItems.map(it => it.type))].sort());
 
   const targetSelect = document.getElementById("summaryTargetFilter");
-  if (targetSelect) {
-    const prevVal = targetSelect.value;
-    const targets = [...new Set(allItems.map(it => it.target).filter(Boolean))].sort();
-    targetSelect.innerHTML = `<option value="">Все</option>` + targets.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
-    if (targets.includes(prevVal)) targetSelect.value = prevVal;
-  }
+  rebuildMultiSelect(targetSelect, [...new Set(allItems.map(it => it.target).filter(Boolean))].sort());
 
-  const typeVal = document.getElementById("summaryTypeFilter")?.value || "";
-  const targetVal = document.getElementById("summaryTargetFilter")?.value || "";
+  const typeVals = getSelectedValues(typeSelect);
+  const targetVals = getSelectedValues(targetSelect);
   const searchVal = (document.getElementById("summarySearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = allItems.filter(it => {
-    if (typeVal && it.type !== typeVal) return false;
-    if (targetVal && it.target !== targetVal) return false;
+    if (typeVals.length && !typeVals.includes(it.type)) return false;
+    if (targetVals.length && !targetVals.includes(it.target)) return false;
     if (searchVal) {
       const haystack = [it.type, it.org, it.details, it.employeeName, it.target].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
@@ -3390,10 +3402,10 @@ function renderSummaryTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="font-size:12px;white-space:nowrap;">${escapeHtml(it.type)}</td>
-      <td style="max-width:200px;" class="clamp-cell" title="${escapeHtml(it.org)}">${escapeHtml(it.org)}</td>
-      <td style="max-width:220px;font-size:12px;" class="clamp-cell" title="${escapeHtml(it.details)}">${escapeHtml(it.details) || "—"}</td>
-      <td style="max-width:160px;" class="clamp-cell" title="${escapeHtml(it.employeeName)}">${escapeHtml(it.employeeName) || `<span style="color:var(--muted)">—</span>`}</td>
-      <td style="max-width:160px;" class="clamp-cell" title="${escapeHtml(it.target)}">${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td><span class="clamp-cell" style="max-width:200px;" title="${escapeHtml(it.org)}">${escapeHtml(it.org)}</span></td>
+      <td style="font-size:12px;"><span class="clamp-cell" style="max-width:220px;" title="${escapeHtml(it.details)}">${escapeHtml(it.details) || "—"}</span></td>
+      <td><span class="clamp-cell" style="max-width:160px;" title="${escapeHtml(it.employeeName)}">${escapeHtml(it.employeeName) || `<span style="color:var(--muted)">—</span>`}</span></td>
+      <td><span class="clamp-cell" style="max-width:160px;" title="${escapeHtml(it.target)}">${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</span></td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.requestedAt)}</td>
       <td>${daysBadge(it.days)}</td>
       <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;white-space:nowrap;">Перейти →</button></td>
@@ -5272,10 +5284,12 @@ function renderRealschetTable() {
   const orgFilterVal = document.getElementById("realschetOrgFilter")?.value || "";
   const approverFilterVal = document.getElementById("realschetApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("realschetStatusFilter")?.value || "";
+  const kontragentFilterVal = (document.getElementById("realschetKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("realschetSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = realschetRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (kontragentFilterVal && !r.kontragent.toLowerCase().includes(kontragentFilterVal)) return false;
     if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
@@ -5352,10 +5366,12 @@ function renderZakaznaryadTable() {
   const orgFilterVal = document.getElementById("zakaznaryadOrgFilter")?.value || "";
   const approverFilterVal = document.getElementById("zakaznaryadApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("zakaznaryadStatusFilter")?.value || "";
+  const kontragentFilterVal = (document.getElementById("zakaznaryadKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("zakaznaryadSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = zakaznaryadRows.filter(r => {
     if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (kontragentFilterVal && !r.kontragent.toLowerCase().includes(kontragentFilterVal)) return false;
     if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
