@@ -1287,6 +1287,19 @@
         </table>
       </div>
     </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <h2>⏱ Скорость по бухгалтерам <span class="sub">Договор, Доверенность, Банк, Счёт-фактура на авто, Заказ-наряд, Другой запрос</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Только ВЫПОЛНЕННЫЕ запросы за всё время. Среднее время - от даты запроса до даты выполнения. "Опоздания" - запросы, выполненные дольше 3 дней.</p>
+      <div class="table-wrap">
+        <table class="invoices" id="approverSpeedTable">
+          <thead>
+            <tr><th>№</th><th>Кому направлено</th><th>Выполнено всего</th><th>Среднее время</th><th>Опозданий (&gt;3 дн.)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
     </section>
 
     <section id="section-analytics" class="content-section active">
@@ -3349,6 +3362,68 @@ function renderSummaryTable() {
       <td>${daysBadge(it.days)}</td>
       <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;">Перейти →</button></td>
     </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не ожидает - всё выполнено 🎉</td></tr>`;
+
+  renderApproverSpeedTable();
+}
+
+/* ⏱ Скорость по бухгалтерам - Договор/Доверенность/Банк/Счёт-фактура на
+   авто/Заказ-наряд/Другой запрос uchun BIR XIL: har birida requestedAt
+   (Дата запроса), doneAt (Дата выполнения) va approverName (Кому
+   направлено) maydonlari bor - shu asosda o'rtacha bajarish vaqtini va
+   "opozdaniya" (3 kundan ortiq) sonini hisoblaymiz. */
+function buildApproverSpeedStats() {
+  const DONE_STATUSES = ["Принято", "Выполнено", "Закрыто (см. комментарий)"];
+  const byApprover = {}; // name -> { durations: [hours...], lateCount: 0 }
+
+  function add(rows, doneStatuses) {
+    rows.forEach(r => {
+      if (!doneStatuses.includes(r.status)) return;
+      if (!r.approverName || !r.requestedAt || !r.doneAt) return;
+      const t1 = Date.parse(String(r.requestedAt).replace(" ", "T"));
+      const t2 = Date.parse(String(r.doneAt).replace(" ", "T"));
+      if (isNaN(t1) || isNaN(t2) || t2 < t1) return;
+      const hours = (t2 - t1) / 3600000;
+      if (!byApprover[r.approverName]) byApprover[r.approverName] = { durations: [], lateCount: 0 };
+      byApprover[r.approverName].durations.push(hours);
+      if (hours > 72) byApprover[r.approverName].lateCount += 1;
+    });
+  }
+
+  add(dogovorRows, ["Принято"]);
+  add(doverennostRows, ["Выполнено"]);
+  add(bankRows, ["Выполнено"]);
+  add(realschetRows, ["Выполнено"]);
+  add(zakaznaryadRows, ["Выполнено"]);
+  add(otherreqPostRows, ["Выполнено"]);
+  add(otherreqRealRows, ["Выполнено"]);
+
+  const result = Object.keys(byApprover).map(name => {
+    const d = byApprover[name];
+    const avgHours = d.durations.reduce((a, b) => a + b, 0) / d.durations.length;
+    return { name, count: d.durations.length, avgHours, lateCount: d.lateCount };
+  });
+  result.sort((a, b) => a.avgHours - b.avgHours); // eng tezkori tepada
+  return result;
+}
+
+function formatHoursDuration(hours) {
+  if (hours < 24) return `${hours.toFixed(1)} ч.`;
+  const days = hours / 24;
+  return `${days.toFixed(1)} дн.`;
+}
+
+function renderApproverSpeedTable() {
+  const stats = buildApproverSpeedStats();
+  const tbody = document.querySelector("#approverSpeedTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = stats.map((s, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td><strong>${escapeHtml(s.name)}</strong></td>
+      <td>${s.count}</td>
+      <td>${formatHoursDuration(s.avgHours)}</td>
+      <td>${s.lateCount > 0 ? `<span style="color:#C0392B;font-weight:600;">${s.lateCount}</span>` : "0"}</td>
+    </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет выполненных запросов</td></tr>`;
 }
 
 /* ============================================================
