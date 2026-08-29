@@ -1254,6 +1254,7 @@
         <button class="nav-item nav-sub-item" data-section="employees" onclick="showSection('employees')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nav-label">Сотрудники</span></button>
         <button class="nav-item nav-sub-item" data-section="users" onclick="showSection('users')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="nav-label">Пользователи</span></button>
         <button class="nav-item nav-sub-item" data-section="writeemp" onclick="showSection('writeemp')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="nav-label">Написать сотруднику</span></button>
+        <button class="nav-item nav-sub-item" data-section="suggestions" onclick="showSection('suggestions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Предложения и жалобы</span> <span id="pendingSuggestionsBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><span class="nav-label">Журнал действий</span></button>
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
@@ -1272,6 +1273,10 @@
         <div class="filter-field">
           <label>📂 Тип</label>
           <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>👤 Кому направлено</label>
+          <select class="status-filter" id="summaryTargetFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -2006,6 +2011,22 @@
     </div>
     </section>
 
+    <section id="section-suggestions" class="content-section">
+    <div class="panel">
+      <h2>Предложения и жалобы <span class="sub" id="suggestionsCountSub">видно только администраторам</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Обращения сотрудников через Telegram-бота (кнопка "💡 Предложение/Жалоба"). Эта информация конфиденциальна - её видите только вы. Ответьте на сообщение бота (Reply в Telegram), чтобы передать ответ сотруднику анонимно.</p>
+      <div id="suggestionsLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap">
+        <table class="invoices" id="suggestionsTable" style="display:none;">
+          <thead>
+            <tr><th>№</th><th>Дата</th><th>Тип</th><th>Текст</th><th>Сотрудник</th><th>Ответ дан</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-auditlog" class="content-section">
     <div class="panel">
       <h2>Журнал действий <span class="sub">кто, когда и что изменил в системе</span></h2>
@@ -2495,9 +2516,11 @@ window.onload = () => {
   });
   document.getElementById("summaryTypeFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summarySearchInput")?.addEventListener("input", renderSummaryTable);
+  document.getElementById("summaryTargetFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summaryClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("summarySearchInput").value = "";
     document.getElementById("summaryTypeFilter").value = "";
+    document.getElementById("summaryTargetFilter").value = "";
     renderSummaryTable();
   });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
@@ -2584,7 +2607,7 @@ function exportBankExcel() {
 }
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
-const PERSONAL_SECTIONS = ["requests", "employees", "users", "writeemp"];
+const PERSONAL_SECTIONS = ["requests", "employees", "users", "writeemp", "suggestions"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "otherreqreal"];
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
@@ -2617,6 +2640,9 @@ function showSection(name) {
 
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
+  }
+  if (name === "suggestions" && currentRole === "admin") {
+    loadSuggestions();
   }
 }
 
@@ -2717,7 +2743,7 @@ async function submitForcePasswordChange() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   const pendingRegBadge2 = document.getElementById("pendingRegBadge2");
   if (pendingRegBadge2 && !isAdmin) pendingRegBadge2.style.display = "none";
@@ -3336,11 +3362,21 @@ function renderSummaryTable() {
     if (types.includes(prevVal)) typeSelect.value = prevVal;
   }
 
+  const targetSelect = document.getElementById("summaryTargetFilter");
+  if (targetSelect) {
+    const prevVal = targetSelect.value;
+    const targets = [...new Set(allItems.map(it => it.target).filter(Boolean))].sort();
+    targetSelect.innerHTML = `<option value="">Все</option>` + targets.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+    if (targets.includes(prevVal)) targetSelect.value = prevVal;
+  }
+
   const typeVal = document.getElementById("summaryTypeFilter")?.value || "";
+  const targetVal = document.getElementById("summaryTargetFilter")?.value || "";
   const searchVal = (document.getElementById("summarySearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = allItems.filter(it => {
     if (typeVal && it.type !== typeVal) return false;
+    if (targetVal && it.target !== targetVal) return false;
     if (searchVal) {
       const haystack = [it.type, it.org, it.details, it.employeeName, it.target].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
@@ -3354,13 +3390,13 @@ function renderSummaryTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="font-size:12px;white-space:nowrap;">${escapeHtml(it.type)}</td>
-      <td>${escapeHtml(it.org)}</td>
-      <td style="max-width:260px;font-size:12px;" class="clamp-cell" title="${escapeHtml(it.details)}">${escapeHtml(it.details) || "—"}</td>
-      <td>${escapeHtml(it.employeeName) || `<span style="color:var(--muted)">—</span>`}</td>
-      <td>${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td style="max-width:200px;" class="clamp-cell" title="${escapeHtml(it.org)}">${escapeHtml(it.org)}</td>
+      <td style="max-width:220px;font-size:12px;" class="clamp-cell" title="${escapeHtml(it.details)}">${escapeHtml(it.details) || "—"}</td>
+      <td style="max-width:160px;" class="clamp-cell" title="${escapeHtml(it.employeeName)}">${escapeHtml(it.employeeName) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td style="max-width:160px;" class="clamp-cell" title="${escapeHtml(it.target)}">${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.requestedAt)}</td>
       <td>${daysBadge(it.days)}</td>
-      <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;">Перейти →</button></td>
+      <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;white-space:nowrap;">Перейти →</button></td>
     </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не ожидает - всё выполнено 🎉</td></tr>`;
 
   renderApproverSpeedTable();
@@ -4470,6 +4506,38 @@ async function renderUsersManage() {
     renderUsersTable();
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="6" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function loadSuggestions() {
+  const note = document.getElementById("suggestionsLoadingNote");
+  const table = document.getElementById("suggestionsTable");
+  const tbody = document.querySelector("#suggestionsTable tbody");
+  if (note) { note.style.display = ""; note.textContent = "Загрузка..."; }
+  if (table) table.style.display = "none";
+  try {
+    const data = await apiCall("adminGetSuggestions", {});
+    const items = data.items || [];
+    const badge = document.getElementById("pendingSuggestionsBadge");
+    if (badge) {
+      if (items.length > 0) { badge.textContent = items.length; badge.style.display = "inline-block"; }
+      else badge.style.display = "none";
+    }
+    const sub = document.getElementById("suggestionsCountSub");
+    if (sub) sub.textContent = `всего: ${items.length} · видно только администраторам`;
+    tbody.innerHTML = items.map((it, i) => `
+      <tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.date)}</td>
+        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "⚠️ Жалоба" : "💡 Предложение"}</td>
+        <td style="max-width:400px;font-size:13px;">${escapeHtml(it.text)}</td>
+        <td>${escapeHtml(it.employeeName)}</td>
+        <td>${it.comment ? `<span style="color:#1E7A4C;">✅ да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
+      </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Пока нет обращений</td></tr>`;
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+  } catch (e) {
+    if (note) { note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
   }
 }
 
