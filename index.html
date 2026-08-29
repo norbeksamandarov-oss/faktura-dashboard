@@ -1945,10 +1945,14 @@
       <h2>Написать сотруднику <span class="sub">прямое сообщение через Telegram-бота</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Выберите сотрудника и напишите ему сообщение - бот отправит его в Telegram. После отправки бот один раз спросит вас (в личном чате), не хотите ли вы приложить документ - если да, просто пришлите файл в ответ на его вопрос.</p>
 
-      <div class="user-create-form">
-        <select id="writeempEmployeeSelect" class="login-input" style="max-width:260px;">
-          <option value="">Выберите сотрудника...</option>
-        </select>
+      <div class="user-create-form" style="position:relative;">
+        <input type="text" id="writeempEmployeeInput" class="login-input" style="max-width:260px;"
+               placeholder="Введите имя или @username..."
+               autocomplete="off"
+               oninput="showWriteEmpSuggestions(this)"
+               onfocus="showWriteEmpSuggestions(this)"
+               onkeydown="handleWriteEmpKeydown(event, this)"
+               onblur="handleWriteEmpBlur(this)">
       </div>
       <textarea id="writeempMessageText" placeholder="Текст сообщения..." class="login-input" style="width:100%;max-width:520px;min-height:110px;margin-top:12px;font-family:'Inter';resize:vertical;"></textarea>
       <div style="margin-top:12px;">
@@ -2078,7 +2082,8 @@ const SHEET_DOVERENNOST = "Доверенности";
 const SHEET_BANK = "Банк";
 const SHEET_REALSCHET = "РеализацияСчет";
 const SHEET_ZAKAZNARYAD = "ЗаказНаряд";
-const SHEET_OTHERREQ = "ДругиеЗапросы";
+const SHEET_OTHERREQ_POST = "ДругиеЗапросыПоступления";
+const SHEET_OTHERREQ_REAL = "ДругиеЗапросыРеализация";
 const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu yerga vaqt yozadi
 
 const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 секунд (bot bilan bir xil - Google Sheets API limitiga tegmaslik uchun)
@@ -2735,32 +2740,135 @@ async function sendAnnouncement() {
   }
 }
 
-function renderWriteEmpEmployeeOptions() {
-  const select = document.getElementById("writeempEmployeeSelect");
-  if (!select) return;
-  // MUHIM: agar ro'yxat OLDINGIDEK bo'lsa - HECH NARSA qilmaymiz (DOM'ni
-  // qayta qurmaymiz). Aks holda har 8 soniyalik yangilanishda tanlangan
-  // qiymat "uchib ketishi" yoki xodim yozayotgan payti to'satdan
-  // qayta o'rnatilishi mumkin edi.
-  const signature = employees.map(e => `${e.chatId}:${e.name}`).join("|");
-  if (select.dataset.signature === signature) return;
-  select.dataset.signature = signature;
+let writeempSuggestBoxEl = null;
+let writeempSuggestActiveInput = null;
+let writeempSuggestHighlightIndex = -1;
+let writeempSuggestItems = [];
+let writeempSelectedChatId = "";
 
-  const prevVal = select.value;
-  select.innerHTML = `<option value="">Выберите сотрудника...</option>`
-    + employees.map(e => `<option value="${escapeHtml(String(e.chatId))}">${escapeHtml(e.name)}</option>`).join("");
-  // MUHIM: chatId Google Sheets'dan RAQAM sifatida kelishi mumkin, prevVal
-  // esa har doim MATN (select.value) - shuning uchun String() bilan
-  // ikkalasini ham matnga aylantirib solishtiramiz (aks holda "===" mos
-  // kelmay, tanlangan xodim tasodifan tashlanib ketardi).
-  if (employees.some(e => String(e.chatId) === prevVal)) {
-    select.value = prevVal;
+function ensureWriteEmpSuggestBox() {
+  if (writeempSuggestBoxEl) return writeempSuggestBoxEl;
+  const box = document.createElement("div");
+  box.className = "resp-suggest-box";
+  document.body.appendChild(box);
+  writeempSuggestBoxEl = box;
+  return box;
+}
+
+function buildWriteEmpSuggestItems(query) {
+  const norm = normalizeForSearch(query);
+  const items = [];
+  employees.forEach(e => {
+    if (!e.name) return;
+    const uname = String(e.username || "").replace(/^@/, "").trim();
+    const nameNorm = normalizeForSearch(e.name);
+    const unameNorm = normalizeForSearch(uname);
+    const cyrGuessNorm = normalizeForSearch(approximateCyrillic(e.name));
+    if (!norm || nameNorm.includes(norm) || (uname && unameNorm.includes(norm)) || cyrGuessNorm.includes(norm)) {
+      items.push({ name: e.name, username: uname, chatId: String(e.chatId) });
+    }
+  });
+  return items;
+}
+
+function showWriteEmpSuggestions(inputEl) {
+  writeempSuggestActiveInput = inputEl;
+  const items = buildWriteEmpSuggestItems(inputEl.value.trim());
+  writeempSuggestItems = items;
+  writeempSuggestHighlightIndex = -1;
+
+  const box = ensureWriteEmpSuggestBox();
+  if (!items.length) {
+    box.style.display = "none";
+    return;
+  }
+  box.innerHTML = items.map((it, i) => `
+    <div class="resp-suggest-item" data-idx="${i}" onmousedown="event.preventDefault(); selectWriteEmpSuggestion(${i})">
+      <div class="rsi-name">${escapeHtml(it.name)}</div>
+      ${it.username ? `<div class="rsi-username">@${escapeHtml(it.username)}</div>` : ""}
+    </div>`).join("");
+
+  const rect = inputEl.getBoundingClientRect();
+  box.style.left = `${rect.left + window.scrollX}px`;
+  box.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  box.style.width = `${Math.max(rect.width, 230)}px`;
+  box.style.display = "block";
+}
+
+function selectWriteEmpSuggestion(idx) {
+  const item = writeempSuggestItems[idx];
+  const inputEl = writeempSuggestActiveInput;
+  if (!item || !inputEl) return;
+  inputEl.value = item.name;
+  writeempSelectedChatId = item.chatId;
+  hideWriteEmpSuggestions();
+}
+
+function hideWriteEmpSuggestions() {
+  if (writeempSuggestBoxEl) writeempSuggestBoxEl.style.display = "none";
+  writeempSuggestHighlightIndex = -1;
+}
+
+function updateWriteEmpHighlight() {
+  if (!writeempSuggestBoxEl) return;
+  [...writeempSuggestBoxEl.children].forEach((el, i) => el.classList.toggle("active", i === writeempSuggestHighlightIndex));
+  const activeEl = writeempSuggestBoxEl.children[writeempSuggestHighlightIndex];
+  if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
+}
+
+function handleWriteEmpKeydown(event, inputEl) {
+  const visible = writeempSuggestBoxEl && writeempSuggestBoxEl.style.display !== "none" && writeempSuggestItems.length;
+  if (event.key === "ArrowDown" && visible) {
+    event.preventDefault();
+    writeempSuggestHighlightIndex = Math.min(writeempSuggestHighlightIndex + 1, writeempSuggestItems.length - 1);
+    updateWriteEmpHighlight();
+  } else if (event.key === "ArrowUp" && visible) {
+    event.preventDefault();
+    writeempSuggestHighlightIndex = Math.max(writeempSuggestHighlightIndex - 1, 0);
+    updateWriteEmpHighlight();
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    if (visible && writeempSuggestHighlightIndex >= 0) {
+      selectWriteEmpSuggestion(writeempSuggestHighlightIndex);
+    } else {
+      resolveWriteEmpInput(inputEl);
+      hideWriteEmpSuggestions();
+    }
+  } else if (event.key === "Escape") {
+    hideWriteEmpSuggestions();
+  }
+}
+
+function handleWriteEmpBlur(inputEl) {
+  hideWriteEmpSuggestions();
+  resolveWriteEmpInput(inputEl);
+}
+
+function resolveWriteEmpInput(inputEl) {
+  // Xuddi "Ответственный" maydonidagidek: username, kirill yoki lotin
+  // alifbosida yozilgan bo'lsa ham - xodimning HAQIQIY ismini va
+  // ChatID'sini avtomatik topib, tanlangan sifatida belgilaydi.
+  const raw = inputEl.value.trim().replace(/^@/, "");
+  if (!raw) { writeempSelectedChatId = ""; return; }
+
+  let match = employees.find(e => String(e.username || "").replace(/^@/, "").toLowerCase() === raw.toLowerCase());
+  if (!match) {
+    const normRaw = normalizeForSearch(raw);
+    match = employees.find(e => normalizeForSearch(e.name) === normRaw);
+  }
+
+  if (match) {
+    inputEl.value = match.name;
+    writeempSelectedChatId = String(match.chatId);
+  } else {
+    writeempSelectedChatId = "";
   }
 }
 
 async function sendWriteEmp() {
-  const empSelect = document.getElementById("writeempEmployeeSelect");
-  const chatId = empSelect ? empSelect.value : "";
+  const empInput = document.getElementById("writeempEmployeeInput");
+  if (empInput) resolveWriteEmpInput(empInput);
+  const chatId = writeempSelectedChatId;
   const textEl = document.getElementById("writeempMessageText");
   const text = textEl ? textEl.value.trim() : "";
   const errorEl = document.getElementById("writeempError");
@@ -2769,7 +2877,7 @@ async function sendWriteEmp() {
   if (successEl) successEl.textContent = "";
 
   if (!chatId) {
-    if (errorEl) errorEl.textContent = "Выберите сотрудника.";
+    if (errorEl) errorEl.textContent = "Выберите сотрудника из списка (введите имя или @username и выберите вариант).";
     return;
   }
   if (!text) {
@@ -2784,6 +2892,8 @@ async function sendWriteEmp() {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B14`, text);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B15`, new Date().toISOString());
     if (textEl) textEl.value = "";
+    if (empInput) empInput.value = "";
+    writeempSelectedChatId = "";
     if (successEl) successEl.textContent = "✅ Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
   } catch (e) {
     if (errorEl) errorEl.textContent = "Не удалось отправить: " + e.message;
@@ -2855,7 +2965,7 @@ async function loadAllData(silent) {
     // Script'ga har bir yangilanishda faqat 1 marta murojaat qilinadi).
     // "Заявки" hali yaratilmagan bo'lsa ham (bot birinchi marta ishga
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
-    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqRaw] = await sheetsGetBatch([
+    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqPostRaw, otherreqRealRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
       `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L500`,
@@ -2865,7 +2975,8 @@ async function loadAllData(silent) {
       `'${SHEET_BANK}'!A2:L500`,
       `'${SHEET_REALSCHET}'!A2:L500`,
       `'${SHEET_ZAKAZNARYAD}'!A2:L500`,
-      `'${SHEET_OTHERREQ}'!A2:N500`,
+      `'${SHEET_OTHERREQ_POST}'!A2:M500`,
+      `'${SHEET_OTHERREQ_REAL}'!A2:M500`,
     ]);
 
     allEmployeesRaw = empRaw
@@ -2881,7 +2992,6 @@ async function loadAllData(silent) {
     // Faqat FAOL xodimlar - "Ответственный" tanlash/autocomplete uchun
     // (deaktiv qilingan xodim tanlab bo'lmasin, bot baribir rad etadi).
     employees = allEmployeesRaw.filter(e => e.active).map(e => ({ chatId: e.chatId, username: e.username, name: e.name }));
-    renderWriteEmpEmployeeOptions();
 
     invoiceRows = invRaw.map((r, idx) => ({
       rowIndex: idx + 2,
@@ -2992,22 +3102,23 @@ async function loadAllData(silent) {
       innPnfl: r[11] || "",
     })).filter(r => r.kontragent).reverse();
 
-    const otherreqAll = otherreqRaw.map((r, idx) => ({
-      rowIndex: idx + 2,
-      org: r[0] || "",
-      kontragent: r[1] || "",
-      employeeName: r[2] || "",
-      requestedAt: r[4] || "",
-      status: r[5] || "",
-      doneAt: r[6] || "",
-      comment: r[8] || "",
-      approverName: r[9] || "",
-      innPnfl: r[11] || "",
-      requestText: r[12] || "",
-      category: r[13] || "",
-    })).filter(r => r.employeeName).reverse();
-    otherreqPostRows = otherreqAll.filter(r => r.category !== "Реализация");
-    otherreqRealRows = otherreqAll.filter(r => r.category === "Реализация");
+    function mapOtherreqRow(r, idx) {
+      return {
+        rowIndex: idx + 2,
+        org: r[0] || "",
+        kontragent: r[1] || "",
+        employeeName: r[2] || "",
+        requestedAt: r[4] || "",
+        status: r[5] || "",
+        doneAt: r[6] || "",
+        comment: r[8] || "",
+        approverName: r[9] || "",
+        innPnfl: r[11] || "",
+        requestText: r[12] || "",
+      };
+    }
+    otherreqPostRows = otherreqPostRaw.map(mapOtherreqRow).filter(r => r.employeeName).reverse();
+    otherreqRealRows = otherreqRealRaw.map(mapOtherreqRow).filter(r => r.employeeName).reverse();
 
     renderAll();
 
