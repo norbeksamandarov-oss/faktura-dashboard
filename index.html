@@ -679,12 +679,12 @@
     transition: border-color .15s, box-shadow .15s;
   }
   select.status-filter:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
-  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn, #otherreqPostClearFiltersBtn, #otherreqRealClearFiltersBtn {
+  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn, #otherreqPostClearFiltersBtn, #otherreqRealClearFiltersBtn, #summaryClearFiltersBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
     background: white; color: var(--navy); font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover, #otherreqPostClearFiltersBtn:hover, #otherreqRealClearFiltersBtn:hover { background: var(--ice); }
+  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover, #otherreqPostClearFiltersBtn:hover, #otherreqRealClearFiltersBtn:hover, #summaryClearFiltersBtn:hover { background: var(--ice); }
   #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn, #realschetExportBtn, #zakaznaryadExportBtn, #otherreqPostExportBtn, #otherreqRealExportBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--navy);
     background: var(--navy); color: white; font-family: 'Inter';
@@ -1215,6 +1215,7 @@
           <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
+      <button class="nav-item" data-section="summary" onclick="showSection('summary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">Сводка</span> <span id="pendingSummaryBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-label">Аналитика</span></button>
       <button class="nav-item nav-group-toggle" id="postupleniyaToggle" onclick="togglePostupleniyaGroup()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 7.28a2 2 0 0 0-.9-1.5L13 2.4a2 2 0 0 0-2 0L4.4 5.78a2 2 0 0 0-.9 1.5v9.44a2 2 0 0 0 .9 1.5L11 21.6a2 2 0 0 0 2 0l6.6-3.38a2 2 0 0 0 .9-1.5Z"/><path d="M12 22V12"/><path d="m3.3 7 8.7 5 8.7-5"/></svg></span>
@@ -1258,6 +1259,35 @@
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
     </nav>
     <main class="content-area">
+
+    <section id="section-summary" class="content-section">
+    <div class="panel">
+      <h2>Сводка <span class="sub" id="summaryCountSub">все ожидающие запросы, из всех разделов, старые сверху</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Всё, что сейчас "висит" (не завершено), из всех разделов сразу - для быстрой ежедневной проверки. Отсортировано по количеству дней ожидания (самое старое - сверху).</p>
+      <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="min-width:200px;">
+          <label>🔍 Поиск</label>
+          <input type="text" class="status-filter" id="summarySearchInput" placeholder="Поиск по всем полям...">
+        </div>
+        <div class="filter-field">
+          <label>📂 Тип</label>
+          <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="summaryClearFiltersBtn">✕ Сбросить фильтры</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="summaryTable">
+          <thead>
+            <tr><th>№</th><th>Тип</th><th>Организация</th><th>Детали</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Дней</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
 
     <section id="section-analytics" class="content-section active">
 
@@ -2450,6 +2480,13 @@ window.onload = () => {
     document.getElementById("otherreqRealStatusFilter").value = "";
     renderOtherreqRealTable();
   });
+  document.getElementById("summaryTypeFilter")?.addEventListener("change", renderSummaryTable);
+  document.getElementById("summarySearchInput")?.addEventListener("input", renderSummaryTable);
+  document.getElementById("summaryClearFiltersBtn")?.addEventListener("click", () => {
+    document.getElementById("summarySearchInput").value = "";
+    document.getElementById("summaryTypeFilter").value = "";
+    renderSummaryTable();
+  });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
@@ -3210,6 +3247,108 @@ function renderAll() {
   renderOtherreqRealTable();
   updateRealizatsiyaGroupBadge();
   updatePostupleniyaBadge();
+  renderSummaryTable();
+}
+
+/* ============================================================
+   СВОДКА - hamma bo'limdagi "hali yakunlanmagan" so'rovlarni bitta
+   jadvalda jamlaydi, kutish kunlari bo'yicha (eng eskisi tepada)
+   saralaydi - kunlik umumiy nazorat uchun. */
+function daysSinceDateStr(dateStr) {
+  if (!dateStr) return null;
+  const t = Date.parse(String(dateStr).replace(" ", "T"));
+  if (isNaN(t)) return null;
+  return Math.max(0, Math.floor((Date.now() - t) / 86400000));
+}
+
+function buildSummaryItems() {
+  const items = [];
+
+  invoiceRows.forEach(r => {
+    const cls = classifyStatus(r.status);
+    if (cls !== "sent" && cls !== "pendingboss") return;
+    items.push({
+      type: "Счёт-фактура", section: "invoices",
+      org: r.buyer, details: r.no, employeeName: r.resp || "",
+      target: cls === "pendingboss" ? "руководитель" : "",
+      requestedAt: r.date, days: parseInt(r.days, 10) || 0,
+    });
+  });
+
+  function addGeneric(rows, typeLabel, section, doneStatuses, detailsField) {
+    rows.forEach(r => {
+      if (doneStatuses.includes(r.status)) return;
+      items.push({
+        type: typeLabel, section,
+        org: r.org, details: r[detailsField] || "",
+        employeeName: r.employeeName || "", target: r.approverName || "",
+        requestedAt: r.requestedAt, days: daysSinceDateStr(r.requestedAt) || 0,
+      });
+    });
+  }
+
+  addGeneric(dogovorRows, "Договор", "dogovor", ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"], "description");
+  addGeneric(doverennostRows, "Доверенность", "doverennost", ["Выполнено", "Закрыто (см. комментарий)"], "kого");
+  addGeneric(bankRows, "Банк", "bank", ["Выполнено", "Закрыто (см. комментарий)"], "details");
+  addGeneric(realschetRows, "Счёт-фактура на авто", "realschet", ["Выполнено", "Закрыто (см. комментарий)"], "kontragent");
+  addGeneric(zakaznaryadRows, "Заказ-наряд", "zakaznaryad", ["Выполнено", "Закрыто (см. комментарий)"], "kontragent");
+  addGeneric(otherreqPostRows, "Другой запрос (Поступления)", "otherreqpost", ["Выполнено", "Закрыто (см. комментарий)"], "requestText");
+  addGeneric(otherreqRealRows, "Другой запрос (Реализация)", "otherreqreal", ["Выполнено", "Закрыто (см. комментарий)"], "requestText");
+
+  items.sort((a, b) => b.days - a.days);
+  return items;
+}
+
+function renderSummaryTable() {
+  const allItems = buildSummaryItems();
+
+  const badge = document.getElementById("pendingSummaryBadge");
+  if (badge) {
+    if (allItems.length > 0) {
+      badge.textContent = allItems.length;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  const sub = document.getElementById("summaryCountSub");
+  if (sub) sub.textContent = `всего ожидающих: ${allItems.length}`;
+
+  const typeSelect = document.getElementById("summaryTypeFilter");
+  if (typeSelect) {
+    const prevVal = typeSelect.value;
+    const types = [...new Set(allItems.map(it => it.type))].sort();
+    typeSelect.innerHTML = `<option value="">Все</option>` + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+    if (types.includes(prevVal)) typeSelect.value = prevVal;
+  }
+
+  const typeVal = document.getElementById("summaryTypeFilter")?.value || "";
+  const searchVal = (document.getElementById("summarySearchInput")?.value || "").trim().toLowerCase();
+
+  const filtered = allItems.filter(it => {
+    if (typeVal && it.type !== typeVal) return false;
+    if (searchVal) {
+      const haystack = [it.type, it.org, it.details, it.employeeName, it.target].join(" ").toLowerCase();
+      if (!haystack.includes(searchVal)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.querySelector("#summaryTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map((it, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td style="font-size:12px;white-space:nowrap;">${escapeHtml(it.type)}</td>
+      <td>${escapeHtml(it.org)}</td>
+      <td style="max-width:260px;font-size:12px;" class="clamp-cell" title="${escapeHtml(it.details)}">${escapeHtml(it.details) || "—"}</td>
+      <td>${escapeHtml(it.employeeName) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td>${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.requestedAt)}</td>
+      <td>${daysBadge(it.days)}</td>
+      <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;">Перейти →</button></td>
+    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не ожидает - всё выполнено 🎉</td></tr>`;
 }
 
 /* ============================================================
