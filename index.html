@@ -1293,17 +1293,11 @@
         </div>
         <div class="filter-field">
           <label>📂 Тип</label>
-          <div class="ms-wrap" id="summaryTypeFilterWrap">
-            <button type="button" class="ms-btn" id="summaryTypeFilterBtn" onclick="toggleMsPanel('summaryType')">Все</button>
-            <div class="ms-panel" id="summaryTypeFilterPanel"></div>
-          </div>
+          <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <div class="ms-wrap" id="summaryTargetFilterWrap">
-            <button type="button" class="ms-btn" id="summaryTargetFilterBtn" onclick="toggleMsPanel('summaryTarget')">Все</button>
-            <div class="ms-panel" id="summaryTargetFilterPanel"></div>
-          </div>
+          <select class="status-filter" id="summaryTargetFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1500,11 +1494,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="buyerFilterBtn" onclick="toggleMsPanel('buyer')">Все</button><div class="ms-panel" id="buyerFilterPanel"></div></div>
+          <select id="buyerFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🏬 Подразделение</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="departmentFilterBtn" onclick="toggleMsPanel('department')">Все</button><div class="ms-panel" id="departmentFilterPanel"></div></div>
+          <select id="departmentFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент (имя или ИНН)</label>
@@ -1802,7 +1796,7 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="realschetOrgFilterBtn" onclick="toggleMsPanel('realschetOrg')">Все</button><div class="ms-panel" id="realschetOrgFilterPanel"></div></div>
+          <select class="status-filter" id="realschetOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент</label>
@@ -1810,7 +1804,7 @@
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="realschetApproverFilterBtn" onclick="toggleMsPanel('realschetApprover')">Все</button><div class="ms-panel" id="realschetApproverFilterPanel"></div></div>
+          <select class="status-filter" id="realschetApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1851,7 +1845,7 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="zakaznaryadOrgFilterBtn" onclick="toggleMsPanel('zakaznaryadOrg')">Все</button><div class="ms-panel" id="zakaznaryadOrgFilterPanel"></div></div>
+          <select class="status-filter" id="zakaznaryadOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент</label>
@@ -1859,7 +1853,7 @@
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="zakaznaryadApproverFilterBtn" onclick="toggleMsPanel('zakaznaryadApprover')">Все</button><div class="ms-panel" id="zakaznaryadApproverFilterPanel"></div></div>
+          <select class="status-filter" id="zakaznaryadApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1900,11 +1894,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqPostOrgFilterBtn" onclick="toggleMsPanel('otherreqPostOrg')">Все</button><div class="ms-panel" id="otherreqPostOrgFilterPanel"></div></div>
+          <select class="status-filter" id="otherreqPostOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqPostApproverFilterBtn" onclick="toggleMsPanel('otherreqPostApprover')">Все</button><div class="ms-panel" id="otherreqPostApproverFilterPanel"></div></div>
+          <select class="status-filter" id="otherreqPostApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1945,11 +1939,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqRealOrgFilterBtn" onclick="toggleMsPanel('otherreqRealOrg')">Все</button><div class="ms-panel" id="otherreqRealOrgFilterPanel"></div></div>
+          <select class="status-filter" id="otherreqRealOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqRealApproverFilterBtn" onclick="toggleMsPanel('otherreqRealApprover')">Все</button><div class="ms-panel" id="otherreqRealApproverFilterPanel"></div></div>
+          <select class="status-filter" id="otherreqRealApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -2501,58 +2495,70 @@ window.onload = () => {
     document.getElementById("bankStatusFilter").value = "";
     renderBankTable();
   });
+  document.getElementById("realschetOrgFilter")?.addEventListener("change", renderRealschetTable);
+  document.getElementById("realschetApproverFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetStatusFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetKontragentFilter")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetSearchInput")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetExportBtn")?.addEventListener("click", exportRealschetExcel);
   document.getElementById("realschetClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("realschetSearchInput").value = "";
-    msClear("realschetOrg");
-    msClear("realschetApprover");
+    document.getElementById("realschetOrgFilter").value = "";
+    document.getElementById("realschetApproverFilter").value = "";
     document.getElementById("realschetStatusFilter").value = "";
     document.getElementById("realschetKontragentFilter").value = "";
     renderRealschetTable();
   });
+  document.getElementById("zakaznaryadOrgFilter")?.addEventListener("change", renderZakaznaryadTable);
+  document.getElementById("zakaznaryadApproverFilter")?.addEventListener("change", renderZakaznaryadTable);
   document.getElementById("zakaznaryadStatusFilter")?.addEventListener("change", renderZakaznaryadTable);
   document.getElementById("zakaznaryadSearchInput")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadExportBtn")?.addEventListener("click", exportZakaznaryadExcel);
   document.getElementById("zakaznaryadKontragentFilter")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("zakaznaryadSearchInput").value = "";
-    msClear("zakaznaryadOrg");
-    msClear("zakaznaryadApprover");
+    document.getElementById("zakaznaryadOrgFilter").value = "";
+    document.getElementById("zakaznaryadApproverFilter").value = "";
     document.getElementById("zakaznaryadStatusFilter").value = "";
     document.getElementById("zakaznaryadKontragentFilter").value = "";
     renderZakaznaryadTable();
   });
+  document.getElementById("otherreqPostOrgFilter")?.addEventListener("change", renderOtherreqPostTable);
+  document.getElementById("otherreqPostApproverFilter")?.addEventListener("change", renderOtherreqPostTable);
   document.getElementById("otherreqPostStatusFilter")?.addEventListener("change", renderOtherreqPostTable);
   document.getElementById("otherreqPostSearchInput")?.addEventListener("input", renderOtherreqPostTable);
   document.getElementById("otherreqPostExportBtn")?.addEventListener("click", exportOtherreqPostExcel);
   document.getElementById("otherreqPostClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("otherreqPostSearchInput").value = "";
-    msClear("otherreqPostOrg");
-    msClear("otherreqPostApprover");
+    document.getElementById("otherreqPostOrgFilter").value = "";
+    document.getElementById("otherreqPostApproverFilter").value = "";
     document.getElementById("otherreqPostStatusFilter").value = "";
     renderOtherreqPostTable();
   });
+  document.getElementById("otherreqRealOrgFilter")?.addEventListener("change", renderOtherreqRealTable);
+  document.getElementById("otherreqRealApproverFilter")?.addEventListener("change", renderOtherreqRealTable);
   document.getElementById("otherreqRealStatusFilter")?.addEventListener("change", renderOtherreqRealTable);
   document.getElementById("otherreqRealSearchInput")?.addEventListener("input", renderOtherreqRealTable);
   document.getElementById("otherreqRealExportBtn")?.addEventListener("click", exportOtherreqRealExcel);
   document.getElementById("otherreqRealClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("otherreqRealSearchInput").value = "";
-    msClear("otherreqRealOrg");
-    msClear("otherreqRealApprover");
+    document.getElementById("otherreqRealOrgFilter").value = "";
+    document.getElementById("otherreqRealApproverFilter").value = "";
     document.getElementById("otherreqRealStatusFilter").value = "";
     renderOtherreqRealTable();
   });
   document.getElementById("summarySearchInput")?.addEventListener("input", renderSummaryTable);
+  document.getElementById("summaryTypeFilter")?.addEventListener("change", renderSummaryTable);
+  document.getElementById("summaryTargetFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summaryClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("summarySearchInput").value = "";
-    msClear("summaryType");
-    msClear("summaryTarget");
+    document.getElementById("summaryTypeFilter").value = "";
+    document.getElementById("summaryTargetFilter").value = "";
     renderSummaryTable();
   });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
+  document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
+  document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("respFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("sumFilter").addEventListener("input", renderInvoicesTable);
@@ -2565,8 +2571,8 @@ window.onload = () => {
     document.getElementById("statusFilter").value = "";
     document.getElementById("daysFilter").value = "";
     document.getElementById("didoxFilter").value = "";
-    msClear("buyer");
-    msClear("department");
+    document.getElementById("buyerFilter").value = "";
+    document.getElementById("departmentFilter").value = "";
     document.getElementById("contragentFilter").value = "";
     document.getElementById("respFilter").value = "";
     document.getElementById("sumFilter").value = "";
@@ -3455,16 +3461,29 @@ function renderSummaryTable() {
   const sub = document.getElementById("summaryCountSub");
   if (sub) sub.textContent = `всего ожидающих: ${allItems.length}`;
 
-  renderMsFilter("summaryType", [...new Set(allItems.map(it => it.type))].sort());
-  renderMsFilter("summaryTarget", [...new Set(allItems.map(it => it.target).filter(Boolean))].sort());
+  const typeSelect = document.getElementById("summaryTypeFilter");
+  if (typeSelect) {
+    const prevVal = typeSelect.value;
+    const types = [...new Set(allItems.map(it => it.type))].sort();
+    typeSelect.innerHTML = `<option value="">Все</option>` + types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+    if (types.includes(prevVal)) typeSelect.value = prevVal;
+  }
 
-  const typeVals = msState.summaryType || [];
-  const targetVals = msState.summaryTarget || [];
+  const targetSelect = document.getElementById("summaryTargetFilter");
+  if (targetSelect) {
+    const prevVal = targetSelect.value;
+    const targets = [...new Set(allItems.map(it => it.target).filter(Boolean))].sort();
+    targetSelect.innerHTML = `<option value="">Все</option>` + targets.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+    if (targets.includes(prevVal)) targetSelect.value = prevVal;
+  }
+
+  const typeVal = document.getElementById("summaryTypeFilter")?.value || "";
+  const targetVal = document.getElementById("summaryTargetFilter")?.value || "";
   const searchVal = (document.getElementById("summarySearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = allItems.filter(it => {
-    if (typeVals.length && !typeVals.includes(it.type)) return false;
-    if (targetVals.length && !targetVals.includes(it.target)) return false;
+    if (typeVal && it.type !== typeVal) return false;
+    if (targetVal && it.target !== targetVal) return false;
     if (searchVal) {
       const haystack = [it.type, it.org, it.details, it.employeeName, it.target].join(" ").toLowerCase();
       if (!haystack.includes(searchVal)) return false;
@@ -3736,19 +3755,27 @@ function resolveRespInput(inputEl) {
 }
 
 function renderBuyerFilterOptions() {
+  const sel = document.getElementById("buyerFilter");
+  const current = sel.value;
   const names = [...new Set(invoiceRows.map(r => canonicalBuyer(r.buyer)).filter(Boolean))].sort();
   const changed = names.length !== uniqueBuyers.length || names.some((n, i) => n !== uniqueBuyers[i]);
-  if (!changed) return; // не перестраиваем зря (иначе может мигать при авто-обновлении)
+  if (!changed) return; // не перестраиваем select зря (иначе может мигать при авто-обновлении)
   uniqueBuyers = names;
-  renderMsFilter("buyer", names);
+  sel.innerHTML = `<option value="">Все</option>` +
+    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  if (names.includes(current)) sel.value = current;
 }
 
 function renderDepartmentFilterOptions() {
+  const sel = document.getElementById("departmentFilter");
+  const current = sel.value;
   const names = [...new Set(invoiceRows.map(r => r.department).filter(Boolean))].sort();
   const changed = names.length !== uniqueDepartments.length || names.some((n, i) => n !== uniqueDepartments[i]);
   if (!changed) return;
   uniqueDepartments = names;
-  renderMsFilter("department", names);
+  sel.innerHTML = `<option value="">Все</option>` +
+    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  if (names.includes(current)) sel.value = current;
 }
 
 function renderStats() {
@@ -3817,8 +3844,8 @@ function renderInvoicesTable() {
   const filter = document.getElementById("statusFilter").value;
   const daysFilterVal = document.getElementById("daysFilter").value;
   const didoxFilterVal = document.getElementById("didoxFilter").value;
-  const buyerVals = msState.buyer || [];
-  const departmentVals = msState.department || [];
+  const buyerVal = document.getElementById("buyerFilter").value;
+  const departmentVal = document.getElementById("departmentFilter").value;
   const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
   const respVal = document.getElementById("respFilter").value.trim().toLowerCase();
   const sumFilterVal = document.getElementById("sumFilter").value.trim().replace(/\s/g, "");
@@ -3830,8 +3857,8 @@ function renderInvoicesTable() {
     if (daysFilterVal && daysColorClass(r.days) !== daysFilterVal) return false;
     if (didoxFilterVal === "done" && !r.didoxDone) return false;
     if (didoxFilterVal === "pending" && r.didoxDone) return false;
-    if (buyerVals.length && !buyerVals.includes(canonicalBuyer(r.buyer))) return false;
-    if (departmentVals.length && !departmentVals.includes(r.department)) return false;
+    if (buyerVal && canonicalBuyer(r.buyer) !== buyerVal) return false;
+    if (departmentVal && r.department !== departmentVal) return false;
     if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
     if (respVal && !normalizeForSearch(r.resp || "").includes(normalizeForSearch(respVal))) return false;
     if (sumFilterVal && !r.sum.replace(/\s/g, "").includes(sumFilterVal)) return false;
@@ -5329,19 +5356,32 @@ function renderRealschetTable() {
     }
   }
 
-  renderMsFilter("realschetOrg", [...new Set(realschetRows.map(r => r.org).filter(Boolean))].sort());
-  renderMsFilter("realschetApprover", [...new Set(realschetRows.map(r => r.approverName).filter(Boolean))].sort());
+  const orgSelect = document.getElementById("realschetOrgFilter");
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(realschetRows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
 
-  const orgFilterVals = msState.realschetOrg || [];
-  const approverFilterVals = msState.realschetApprover || [];
+  const approverSelect = document.getElementById("realschetApproverFilter");
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(realschetRows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
+  const orgFilterVal = document.getElementById("realschetOrgFilter")?.value || "";
+  const approverFilterVal = document.getElementById("realschetApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("realschetStatusFilter")?.value || "";
   const kontragentFilterVal = (document.getElementById("realschetKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("realschetSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = realschetRows.filter(r => {
-    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
     if (kontragentFilterVal && !(r.kontragent.toLowerCase().includes(kontragentFilterVal) || (r.innPnfl || "").toLowerCase().includes(kontragentFilterVal))) return false;
-    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
@@ -5398,19 +5438,32 @@ function renderZakaznaryadTable() {
     }
   }
 
-  renderMsFilter("zakaznaryadOrg", [...new Set(zakaznaryadRows.map(r => r.org).filter(Boolean))].sort());
-  renderMsFilter("zakaznaryadApprover", [...new Set(zakaznaryadRows.map(r => r.approverName).filter(Boolean))].sort());
+  const orgSelect = document.getElementById("zakaznaryadOrgFilter");
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(zakaznaryadRows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
 
-  const orgFilterVals = msState.zakaznaryadOrg || [];
-  const approverFilterVals = msState.zakaznaryadApprover || [];
+  const approverSelect = document.getElementById("zakaznaryadApproverFilter");
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(zakaznaryadRows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
+  const orgFilterVal = document.getElementById("zakaznaryadOrgFilter")?.value || "";
+  const approverFilterVal = document.getElementById("zakaznaryadApproverFilter")?.value || "";
   const statusFilterVal = document.getElementById("zakaznaryadStatusFilter")?.value || "";
   const kontragentFilterVal = (document.getElementById("zakaznaryadKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("zakaznaryadSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = zakaznaryadRows.filter(r => {
-    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
     if (kontragentFilterVal && !(r.kontragent.toLowerCase().includes(kontragentFilterVal) || (r.innPnfl || "").toLowerCase().includes(kontragentFilterVal))) return false;
-    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
@@ -5467,17 +5520,30 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
     }
   }
 
-  renderMsFilter(`${prefix}Org`, [...new Set(rows.map(r => r.org).filter(Boolean))].sort());
-  renderMsFilter(`${prefix}Approver`, [...new Set(rows.map(r => r.approverName).filter(Boolean))].sort());
+  const orgSelect = document.getElementById(`${prefix}OrgFilter`);
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(rows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
 
-  const orgFilterVals = msState[`${prefix}Org`] || [];
-  const approverFilterVals = msState[`${prefix}Approver`] || [];
+  const approverSelect = document.getElementById(`${prefix}ApproverFilter`);
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(rows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
+  const orgFilterVal = document.getElementById(`${prefix}OrgFilter`)?.value || "";
+  const approverFilterVal = document.getElementById(`${prefix}ApproverFilter`)?.value || "";
   const statusFilterVal = document.getElementById(`${prefix}StatusFilter`)?.value || "";
   const searchVal = (document.getElementById(`${prefix}SearchInput`)?.value || "").trim().toLowerCase();
 
   const filtered = rows.filter(r => {
-    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
-    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
