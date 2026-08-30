@@ -1500,11 +1500,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <select id="buyerFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="buyerFilterBtn" onclick="toggleMsPanel('buyer')">Все</button><div class="ms-panel" id="buyerFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🏬 Подразделение</label>
-          <select id="departmentFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="departmentFilterBtn" onclick="toggleMsPanel('department')">Все</button><div class="ms-panel" id="departmentFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент (имя или ИНН)</label>
@@ -2553,8 +2553,6 @@ window.onload = () => {
     renderSummaryTable();
   });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
-  document.getElementById("buyerFilter").addEventListener("change", renderInvoicesTable);
-  document.getElementById("departmentFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("contragentFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("respFilter").addEventListener("input", renderInvoicesTable);
   document.getElementById("sumFilter").addEventListener("input", renderInvoicesTable);
@@ -2567,8 +2565,8 @@ window.onload = () => {
     document.getElementById("statusFilter").value = "";
     document.getElementById("daysFilter").value = "";
     document.getElementById("didoxFilter").value = "";
-    document.getElementById("buyerFilter").value = "";
-    document.getElementById("departmentFilter").value = "";
+    msClear("buyer");
+    msClear("department");
     document.getElementById("contragentFilter").value = "";
     document.getElementById("respFilter").value = "";
     document.getElementById("sumFilter").value = "";
@@ -3225,7 +3223,7 @@ async function loadAllData(silent) {
     otherreqPostRows = otherreqPostRaw.map(mapOtherreqRow).filter(r => r.employeeName).reverse();
     otherreqRealRows = otherreqRealRaw.map(mapOtherreqRow).filter(r => r.employeeName).reverse();
 
-    renderAll();
+    renderAll(silent);
 
     // "По логинам dashboard" paneli - alohida so'rov (АудитЛог'ni davr
     // bo'yicha filtrlash kerak), shuning uchun har bir 3-soniyalik
@@ -3296,11 +3294,19 @@ function daysColorClass(daysStr) {
   return "green";
 }
 
-function renderAll() {
+function renderAll(silent) {
   renderStats();
   renderBuyerFilterOptions();
   renderDepartmentFilterOptions();
-  renderInvoicesTable();
+  // MUHIM: agar bu FON REJIMIDAGI (silent) avtomatik yangilanish bo'lsa
+  // VA xodim aynan hozir "Ответственный" katakchasini tahrirlayotgan
+  // bo'lsa - счета-фактуры jadvalini qayta chizmaymiz (aks holda uning
+  // ochiq turgan tanlov ro'yxati yopilib qolar edi). LEKIN xodimning
+  // O'ZI biror filtrni o'zgartirsa (qidiruv, Контрагент va h.k.) - bu
+  // chaqiruv ALOHIDA (renderInvoicesTable() to'g'ridan-to'g'ri) sodir
+  // bo'ladi, shu yerga umuman kirmaydi - shuning uchun filtrlar HECH
+  // QACHON "muzlab qolmaydi".
+  if (!(silent && isEditingRow)) renderInvoicesTable();
   renderHistoryTable();
   renderAnalytics();
   renderRegistrations();
@@ -3730,27 +3736,19 @@ function resolveRespInput(inputEl) {
 }
 
 function renderBuyerFilterOptions() {
-  const sel = document.getElementById("buyerFilter");
-  const current = sel.value;
   const names = [...new Set(invoiceRows.map(r => canonicalBuyer(r.buyer)).filter(Boolean))].sort();
   const changed = names.length !== uniqueBuyers.length || names.some((n, i) => n !== uniqueBuyers[i]);
-  if (!changed) return; // не перестраиваем select зря (иначе может мигать при авто-обновлении)
+  if (!changed) return; // не перестраиваем зря (иначе может мигать при авто-обновлении)
   uniqueBuyers = names;
-  sel.innerHTML = `<option value="">Все</option>` +
-    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
-  if (names.includes(current)) sel.value = current;
+  renderMsFilter("buyer", names);
 }
 
 function renderDepartmentFilterOptions() {
-  const sel = document.getElementById("departmentFilter");
-  const current = sel.value;
   const names = [...new Set(invoiceRows.map(r => r.department).filter(Boolean))].sort();
   const changed = names.length !== uniqueDepartments.length || names.some((n, i) => n !== uniqueDepartments[i]);
   if (!changed) return;
   uniqueDepartments = names;
-  sel.innerHTML = `<option value="">Все</option>` +
-    names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
-  if (names.includes(current)) sel.value = current;
+  renderMsFilter("department", names);
 }
 
 function renderStats() {
@@ -3815,16 +3813,12 @@ async function renderLoginStatsPanel() {
 }
 
 function renderInvoicesTable() {
-  // Если пользователь только что взаимодействовал со строкой (открыт select, фокус в поле) -
-  // не перерисовываем таблицу прямо сейчас, чтобы не сбросить выбор / не закрыть выпадающий список.
-  if (isEditingRow) return;
-
   const search = document.getElementById("searchInput").value.trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
   const daysFilterVal = document.getElementById("daysFilter").value;
   const didoxFilterVal = document.getElementById("didoxFilter").value;
-  const buyerVal = document.getElementById("buyerFilter").value;
-  const departmentVal = document.getElementById("departmentFilter").value;
+  const buyerVals = msState.buyer || [];
+  const departmentVals = msState.department || [];
   const contragentVal = document.getElementById("contragentFilter").value.trim().toLowerCase();
   const respVal = document.getElementById("respFilter").value.trim().toLowerCase();
   const sumFilterVal = document.getElementById("sumFilter").value.trim().replace(/\s/g, "");
@@ -3836,8 +3830,8 @@ function renderInvoicesTable() {
     if (daysFilterVal && daysColorClass(r.days) !== daysFilterVal) return false;
     if (didoxFilterVal === "done" && !r.didoxDone) return false;
     if (didoxFilterVal === "pending" && r.didoxDone) return false;
-    if (buyerVal && canonicalBuyer(r.buyer) !== buyerVal) return false;
-    if (departmentVal && r.department !== departmentVal) return false;
+    if (buyerVals.length && !buyerVals.includes(canonicalBuyer(r.buyer))) return false;
+    if (departmentVals.length && !departmentVals.includes(r.department)) return false;
     if (contragentVal && !(r.seller.toLowerCase().includes(contragentVal) || r.inn.toLowerCase().includes(contragentVal))) return false;
     if (respVal && !normalizeForSearch(r.resp || "").includes(normalizeForSearch(respVal))) return false;
     if (sumFilterVal && !r.sum.replace(/\s/g, "").includes(sumFilterVal)) return false;
