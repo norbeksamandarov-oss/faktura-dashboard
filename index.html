@@ -786,6 +786,27 @@
     padding: 4px;
   }
   .resp-suggest-item { padding: 7px 10px; border-radius: 7px; cursor: pointer; }
+  .ms-wrap { position: relative; }
+  .ms-btn {
+    padding: 9px 30px 9px 12px; border: 1px solid var(--border); border-radius: 9px;
+    font-size: 13px; font-family: 'Inter'; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23808aad' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+    cursor: pointer; text-align: left; min-width: 140px; color: var(--text);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .ms-btn:hover, .ms-btn.open { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
+  .ms-panel {
+    position: absolute; top: calc(100% + 4px); left: 0; z-index: 500;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 14px 32px rgba(30,39,97,0.18); max-height: 240px; overflow-y: auto;
+    display: none; padding: 6px; min-width: 220px;
+  }
+  .ms-panel.open { display: block; }
+  .ms-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 7px;
+    cursor: pointer; font-size: 13px;
+  }
+  .ms-item:hover { background: var(--ice); }
+  .ms-item input { margin: 0; }
   .resp-suggest-item:hover, .resp-suggest-item.active { background: var(--ice-soft); }
   .resp-suggest-item .rsi-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .resp-suggest-item .rsi-username { font-size: 11px; color: var(--muted); margin-top: 1px; }
@@ -1271,12 +1292,18 @@
           <input type="text" class="status-filter" id="summarySearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>📂 Тип <span style="font-weight:400;color:var(--muted);">(Ctrl/Cmd - для нескольких)</span></label>
-          <select class="status-filter" id="summaryTypeFilter" multiple size="4" style="min-height:38px;"></select>
+          <label>📂 Тип</label>
+          <div class="ms-wrap" id="summaryTypeFilterWrap">
+            <button type="button" class="ms-btn" id="summaryTypeFilterBtn" onclick="toggleMsPanel('summaryType')">Все</button>
+            <div class="ms-panel" id="summaryTypeFilterPanel"></div>
+          </div>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено <span style="font-weight:400;color:var(--muted);">(Ctrl/Cmd - для нескольких)</span></label>
-          <select class="status-filter" id="summaryTargetFilter" multiple size="4" style="min-height:38px;"></select>
+          <label>👤 Кому направлено</label>
+          <div class="ms-wrap" id="summaryTargetFilterWrap">
+            <button type="button" class="ms-btn" id="summaryTargetFilterBtn" onclick="toggleMsPanel('summaryTarget')">Все</button>
+            <div class="ms-panel" id="summaryTargetFilterPanel"></div>
+          </div>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -2526,13 +2553,11 @@ window.onload = () => {
     document.getElementById("otherreqRealStatusFilter").value = "";
     renderOtherreqRealTable();
   });
-  document.getElementById("summaryTypeFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summarySearchInput")?.addEventListener("input", renderSummaryTable);
-  document.getElementById("summaryTargetFilter")?.addEventListener("change", renderSummaryTable);
   document.getElementById("summaryClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("summarySearchInput").value = "";
-    Array.from(document.getElementById("summaryTypeFilter").options).forEach(o => o.selected = false);
-    Array.from(document.getElementById("summaryTargetFilter").options).forEach(o => o.selected = false);
+    msClear("summaryType");
+    msClear("summaryTarget");
     renderSummaryTable();
   });
   document.getElementById("dogovorStatusFilter")?.addEventListener("change", renderDogovorTable);
@@ -3305,6 +3330,72 @@ function renderAll() {
    СВОДКА - hamma bo'limdagi "hali yakunlanmagan" so'rovlarni bitta
    jadvalda jamlaydi, kutish kunlari bo'yicha (eng eskisi tepada)
    saralaydi - kunlik umumiy nazorat uchun. */
+/* Ko'p tanlovli filtr (checkbox ro'yxatli, boshqa filtrlar bilan bir xil
+   ko'rinishda) - hozircha faqat Сводка sahifasida ishlatiladi, lekin
+   umumiy bo'lgani uchun boshqa joyga ham osongina qo'llash mumkin. */
+let msState = {};       // key -> tanlangan qiymatlar ro'yxati
+let msOptionsCache = {}; // key -> joriy variantlar ro'yxati (checkbox chizish uchun)
+
+function toggleMsPanel(key) {
+  const panel = document.getElementById(`${key}FilterPanel`);
+  const btn = document.getElementById(`${key}FilterBtn`);
+  if (!panel) return;
+  const willOpen = !panel.classList.contains("open");
+  document.querySelectorAll(".ms-panel.open").forEach(p => p.classList.remove("open"));
+  document.querySelectorAll(".ms-btn.open").forEach(b => b.classList.remove("open"));
+  if (willOpen) {
+    panel.classList.add("open");
+    if (btn) btn.classList.add("open");
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".ms-wrap")) {
+    document.querySelectorAll(".ms-panel.open").forEach(p => p.classList.remove("open"));
+    document.querySelectorAll(".ms-btn.open").forEach(b => b.classList.remove("open"));
+  }
+});
+
+function renderMsFilter(key, options) {
+  msOptionsCache[key] = options;
+  const selected = (msState[key] || []).filter(v => options.includes(v));
+  msState[key] = selected;
+
+  const panel = document.getElementById(`${key}FilterPanel`);
+  if (panel) {
+    panel.innerHTML = options.map(v => `
+      <label class="ms-item">
+        <input type="checkbox" value="${escapeHtml(v)}" ${selected.includes(v) ? "checked" : ""} onchange="msToggle('${key}', this.value, this.checked)">
+        <span>${escapeHtml(v)}</span>
+      </label>`).join("") || `<div style="padding:8px;color:var(--muted);font-size:13px;">Нет вариантов</div>`;
+  }
+
+  const btn = document.getElementById(`${key}FilterBtn`);
+  if (btn) {
+    btn.textContent = selected.length === 0 ? "Все"
+      : selected.length === 1 ? selected[0]
+      : `Выбрано: ${selected.length}`;
+  }
+}
+
+function msToggle(key, value, checked) {
+  const cur = new Set(msState[key] || []);
+  if (checked) cur.add(value); else cur.delete(value);
+  msState[key] = [...cur];
+  const btn = document.getElementById(`${key}FilterBtn`);
+  if (btn) {
+    const selected = msState[key];
+    btn.textContent = selected.length === 0 ? "Все"
+      : selected.length === 1 ? selected[0]
+      : `Выбрано: ${selected.length}`;
+  }
+  renderSummaryTable();
+}
+
+function msClear(key) {
+  msState[key] = [];
+}
+
 function daysSinceDateStr(dateStr) {
   if (!dateStr) return null;
   const t = Date.parse(String(dateStr).replace(" ", "T"));
@@ -3366,24 +3457,11 @@ function renderSummaryTable() {
   const sub = document.getElementById("summaryCountSub");
   if (sub) sub.textContent = `всего ожидающих: ${allItems.length}`;
 
-  function getSelectedValues(selectEl) {
-    return selectEl ? Array.from(selectEl.selectedOptions).map(o => o.value) : [];
-  }
-  function rebuildMultiSelect(selectEl, values) {
-    if (!selectEl) return;
-    const prevSelected = getSelectedValues(selectEl);
-    selectEl.innerHTML = values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
-    Array.from(selectEl.options).forEach(o => { if (prevSelected.includes(o.value)) o.selected = true; });
-  }
+  renderMsFilter("summaryType", [...new Set(allItems.map(it => it.type))].sort());
+  renderMsFilter("summaryTarget", [...new Set(allItems.map(it => it.target).filter(Boolean))].sort());
 
-  const typeSelect = document.getElementById("summaryTypeFilter");
-  rebuildMultiSelect(typeSelect, [...new Set(allItems.map(it => it.type))].sort());
-
-  const targetSelect = document.getElementById("summaryTargetFilter");
-  rebuildMultiSelect(targetSelect, [...new Set(allItems.map(it => it.target).filter(Boolean))].sort());
-
-  const typeVals = getSelectedValues(typeSelect);
-  const targetVals = getSelectedValues(targetSelect);
+  const typeVals = msState.summaryType || [];
+  const targetVals = msState.summaryTarget || [];
   const searchVal = (document.getElementById("summarySearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = allItems.filter(it => {
