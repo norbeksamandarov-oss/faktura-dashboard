@@ -1802,7 +1802,7 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <select class="status-filter" id="realschetOrgFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="realschetOrgFilterBtn" onclick="toggleMsPanel('realschetOrg')">Все</button><div class="ms-panel" id="realschetOrgFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент</label>
@@ -1810,7 +1810,7 @@
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <select class="status-filter" id="realschetApproverFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="realschetApproverFilterBtn" onclick="toggleMsPanel('realschetApprover')">Все</button><div class="ms-panel" id="realschetApproverFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1851,7 +1851,7 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <select class="status-filter" id="zakaznaryadOrgFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="zakaznaryadOrgFilterBtn" onclick="toggleMsPanel('zakaznaryadOrg')">Все</button><div class="ms-panel" id="zakaznaryadOrgFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🤝 Контрагент</label>
@@ -1859,7 +1859,7 @@
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <select class="status-filter" id="zakaznaryadApproverFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="zakaznaryadApproverFilterBtn" onclick="toggleMsPanel('zakaznaryadApprover')">Все</button><div class="ms-panel" id="zakaznaryadApproverFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1900,11 +1900,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <select class="status-filter" id="otherreqPostOrgFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqPostOrgFilterBtn" onclick="toggleMsPanel('otherreqPostOrg')">Все</button><div class="ms-panel" id="otherreqPostOrgFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <select class="status-filter" id="otherreqPostApproverFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqPostApproverFilterBtn" onclick="toggleMsPanel('otherreqPostApprover')">Все</button><div class="ms-panel" id="otherreqPostApproverFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -1945,11 +1945,11 @@
         </div>
         <div class="filter-field">
           <label>🏢 Организация</label>
-          <select class="status-filter" id="otherreqRealOrgFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqRealOrgFilterBtn" onclick="toggleMsPanel('otherreqRealOrg')">Все</button><div class="ms-panel" id="otherreqRealOrgFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>👤 Кому направлено</label>
-          <select class="status-filter" id="otherreqRealApproverFilter"><option value="">Все</option></select>
+          <div class="ms-wrap"><button type="button" class="ms-btn" id="otherreqRealApproverFilterBtn" onclick="toggleMsPanel('otherreqRealApprover')">Все</button><div class="ms-panel" id="otherreqRealApproverFilterPanel"></div></div>
         </div>
         <div class="filter-field">
           <label>🏷️ Статус</label>
@@ -2501,55 +2501,47 @@ window.onload = () => {
     document.getElementById("bankStatusFilter").value = "";
     renderBankTable();
   });
-  document.getElementById("realschetOrgFilter")?.addEventListener("change", renderRealschetTable);
-  document.getElementById("realschetApproverFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetStatusFilter")?.addEventListener("change", renderRealschetTable);
   document.getElementById("realschetKontragentFilter")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetSearchInput")?.addEventListener("input", renderRealschetTable);
   document.getElementById("realschetExportBtn")?.addEventListener("click", exportRealschetExcel);
   document.getElementById("realschetClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("realschetSearchInput").value = "";
-    document.getElementById("realschetOrgFilter").value = "";
-    document.getElementById("realschetApproverFilter").value = "";
+    msClear("realschetOrg");
+    msClear("realschetApprover");
     document.getElementById("realschetStatusFilter").value = "";
     document.getElementById("realschetKontragentFilter").value = "";
     renderRealschetTable();
   });
-  document.getElementById("zakaznaryadOrgFilter")?.addEventListener("change", renderZakaznaryadTable);
-  document.getElementById("zakaznaryadApproverFilter")?.addEventListener("change", renderZakaznaryadTable);
   document.getElementById("zakaznaryadStatusFilter")?.addEventListener("change", renderZakaznaryadTable);
   document.getElementById("zakaznaryadSearchInput")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadExportBtn")?.addEventListener("click", exportZakaznaryadExcel);
   document.getElementById("zakaznaryadKontragentFilter")?.addEventListener("input", renderZakaznaryadTable);
   document.getElementById("zakaznaryadClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("zakaznaryadSearchInput").value = "";
-    document.getElementById("zakaznaryadOrgFilter").value = "";
-    document.getElementById("zakaznaryadApproverFilter").value = "";
+    msClear("zakaznaryadOrg");
+    msClear("zakaznaryadApprover");
     document.getElementById("zakaznaryadStatusFilter").value = "";
     document.getElementById("zakaznaryadKontragentFilter").value = "";
     renderZakaznaryadTable();
   });
-  document.getElementById("otherreqPostOrgFilter")?.addEventListener("change", renderOtherreqPostTable);
-  document.getElementById("otherreqPostApproverFilter")?.addEventListener("change", renderOtherreqPostTable);
   document.getElementById("otherreqPostStatusFilter")?.addEventListener("change", renderOtherreqPostTable);
   document.getElementById("otherreqPostSearchInput")?.addEventListener("input", renderOtherreqPostTable);
   document.getElementById("otherreqPostExportBtn")?.addEventListener("click", exportOtherreqPostExcel);
   document.getElementById("otherreqPostClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("otherreqPostSearchInput").value = "";
-    document.getElementById("otherreqPostOrgFilter").value = "";
-    document.getElementById("otherreqPostApproverFilter").value = "";
+    msClear("otherreqPostOrg");
+    msClear("otherreqPostApprover");
     document.getElementById("otherreqPostStatusFilter").value = "";
     renderOtherreqPostTable();
   });
-  document.getElementById("otherreqRealOrgFilter")?.addEventListener("change", renderOtherreqRealTable);
-  document.getElementById("otherreqRealApproverFilter")?.addEventListener("change", renderOtherreqRealTable);
   document.getElementById("otherreqRealStatusFilter")?.addEventListener("change", renderOtherreqRealTable);
   document.getElementById("otherreqRealSearchInput")?.addEventListener("input", renderOtherreqRealTable);
   document.getElementById("otherreqRealExportBtn")?.addEventListener("click", exportOtherreqRealExcel);
   document.getElementById("otherreqRealClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("otherreqRealSearchInput").value = "";
-    document.getElementById("otherreqRealOrgFilter").value = "";
-    document.getElementById("otherreqRealApproverFilter").value = "";
+    msClear("otherreqRealOrg");
+    msClear("otherreqRealApprover");
     document.getElementById("otherreqRealStatusFilter").value = "";
     renderOtherreqRealTable();
   });
@@ -5343,32 +5335,19 @@ function renderRealschetTable() {
     }
   }
 
-  const orgSelect = document.getElementById("realschetOrgFilter");
-  const prevOrgVal = orgSelect ? orgSelect.value : "";
-  const orgs = [...new Set(realschetRows.map(r => r.org).filter(Boolean))].sort();
-  if (orgSelect) {
-    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
-    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
-  }
+  renderMsFilter("realschetOrg", [...new Set(realschetRows.map(r => r.org).filter(Boolean))].sort());
+  renderMsFilter("realschetApprover", [...new Set(realschetRows.map(r => r.approverName).filter(Boolean))].sort());
 
-  const approverSelect = document.getElementById("realschetApproverFilter");
-  const prevApproverVal = approverSelect ? approverSelect.value : "";
-  const approvers = [...new Set(realschetRows.map(r => r.approverName).filter(Boolean))].sort();
-  if (approverSelect) {
-    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
-    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
-  }
-
-  const orgFilterVal = document.getElementById("realschetOrgFilter")?.value || "";
-  const approverFilterVal = document.getElementById("realschetApproverFilter")?.value || "";
+  const orgFilterVals = msState.realschetOrg || [];
+  const approverFilterVals = msState.realschetApprover || [];
   const statusFilterVal = document.getElementById("realschetStatusFilter")?.value || "";
   const kontragentFilterVal = (document.getElementById("realschetKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("realschetSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = realschetRows.filter(r => {
-    if (orgFilterVal && r.org !== orgFilterVal) return false;
-    if (kontragentFilterVal && !r.kontragent.toLowerCase().includes(kontragentFilterVal)) return false;
-    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
+    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
+    if (kontragentFilterVal && !(r.kontragent.toLowerCase().includes(kontragentFilterVal) || (r.innPnfl || "").toLowerCase().includes(kontragentFilterVal))) return false;
+    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
@@ -5425,32 +5404,19 @@ function renderZakaznaryadTable() {
     }
   }
 
-  const orgSelect = document.getElementById("zakaznaryadOrgFilter");
-  const prevOrgVal = orgSelect ? orgSelect.value : "";
-  const orgs = [...new Set(zakaznaryadRows.map(r => r.org).filter(Boolean))].sort();
-  if (orgSelect) {
-    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
-    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
-  }
+  renderMsFilter("zakaznaryadOrg", [...new Set(zakaznaryadRows.map(r => r.org).filter(Boolean))].sort());
+  renderMsFilter("zakaznaryadApprover", [...new Set(zakaznaryadRows.map(r => r.approverName).filter(Boolean))].sort());
 
-  const approverSelect = document.getElementById("zakaznaryadApproverFilter");
-  const prevApproverVal = approverSelect ? approverSelect.value : "";
-  const approvers = [...new Set(zakaznaryadRows.map(r => r.approverName).filter(Boolean))].sort();
-  if (approverSelect) {
-    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
-    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
-  }
-
-  const orgFilterVal = document.getElementById("zakaznaryadOrgFilter")?.value || "";
-  const approverFilterVal = document.getElementById("zakaznaryadApproverFilter")?.value || "";
+  const orgFilterVals = msState.zakaznaryadOrg || [];
+  const approverFilterVals = msState.zakaznaryadApprover || [];
   const statusFilterVal = document.getElementById("zakaznaryadStatusFilter")?.value || "";
   const kontragentFilterVal = (document.getElementById("zakaznaryadKontragentFilter")?.value || "").trim().toLowerCase();
   const searchVal = (document.getElementById("zakaznaryadSearchInput")?.value || "").trim().toLowerCase();
 
   const filtered = zakaznaryadRows.filter(r => {
-    if (orgFilterVal && r.org !== orgFilterVal) return false;
-    if (kontragentFilterVal && !r.kontragent.toLowerCase().includes(kontragentFilterVal)) return false;
-    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
+    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
+    if (kontragentFilterVal && !(r.kontragent.toLowerCase().includes(kontragentFilterVal) || (r.innPnfl || "").toLowerCase().includes(kontragentFilterVal))) return false;
+    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
@@ -5507,30 +5473,17 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
     }
   }
 
-  const orgSelect = document.getElementById(`${prefix}OrgFilter`);
-  const prevOrgVal = orgSelect ? orgSelect.value : "";
-  const orgs = [...new Set(rows.map(r => r.org).filter(Boolean))].sort();
-  if (orgSelect) {
-    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
-    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
-  }
+  renderMsFilter(`${prefix}Org`, [...new Set(rows.map(r => r.org).filter(Boolean))].sort());
+  renderMsFilter(`${prefix}Approver`, [...new Set(rows.map(r => r.approverName).filter(Boolean))].sort());
 
-  const approverSelect = document.getElementById(`${prefix}ApproverFilter`);
-  const prevApproverVal = approverSelect ? approverSelect.value : "";
-  const approvers = [...new Set(rows.map(r => r.approverName).filter(Boolean))].sort();
-  if (approverSelect) {
-    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
-    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
-  }
-
-  const orgFilterVal = document.getElementById(`${prefix}OrgFilter`)?.value || "";
-  const approverFilterVal = document.getElementById(`${prefix}ApproverFilter`)?.value || "";
+  const orgFilterVals = msState[`${prefix}Org`] || [];
+  const approverFilterVals = msState[`${prefix}Approver`] || [];
   const statusFilterVal = document.getElementById(`${prefix}StatusFilter`)?.value || "";
   const searchVal = (document.getElementById(`${prefix}SearchInput`)?.value || "").trim().toLowerCase();
 
   const filtered = rows.filter(r => {
-    if (orgFilterVal && r.org !== orgFilterVal) return false;
-    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
+    if (orgFilterVals.length && !orgFilterVals.includes(r.org)) return false;
+    if (approverFilterVals.length && !approverFilterVals.includes(r.approverName)) return false;
     if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
     if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
     if (searchVal) {
