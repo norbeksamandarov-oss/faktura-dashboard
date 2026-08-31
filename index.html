@@ -2060,6 +2060,19 @@
     </section>
 
     <section id="section-salary" class="content-section">
+    <div class="panel" style="margin-bottom:16px;">
+      <h2>Заявки на доступ к зарплате <span class="sub" id="salaryRequestsCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Когда сотрудник открывает «💰 Зарплата» и вводит свой ПИНФЛ, доступ не даётся автоматически - его нужно подтвердить здесь (или кнопкой в Telegram). Проверяйте, что ФИО отправителя совпадает с владельцем ПИНФЛ.</p>
+      <div id="salaryRequestsLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap">
+        <table class="invoices" id="salaryRequestsTable" style="display:none;">
+          <thead>
+            <tr><th>№</th><th>Дата</th><th>ФИО (по зарплате)</th><th>ПИНФЛ</th><th>ChatID</th><th>Статус</th><th>Действие</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
     <div class="panel">
       <h2>Зарплата <span class="sub" id="salaryCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Данные, импортированные из Excel-файла зарплаты (через Telegram-бота). Эта информация конфиденциальна.</p>
@@ -2734,6 +2747,7 @@ function showSection(name) {
   }
   if (name === "salary" && (currentRole === "admin" || currentRole === "salary")) {
     loadSalary();
+    loadSalaryRequests();
   }
   if (name === "features" && currentRole === "admin") {
     loadFeatures();
@@ -4723,12 +4737,69 @@ async function loadSuggestions() {
 }
 
 let salaryDataCache = [];
+let salaryRequestsCache = [];
 
 function fmtSalaryNum(v) {
   if (v === null || v === undefined || v === "") return "";
   const n = parseFloat(String(v).replace(/\s/g, "").replace(",", "."));
   if (isNaN(n)) return escapeHtml(String(v));
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
+}
+
+async function loadSalaryRequests() {
+  const note = document.getElementById("salaryRequestsLoadingNote");
+  const table = document.getElementById("salaryRequestsTable");
+  if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
+  if (table) table.style.display = "none";
+  try {
+    const data = await apiCall("getSalaryRequests", {});
+    salaryRequestsCache = data.items || [];
+    renderSalaryRequestsTable();
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+  } catch (e) {
+    if (note) { note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
+  }
+}
+
+function renderSalaryRequestsTable() {
+  const tbody = document.querySelector("#salaryRequestsTable tbody");
+  const sub = document.getElementById("salaryRequestsCountSub");
+  if (!tbody) return;
+  const pending = salaryRequestsCache.filter(r => r.status === "Ожидание").length;
+  if (sub) sub.textContent = pending > 0
+    ? `ожидают: ${pending} · видно только администраторам и расчётному бухгалтеру`
+    : "видно только администраторам и расчётному бухгалтеру";
+  tbody.innerHTML = salaryRequestsCache.map((r, i) => {
+    const statusColor = r.status === "Одобрено" ? "#1E7A4C" : (r.status === "Отклонено" ? "#C0392B" : "var(--amber-fg)");
+    const actions = r.status === "Ожидание"
+      ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#1E7A4C;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'approve', this)">✅ Одобрить</button>
+         <button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#C0392B;margin-left:6px;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'reject', this)">❌ Отклонить</button>`
+      : `<span style="color:var(--muted);font-size:12.5px;">${r.processed ? "выполнено" : "обрабатывается..."}</span>`;
+    return `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.dateRequested)}</td>
+      <td>${escapeHtml(r.fio)}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.pnfl)}</td>
+      <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.chatId)}</td>
+      <td style="color:${statusColor};font-weight:600;">${escapeHtml(r.status)}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Нет заявок</td></tr>`;
+}
+
+async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
+  const row = btnEl.closest("tr");
+  const buttons = row.querySelectorAll("button");
+  buttons.forEach(b => b.disabled = true);
+  try {
+    await apiCall("decideSalaryRequest", { rowIndex, decision });
+    await loadSalaryRequests();
+  } catch (e) {
+    alert("Не удалось выполнить: " + e.message);
+    buttons.forEach(b => b.disabled = false);
+  }
 }
 
 async function loadSalary() {
