@@ -1251,6 +1251,7 @@
         <button class="nav-item nav-sub-item" data-section="otherreqpost" onclick="showSection('otherreqpost')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="nav-label">Другой запрос</span> <span id="pendingOtherreqPostBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
       <button class="nav-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="salary" onclick="showSection('salary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span><span class="nav-label">Зарплата</span></button>
       <button class="nav-item nav-group-toggle" id="realizatsiyaToggle" onclick="toggleNavGroup('realizatsiyaToggle','realizatsiyaSubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M3 16v5h5"/><path d="M16 21h5v-5"/><path d="m3 3 7 7"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="m21 21-7-7"/></svg></span>
         <span class="nav-label">Реализация</span>
@@ -1991,7 +1992,7 @@
     <section id="section-users" class="content-section">
     <div class="panel">
       <h2>Пользователи dashboard <span class="sub">логин/пароль для входа</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Здесь вы создаёте логин и пароль для каждого сотрудника, который должен заходить в этот dashboard. Роль «admin» даёт полный доступ (включая этот раздел), «employee» - обычный доступ.</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Здесь вы создаёте логин и пароль для каждого сотрудника, который должен заходить в этот dashboard. Роль «admin» даёт полный доступ (включая этот раздел), «employee» - обычный доступ, «salary» - видит ТОЛЬКО раздел «Зарплата» (для расчётного бухгалтера).</p>
 
       <div class="user-create-form">
         <input type="text" id="newUserUsername" placeholder="Логин (например: shaxrux)" class="login-input" style="max-width:200px;">
@@ -2000,6 +2001,7 @@
         <select id="newUserRole" class="login-input" style="max-width:160px;">
           <option value="employee">employee (обычный)</option>
           <option value="admin">admin (полный доступ)</option>
+          <option value="salary">salary (только Зарплата)</option>
         </select>
         <button id="createUserBtn" onclick="handleCreateUser()" class="login-submit-btn" style="width:auto;padding:12px 22px;">+ Создать</button>
       </div>
@@ -2049,6 +2051,42 @@
         <table class="invoices" id="suggestionsTable" style="display:none;">
           <thead>
             <tr><th>№</th><th>Дата</th><th>Тип</th><th>Текст</th><th>Сотрудник</th><th>Ответ дан</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
+    <section id="section-salary" class="content-section">
+    <div class="panel">
+      <h2>Зарплата <span class="sub" id="salaryCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Данные, импортированные из Excel-файла зарплаты (через Telegram-бота). Эта информация конфиденциальна.</p>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label>📅 Период</label>
+          <select id="salaryPeriodFilter" class="login-input" style="max-width:160px;" onchange="renderSalaryTable()">
+            <option value="">Все периоды</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>🔍 Поиск (ФИО/ПИНФЛ)</label>
+          <input type="text" id="salarySearchInput" class="login-input" oninput="renderSalaryTable()" placeholder="Введите ФИО или ПИНФЛ">
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="salaryLoadBtn" onclick="loadSalary()" class="login-submit-btn" style="width:auto;padding:9px 20px;">🔄 Обновить</button>
+        </div>
+      </div>
+      <div id="salaryLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap">
+        <table class="invoices" id="salaryTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>№</th><th>Период</th><th>ФИО</th><th>ПИНФЛ</th><th>Организация</th><th>Должность</th>
+              <th>Оклад</th><th>Удал. работа</th><th>KPI</th><th>Премии</th><th>Отпускные</th><th>Больничные</th>
+              <th>Депремир.</th><th>Гросс</th><th>Налог</th><th>Нетто</th><th>Прочие выплаты</th><th>Аванс</th><th>Итого к выдаче</th>
+            </tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -2677,6 +2715,9 @@ function showSection(name) {
   if (name === "suggestions" && currentRole === "admin") {
     loadSuggestions();
   }
+  if (name === "salary" && (currentRole === "admin" || currentRole === "salary")) {
+    loadSalary();
+  }
 }
 
 function toggleNavGroup(toggleId, subgroupId) {
@@ -2718,11 +2759,17 @@ async function onLoggedIn(forcePasswordChange) {
   document.getElementById("app").style.display = "block";
   document.getElementById("userInfo").innerHTML = `<span>${escapeHtml(currentUserName || currentUsername || "Пользователь")}</span>`;
   applyRolePermissions(currentRole);
-  await loadAllData(false);
 
-  // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
-  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
+  // Расчётный бухгалтер (role: "salary") - boshqa hech qanday ma'lumot
+  // (счета, договорlar va h.k.) yuklanmasin, faqat Зарплата.
+  if (currentRole === "salary") {
+    await loadSalary();
+  } else {
+    await loadAllData(false);
+    // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
+  }
 
   if (forcePasswordChange) {
     document.getElementById("forcePasswordModal").style.display = "flex";
@@ -2776,8 +2823,11 @@ async function submitForcePasswordChange() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
+  const isSalaryOnly = role === "salary";
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
+  document.querySelectorAll('.nav-item[data-section="salary"]')
+    .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
   const pendingRegBadge2 = document.getElementById("pendingRegBadge2");
   if (pendingRegBadge2 && !isAdmin) pendingRegBadge2.style.display = "none";
   const notifyBtn = document.getElementById("notifyBtn");
@@ -2793,6 +2843,14 @@ function applyRolePermissions(role) {
     if (active && ["requests", "users"].includes(active.dataset.section)) {
       showSection("analytics");
     }
+  }
+  // Расчётный бухгалтер (role: "salary") - dashboard'da FAQAT "Зарплата"
+  // bo'limini ko'radi, boshqa hech qanday nav-item yoki ma'lumot emas.
+  if (isSalaryOnly) {
+    document.querySelectorAll(".nav-item").forEach(el => {
+      el.style.display = el.dataset.section === "salary" ? "" : "none";
+    });
+    showSection("salary");
   }
 }
 
@@ -4644,6 +4702,77 @@ async function loadSuggestions() {
   }
 }
 
+let salaryDataCache = [];
+
+function fmtSalaryNum(v) {
+  if (v === null || v === undefined || v === "") return "";
+  const n = parseFloat(String(v).replace(/\s/g, "").replace(",", "."));
+  if (isNaN(n)) return escapeHtml(String(v));
+  return n.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
+}
+
+async function loadSalary() {
+  const note = document.getElementById("salaryLoadingNote");
+  const table = document.getElementById("salaryTable");
+  if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
+  if (table) table.style.display = "none";
+  try {
+    const data = await apiCall("getSalaryData", {});
+    salaryDataCache = data.items || [];
+    const periodSelect = document.getElementById("salaryPeriodFilter");
+    if (periodSelect) {
+      const periods = data.periods || [];
+      const prevValue = periodSelect.value;
+      periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+      periodSelect.value = periods.includes(prevValue) ? prevValue : (periods[0] || "");
+    }
+    renderSalaryTable();
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+  } catch (e) {
+    if (note) { note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
+  }
+}
+
+function renderSalaryTable() {
+  const period = document.getElementById("salaryPeriodFilter")?.value || "";
+  const search = (document.getElementById("salarySearchInput")?.value || "").toLowerCase().trim();
+  const tbody = document.querySelector("#salaryTable tbody");
+  const sub = document.getElementById("salaryCountSub");
+  if (!tbody) return;
+  let rows = salaryDataCache;
+  if (period) rows = rows.filter(r => String(r["Период"] || "") === period);
+  if (search) {
+    rows = rows.filter(r =>
+      String(r["ФИО"] || "").toLowerCase().includes(search) ||
+      String(r["ПИНФЛ"] || "").includes(search)
+    );
+  }
+  if (sub) sub.textContent = `всего: ${rows.length} · видно только администраторам и расчётному бухгалтеру`;
+  tbody.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td style="white-space:nowrap;">${escapeHtml(r["Период"] || "")}</td>
+      <td>${escapeHtml(r["ФИО"] || "")}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r["ПИНФЛ"] || "")}</td>
+      <td>${escapeHtml(r["Организация"] || "")}</td>
+      <td>${escapeHtml(r["Профессия"] || "")}</td>
+      <td>${fmtSalaryNum(r["ОкладОбщий"])}</td>
+      <td>${fmtSalaryNum(r["УдаленнаяРабота"])}</td>
+      <td>${fmtSalaryNum(r["KPI"])}</td>
+      <td>${fmtSalaryNum(r["Премии"])}</td>
+      <td>${fmtSalaryNum(r["Отпускные"])}</td>
+      <td>${fmtSalaryNum(r["Больничные"])}</td>
+      <td>${fmtSalaryNum(r["Депремирование"])}</td>
+      <td style="font-weight:600;">${fmtSalaryNum(r["НачислениеГросс"])}</td>
+      <td>${fmtSalaryNum(r["НалогиУдержано"])}</td>
+      <td style="font-weight:600;">${fmtSalaryNum(r["НачислениеНетто"])}</td>
+      <td>${fmtSalaryNum(r["ПрочиеВыплаты"])}</td>
+      <td>${fmtSalaryNum(r["ВыплатаАванса"])}</td>
+      <td style="font-weight:600;">${fmtSalaryNum(r["ИтогоКВыдаче"])}</td>
+    </tr>`).join("") || `<tr><td colspan="19" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
 function renderUsersTable() {
   document.querySelector("#usersManageTable tbody").innerHTML = usersListCache.map((u, i) => {
     return `
@@ -4651,7 +4780,7 @@ function renderUsersTable() {
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
-      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : "employee"}
+      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">salary</span>' : "employee")}
         ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;">⏳ ждёт смены пароля</div>' : ""}
       </td>
       <td>${u.invoiceCount || 0}</td>
