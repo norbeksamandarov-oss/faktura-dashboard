@@ -1278,6 +1278,7 @@
         <button class="nav-item nav-sub-item" data-section="writeemp" onclick="showSection('writeemp')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="nav-label">Написать сотруднику</span></button>
         <button class="nav-item nav-sub-item" data-section="suggestions" onclick="showSection('suggestions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Предложения и жалобы</span> <span id="pendingSuggestionsBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
+      <button class="nav-item" data-section="features" onclick="showSection('features')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg></span><span class="nav-label">Функции</span></button>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><span class="nav-label">Журнал действий</span></button>
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
     </nav>
@@ -2094,6 +2095,22 @@
     </div>
     </section>
 
+    <section id="section-features" class="content-section">
+    <div class="panel">
+      <h2>Функции бота <span class="sub">видно только администраторам</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Здесь можно временно отключить любую функцию бота - её кнопка сразу пропадёт из меню сотрудников, а команда (например /dogovor) будет отвечать «временно отключено». Изменение действует в течение ~15 секунд.</p>
+      <div id="featuresLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap">
+        <table class="invoices" id="featuresTable" style="display:none;">
+          <thead>
+            <tr><th>Функция</th><th>Статус</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-auditlog" class="content-section">
     <div class="panel">
       <h2>Журнал действий <span class="sub">кто, когда и что изменил в системе</span></h2>
@@ -2718,6 +2735,9 @@ function showSection(name) {
   if (name === "salary" && (currentRole === "admin" || currentRole === "salary")) {
     loadSalary();
   }
+  if (name === "features" && currentRole === "admin") {
+    loadFeatures();
+  }
 }
 
 function toggleNavGroup(toggleId, subgroupId) {
@@ -2824,7 +2844,7 @@ async function submitForcePasswordChange() {
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"]')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -2840,7 +2860,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -4771,6 +4791,55 @@ function renderSalaryTable() {
       <td>${fmtSalaryNum(r["ВыплатаАванса"])}</td>
       <td style="font-weight:600;">${fmtSalaryNum(r["ИтогоКВыдаче"])}</td>
     </tr>`).join("") || `<tr><td colspan="19" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
+let featuresDataCache = [];
+
+async function loadFeatures() {
+  const note = document.getElementById("featuresLoadingNote");
+  const table = document.getElementById("featuresTable");
+  if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
+  if (table) table.style.display = "none";
+  try {
+    const data = await apiCall("getFeatureToggles", {});
+    featuresDataCache = data.items || [];
+    renderFeaturesTable();
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+  } catch (e) {
+    if (note) { note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
+  }
+}
+
+function renderFeaturesTable() {
+  const tbody = document.querySelector("#featuresTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = featuresDataCache.map((f) => `
+    <tr>
+      <td>${escapeHtml(f.name)}</td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${f.active ? "checked" : ""} onchange="handleToggleFeature('${escapeHtml(f.key)}', this.checked, this)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${f.active ? "Включено" : "Отключено"}</span>
+      </td>
+    </tr>`).join("") || `<tr><td colspan="2" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
+async function handleToggleFeature(key, active, checkboxEl) {
+  checkboxEl.disabled = true;
+  try {
+    await apiCall("setFeatureToggle", { key, active });
+    const item = featuresDataCache.find(f => f.key === key);
+    if (item) item.active = active;
+    renderFeaturesTable();
+  } catch (e) {
+    alert("Не удалось изменить: " + e.message);
+    checkboxEl.checked = !active; // orqaga qaytaramiz
+  } finally {
+    checkboxEl.disabled = false;
+  }
 }
 
 function renderUsersTable() {
