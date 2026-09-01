@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="manifest" href="site.webmanifest">
-<meta name="theme-color" content="#1E2761">
+<meta name="theme-color" content="#0F0B2E">
 <script>
   // Sahifa chizilishidan OLDIN mavzuni o'rnatamiz - aks holda avval yorug'
   // rejim ko'rinib, keyin qorong'i rejimga "sakrab" o'tib ketardi (flash).
@@ -26,8 +26,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
-    --navy: #1E2761;
-    --navy-light: #2A3572;
+    --navy: #0F0B2E;
+    --navy-light: #241A5C;
     --ice: #CADCFC;
     --ice-soft: #EEF3FD;
     --bg: #F6F5FC;
@@ -48,8 +48,8 @@
      navy bo'lib qoladi (brend rangi), faqat asosiy kontent maydoni
      o'zgaradi. ---------- */
   [data-theme="dark"] {
-    --navy: #0B0E24;
-    --navy-light: #171B3D;
+    --navy: #0A0722;
+    --navy-light: #1E1550;
     --ice-soft: rgba(108,99,255,0.14);
     --bg: #0F1222;
     --card: #181C33;
@@ -65,7 +65,7 @@
   }
   [data-theme="dark"] body { background: var(--bg); }
   [data-theme="dark"] .login-input,
-  [data-theme="dark"] .login-submit-btn { background: #fff; color: #1E2761; }
+  [data-theme="dark"] .login-submit-btn { background: #fff; color: #0F0B2E; }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -105,7 +105,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 20% 15%, #2A3572 0%, var(--navy) 45%, #141A45 100%);
+    background: radial-gradient(circle at 20% 15%, #241A5C 0%, var(--navy) 45%, #06041A 100%);
     position: relative;
     overflow: hidden;
   }
@@ -305,8 +305,8 @@
     animation: badge-pop 0.6s ease-out;
   }
   #loginScreen.holiday .anniversary-badge { display: flex; }
-  .anniversary-badge .num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #1E2761; line-height: 1; }
-  .anniversary-badge .txt { font-size: 7.5px; font-weight: 700; color: #1E2761; letter-spacing: 0.04em; text-transform: uppercase; }
+  .anniversary-badge .num { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: #0F0B2E; line-height: 1; }
+  .anniversary-badge .txt { font-size: 7.5px; font-weight: 700; color: #0F0B2E; letter-spacing: 0.04em; text-transform: uppercase; }
   @keyframes badge-pop {
     0% { transform: scale(0) rotate(-15deg); opacity: 0; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
@@ -376,7 +376,7 @@
   .login-input:focus { outline: none; border-color: var(--ice); box-shadow: 0 0 0 3px rgba(202,220,252,0.35); }
   .login-submit-btn {
     width: 100%;
-    background: #fff; color: #1E2761; border: none;
+    background: #fff; color: #0F0B2E; border: none;
     padding: 12px 26px; border-radius: 10px;
     font-size: 14px; font-weight: 600; cursor: pointer;
     font-family: 'Inter', sans-serif; margin-top: 4px;
@@ -4669,7 +4669,7 @@ function renderWeekdayChart(rows) {
   if (weekdayChartInstance) weekdayChartInstance.destroy();
   weekdayChartInstance = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: "#2A3572", borderRadius: 4 }] },
+    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: "#241A5C", borderRadius: 4 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
