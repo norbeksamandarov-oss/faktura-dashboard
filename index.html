@@ -48,6 +48,8 @@
      navy bo'lib qoladi (brend rangi), faqat asosiy kontent maydoni
      o'zgaradi. ---------- */
   [data-theme="dark"] {
+    --navy: #0B0E24;
+    --navy-light: #171B3D;
     --ice-soft: rgba(108,99,255,0.14);
     --bg: #0F1222;
     --card: #181C33;
@@ -397,6 +399,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: background 0.3s ease;
   }
   .brand { display: flex; align-items: center; gap: 12px; }
   .brand .mark {
@@ -495,6 +498,7 @@
     gap: 2px;
     position: sticky;
     top: 0;
+    transition: background 0.3s ease;
   }
   .nav-item {
     background: none;
