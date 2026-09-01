@@ -2637,12 +2637,24 @@ function filterByPeriod(rows, dateField) {
 let autoRefreshTimer = null;
 let salaryBadgeTimer = null;
 
+// Зарплата ma'lumotlari (Заявки VA Оклады) - maxfiy bo'lgani uchun
+// UMUMIY 8-soniyalik avto-yangilanish tsikliga (loadAllData) qo'shilmaydi,
+// lekin admin/salary uchun ALOHIDA fon jarayonida doimiy yangilanib
+// turadi - shunda bo'limga kirganda boshqa jadvallar kabi DARHOL
+// tayyor turadi, "Загрузка..." kutilmaydi.
 async function pollSalaryRequestsBadge() {
   const groupBadge = document.getElementById("salaryReqNavBadge");
   const subBadge = document.getElementById("pendingSalaryReqBadge");
   try {
-    const data = await apiCall("getSalaryRequestsPendingCount", {});
-    const count = data.count || 0;
+    const data = await apiCall("getSalaryRequests", {});
+    salaryRequestsCache = data.items || [];
+    salaryRequestsLastFetch = Date.now();
+    // Agar foydalanuvchi hozir aynan shu bo'limda tursa - jadvalni ham
+    // jonli yangilaymiz (qo'lda "Обновить" bosishga hojat qolmaydi).
+    if (document.getElementById("section-salaryrequests")?.classList.contains("active")) {
+      renderSalaryRequestsTable();
+    }
+    const count = salaryRequestsCache.filter(r => r.status === "Ожидание").length;
     [groupBadge, subBadge].forEach(b => {
       if (!b) return;
       if (count > 0) {
@@ -2654,7 +2666,22 @@ async function pollSalaryRequestsBadge() {
     });
   } catch (e) {
     // Jim - bu fon jarayoni, xato bo'lsa ham foydalanuvchiga ko'rsatmaymiz
-    console.warn("Не удалось обновить счётчик заявок на зарплату:", e.message);
+    console.warn("Не удалось обновить заявки на зарплату:", e.message);
+  }
+}
+
+async function pollSalaryDataBackground() {
+  try {
+    const data = await apiCall("getSalaryData", {});
+    salaryDataCache = data.items || [];
+    salaryDataLastFetch = Date.now();
+    if (document.getElementById("section-salary")?.classList.contains("active")) {
+      // Foydalanuvchi hozir shu bo'limda bo'lsa - filtrlarni bosib
+      // turmaslik uchun faqat jadvalning o'zini qayta chizamiz.
+      renderSalaryTable();
+    }
+  } catch (e) {
+    console.warn("Не удалось обновить данные зарплаты:", e.message);
   }
 }
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
@@ -3104,10 +3131,17 @@ async function onLoggedIn(forcePasswordChange) {
   // avtomatik yangilanish tsikliga (yuqorida) QO'SHILMAYDI - faqat
   // admin/salary rolidagilarga, alohida (yengil, faqat SON so'rovchi)
   // tekshiruv bilan ishlaydi.
+  // "Зарплата" ma'lumotlari maxfiy bo'lgani uchun UMUMIY avtomatik
+  // yangilanish tsikliga (yuqorida) QO'SHILMAYDI - faqat admin/salary
+  // rolidagilarga, alohida fon jarayonida ishlaydi. Shu bilan bo'limga
+  // kirganda ma'lumot boshqa jadvallar kabi DARHOL tayyor turadi.
   if (currentRole === "admin" || currentRole === "salary") {
-    await pollSalaryRequestsBadge();
+    await Promise.all([pollSalaryRequestsBadge(), pollSalaryDataBackground()]);
     if (salaryBadgeTimer) clearInterval(salaryBadgeTimer);
-    salaryBadgeTimer = setInterval(pollSalaryRequestsBadge, SALARY_BADGE_POLL_MS);
+    salaryBadgeTimer = setInterval(() => {
+      pollSalaryRequestsBadge();
+      pollSalaryDataBackground();
+    }, SALARY_BADGE_POLL_MS);
   }
 
   if (forcePasswordChange) {
@@ -5149,6 +5183,8 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   const row = btnEl.closest("tr");
   const buttons = row.querySelectorAll("button");
   buttons.forEach(b => b.disabled = true);
+  const originalHtml = btnEl.innerHTML;
+  btnEl.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> ...";
   try {
     await apiCall("decideSalaryRequest", { rowIndex, decision });
     await loadSalaryRequests(true);
@@ -5156,6 +5192,7 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   } catch (e) {
     alert("Не удалось выполнить: " + e.message);
     buttons.forEach(b => b.disabled = false);
+    btnEl.innerHTML = originalHtml;
   }
 }
 
