@@ -2219,6 +2219,12 @@
     <div class="panel">
       <h2>Сотрудники <span class="sub" id="employeesCountSub"></span></h2>
       <p class="analytics-note" id="employeesSectionNote" style="margin:0 0 16px;">Деактивированный сотрудник не будет получать новые счета (но история его решений сохраняется). Удаление - необратимо.</p>
+      <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="flex:1;min-width:220px;">
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (имя, на любом языке/раскладке)</label>
+          <input type="text" id="empSearchFilter" placeholder="Например: Nodir или Нодир" oninput="renderEmployeesManage()">
+        </div>
+      </div>
       <div class="table-wrap">
         <table class="invoices" id="employeesManageTable">
           <thead>
@@ -5001,14 +5007,26 @@ async function updateRegistrationStatus(rowIndex, status, btnEl) {
    СОТРУДНИКИ (boshqaruv paneli)
    ============================================================ */
 function renderEmployeesManage() {
+  const searchVal = (document.getElementById("empSearchFilter")?.value || "").trim();
+  const normSearch = normalizeForSearch(searchVal);
+  const rows = normSearch
+    ? allEmployeesRaw.filter(e =>
+        normalizeForSearch(e.name).includes(normSearch) ||
+        normalizeForSearch(e.username).includes(normSearch) ||
+        normalizeForSearch(approximateCyrillic(e.name)).includes(normSearch)
+      )
+    : allEmployeesRaw;
+
   document.getElementById("employeesCountSub").textContent =
-    `всего ${allEmployeesRaw.length} · активных ${allEmployeesRaw.filter(e => e.active).length}`;
+    normSearch
+      ? `найдено ${rows.length} из ${allEmployeesRaw.length}`
+      : `всего ${allEmployeesRaw.length} · активных ${allEmployeesRaw.filter(e => e.active).length}`;
 
   const isAdmin = currentRole === "admin";
   const actionsHeader = document.getElementById("employeesActionsHeader");
   if (actionsHeader) actionsHeader.style.display = isAdmin ? "" : "none";
 
-  document.querySelector("#employeesManageTable tbody").innerHTML = allEmployeesRaw.map((e, i) => `
+  document.querySelector("#employeesManageTable tbody").innerHTML = rows.map((e, i) => `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(e.name)}</strong></td>
