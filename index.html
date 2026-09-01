@@ -5404,12 +5404,18 @@ let taxesInitDone = false;
 // Turlicha yozilgan tashkilot nomlarini ("BEDACHI" va "ИП ООО \"BEDACHI\""
 // kabi) BIR XIL kalitga tushiradi - shu orqali umumiy filtr ikkala
 // manbaga ham (счета-фактуры VA зарплата) mos tushadi.
+// MUHIM: JS'dagi \b (so'z chegarasi) kirill harflarini to'g'ri
+// tanimaydi (u \w ga tayanadi, \w esa faqat lotin/raqamni o'z ichiga
+// oladi) - shuning uchun \b bilan emas, so'zlarga BO'LIB, har birini
+// ANIQ solishtirib chiqarib tashlaymiz.
+const ORG_PREFIX_WORDS = new Set(["ИП", "ООО", "СП", "ЧП", "OOO", "MCHJ", "XK", "АК", "AK"]);
 function normalizeOrgKey(s) {
   return String(s || "")
     .toUpperCase()
     .replace(/["'«»]/g, "")
-    .replace(/\b(ИП|ООО|ЧП|OOO|MCHJ|XK|АК|AK)\b/g, "")
-    .replace(/\s+/g, " ")
+    .split(/\s+/)
+    .filter(w => w && !ORG_PREFIX_WORDS.has(w))
+    .join(" ")
     .trim();
 }
 
