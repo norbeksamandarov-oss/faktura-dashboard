@@ -1251,6 +1251,7 @@
         <button class="nav-item nav-sub-item" data-section="otherreqpost" onclick="showSection('otherreqpost')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="nav-label">Другой запрос</span> <span id="pendingOtherreqPostBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
       <button class="nav-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
+      <button class="nav-item" data-section="salaryrequests" onclick="showSection('salaryrequests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">Заявки на зарплату</span> <span id="pendingSalaryReqBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="salary" onclick="showSection('salary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span><span class="nav-label">Зарплата</span></button>
       <button class="nav-item nav-group-toggle" id="realizatsiyaToggle" onclick="toggleNavGroup('realizatsiyaToggle','realizatsiyaSubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M3 16v5h5"/><path d="M16 21h5v-5"/><path d="m3 3 7 7"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="m21 21-7-7"/></svg></span>
@@ -2059,8 +2060,8 @@
     </div>
     </section>
 
-    <section id="section-salary" class="content-section">
-    <div class="panel" style="margin-bottom:16px;">
+    <section id="section-salaryrequests" class="content-section">
+    <div class="panel">
       <h2>Заявки на доступ к зарплате <span class="sub" id="salaryRequestsCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Когда сотрудник открывает «💰 Зарплата» и вводит свой ПИНФЛ, доступ не даётся автоматически - его нужно подтвердить здесь (или кнопкой в Telegram). Проверяйте, что ФИО отправителя совпадает с владельцем ПИНФЛ.</p>
       <div id="salaryRequestsLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
@@ -2073,6 +2074,9 @@
         </table>
       </div>
     </div>
+    </section>
+
+    <section id="section-salary" class="content-section">
     <div class="panel">
       <h2>Зарплата <span class="sub" id="salaryCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Данные, импортированные из Excel-файла зарплаты (через Telegram-бота). Эта информация конфиденциальна.</p>
@@ -2747,6 +2751,8 @@ function showSection(name) {
   }
   if (name === "salary" && (currentRole === "admin" || currentRole === "salary")) {
     loadSalary();
+  }
+  if (name === "salaryrequests" && (currentRole === "admin" || currentRole === "salary")) {
     loadSalaryRequests();
   }
   if (name === "features" && currentRole === "admin") {
@@ -2860,7 +2866,7 @@ function applyRolePermissions(role) {
   const isSalaryOnly = role === "salary";
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
-  document.querySelectorAll('.nav-item[data-section="salary"]')
+  document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"]')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
   const pendingRegBadge2 = document.getElementById("pendingRegBadge2");
   if (pendingRegBadge2 && !isAdmin) pendingRegBadge2.style.display = "none";
@@ -2878,13 +2884,14 @@ function applyRolePermissions(role) {
       showSection("analytics");
     }
   }
-  // Расчётный бухгалтер (role: "salary") - dashboard'da FAQAT "Зарплата"
-  // bo'limini ko'radi, boshqa hech qanday nav-item yoki ma'lumot emas.
+  // Расчётный бухгалтер (role: "salary") - dashboard'da FAQAT "Заявки на
+  // зарплату" va "Зарплата" bo'limlarini ko'radi, boshqa hech qanday
+  // nav-item yoki ma'lumot emas.
   if (isSalaryOnly) {
     document.querySelectorAll(".nav-item").forEach(el => {
-      el.style.display = el.dataset.section === "salary" ? "" : "none";
+      el.style.display = (el.dataset.section === "salary" || el.dataset.section === "salaryrequests") ? "" : "none";
     });
-    showSection("salary");
+    showSection("salaryrequests");
   }
 }
 
