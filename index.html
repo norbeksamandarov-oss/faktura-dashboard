@@ -2500,25 +2500,32 @@
     </div>
 
     <div class="panel">
-      <h2>Налоги с зарплаты <span class="sub">по данным импорта из Excel</span></h2>
+      <h2>Налоги с зарплаты <span class="sub">расчёт по ставкам от «Гросс»</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">
-        НДФЛ + ИНПС - сумма, которая уже удержана из зарплаты сотрудников (столбец «НалогиУдержано» в импорте, они идут вместе одной суммой - в исходном Excel-файле тоже не разделены).<br>
-        Ижтимоий солиқ (социальный налог, 12%) - <b>в Excel-файле зарплаты не импортируется</b> (это налог работодателя, а не сотрудника), поэтому здесь он <b>рассчитан автоматически</b> как 12% от «НачислениеГросс» - проверьте перед использованием в отчётности.
+        Рассчитано от суммы «НачислениеГросс» по ставкам: <b>НДФЛ 11.9%</b>, <b>ИНПС 0.1%</b> (оба - удерживаются из зарплаты сотрудника), <b>Социальный налог 12%</b> (платит работодатель, в Excel-файле зарплаты не импортируется). Проверьте перед использованием в отчётности.
       </p>
       <div class="toolbar">
         <div class="filter-field">
           <label><i class='ti ti-calendar' aria-hidden='true'></i> Период</label>
           <select id="taxSalaryPeriodFilter" onchange="renderTaxesSalary()"><option value="">Все периоды</option></select>
         </div>
+        <div class="filter-field">
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
+          <select id="taxSalaryOrgFilter" onchange="renderTaxesSalary()"><option value="">Все организации</option></select>
+        </div>
       </div>
       <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px;">
         <div class="stat-card accent-pending">
           <div class="stat-icon"><i class='ti ti-file-percent' aria-hidden='true'></i></div>
-          <div><div class="num" id="taxNdflTotal">0</div><div class="label">НДФЛ + ИНПС (удержано)</div></div>
+          <div><div class="num" id="taxNdflTotal">0</div><div class="label">НДФЛ (11.9%)</div></div>
+        </div>
+        <div class="stat-card accent-accepted">
+          <div class="stat-icon"><i class='ti ti-pig-money' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxInpsTotal">0</div><div class="label">ИНПС (0.1%)</div></div>
         </div>
         <div class="stat-card accent-rejected">
           <div class="stat-icon"><i class='ti ti-building-bank' aria-hidden='true'></i></div>
-          <div><div class="num" id="taxEspTotal">0</div><div class="label">Ижтимоий солиқ (12%, расчёт)</div></div>
+          <div><div class="num" id="taxEspTotal">0</div><div class="label">Социальный налог (12%)</div></div>
         </div>
         <div class="stat-card accent-total">
           <div class="stat-icon"><i class='ti ti-sum' aria-hidden='true'></i></div>
@@ -2527,7 +2534,7 @@
       </div>
       <div class="table-wrap">
         <table class="invoices" id="taxSalaryTable">
-          <thead><tr><th>Период</th><th class="num-cell">Гросс (начислено)</th><th class="num-cell">НДФЛ+ИНПС</th><th class="num-cell">Ижтимоий солиқ (12%)</th><th class="num-cell">Итого налогов</th></tr></thead>
+          <thead><tr><th>Организация</th><th class="num-cell">Гросс (начислено)</th><th class="num-cell">НДФЛ (11.9%)</th><th class="num-cell">ИНПС (0.1%)</th><th class="num-cell">Соц. налог (12%)</th><th class="num-cell">Итого налогов</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -5391,10 +5398,12 @@ function renderSalaryTable() {
 }
 
 /* ============================================================
-   "Налоги" bo'limi - НДС ("Принято" счетlardan) + oylik soliqlari
-   (НДФЛ+ИНПС - Зарплата importidan tayyor, Ижтимоий солиқ (12%) -
-   import qilinmaganligi sababli НачислениеГросс'dan HISOBLAB
-   ko'rsatiladi, bu qat'iy tasdiqlangan hisobot emas).
+   "Налоги" bo'limi - НДС ("Принято" счетlardan) + oylik soliqlari.
+   НДФЛ (11.9%), ИНПС (0.1%), Социальный налог/ЕСП (12%) - UCHALASI
+   HAM "НачислениеГросс"dan foizini olib HISOBLANADI (import qilingan
+   "НалогиУдержано" ustuni endi ishlatilmaydi - foydalanuvchi so'roviga
+   ko'ra, aniq stavkalar bo'yicha hisoblash afzal ko'rildi). Bu qat'iy
+   tasdiqlangan rasmiy hisobot emas, tekshirib chiqish kerak.
    ============================================================ */
 let taxesInitDone = false;
 
@@ -5411,6 +5420,13 @@ function initTaxesSection() {
     const prevValue = periodSelect.value;
     periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
     periodSelect.value = periods.includes(prevValue) ? prevValue : "";
+  }
+  const salaryOrgSelect = document.getElementById("taxSalaryOrgFilter");
+  if (salaryOrgSelect) {
+    const orgs = [...new Set(salaryDataCache.map(r => r["Организация"]).filter(Boolean))].sort();
+    const prevOrgValue = salaryOrgSelect.value;
+    salaryOrgSelect.innerHTML = `<option value="">Все организации</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    salaryOrgSelect.value = orgs.includes(prevOrgValue) ? prevOrgValue : "";
   }
   renderTaxesNds();
   renderTaxesSalary();
@@ -5464,46 +5480,57 @@ function _parseSalaryNum(v) {
 
 function renderTaxesSalary() {
   const periodVal = document.getElementById("taxSalaryPeriodFilter")?.value || "";
-  const rows = periodVal ? salaryDataCache.filter(r => r["Период"] === periodVal) : salaryDataCache;
-
-  const byPeriod = {};
-  let totalGross = 0, totalNdfl = 0;
-  rows.forEach(r => {
-    const period = r["Период"] || "—";
-    const gross = _parseSalaryNum(r["НачислениеГросс"]);
-    const ndfl = _parseSalaryNum(r["НалогиУдержано"]);
-    if (!byPeriod[period]) byPeriod[period] = { gross: 0, ndfl: 0 };
-    byPeriod[period].gross += gross;
-    byPeriod[period].ndfl += ndfl;
-    totalGross += gross;
-    totalNdfl += ndfl;
+  const orgVal = document.getElementById("taxSalaryOrgFilter")?.value || "";
+  const rows = salaryDataCache.filter(r => {
+    if (periodVal && r["Период"] !== periodVal) return false;
+    if (orgVal && r["Организация"] !== orgVal) return false;
+    return true;
   });
 
-  const totalEsp = totalGross * 0.12;
-  const totalAll = totalNdfl + totalEsp;
+  const RATE_NDFL = 0.119, RATE_INPS = 0.001, RATE_ESP = 0.12;
+
+  const byOrg = {};
+  let totalGross = 0;
+  rows.forEach(r => {
+    const org = r["Организация"] || "—";
+    const gross = _parseSalaryNum(r["НачислениеГросс"]);
+    if (!byOrg[org]) byOrg[org] = { gross: 0 };
+    byOrg[org].gross += gross;
+    totalGross += gross;
+  });
+
+  const totalNdfl = totalGross * RATE_NDFL;
+  const totalInps = totalGross * RATE_INPS;
+  const totalEsp = totalGross * RATE_ESP;
+  const totalAll = totalNdfl + totalInps + totalEsp;
 
   const fmt = n => n.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
   const ndflEl = document.getElementById("taxNdflTotal");
+  const inpsEl = document.getElementById("taxInpsTotal");
   const espEl = document.getElementById("taxEspTotal");
   const totalEl = document.getElementById("taxSalaryTotal");
   if (ndflEl) ndflEl.textContent = fmt(totalNdfl);
+  if (inpsEl) inpsEl.textContent = fmt(totalInps);
   if (espEl) espEl.textContent = fmt(totalEsp);
   if (totalEl) totalEl.textContent = fmt(totalAll);
 
   const tbody = document.querySelector("#taxSalaryTable tbody");
   if (tbody) {
-    const periodRows = Object.entries(byPeriod).sort((a, b) => b[0].localeCompare(a[0]));
-    tbody.innerHTML = periodRows.map(([period, s]) => {
-      const esp = s.gross * 0.12;
+    const orgRows = Object.entries(byOrg).sort((a, b) => b[1].gross - a[1].gross);
+    tbody.innerHTML = orgRows.map(([org, s]) => {
+      const ndfl = s.gross * RATE_NDFL;
+      const inps = s.gross * RATE_INPS;
+      const esp = s.gross * RATE_ESP;
       return `
       <tr>
-        <td style="white-space:nowrap;">${escapeHtml(period)}</td>
+        <td>${escapeHtml(org)}</td>
         <td class="num-cell">${fmt(s.gross)}</td>
-        <td class="num-cell">${fmt(s.ndfl)}</td>
+        <td class="num-cell">${fmt(ndfl)}</td>
+        <td class="num-cell">${fmt(inps)}</td>
         <td class="num-cell">${fmt(esp)}</td>
-        <td class="num-cell" style="font-weight:600;">${fmt(s.ndfl + esp)}</td>
+        <td class="num-cell" style="font-weight:600;">${fmt(ndfl + inps + esp)}</td>
       </tr>`;
-    }).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет данных за выбранный период</td></tr>`;
+    }).join("") || `<tr><td colspan="6" style="color:var(--muted)">Нет данных за выбранный период</td></tr>`;
   }
 }
 
