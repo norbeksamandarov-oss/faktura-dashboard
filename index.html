@@ -1495,6 +1495,7 @@
       </div>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
+      <button class="nav-item" data-section="taxes" onclick="showSection('taxes')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h1"/><path d="M14 11h1"/></svg></span><span class="nav-label">Налоги</span></button>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span>
         <span class="nav-label">Зарплата</span>
@@ -2458,6 +2459,81 @@
     </div>
     </section>
 
+    <section id="section-taxes" class="content-section">
+    <div class="panel" style="margin-bottom:16px;">
+      <h2>НДС по счетам <span class="sub">только «Принято» счета</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Сумма НДС по счетам-фактурам со статусом «Принято» - для отчёта по НДС.</p>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период (дата счёта)</label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="date" id="taxNdsDateFrom" onchange="renderTaxesNds()">
+            <span>—</span>
+            <input type="date" id="taxNdsDateTo" onchange="renderTaxesNds()">
+          </div>
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
+          <select id="taxNdsOrgFilter" onchange="renderTaxesNds()"><option value="">Все организации</option></select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button class="login-submit-btn" style="width:auto;padding:9px 20px;" onclick="document.getElementById('taxNdsDateFrom').value='';document.getElementById('taxNdsDateTo').value='';document.getElementById('taxNdsOrgFilter').value='';renderTaxesNds();"><i class='ti ti-x' aria-hidden='true'></i> Сбросить</button>
+        </div>
+      </div>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px;">
+        <div class="stat-card accent-total">
+          <div class="stat-icon"><i class='ti ti-receipt-tax' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxNdsTotal">0</div><div class="label">Итого НДС</div></div>
+        </div>
+        <div class="stat-card accent-accepted">
+          <div class="stat-icon"><i class='ti ti-file-invoice' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxNdsCount">0</div><div class="label">Счетов (Принято)</div></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="taxNdsTable">
+          <thead><tr><th>Организация</th><th class="num-cell">Счетов</th><th class="num-cell">НДС</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Налоги с зарплаты <span class="sub">по данным импорта из Excel</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">
+        НДФЛ + ИНПС - сумма, которая уже удержана из зарплаты сотрудников (столбец «НалогиУдержано» в импорте, они идут вместе одной суммой - в исходном Excel-файле тоже не разделены).<br>
+        Ижтимоий солиқ (социальный налог, 12%) - <b>в Excel-файле зарплаты не импортируется</b> (это налог работодателя, а не сотрудника), поэтому здесь он <b>рассчитан автоматически</b> как 12% от «НачислениеГросс» - проверьте перед использованием в отчётности.
+      </p>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период</label>
+          <select id="taxSalaryPeriodFilter" onchange="renderTaxesSalary()"><option value="">Все периоды</option></select>
+        </div>
+      </div>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px;">
+        <div class="stat-card accent-pending">
+          <div class="stat-icon"><i class='ti ti-file-percent' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxNdflTotal">0</div><div class="label">НДФЛ + ИНПС (удержано)</div></div>
+        </div>
+        <div class="stat-card accent-rejected">
+          <div class="stat-icon"><i class='ti ti-building-bank' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxEspTotal">0</div><div class="label">Ижтимоий солиқ (12%, расчёт)</div></div>
+        </div>
+        <div class="stat-card accent-total">
+          <div class="stat-icon"><i class='ti ti-sum' aria-hidden='true'></i></div>
+          <div><div class="num" id="taxSalaryTotal">0</div><div class="label">Итого налогов с ФОТ</div></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="taxSalaryTable">
+          <thead><tr><th>Период</th><th class="num-cell">Гросс (начислено)</th><th class="num-cell">НДФЛ+ИНПС</th><th class="num-cell">Ижтимоий солиқ (12%)</th><th class="num-cell">Итого налогов</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 8 секунд. Изменения здесь применяются почти мгновенно.</footer>
     </main>
   </div>
@@ -3080,6 +3156,9 @@ function showSection(name) {
   if (name === "features" && currentRole === "admin") {
     loadFeatures();
   }
+  if (name === "taxes" && currentRole === "admin") {
+    initTaxesSection();
+  }
 }
 
 function toggleNavGroup(toggleId, subgroupId) {
@@ -3223,7 +3302,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -3239,7 +3318,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -5309,6 +5388,123 @@ function renderSalaryTable() {
       <td>${fmtSalaryNum(r["ВыплатаАванса"])}</td>
       <td style="font-weight:600;">${fmtSalaryNum(r["ИтогоКВыдаче"])}</td>
     </tr>`).join("") || `<tr><td colspan="19" style="color:var(--muted)">Нет данных</td></tr>`;
+}
+
+/* ============================================================
+   "Налоги" bo'limi - НДС ("Принято" счетlardan) + oylik soliqlari
+   (НДФЛ+ИНПС - Зарплата importidan tayyor, Ижтимоий солиқ (12%) -
+   import qilinmaganligi sababli НачислениеГросс'dan HISOBLAB
+   ko'rsatiladi, bu qat'iy tasdiqlangan hisobot emas).
+   ============================================================ */
+let taxesInitDone = false;
+
+function initTaxesSection() {
+  // Organizatsiya filtrini счета-фактуры ro'yxatidan bir marta to'ldiramiz.
+  const orgSelect = document.getElementById("taxNdsOrgFilter");
+  if (orgSelect && orgSelect.options.length <= 1) {
+    const names = [...new Set(invoiceRows.map(r => canonicalBuyer(r.buyer)).filter(Boolean))].sort();
+    orgSelect.innerHTML = `<option value="">Все организации</option>` + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+  }
+  const periodSelect = document.getElementById("taxSalaryPeriodFilter");
+  if (periodSelect) {
+    const periods = [...new Set(salaryDataCache.map(r => r["Период"]).filter(Boolean))];
+    const prevValue = periodSelect.value;
+    periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    periodSelect.value = periods.includes(prevValue) ? prevValue : "";
+  }
+  renderTaxesNds();
+  renderTaxesSalary();
+  taxesInitDone = true;
+}
+
+function renderTaxesNds() {
+  const dateFrom = document.getElementById("taxNdsDateFrom")?.value || "";
+  const dateTo = document.getElementById("taxNdsDateTo")?.value || "";
+  const orgVal = document.getElementById("taxNdsOrgFilter")?.value || "";
+
+  const rows = invoiceRows.filter(r => {
+    if (classifyStatus(r.status) !== "accepted") return false;
+    if (dateFrom && r.date && r.date < dateFrom) return false;
+    if (dateTo && r.date && r.date > dateTo) return false;
+    if (orgVal && canonicalBuyer(r.buyer) !== orgVal) return false;
+    return true;
+  });
+
+  const byOrg = {};
+  let total = 0;
+  rows.forEach(r => {
+    const org = canonicalBuyer(r.buyer) || "—";
+    if (!byOrg[org]) byOrg[org] = { count: 0, vat: 0 };
+    byOrg[org].count += 1;
+    byOrg[org].vat += r.vatRaw || 0;
+    total += r.vatRaw || 0;
+  });
+
+  const totalEl = document.getElementById("taxNdsTotal");
+  const countEl = document.getElementById("taxNdsCount");
+  if (totalEl) totalEl.textContent = total.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
+  if (countEl) countEl.textContent = rows.length;
+
+  const tbody = document.querySelector("#taxNdsTable tbody");
+  if (tbody) {
+    const orgRows = Object.entries(byOrg).sort((a, b) => b[1].vat - a[1].vat);
+    tbody.innerHTML = orgRows.map(([org, s]) => `
+      <tr>
+        <td>${escapeHtml(org)}</td>
+        <td class="num-cell">${s.count}</td>
+        <td class="num-cell" style="font-weight:600;">${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
+      </tr>`).join("") || `<tr><td colspan="3" style="color:var(--muted)">Нет данных за выбранный период</td></tr>`;
+  }
+}
+
+function _parseSalaryNum(v) {
+  const n = parseFloat(String(v || "0").replace(/\s/g, "").replace(",", "."));
+  return isNaN(n) ? 0 : n;
+}
+
+function renderTaxesSalary() {
+  const periodVal = document.getElementById("taxSalaryPeriodFilter")?.value || "";
+  const rows = periodVal ? salaryDataCache.filter(r => r["Период"] === periodVal) : salaryDataCache;
+
+  const byPeriod = {};
+  let totalGross = 0, totalNdfl = 0;
+  rows.forEach(r => {
+    const period = r["Период"] || "—";
+    const gross = _parseSalaryNum(r["НачислениеГросс"]);
+    const ndfl = _parseSalaryNum(r["НалогиУдержано"]);
+    if (!byPeriod[period]) byPeriod[period] = { gross: 0, ndfl: 0 };
+    byPeriod[period].gross += gross;
+    byPeriod[period].ndfl += ndfl;
+    totalGross += gross;
+    totalNdfl += ndfl;
+  });
+
+  const totalEsp = totalGross * 0.12;
+  const totalAll = totalNdfl + totalEsp;
+
+  const fmt = n => n.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
+  const ndflEl = document.getElementById("taxNdflTotal");
+  const espEl = document.getElementById("taxEspTotal");
+  const totalEl = document.getElementById("taxSalaryTotal");
+  if (ndflEl) ndflEl.textContent = fmt(totalNdfl);
+  if (espEl) espEl.textContent = fmt(totalEsp);
+  if (totalEl) totalEl.textContent = fmt(totalAll);
+
+  const tbody = document.querySelector("#taxSalaryTable tbody");
+  if (tbody) {
+    const periodRows = Object.entries(byPeriod).sort((a, b) => b[0].localeCompare(a[0]));
+    tbody.innerHTML = periodRows.map(([period, s]) => {
+      const esp = s.gross * 0.12;
+      return `
+      <tr>
+        <td style="white-space:nowrap;">${escapeHtml(period)}</td>
+        <td class="num-cell">${fmt(s.gross)}</td>
+        <td class="num-cell">${fmt(s.ndfl)}</td>
+        <td class="num-cell">${fmt(esp)}</td>
+        <td class="num-cell" style="font-weight:600;">${fmt(s.ndfl + esp)}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет данных за выбранный период</td></tr>`;
+  }
 }
 
 let featuresDataCache = [];
