@@ -2314,7 +2314,7 @@
       <div class="table-wrap">
         <table class="invoices" id="salaryRequestsTable" style="display:none;">
           <thead>
-            <tr><th>№</th><th>Дата</th><th>ФИО (по зарплате)</th><th>ПИНФЛ</th><th>ChatID</th><th>Статус</th><th>Действие</th></tr>
+            <tr><th>№</th><th>Дата</th><th>ФИО (по зарплате)</th><th>ФИО (в системе)</th><th>ПИНФЛ</th><th>ChatID</th><th>Статус</th><th>Действие</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -5264,17 +5264,24 @@ function renderSalaryRequestsTable() {
       ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#1E7A4C;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'approve', this)"><i class='ti ti-circle-check' aria-hidden='true'></i> Одобрить</button>
          <button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#C0392B;margin-left:6px;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'reject', this)"><i class='ti ti-circle-x' aria-hidden='true'></i> Отклонить</button>`
       : `<span style="color:var(--muted);font-size:12.5px;">${r.processed ? "выполнено" : "обрабатывается..."}</span>`;
+    const namesMatch = !r.systemName || normalizeForSearch(r.systemName) === normalizeForSearch(r.fio) ||
+      normalizeForSearch(r.systemName).includes(normalizeForSearch(r.fio)) ||
+      normalizeForSearch(r.fio).includes(normalizeForSearch(r.systemName));
+    const systemNameCell = r.systemName
+      ? `${escapeHtml(r.systemName)}${!namesMatch ? ` <i class='ti ti-alert-triangle' aria-hidden='true' style="color:#C0392B;" title="Не совпадает с ФИО по зарплате!"></i>` : ""}`
+      : `<span style="color:var(--muted);">не найден</span>`;
     return `
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.dateRequested)}</td>
       <td>${escapeHtml(r.fio)}</td>
+      <td>${systemNameCell}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.pnfl)}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.chatId)}</td>
       <td style="color:${statusColor};font-weight:600;">${escapeHtml(stripEmoji(r.status))}</td>
       <td>${actions}</td>
     </tr>`;
-  }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Нет заявок</td></tr>`;
+  }).join("") || `<tr><td colspan="8" style="color:var(--muted)">Нет заявок</td></tr>`;
 }
 
 async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
