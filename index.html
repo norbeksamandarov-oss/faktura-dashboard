@@ -21,6 +21,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -39,8 +40,10 @@
     --amber-bg: #FFF3DA; --amber-fg: #93610A;
     --gray-bg:  #EDEFF3; --gray-fg:  #5B6472;
     --accent-grad: linear-gradient(135deg,#6C63FF,#00B4D8);
+    --chip-bg: #FFFFFF;
+    --navy-text: var(--navy);
   }
-  /* ---------- Qorong'i rejim (☀️/🌙 tugmasi bilan almashtiriladi,
+  /* ---------- Qorong'i rejim (<i class='ti ti-sun' aria-hidden='true'></i>️/<i class='ti ti-moon' aria-hidden='true'></i> tugmasi bilan almashtiriladi,
      tanlov localStorage'da saqlanadi - "rm_theme"). Sidebar har doim
      navy bo'lib qoladi (brend rangi), faqat asosiy kontent maydoni
      o'zgaradi. ---------- */
@@ -55,10 +58,15 @@
     --red-bg:   rgba(255,90,90,0.16); --red-fg:   #FF7A7A;
     --amber-bg: rgba(255,184,0,0.16); --amber-fg: #FFC53D;
     --gray-bg:  rgba(255,255,255,0.07); --gray-fg: #AEB4D6;
+    --chip-bg: #E7E9F5;
+    --navy-text: #B8C6FF;
   }
   [data-theme="dark"] body { background: var(--bg); }
   [data-theme="dark"] .login-input,
   [data-theme="dark"] .login-submit-btn { background: #fff; color: #1E2761; }
+  i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
+  i.ti:not(:last-child) { margin-right: 5px; }
+  h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -304,7 +312,7 @@
     border-radius: 14px;
     background: linear-gradient(135deg, var(--ice), #8FB3F0);
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 700; color: var(--navy);
+    font-size: 22px; font-weight: 700; color: var(--navy-text);
     letter-spacing: 0.01em;
   }
   .login-card h1 {
@@ -395,7 +403,7 @@
     width: 34px; height: 34px; border-radius: 9px;
     background: linear-gradient(135deg, var(--ice), #8FB3F0);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; color: var(--navy); font-size: 15px;
+    font-weight: 700; color: var(--navy-text); font-size: 15px;
   }
   .brand-text .title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; }
   .brand-text .subtitle { font-size: 11px; color: var(--ice); letter-spacing: 0.04em; text-transform: uppercase; }
@@ -419,19 +427,20 @@
     display: none; align-items: center; justify-content: center; z-index: 500;
   }
   .modal-card {
-    background: #fff; border-radius: 16px; padding: 28px;
+    background: var(--card); border-radius: 16px; padding: 28px;
     width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transition: background 0.25s ease;
   }
-  .modal-card h3 { margin: 0 0 14px; color: var(--navy); font-family: 'Fraunces', serif; }
+  .modal-card h3 { margin: 0 0 14px; color: var(--navy-text); font-family: 'Fraunces', serif; }
   .modal-card textarea {
     width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px;
     border: 1px solid var(--border); font-family: 'Inter', sans-serif; font-size: 14px;
-    resize: vertical; min-height: 110px;
+    resize: vertical; min-height: 110px; background: var(--card); color: var(--text);
   }
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
   .modal-actions button {
     padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer;
-    font-family: 'Inter', sans-serif; border: 1px solid var(--border); background: #fff; color: var(--text);
+    font-family: 'Inter', sans-serif; border: 1px solid var(--border); background: var(--card); color: var(--text);
   }
   .modal-actions .btn-primary { background: var(--navy); color: #fff; border: none; }
   .modal-actions .btn-primary:hover { background: var(--navy-light); }
@@ -441,24 +450,24 @@
   .contragent-search {
     width: 100%; box-sizing: border-box; padding: 12px 16px; margin-bottom: 16px;
     border-radius: 10px; border: 1px solid var(--border); font-size: 14px;
-    font-family: 'Inter', sans-serif; background: #fff;
+    font-family: 'Inter', sans-serif; background: var(--card); color: var(--text);
   }
   .contragent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
   .contragent-card {
-    background: #fff; border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px; cursor: pointer; transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: box-shadow 0.15s ease, border-color 0.15s ease, background 0.25s ease;
   }
   .contragent-card:hover { box-shadow: 0 6px 20px rgba(30,39,97,0.1); border-color: var(--ice); }
   .contragent-card .cc-name { font-weight: 600; font-size: 14.5px; margin-bottom: 4px; }
   .contragent-card .cc-inn { color: var(--muted); font-size: 11.5px; margin-bottom: 10px; }
   .contragent-card .cc-stats { display: flex; justify-content: space-between; font-size: 12.5px; }
-  .contragent-card .cc-stats .num { font-weight: 700; color: var(--navy); }
+  .contragent-card .cc-stats .num { font-weight: 700; color: var(--navy-text); }
   .contragent-card .cc-stats .lbl { color: var(--muted); font-size: 10.5px; }
   .contragent-card .cc-reject { margin-top: 8px; font-size: 11.5px; }
   .modal-card.wide { max-width: 780px; max-height: 85vh; overflow-y: auto; }
   .cc-detail-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 16px 0 20px; }
   .cc-detail-summary > div { background: var(--ice-soft); border-radius: 10px; padding: 10px 12px; }
-  .cc-detail-summary .num { font-size: 17px; font-weight: 700; color: var(--navy); }
+  .cc-detail-summary .num { font-size: 17px; font-weight: 700; color: var(--navy-text); }
   .cc-detail-summary .lbl { font-size: 11px; color: var(--muted); }
 
   .live-dot {
@@ -562,7 +571,7 @@
     border-radius: 50%;
     border: 2px solid var(--navy);
     background: linear-gradient(145deg, #fff, #EEF3FD);
-    color: var(--navy);
+    color: var(--navy-text);
     cursor: pointer;
     font-size: 13px;
     display: flex;
@@ -633,7 +642,7 @@
   .stat-card .stat-pct { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: var(--muted); }
   .stat-card .label { margin-top: 4px; font-size: 12px; color: var(--muted); }
   .stat-card.accent-total .stat-icon { background: var(--ice-soft); }
-  .stat-card.accent-total .num { color: var(--navy); }
+  .stat-card.accent-total .num { color: var(--navy-text); }
   .stat-card.accent-total { --stat-glow: rgba(108,99,255,0.14); }
   .stat-card.accent-pending .stat-icon { background: var(--amber-bg); }
   .stat-card.accent-pending .num { color: var(--amber-fg); }
@@ -714,11 +723,12 @@
     border-radius: 9px;
     font-size: 13px;
     font-family: 'Inter';
-    background: white;
-    transition: border-color .15s, box-shadow .15s;
+    background: var(--card);
+    color: var(--text);
+    transition: border-color .15s, box-shadow .15s, background .25s ease;
   }
   .filter-field input:focus, .filter-field select:focus {
-    outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1);
+    outline: none; border-color: var(--navy-text); box-shadow: 0 0 0 3px rgba(30,39,97,0.1);
   }
   #searchInput { min-width: 190px; }
   #buyerFilter { min-width: 170px; }
@@ -730,13 +740,13 @@
   .date-range input { width: 135px; }
   select.status-filter {
     padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border);
-    font-family: 'Inter'; font-size: 13px; background: white;
-    transition: border-color .15s, box-shadow .15s;
+    font-family: 'Inter'; font-size: 13px; background: var(--card); color: var(--text);
+    transition: border-color .15s, box-shadow .15s, background .25s ease;
   }
-  select.status-filter:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
+  select.status-filter:focus { outline: none; border-color: var(--navy-text); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
   #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn, #otherreqPostClearFiltersBtn, #otherreqRealClearFiltersBtn, #summaryClearFiltersBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
-    background: white; color: var(--navy); font-family: 'Inter';
+    background: var(--chip-bg); color: var(--navy); font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
   #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover, #otherreqPostClearFiltersBtn:hover, #otherreqRealClearFiltersBtn:hover, #summaryClearFiltersBtn:hover { background: var(--ice); }
@@ -767,7 +777,7 @@
   .toggle-switch input { opacity: 0; width: 0; height: 0; }
   .toggle-slider {
     position: absolute; cursor: pointer; inset: 0;
-    background: #D7DCE5; border-radius: 22px; transition: .2s;
+    background: var(--border); border-radius: 22px; transition: .2s;
   }
   .toggle-slider::before {
     content: ""; position: absolute; height: 16px; width: 16px;
@@ -777,13 +787,13 @@
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
   .emp-delete-btn {
     padding: 5px 10px; border-radius: 7px; border: 1px solid var(--red-fg);
-    background: white; color: var(--red-fg); font-size: 11.5px; font-weight: 600;
+    background: var(--card); color: var(--red-fg); font-size: 11.5px; font-weight: 600;
     cursor: pointer; font-family: 'Inter';
   }
   .emp-delete-btn:hover { background: var(--red-bg); }
   #clearAnalyticsPeriodBtn {
     padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
-    background: var(--ice-soft); color: var(--navy); font-family: 'Inter';
+    background: var(--ice-soft); color: var(--navy-text); font-family: 'Inter';
     font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
   #clearAnalyticsPeriodBtn:hover { background: var(--ice); }
@@ -791,7 +801,7 @@
 
   .table-wrap {
     overflow-x: auto; border: 1px solid var(--border); border-radius: 14px;
-    scrollbar-width: auto; scrollbar-color: var(--navy) var(--ice-soft);
+    scrollbar-width: auto; scrollbar-color: var(--navy-text) var(--ice-soft);
   }
   .table-wrap::-webkit-scrollbar { height: 12px; }
   .table-wrap::-webkit-scrollbar-track { background: var(--ice-soft); border-radius: 0 0 14px 14px; }
@@ -832,7 +842,7 @@
   .resp-suggest-box {
     position: absolute;
     z-index: 500;
-    background: #fff;
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: 10px;
     box-shadow: 0 14px 32px rgba(30,39,97,0.18);
@@ -845,14 +855,14 @@
   .ms-wrap { position: relative; }
   .ms-btn {
     padding: 9px 30px 9px 12px; border: 1px solid var(--border); border-radius: 9px;
-    font-size: 13px; font-family: 'Inter'; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23808aad' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+    font-size: 13px; font-family: 'Inter'; background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23808aad' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
     cursor: pointer; text-align: left; min-width: 140px; color: var(--text);
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .15s, box-shadow .15s, background .25s ease;
   }
-  .ms-btn:hover, .ms-btn.open { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
+  .ms-btn:hover, .ms-btn.open { border-color: var(--navy-text); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
   .ms-panel {
     position: absolute; top: calc(100% + 4px); left: 0; z-index: 500;
-    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     box-shadow: 0 14px 32px rgba(30,39,97,0.18); max-height: 240px; overflow-y: auto;
     display: none; padding: 6px; min-width: 220px;
   }
@@ -911,11 +921,11 @@
   #loadingOverlay {
     position: fixed; inset: 0; background: rgba(245,247,251,0.85);
     display: flex; align-items: center; justify-content: center;
-    z-index: 50; font-family: 'Inter'; color: var(--navy); font-size: 14px;
+    z-index: 50; font-family: 'Inter'; color: var(--navy-text); font-size: 14px;
   }
   .spinner {
     width: 30px; height: 30px; border-radius: 50%;
-    border: 3px solid var(--ice); border-top-color: var(--navy);
+    border: 3px solid var(--ice); border-top-color: var(--navy-text);
     animation: spin 0.8s linear infinite; margin-right: 10px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -937,7 +947,7 @@
   .status-breakdown-row:last-child { border-bottom: none; }
   .status-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
   .status-breakdown-name { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
-  .status-breakdown-count { font-size: 14px; font-weight: 700; color: var(--navy); }
+  .status-breakdown-count { font-size: 14px; font-weight: 700; color: var(--navy-text); }
   .status-breakdown-pct { font-size: 11px; color: var(--muted); width: 38px; text-align: right; }
 
   footer.note {
@@ -966,7 +976,7 @@
   .analytics-box h3 { margin: 0; font-size: 13.5px; font-weight: 700; }
   .analytics-note { margin: 0 0 12px; font-size: 11px; color: var(--muted); }
   .analytics-group-title {
-    font-size: 15px; font-weight: 700; color: var(--navy);
+    font-size: 15px; font-weight: 700; color: var(--navy-text);
     margin: 30px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--ice);
     display: flex; align-items: center; gap: 8px;
   }
@@ -986,7 +996,7 @@
   .rank-badge2.rank-1 { background: #FDE7B0; color: #8A6100; }
   .rank-badge2.rank-2 { background: #E4E7EC; color: #4B5563; }
   .rank-badge2.rank-3 { background: #F3D5B5; color: #7A4A1E; }
-  .rank-badge2.rank-n { background: var(--ice-soft); color: var(--navy); }
+  .rank-badge2.rank-n { background: var(--ice-soft); color: var(--navy-text); }
   .rank-body { flex: 1; min-width: 0; }
   .rank-name {
     font-size: 12.5px; font-weight: 600; color: var(--text);
@@ -995,14 +1005,14 @@
   .rank-bar-track { height: 4px; border-radius: 2px; background: var(--border); margin-top: 5px; overflow: hidden; }
   .rank-bar-fill { height: 100%; border-radius: 2px; }
   .rank-right { text-align: right; flex: 0 0 auto; }
-  .rank-value { font-size: 12.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
+  .rank-value { font-size: 12.5px; font-weight: 700; color: var(--navy-text); white-space: nowrap; }
   .rank-meta { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
   .rank-empty { color: var(--muted); font-size: 12.5px; padding: 10px 2px; }
   .rank-toggle-btn {
     display: flex; align-items: center; justify-content: center; gap: 5px;
     width: 100%; margin-top: 6px; padding: 7px 0;
     background: var(--ice-soft); border: none; border-radius: 8px;
-    color: var(--navy); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    color: var(--navy-text); font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
     cursor: pointer; transition: background 0.15s;
   }
   .rank-toggle-btn:hover { background: var(--ice); }
@@ -1029,11 +1039,11 @@
     margin-top: 14px;
   }
   .org-card {
-    background: white;
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 14px 16px;
-    transition: border-color .15s, box-shadow .15s, transform .15s;
+    transition: border-color .15s, box-shadow .15s, transform .15s, background .25s ease;
   }
   .org-card:hover { border-color: var(--ice); box-shadow: 0 8px 20px rgba(30,39,97,0.08); transform: translateY(-1px); }
   .org-card .org-name {
@@ -1041,7 +1051,7 @@
     margin-bottom: 8px; min-height: 32px; line-height: 1.3;
   }
   .org-card .org-count {
-    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--navy);
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; color: var(--navy-text);
     line-height: 1;
   }
   .org-card .org-count-lbl { font-size: 10.5px; color: var(--muted); margin: 2px 0 8px; }
@@ -1050,7 +1060,7 @@
   .org-card.empty { opacity: 0.45; }
   .org-vat { font-size: 12px; font-weight: 600; color: var(--amber-fg); }
   .org-card-total {
-    background: var(--navy); border-color: var(--navy);
+    background: var(--navy); border-color: var(--navy-text);
     grid-column: 1 / -1;
     display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
   }
@@ -1063,7 +1073,7 @@
 
   .org-dept-toggle {
     margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border);
-    font-size: 11px; font-weight: 600; color: var(--navy);
+    font-size: 11px; font-weight: 600; color: var(--navy-text);
     cursor: pointer; display: flex; align-items: center; gap: 4px;
     user-select: none;
   }
@@ -1094,14 +1104,14 @@
   }
   .period-filter-icon { font-size: 22px; margin-bottom: 6px; }
   .period-filter-box .filter-field label {
-    color: var(--navy); font-weight: 700; font-size: 11px;
+    color: var(--navy-text); font-weight: 700; font-size: 11px;
   }
   .period-filter-box .date-range { display: flex; align-items: center; gap: 6px; }
   .period-filter-box #clearAnalyticsPeriodBtn {
-    background: white; border: 1px solid var(--navy); color: var(--navy);
+    background: var(--chip-bg); border: 1px solid var(--navy); color: var(--navy);
   }
   .period-filter-box #clearAnalyticsPeriodBtn:hover { background: var(--navy); color: white; }
-  #analyticsPeriodNote { font-weight: 600; color: var(--navy); }
+  #analyticsPeriodNote { font-weight: 600; color: var(--navy-text); }
   @media (max-width: 700px) {
     .period-filter-box { flex-direction: column; align-items: stretch; }
     #analyticsPeriodNote { margin-left: 0 !important; }
@@ -1242,7 +1252,7 @@
     </svg>
     <div class="anniversary-badge"><span class="num">35</span><span class="txt">йил</span></div>
 
-    <div class="holiday-banner">🎉 С Днём Независимости Узбекистана! 🎉</div>
+    <div class="holiday-banner"><i class='ti ti-confetti' aria-hidden='true'></i> С Днём Независимости Узбекистана! <i class='ti ti-confetti' aria-hidden='true'></i></div>
     <div class="holiday-quote">Мустақиллик байрамингиз муборак бўлсин!</div>
     <div class="mark">RM</div>
     <h1>Royal Motors</h1>
@@ -1250,11 +1260,11 @@
     <p>Введите логин и пароль, выданные администратором.</p>
     <form id="loginForm" onsubmit="return false;">
       <div class="login-input-wrap">
-        <span class="icon">👤</span>
+        <span class="icon"><i class='ti ti-user' aria-hidden='true'></i></span>
         <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username" class="login-input">
       </div>
       <div class="login-input-wrap">
-        <span class="icon">🔒</span>
+        <span class="icon"><i class='ti ti-lock' aria-hidden='true'></i></span>
         <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password" class="login-input">
       </div>
       <button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button>
@@ -1277,10 +1287,10 @@
     <div class="topbar-right">
       <div id="userInfo"></div>
       <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
-      <button id="themeToggleBtn" onclick="toggleTheme()" title="Переключить тему">🌙 Тёмная</button>
-      <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает">🔔 Уведомить сотрудников</button>
-      <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам">📢 Объявление</button>
-      <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль">🔑 Пароль</button>
+      <button id="themeToggleBtn" onclick="toggleTheme()" title="Переключить тему"><i class='ti ti-moon' aria-hidden='true'></i> Тёмная</button>
+      <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает"><i class='ti ti-bell' aria-hidden='true'></i> Уведомить сотрудников</button>
+      <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам"><i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление</button>
+      <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль"><i class='ti ti-key' aria-hidden='true'></i> Пароль</button>
       <button id="refreshBtn">↻ Обновить</button>
       <button id="logoutBtn">Выйти</button>
     </div>
@@ -1356,20 +1366,20 @@
       <p class="analytics-note" style="margin:0 0 16px;">Всё, что сейчас "висит" (не завершено), из всех разделов сразу - для быстрой ежедневной проверки. Отсортировано по количеству дней ожидания (самое старое - сверху).</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="summarySearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>📂 Тип</label>
+          <label><i class='ti ti-folder-open' aria-hidden='true'></i> Тип</label>
           <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="summaryTargetFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="summaryClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="summaryClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1403,7 +1413,7 @@
       <p class="analytics-note" style="margin:0 0 16px;">Сколько счетов и на какую сумму пришло каждой из наших компаний</p>
 
       <div class="period-filter-box">
-        <span class="period-filter-icon">📅</span>
+        <span class="period-filter-icon"><i class='ti ti-calendar' aria-hidden='true'></i></span>
         <div class="filter-field">
           <label>Показать за период</label>
           <div class="date-range">
@@ -1418,7 +1428,7 @@
             <option value="">Все организации</option>
           </select>
         </div>
-        <button id="clearAnalyticsPeriodBtn">✕ Весь период</button>
+        <button id="clearAnalyticsPeriodBtn"><i class='ti ti-x' aria-hidden='true'></i> Весь период</button>
         <span class="analytics-note" id="analyticsPeriodNote" style="margin-left:auto;"></span>
       </div>
 
@@ -1432,32 +1442,32 @@
     <div class="stats-row" id="statsRow"></div>
 
     <div class="panel" style="margin-bottom:24px;">
-      <h2>📈 Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
+      <h2><i class='ti ti-trending-up' aria-hidden='true'></i> Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
       <div class="analytics-summary" id="analyticsSummary"></div>
 
       <div class="panels" style="margin-top:20px;grid-template-columns:1fr 1fr;">
         <div class="panel">
-          <h2>📆 Динамика за 30 дней <span class="sub">счета по дням</span></h2>
+          <h2><i class='ti ti-calendar' aria-hidden='true'></i> Динамика за 30 дней <span class="sub">счета по дням</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="trendChart"></canvas></div>
         </div>
         <div class="panel">
-          <h2>🗓️ По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
+          <h2><i class='ti ti-calendar-event' aria-hidden='true'></i>️ По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="weekdayChart"></canvas></div>
         </div>
       </div>
 
       <div class="panel" style="margin-top:20px;">
-        <h2>🛠️ Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
+        <h2><i class='ti ti-tool' aria-hidden='true'></i>️ Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
         <table class="mini-table" id="errorsTable">
           <thead><tr><th>Ошибка</th><th>Кол-во</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
 
-      <div class="analytics-group-title">👥 Аналитика по сотрудникам</div>
+      <div class="analytics-group-title"><i class='ti ti-users' aria-hidden='true'></i> Аналитика по сотрудникам</div>
 
       <div class="panel" id="loginStatsPanel" style="display:none; margin-bottom:16px;">
-        <h2>🔐 По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
+        <h2><i class='ti ti-shield-lock' aria-hidden='true'></i> По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
         <table class="emp-table" id="loginStatsTable">
           <thead><tr><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th><th>Договоров</th><th>Доверенностей</th><th>Счёт-фактур</th><th>Заказ-нарядов</th><th>Других запросов</th></tr></thead>
           <tbody></tbody>
@@ -1467,7 +1477,7 @@
       <div class="analytics-grid">
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--green-bg);">⚡</div>
+            <div class="analytics-box-icon" style="background:var(--green-bg);"><i class='ti ti-bolt' aria-hidden='true'></i></div>
             <h3>Топ-5 самых быстрых</h3>
           </div>
           <p class="analytics-note">по среднему времени принятия решения</p>
@@ -1476,7 +1486,7 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--amber-bg);">🐢</div>
+            <div class="analytics-box-icon" style="background:var(--amber-bg);"><i class='ti ti-clock' aria-hidden='true'></i></div>
             <h3>Топ-5 самых медленных</h3>
           </div>
           <p class="analytics-note">по среднему времени принятия решения</p>
@@ -1485,7 +1495,7 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--red-bg);">❌</div>
+            <div class="analytics-box-icon" style="background:var(--red-bg);"><i class='ti ti-circle-x' aria-hidden='true'></i></div>
             <h3>Топ-5 по отказам</h3>
           </div>
           <p class="analytics-note">доля отклонённых счетов от общего числа решений</p>
@@ -1499,7 +1509,7 @@
           <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
         </div>
         <div class="panel">
-          <h2>📦 Нагрузка по сотрудникам</h2>
+          <h2><i class='ti ti-package' aria-hidden='true'></i> Нагрузка по сотрудникам</h2>
           <table class="emp-table" id="workloadTable">
             <thead><tr><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
             <tbody></tbody>
@@ -1513,18 +1523,18 @@
       </div>
 
       <div class="panel" style="margin-top:16px;">
-        <h2>🏆 Уровни сотрудников
+        <h2><i class='ti ti-trophy' aria-hidden='true'></i> Уровни сотрудников
           <span class="sub" style="cursor:help;border-bottom:1px dashed var(--muted);" title="Уровень растёт по мере того, сколько счетов вы обработали за ВСЁ время работы (не за месяц) - это просто элемент мотивации, не влияет на зарплату или оценку работы. Тот же уровень указывается в вашем ежемесячном личном отчёте в Telegram.">ℹ️ что это?</span>
         </h2>
-        <p class="analytics-note">за всё время работы: 🏁 Новичок → 🚗 Водитель (15) → 🏎️ Профи (40) → 🏆 Гонщик (80) → 🥇 Ас (130) → 👑 Чемпион (190) → 💎 Легенда (250)</p>
+        <p class="analytics-note">за всё время работы: <i class='ti ti-flag-2' aria-hidden='true'></i> Новичок → <i class='ti ti-car' aria-hidden='true'></i> Водитель (15) → <i class='ti ti-car' aria-hidden='true'></i>️ Профи (40) → <i class='ti ti-trophy' aria-hidden='true'></i> Гонщик (80) → <i class='ti ti-medal' aria-hidden='true'></i> Ас (130) → <i class='ti ti-crown' aria-hidden='true'></i> Чемпион (190) → <i class='ti ti-diamond' aria-hidden='true'></i> Легенда (250)</p>
         <div class="rank-list" id="empLevelsTable"></div>
       </div>
 
-      <div class="analytics-group-title">🏭 Аналитика по поставщикам</div>
+      <div class="analytics-group-title"><i class='ti ti-building-factory' aria-hidden='true'></i> Аналитика по поставщикам</div>
       <div class="analytics-grid">
         <div class="analytics-box" style="grid-column: span 2;">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--green-bg);">💰</div>
+            <div class="analytics-box-icon" style="background:var(--green-bg);"><i class='ti ti-wallet' aria-hidden='true'></i></div>
             <h3>Топ-10 поставщиков по сумме</h3>
           </div>
           <p class="analytics-note">общая сумма всех счетов поставщика за выбранный период</p>
@@ -1533,7 +1543,7 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--ice-soft);">📦</div>
+            <div class="analytics-box-icon" style="background:var(--ice-soft);"><i class='ti ti-package' aria-hidden='true'></i></div>
             <h3>Топ-5 поставщиков</h3>
           </div>
           <p class="analytics-note">по количеству выставленных счетов</p>
@@ -1542,7 +1552,7 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--red-bg);">⚠️</div>
+            <div class="analytics-box-icon" style="background:var(--red-bg);"><i class='ti ti-alert-triangle' aria-hidden='true'></i>️</div>
             <h3>Контрагенты по отказам</h3>
           </div>
           <p class="analytics-note">от кого чаще всего приходят отклонённые счета</p>
@@ -1557,38 +1567,38 @@
       <h2>Счета-фактуры <span class="sub" id="tableCount"></span></h2>
       <div class="toolbar">
         <div class="filter-field">
-          <label>🔍 Поиск (№, комментарий)</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (№, комментарий)</label>
           <input type="text" id="searchInput" placeholder="№ счёта, комментарий...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select id="buyerFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏬 Подразделение</label>
+          <label><i class='ti ti-building-store' aria-hidden='true'></i> Подразделение</label>
           <select id="departmentFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🤝 Контрагент (имя или ИНН)</label>
+          <label><i class='ti ti-handshake' aria-hidden='true'></i> Контрагент (имя или ИНН)</label>
           <input type="text" id="contragentFilter" placeholder="Название или ИНН...">
         </div>
         <div class="filter-field">
-          <label>💰 Сумма</label>
+          <label><i class='ti ti-wallet' aria-hidden='true'></i> Сумма</label>
           <input type="text" id="sumFilter" placeholder="напр. 55490000">
         </div>
         <div class="filter-field">
-          <label>👤 Ответственный</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Ответственный</label>
           <input type="text" id="respFilter" placeholder="2-3 буквы имени...">
         </div>
         <div class="filter-field">
-          <label>📅 Период (дата счёта)</label>
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период (дата счёта)</label>
           <div class="date-range">
             <input type="date" id="dateFrom">
             <input type="date" id="dateTo">
           </div>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="statusFilter">
             <option value="">Все статусы</option>
             <option value="new">Не отправлено</option>
@@ -1603,22 +1613,22 @@
           <label>⏳ Дней с даты</label>
           <select class="status-filter" id="daysFilter">
             <option value="">Все</option>
-            <option value="green">🟢 В норме (&lt; 5 дней)</option>
-            <option value="amber">🟡 Скоро истекает (5-7)</option>
-            <option value="red">🔴 Просрочено (8+)</option>
+            <option value="green"><span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green-fg);'></span> В норме (&lt; 5 дней)</option>
+            <option value="amber"><span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber-fg);'></span> Скоро истекает (5-7)</option>
+            <option value="red"><span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red-fg);'></span> Просрочено (8+)</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>📌 DIDOX</label>
+          <label><i class='ti ti-pin' aria-hidden='true'></i> DIDOX</label>
           <select class="status-filter" id="didoxFilter">
             <option value="">Все</option>
-            <option value="done">✅ Отмечено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Отмечено</option>
             <option value="pending">⏳ Не отмечено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="clearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="clearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1626,7 +1636,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="suggestRespBtn" title="Для счетов без ответственного - подставляет того, кто чаще всего обрабатывал счета этого контрагента по этому договору">🎯 Подсказать ответственных</button>
+          <button id="suggestRespBtn" title="Для счетов без ответственного - подставляет того, кто чаще всего обрабатывал счета этого контрагента по этому договору"><i class='ti ti-target' aria-hidden='true'></i> Подсказать ответственных</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1705,7 +1715,7 @@
     <div class="panel">
       <h2>Контрагенты <span class="sub" id="suppliersCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Карточка каждого контрагента: история, суммы, качество (отказы), скорость обработки. Нажмите на карточку, чтобы открыть подробности.</p>
-      <input type="text" id="contragentSearchInput" class="contragent-search" placeholder="🔍 Поиск по названию или ИНН...">
+      <input type="text" id="contragentSearchInput" class="contragent-search" placeholder="<i class='ti ti-search' aria-hidden='true'></i> Поиск по названию или ИНН...">
       <div class="contragent-grid" id="contragentsGrid"></div>
     </div>
     </section>
@@ -1716,28 +1726,28 @@
       <p class="analytics-note" style="margin:0 0 16px;">Запросы по договорам через Telegram-бот (команда /dogovor) - вместо переписки. Как только PDF отправлен сотруднику, статус меняется на «Выполнено».</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="dogovorSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="dogovorOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому</label>
           <select class="status-filter" id="dogovorApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="dogovorStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="dogovorClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="dogovorClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1761,28 +1771,28 @@
       <p class="analytics-note" style="margin:0 0 16px;">Запросы по доверенностям через Telegram-бот (команда /doverennost). Сотрудник присылает файл/скриншот и указывает, кому нужна доверенность - вы оформляете и отправляете готовый документ в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="doverennostSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="doverennostOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="doverennostApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="doverennostStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="doverennostClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="doverennostClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1806,36 +1816,36 @@
       <p class="analytics-note" style="margin:0 0 16px;">Банковские запросы через Telegram-бот (команда /bank). Сотрудник указывает организацию, тип операции, контрагента и договор - вы присылаете подтверждающий документ в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="bankSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="bankOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Тип</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Тип</label>
           <select class="status-filter" id="bankTypeFilter">
             <option value="">Все</option>
-            <option value="Поступление">📥 Поступление</option>
-            <option value="Списание">📤 Списание</option>
+            <option value="Поступление"><i class='ti ti-download' aria-hidden='true'></i> Поступление</option>
+            <option value="Списание"><i class='ti ti-upload' aria-hidden='true'></i> Списание</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="bankApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="bankStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="bankClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="bankClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1859,32 +1869,32 @@
       <p class="analytics-note" style="margin:0 0 16px;">Запросы на счёт-фактуру реализации через Telegram-бот (команда /realschet). Сотрудник присылает скан-PDF (договор+доп.согл+приложения+счёт-справка) и указывает контрагента (с ИНН/ПНФЛ) - вы проверяете в Alfa/Maycar, выставляете счёт-фактуру в DIDOX и присылаете итоговый PDF в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="realschetSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="realschetOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🤝 Контрагент</label>
+          <label><i class='ti ti-handshake' aria-hidden='true'></i> Контрагент</label>
           <input type="text" class="status-filter" id="realschetKontragentFilter" placeholder="Название...">
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="realschetApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="realschetStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="realschetClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="realschetClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1908,32 +1918,32 @@
       <p class="analytics-note" style="margin:0 0 16px;">Запросы на заказ-наряд через Telegram-бот (команда /zakaznaryad). Сотрудник присылает файл и указывает контрагента (с ИНН/ПНФЛ) - вы обрабатываете заказ-наряд и присылаете итоговый файл в ответ.</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="zakaznaryadSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="zakaznaryadOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🤝 Контрагент</label>
+          <label><i class='ti ti-handshake' aria-hidden='true'></i> Контрагент</label>
           <input type="text" class="status-filter" id="zakaznaryadKontragentFilter" placeholder="Название...">
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="zakaznaryadApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="zakaznaryadStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="zakaznaryadClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="zakaznaryadClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1957,28 +1967,28 @@
       <p class="analytics-note" style="margin:0 0 16px;">Произвольные запросы через Telegram-бот, открытые из раздела «Поступления» (текст и/или любое количество файлов). Ответьте на пересланное сообщение текстом и/или файлом(-ами).</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="otherreqPostSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="otherreqPostOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="otherreqPostApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="otherreqPostStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="otherreqPostClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="otherreqPostClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -2002,28 +2012,28 @@
       <p class="analytics-note" style="margin:0 0 16px;">Произвольные запросы через Telegram-бот, открытые из раздела «Реализация» (текст и/или любое количество файлов). Ответьте на пересланное сообщение текстом и/или файлом(-ами).</p>
       <div class="toolbar" style="margin-bottom:16px;">
         <div class="filter-field" style="min-width:200px;">
-          <label>🔍 Поиск</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
           <input type="text" class="status-filter" id="otherreqRealSearchInput" placeholder="Поиск по всем полям...">
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select class="status-filter" id="otherreqRealOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>👤 Кому направлено</label>
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
           <select class="status-filter" id="otherreqRealApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
           <select class="status-filter" id="otherreqRealStatusFilter">
             <option value="">Все</option>
             <option value="pending">⏳ В ожидании</option>
-            <option value="done">✅ Выполнено</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="otherreqRealClearFiltersBtn">✕ Сбросить фильтры</button>
+          <button id="otherreqRealClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -2102,7 +2112,7 @@
       </div>
       <textarea id="writeempMessageText" placeholder="Текст сообщения..." class="login-input" style="width:100%;max-width:520px;min-height:110px;margin-top:12px;font-family:'Inter';resize:vertical;"></textarea>
       <div style="margin-top:12px;">
-        <button id="writeempSendBtn" onclick="sendWriteEmp()" class="login-submit-btn" style="width:auto;padding:12px 22px;">✍️ Отправить</button>
+        <button id="writeempSendBtn" onclick="sendWriteEmp()" class="login-submit-btn" style="width:auto;padding:12px 22px;"><i class='ti ti-pencil' aria-hidden='true'></i>️ Отправить</button>
       </div>
       <div id="writeempError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
       <div id="writeempSuccess" style="color:#1E7A4C;font-size:13px;margin-top:8px;"></div>
@@ -2112,7 +2122,7 @@
     <section id="section-suggestions" class="content-section">
     <div class="panel">
       <h2>Предложения и жалобы <span class="sub" id="suggestionsCountSub">видно только администраторам</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Обращения сотрудников через Telegram-бота (кнопка "💡 Предложение/Жалоба"). Эта информация конфиденциальна - её видите только вы. Ответьте на сообщение бота (Reply в Telegram), чтобы передать ответ сотруднику анонимно.</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Обращения сотрудников через Telegram-бота (кнопка "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение/Жалоба"). Эта информация конфиденциальна - её видите только вы. Ответьте на сообщение бота (Reply в Telegram), чтобы передать ответ сотруднику анонимно.</p>
       <div id="suggestionsLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
       <div class="table-wrap">
         <table class="invoices" id="suggestionsTable" style="display:none;">
@@ -2128,7 +2138,7 @@
     <section id="section-salaryrequests" class="content-section">
     <div class="panel">
       <h2>Заявки на доступ к зарплате <span class="sub" id="salaryRequestsCountSub">видно только администраторам и расчётному бухгалтеру</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Когда сотрудник открывает «💰 Зарплата» и вводит свой ПИНФЛ, доступ не даётся автоматически - его нужно подтвердить здесь (или кнопкой в Telegram). Проверяйте, что ФИО отправителя совпадает с владельцем ПИНФЛ.</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Когда сотрудник открывает «<i class='ti ti-wallet' aria-hidden='true'></i> Зарплата» и вводит свой ПИНФЛ, доступ не даётся автоматически - его нужно подтвердить здесь (или кнопкой в Telegram). Проверяйте, что ФИО отправителя совпадает с владельцем ПИНФЛ.</p>
       <div id="salaryRequestsLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
       <div class="table-wrap">
         <table class="invoices" id="salaryRequestsTable" style="display:none;">
@@ -2147,43 +2157,43 @@
       <p class="analytics-note" style="margin:0 0 16px;">Данные, импортированные из Excel-файла зарплаты (через Telegram-бота). Эта информация конфиденциальна.</p>
       <div class="toolbar">
         <div class="filter-field">
-          <label>📅 Период</label>
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период</label>
           <select id="salaryPeriodFilter" class="login-input" style="max-width:160px;" onchange="renderSalaryTable()">
             <option value="">Все периоды</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>🏢 Организация</label>
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
           <select id="salaryOrgFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
             <option value="">Все организации</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>💼 Должность</label>
+          <label><i class='ti ti-briefcase' aria-hidden='true'></i> Должность</label>
           <select id="salaryPositionFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
             <option value="">Все должности</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>🏷️ Тип начисления</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Тип начисления</label>
           <select id="salaryTypeFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
             <option value="">Все начисления</option>
-            <option value="Больничные">🤒 Есть больничные</option>
-            <option value="Отпускные">🏖 Есть отпускные</option>
-            <option value="KPI">➕ Есть KPI</option>
-            <option value="Премии">➕ Есть премии</option>
-            <option value="Депремирование">➖ Есть депремирование</option>
-            <option value="УдаленнаяРабота">🏠 Есть удалённая работа</option>
-            <option value="ПрочиеВыплаты">➖ Есть прочие выплаты</option>
+            <option value="Больничные"><i class='ti ti-thermometer' aria-hidden='true'></i> Есть больничные</option>
+            <option value="Отпускные"><i class='ti ti-beach' aria-hidden='true'></i> Есть отпускные</option>
+            <option value="KPI"><i class='ti ti-plus' aria-hidden='true'></i> Есть KPI</option>
+            <option value="Премии"><i class='ti ti-plus' aria-hidden='true'></i> Есть премии</option>
+            <option value="Депремирование"><i class='ti ti-minus' aria-hidden='true'></i> Есть депремирование</option>
+            <option value="УдаленнаяРабота"><i class='ti ti-home' aria-hidden='true'></i> Есть удалённая работа</option>
+            <option value="ПрочиеВыплаты"><i class='ti ti-minus' aria-hidden='true'></i> Есть прочие выплаты</option>
           </select>
         </div>
         <div class="filter-field">
-          <label>🔍 Поиск (ФИО/ПИНФЛ)</label>
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (ФИО/ПИНФЛ)</label>
           <input type="text" id="salarySearchInput" class="login-input" oninput="renderSalaryTable()" placeholder="Введите ФИО или ПИНФЛ">
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="salaryLoadBtn" onclick="loadSalary()" class="login-submit-btn" style="width:auto;padding:9px 20px;">🔄 Обновить</button>
+          <button id="salaryLoadBtn" onclick="loadSalary()" class="login-submit-btn" style="width:auto;padding:9px 20px;"><i class='ti ti-refresh' aria-hidden='true'></i> Обновить</button>
         </div>
       </div>
       <div id="salaryLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
@@ -2225,16 +2235,16 @@
 
       <div class="toolbar">
         <div class="filter-field">
-          <label>📅 С даты</label>
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> С даты</label>
           <input type="date" id="auditLogFrom">
         </div>
         <div class="filter-field">
-          <label>📅 По дату</label>
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> По дату</label>
           <input type="date" id="auditLogTo">
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="auditLogLoadBtn" onclick="loadAuditLog()" class="login-submit-btn" style="width:auto;padding:9px 20px;">🔄 Загрузить</button>
+          <button id="auditLogLoadBtn" onclick="loadAuditLog()" class="login-submit-btn" style="width:auto;padding:9px 20px;"><i class='ti ti-refresh' aria-hidden='true'></i> Загрузить</button>
         </div>
       </div>
 
@@ -2258,9 +2268,9 @@
 
       <div class="reconcile-upload">
         <input type="file" id="reconcileFileInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleReconcileFile(event)">
-        <button class="login-submit-btn" style="width:auto;padding:12px 24px;" onclick="document.getElementById('reconcileFileInput').click()">📂 Выбрать файл из 1С</button>
-        <button id="reconcileExportBtn" class="login-submit-btn" style="width:auto;padding:12px 24px;background:var(--green-fg);display:none;" onclick="exportReconcileExcel()">📥 Скачать отчёт (Excel)</button>
-        <button id="reconcileClearBtn" onclick="clearReconcile()" style="display:none;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;">🗑 Очистить</button>
+        <button class="login-submit-btn" style="width:auto;padding:12px 24px;" onclick="document.getElementById('reconcileFileInput').click()"><i class='ti ti-folder-open' aria-hidden='true'></i> Выбрать файл из 1С</button>
+        <button id="reconcileExportBtn" class="login-submit-btn" style="width:auto;padding:12px 24px;background:var(--green-fg);display:none;" onclick="exportReconcileExcel()"><i class='ti ti-download' aria-hidden='true'></i> Скачать отчёт (Excel)</button>
+        <button id="reconcileClearBtn" onclick="clearReconcile()" style="display:none;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;"><i class='ti ti-trash' aria-hidden='true'></i> Очистить</button>
         <span id="reconcileFileName" style="color:var(--muted);font-size:13px;"></span>
       </div>
       <div id="reconcileError" style="color:#C0392B;font-size:13px;margin-top:10px;"></div>
@@ -2286,7 +2296,7 @@
 
 <div id="announcementModal" class="modal-overlay">
   <div class="modal-card">
-    <h3>📢 Объявление всем сотрудникам</h3>
+    <h3><i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление всем сотрудникам</h3>
     <p style="color:var(--muted);font-size:13px;margin:0 0 10px;">Сообщение придёт в Telegram каждому активному сотруднику (не только тем, у кого есть доступ к dashboard).</p>
     <textarea id="announcementText" placeholder="Например: С понедельника меняется срок рассмотрения счетов..."></textarea>
     <div class="modal-actions">
@@ -2304,11 +2314,11 @@
 
 <div id="forcePasswordModal" class="modal-overlay">
   <div class="modal-card">
-    <h3>🔑 Смените пароль</h3>
+    <h3><i class='ti ti-key' aria-hidden='true'></i> Смените пароль</h3>
     <p style="color:var(--muted);font-size:13px;margin:0 0 14px;">Это ваш первый вход (или пароль был сброшен администратором). Пожалуйста, задайте свой собственный пароль, прежде чем продолжить.</p>
-    <input type="password" id="forceOldPassword" class="login-input" placeholder="Текущий (временный) пароль" style="color:var(--text);border:1px solid var(--border);background:#fff;">
-    <input type="password" id="forceNewPassword" class="login-input" placeholder="Новый пароль (минимум 4 символа)" style="color:var(--text);border:1px solid var(--border);background:#fff;margin-top:10px;">
-    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Повторите новый пароль" style="color:var(--text);border:1px solid var(--border);background:#fff;margin-top:10px;">
+    <input type="password" id="forceOldPassword" class="login-input" placeholder="Текущий (временный) пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <input type="password" id="forceNewPassword" class="login-input" placeholder="Новый пароль (минимум 4 символа)" style="color:var(--text);border:1px solid var(--border);background:var(--card);margin-top:10px;">
+    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Повторите новый пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);margin-top:10px;">
     <div id="forcePasswordError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
     <div class="modal-actions">
       <button class="btn-primary" id="forcePasswordSubmitBtn" onclick="submitForcePasswordChange()">Сохранить и продолжить</button>
@@ -2360,13 +2370,13 @@ let uniqueDepartments = [];
    (barcha oylar) qabul+rad qilingan счетlar soni.
    ============================================================ */
 const RANK_TIERS = [
-  { min: 0, name: "Новичок", icon: "🏁" },
-  { min: 15, name: "Водитель", icon: "🚗" },
-  { min: 40, name: "Профи", icon: "🏎️" },
-  { min: 80, name: "Гонщик", icon: "🏆" },
-  { min: 130, name: "Ас", icon: "🥇" },
-  { min: 190, name: "Чемпион", icon: "👑" },
-  { min: 250, name: "Легенда", icon: "💎" },
+  { min: 0, name: "Новичок", icon: "<i class='ti ti-flag-2' aria-hidden='true'></i>" },
+  { min: 15, name: "Водитель", icon: "<i class='ti ti-car' aria-hidden='true'></i>" },
+  { min: 40, name: "Профи", icon: "<i class='ti ti-car' aria-hidden='true'></i>️" },
+  { min: 80, name: "Гонщик", icon: "<i class='ti ti-trophy' aria-hidden='true'></i>" },
+  { min: 130, name: "Ас", icon: "<i class='ti ti-medal' aria-hidden='true'></i>" },
+  { min: 190, name: "Чемпион", icon: "<i class='ti ti-crown' aria-hidden='true'></i>" },
+  { min: 250, name: "Легенда", icon: "<i class='ti ti-diamond' aria-hidden='true'></i>" },
 ];
 function rankForTotal(total) {
   let idx = 0;
@@ -2518,7 +2528,7 @@ async function handleLoginSubmit() {
     });
     document.getElementById("loginPassword").value = "";
     btn.classList.add("success");
-    btn.textContent = "✓ Готово";
+    btn.textContent = "<i class='ti ti-check' aria-hidden='true'></i> Готово";
     setTimeout(() => onLoggedIn(!!data.mustChangePassword), 350);
   } catch (e) {
     errEl.textContent = e.message || "Ошибка входа";
@@ -2554,7 +2564,7 @@ function applyHolidayThemeIfNeeded() {
   const container = document.getElementById("confettiContainer");
 
   // Konfetti - avvalgidan ko'proq va rang-barang
-  const pieces = ["🎉", "🎊", "⭐", "🎈", "✨", "🇺🇿"];
+  const pieces = ["<i class='ti ti-confetti' aria-hidden='true'></i>", "<i class='ti ti-confetti' aria-hidden='true'></i>", "⭐", "<i class='ti ti-balloon' aria-hidden='true'></i>", "<i class='ti ti-sparkles' aria-hidden='true'></i>", "🇺🇿"];
   const count = 45;
   for (let i = 0; i < count; i++) {
     const el = document.createElement("div");
@@ -2969,7 +2979,7 @@ function syncThemeButtonLabel() {
   const btn = document.getElementById("themeToggleBtn");
   if (!btn) return;
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  btn.textContent = isDark ? "☀️ Светлая" : "🌙 Тёмная";
+  btn.textContent = isDark ? "<i class='ti ti-sun' aria-hidden='true'></i>️ Светлая" : "<i class='ti ti-moon' aria-hidden='true'></i> Тёмная";
 }
 syncThemeButtonLabel();
 
@@ -3008,7 +3018,7 @@ function applyRolePermissions(role) {
   }
 }
 
-/* Admin dashboard'da "🔔 Уведомить сотрудников" tugmasini bosganda ishlaydi.
+/* Admin dashboard'da "<i class='ti ti-bell' aria-hidden='true'></i> Уведомить сотрудников" tugmasini bosganda ishlaydi.
    Botning o'zi (server tomonida) 'Управление' varag'idagi B2 katagini
    kuzatib turadi va farqni ko'rgach STARTUP_NOTIFY_CHAT_IDS ro'yxatiga
    xabar yuboradi - shuning uchun bu yerda bot tokeniga umuman ehtiyoj
@@ -3021,7 +3031,7 @@ async function triggerStartupNotify() {
   try {
     const ts = new Date().toISOString();
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B2`, ts);
-    btn.textContent = "✅ Отправлено!";
+    btn.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено!";
     setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 5000);
   } catch (e) {
     alert("Не удалось отправить уведомление: " + e.message + "\n\nВозможно, лист «Управление» ещё не создан - убедитесь, что бот запущен хотя бы раз после обновления.");
@@ -3030,7 +3040,7 @@ async function triggerStartupNotify() {
   }
 }
 
-/* "📢 Объявление" - admin istalgan vaqt, istalgan matnli xabarni BARCHA
+/* "<i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление" - admin istalgan vaqt, istalgan matnli xabarni BARCHA
    faol xodimlarga (Xodimlar varag'idagi, dashboard huquqi bor-yo'qligidan
    qat'iy nazar) yuborishi mumkin - masalan tizim o'zgarishlari, e'lonlar
    va h.k. haqida. Bot tokeniga bu yerda ham ehtiyoj yo'q - faqat Sheets'ga
@@ -3055,7 +3065,7 @@ async function sendAnnouncement() {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B5`, text);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B4`, new Date().toISOString());
     closeAnnouncementModal();
-    alert("✅ Объявление поставлено в очередь. Бот отправит его всем активным сотрудникам в течение ~8 секунд.");
+    alert("<i class='ti ti-circle-check' aria-hidden='true'></i> Объявление поставлено в очередь. Бот отправит его всем активным сотрудникам в течение ~8 секунд.");
   } catch (e) {
     alert("Не удалось отправить объявление: " + e.message);
   }
@@ -3215,7 +3225,7 @@ async function sendWriteEmp() {
     if (textEl) textEl.value = "";
     if (empInput) empInput.value = "";
     writeempSelectedChatId = "";
-    if (successEl) successEl.textContent = "✅ Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
+    if (successEl) successEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i> Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
   } catch (e) {
     if (errorEl) errorEl.textContent = "Не удалось отправить: " + e.message;
   } finally {
@@ -3715,8 +3725,8 @@ function renderSummaryTable() {
       <td><span class="clamp-cell" style="max-width:160px;" title="${escapeHtml(it.target)}">${escapeHtml(it.target) || `<span style="color:var(--muted)">—</span>`}</span></td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.requestedAt)}</td>
       <td>${daysBadge(it.days)}</td>
-      <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:white;cursor:pointer;font-size:11.5px;white-space:nowrap;">Перейти →</button></td>
-    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не ожидает - всё выполнено 🎉</td></tr>`;
+      <td><button onclick="showSection('${it.section}')" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:11.5px;white-space:nowrap;">Перейти →</button></td>
+    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не ожидает - всё выполнено <i class='ti ti-confetti' aria-hidden='true'></i></td></tr>`;
 
   renderApproverSpeedTable();
 }
@@ -4000,11 +4010,11 @@ function renderStats() {
   const pct = v => total ? Math.round(v / total * 100) + "%" : "—";
 
   const cards = [
-    { label: "Всего счетов", val: total, pct: null, cls: "accent-total", icon: "📄" },
+    { label: "Всего счетов", val: total, pct: null, cls: "accent-total", icon: "<i class='ti ti-file-text' aria-hidden='true'></i>" },
     { label: "Ожидают ответа", val: pending, pct: pct(pending), cls: "accent-pending", icon: "⏳" },
-    { label: "Принято", val: accepted, pct: pct(accepted), cls: "accent-accepted", icon: "✅" },
-    { label: "Отклонено", val: rejected, pct: pct(rejected), cls: "accent-rejected", icon: "❌" },
-    { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "⚠️" },
+    { label: "Принято", val: accepted, pct: pct(accepted), cls: "accent-accepted", icon: "<i class='ti ti-circle-check' aria-hidden='true'></i>" },
+    { label: "Отклонено", val: rejected, pct: pct(rejected), cls: "accent-rejected", icon: "<i class='ti ti-circle-x' aria-hidden='true'></i>" },
+    { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️" },
   ];
   document.getElementById("statsRow").innerHTML = cards.map(c => `
     <div class="stat-card ${c.cls}">
@@ -4017,7 +4027,7 @@ function renderStats() {
 }
 
 /* "По логинам dashboard" paneli (faqat admin) - Аналитика davr filtriga
-   bo'ysunadi. "🔐 Пользователи" bo'limidagi jadvaldan farqli o'laroq (u
+   bo'ysunadi. "<i class='ti ti-shield-lock' aria-hidden='true'></i> Пользователи" bo'limidagi jadvaldan farqli o'laroq (u
    doim BARCHA vaqt bo'yicha ko'rsatadi), bu yerda faqat tanlangan davr
    ichidagi amallar hisoblanadi. Server'ga alohida so'rov yuboradi
    (АудитЛог'ni davr bo'yicha filtrlash uchun). */
@@ -4108,7 +4118,7 @@ function renderInvoicesTable() {
       <td class="num-cell">${escapeHtml(r.sum)}</td>
       <td class="num-cell" style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.vat)}</td>
       <td>${classifyStatus(r.status) === "accepted" || classifyStatus(r.status) === "rejected" ? `
-        <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя">🔒 ${escapeHtml(r.resp)}</span>
+        <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя"><i class='ti ti-lock' aria-hidden='true'></i> ${escapeHtml(r.resp)}</span>
       ` : `
         <input type="text" class="resp-input" data-row-index="${r.rowIndex}"
                value="${escapeHtml(r.resp)}"
@@ -4121,21 +4131,21 @@ function renderInvoicesTable() {
       `}</td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
-        <span class="save-flash">✓</span>
+        <span class="save-flash"><i class='ti ti-check' aria-hidden='true'></i></span>
       </td>
       <td>
         ${statusBadge(r.status)}
         ${classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss" ? `
-          <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)">🔔</button>
+          <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)"><i class='ti ti-bell' aria-hidden='true'></i></button>
         ` : ""}
         ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
-          <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)">🗑️</button>
+          <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i>️</button>
         ` : ""}
       </td>
       <td>${daysBadge(r.days)}</td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="didox-check" ${r.didoxDone ? "checked" : ""} onchange="updateDidoxDone(${r.rowIndex}, this.checked, this)">
-        <span class="save-flash">✓</span>
+        <span class="save-flash"><i class='ti ti-check' aria-hidden='true'></i></span>
       </td>
       <td style="font-size:12px;color:var(--muted)"><span class="clamp-cell-comment" title="${escapeHtml(r.comment)}">${escapeHtml(r.comment)}</span></td>
     </tr>`;
@@ -4462,10 +4472,10 @@ function renderAnalytics() {
   const slaRate = allDurationValues.length ? (withinSla / allDurationValues.length) * 100 : null;
 
   document.getElementById("analyticsSummary").innerHTML = `
-    <div><span class="sum-icon">📋</span><div><div class="num">${totalDecided}</div><div class="lbl">Всего решений</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-clipboard-list' aria-hidden='true'></i></span><div><div class="num">${totalDecided}</div><div class="lbl">Всего решений</div></div></div>
     <div><span class="sum-icon">⏱️</span><div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время</div></div></div>
-    <div><span class="sum-icon">📉</span><div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Доля отказов</div></div></div>
-    <div><span class="sum-icon">🎯</span><div><div class="num">${slaRate != null ? slaRate.toFixed(0) + "%" : "—"}</div><div class="lbl">В срок (до 8 дней)</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-trending-down' aria-hidden='true'></i></span><div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Доля отказов</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-target' aria-hidden='true'></i></span><div><div class="num">${slaRate != null ? slaRate.toFixed(0) + "%" : "—"}</div><div class="lbl">В срок (до 8 дней)</div></div></div>
   `;
 
   // ---------- Нагрузка по сотрудникам ----------
@@ -4560,7 +4570,7 @@ function renderAnalytics() {
   const errorRows = Object.entries(errorCounts).sort((a, b) => b[1] - a[1]);
   document.querySelector("#errorsTable tbody").innerHTML = errorRows.map(([msg, count]) => `
     <tr><td>${escapeHtml(msg)}</td><td>${count}</td></tr>`).join("")
-    || `<tr><td colspan="2" style="color:var(--muted)">Ошибок нет 🎉</td></tr>`;
+    || `<tr><td colspan="2" style="color:var(--muted)">Ошибок нет <i class='ti ti-confetti' aria-hidden='true'></i></td></tr>`;
 
   renderWeekdayChart(periodInvoiceRows);
   renderTrendChart();
@@ -4710,8 +4720,8 @@ function renderRegistrations() {
       <td>${escapeHtml(r.username)}</td>
       <td style="font-size:12px;color:var(--muted)">${formatDateDisplay(r.submittedAt)}</td>
       <td>
-        <button class="reg-btn reg-approve-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Одобрено', this)">✅ Одобрить</button>
-        <button class="reg-btn reg-reject-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Отклонено', this)">❌ Отклонить</button>
+        <button class="reg-btn reg-approve-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Одобрено', this)"><i class='ti ti-circle-check' aria-hidden='true'></i> Одобрить</button>
+        <button class="reg-btn reg-reject-btn" onclick="updateRegistrationStatus(${r.rowIndex}, 'Отклонено', this)"><i class='ti ti-circle-x' aria-hidden='true'></i> Отклонить</button>
       </td>
     </tr>`).join("") || `<tr><td colspan="4" style="color:var(--muted)">Нет новых заявок</td></tr>`;
 
@@ -4766,7 +4776,7 @@ function renderEmployeesManage() {
         <span class="status-badge ${e.active ? "status-accepted" : "status-new"}">${e.active ? "Активен" : "Деактивирован"}</span>
         `}
       </td>
-      ${isAdmin ? `<td><button class="emp-delete-btn" onclick="deleteEmployeeRow(${e.rowIndex}, '${escapeHtml(e.name).replace(/'/g, "\\'")}', this)">🗑 Удалить</button></td>` : ""}
+      ${isAdmin ? `<td><button class="emp-delete-btn" onclick="deleteEmployeeRow(${e.rowIndex}, '${escapeHtml(e.name).replace(/'/g, "\\'")}', this)"><i class='ti ti-trash' aria-hidden='true'></i> Удалить</button></td>` : ""}
     </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Нет сотрудников</td></tr>`;
 }
 
@@ -4802,7 +4812,7 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
   } catch (e) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
-    btnEl.textContent = "🗑 Удалить";
+    btnEl.textContent = "<i class='ti ti-trash' aria-hidden='true'></i> Удалить";
   }
 }
 
@@ -4844,10 +4854,10 @@ async function loadSuggestions() {
       <tr>
         <td style="color:var(--muted)">${i + 1}</td>
         <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.date)}</td>
-        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "⚠️ Жалоба" : "💡 Предложение"}</td>
+        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Жалоба" : "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение"}</td>
         <td style="max-width:400px;font-size:13px;">${escapeHtml(it.text)}</td>
         <td>${escapeHtml(it.employeeName)}</td>
-        <td>${it.comment ? `<span style="color:#1E7A4C;">✅ да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
+        <td>${it.comment ? `<span style="color:#1E7A4C;"><i class='ti ti-circle-check' aria-hidden='true'></i> да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
       </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Пока нет обращений</td></tr>`;
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
@@ -4893,8 +4903,8 @@ function renderSalaryRequestsTable() {
   tbody.innerHTML = salaryRequestsCache.map((r, i) => {
     const statusColor = r.status === "Одобрено" ? "#1E7A4C" : (r.status === "Отклонено" ? "#C0392B" : "var(--amber-fg)");
     const actions = r.status === "Ожидание"
-      ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#1E7A4C;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'approve', this)">✅ Одобрить</button>
-         <button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#C0392B;margin-left:6px;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'reject', this)">❌ Отклонить</button>`
+      ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#1E7A4C;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'approve', this)"><i class='ti ti-circle-check' aria-hidden='true'></i> Одобрить</button>
+         <button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#C0392B;margin-left:6px;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'reject', this)"><i class='ti ti-circle-x' aria-hidden='true'></i> Отклонить</button>`
       : `<span style="color:var(--muted);font-size:12.5px;">${r.processed ? "выполнено" : "обрабатывается..."}</span>`;
     return `
     <tr>
@@ -5065,7 +5075,7 @@ function renderUsersTable() {
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
-      <td>${u.role === "admin" ? '<span style="color:var(--navy);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">salary</span>' : "employee")}
+      <td>${u.role === "admin" ? '<span style="color: var(--navy-text);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">salary</span>' : "employee")}
         ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;">⏳ ждёт смены пароля</div>' : ""}
       </td>
       <td>${u.invoiceCount || 0}</td>
@@ -5078,8 +5088,8 @@ function renderUsersTable() {
         <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${u.active ? "Активен" : "Деактивирован"}</span>
       </td>
       <td>
-        <button class="emp-delete-btn" style="background:var(--ice-soft);color:var(--navy);border-color:var(--border);" onclick="handleResetPassword(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}')">🔑 Новый пароль</button>
-        <button class="emp-delete-btn" onclick="handleDeleteUser(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}', this)">🗑 Удалить</button>
+        <button class="emp-delete-btn" style="background:var(--ice-soft);color: var(--navy-text);border-color:var(--border);" onclick="handleResetPassword(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}')"><i class='ti ti-key' aria-hidden='true'></i> Новый пароль</button>
+        <button class="emp-delete-btn" onclick="handleDeleteUser(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}', this)"><i class='ti ti-trash' aria-hidden='true'></i> Удалить</button>
       </td>
     </tr>`;
   }).join("") || `<tr><td colspan="8" style="color:var(--muted)">Пока нет пользователей</td></tr>`;
@@ -5158,7 +5168,7 @@ async function handleChangeOwnPassword() {
   }
   try {
     await apiCall("changeOwnPassword", { oldPassword, newPassword });
-    alert("✅ Пароль успешно изменён. Используйте его при следующем входе.");
+    alert("<i class='ti ti-circle-check' aria-hidden='true'></i> Пароль успешно изменён. Используйте его при следующем входе.");
   } catch (e) {
     alert("Не удалось изменить пароль: " + e.message);
   }
@@ -5182,27 +5192,27 @@ async function handleDeleteUser(rowIndex, username, btnEl) {
    oson matnga aylantirib ko'rsatadi.
    ============================================================ */
 const AUDIT_ACTION_LABELS = {
-  LOGIN_OK: () => "✅ Успешный вход",
-  LOGIN_FAILED: () => "⚠️ Неверный пароль при входе",
-  LOGIN_FAILED_NO_USER: () => "⚠️ Попытка входа с несуществующим логином",
-  CHANGE_OWN_PASSWORD: () => "🔑 Сменил свой пароль",
-  CREATE_USER: d => `➕ Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
-  RESET_PASSWORD: d => `🔑 Сбросил пароль пользователю (строка ${d.rowIndex})`,
-  DELETE_USER: d => `🗑 Удалил пользователя (строка ${d.rowIndex})`,
-  SET_USER_ACTIVE: d => `🔁 Изменил статус пользователя: ${d.active ? "включён" : "отключён"}`,
-  SET_EMPLOYEE_ACTIVE: d => `🔁 Изменил статус сотрудника: ${d.active ? "активен" : "деактивирован"}`,
-  DELETE_ROW: d => `🗑 Удалил строку ${d.rowIndex} из листа «${d.sheetName || "?"}»`,
-  TRIGGER_NOTIFY: () => `🔔 Нажал «Уведомить сотрудников»`,
-  TRIGGER_BROADCAST: d => `📢 Отправил объявление: «${(d.message || "").slice(0, 70)}${(d.message || "").length > 70 ? "…" : ""}»`,
+  LOGIN_OK: () => "<i class='ti ti-circle-check' aria-hidden='true'></i> Успешный вход",
+  LOGIN_FAILED: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Неверный пароль при входе",
+  LOGIN_FAILED_NO_USER: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Попытка входа с несуществующим логином",
+  CHANGE_OWN_PASSWORD: () => "<i class='ti ti-key' aria-hidden='true'></i> Сменил свой пароль",
+  CREATE_USER: d => `<i class='ti ti-plus' aria-hidden='true'></i> Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
+  RESET_PASSWORD: d => `<i class='ti ti-key' aria-hidden='true'></i> Сбросил пароль пользователю (строка ${d.rowIndex})`,
+  DELETE_USER: d => `<i class='ti ti-trash' aria-hidden='true'></i> Удалил пользователя (строка ${d.rowIndex})`,
+  SET_USER_ACTIVE: d => `<i class='ti ti-repeat' aria-hidden='true'></i> Изменил статус пользователя: ${d.active ? "включён" : "отключён"}`,
+  SET_EMPLOYEE_ACTIVE: d => `<i class='ti ti-repeat' aria-hidden='true'></i> Изменил статус сотрудника: ${d.active ? "активен" : "деактивирован"}`,
+  DELETE_ROW: d => `<i class='ti ti-trash' aria-hidden='true'></i> Удалил строку ${d.rowIndex} из листа «${d.sheetName || "?"}»`,
+  TRIGGER_NOTIFY: () => `<i class='ti ti-bell' aria-hidden='true'></i> Нажал «Уведомить сотрудников»`,
+  TRIGGER_BROADCAST: d => `<i class='ti ti-speakerphone' aria-hidden='true'></i> Отправил объявление: «${(d.message || "").slice(0, 70)}${(d.message || "").length > 70 ? "…" : ""}»`,
   UPDATE_CELL: d => {
     const sheet = d.sheetName || "?";
     if (sheet === "Счета-фактуры" && /^J\d+$/.test(d.a1 || "")) {
-      return `✏️ Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
+      return `<i class='ti ti-pencil' aria-hidden='true'></i>️ Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
     }
     if (sheet === "Счета-фактуры" && /^K\d+$/.test(d.a1 || "")) {
-      return `☑️ Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
+      return `<i class='ti ti-square-check' aria-hidden='true'></i>️ Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
     }
-    return `✏️ Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
+    return `<i class='ti ti-pencil' aria-hidden='true'></i>️ Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
   },
 };
 
@@ -5381,10 +5391,10 @@ function renderReconcileResults(results) {
   const summaryEl = document.getElementById("reconcileSummary");
   summaryEl.style.display = "";
   summaryEl.innerHTML = `
-    <div><span class="sum-icon">📄</span><div><div class="num">${results.length}</div><div class="lbl">Всего принятых счетов</div></div></div>
-    <div><span class="sum-icon">✅</span><div><div class="num">${ok}</div><div class="lbl">Найдено в 1С</div></div></div>
-    <div><span class="sum-icon">⚠️</span><div><div class="num">${datediff}</div><div class="lbl">Найдено, но дата отличается</div></div></div>
-    <div><span class="sum-icon">❌</span><div><div class="num">${missing}</div><div class="lbl">Не найдено в 1С</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-file-text' aria-hidden='true'></i></span><div><div class="num">${results.length}</div><div class="lbl">Всего принятых счетов</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-circle-check' aria-hidden='true'></i></span><div><div class="num">${ok}</div><div class="lbl">Найдено в 1С</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i>️</span><div><div class="num">${datediff}</div><div class="lbl">Найдено, но дата отличается</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-circle-x' aria-hidden='true'></i></span><div><div class="num">${missing}</div><div class="lbl">Не найдено в 1С</div></div></div>
   `;
 
   const statusCls = { ok: "status-1c-ok", datediff: "status-1c-datediff", missing: "status-1c-missing" };
@@ -5627,9 +5637,9 @@ function renderDogovorTable() {
       return `<span class="status-badge status-sent">⏳ Ждём финальный PDF от вас</span>`;
     }
     if (status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected">📩 Ответил текстом</span>`;
+      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
     }
-    return `<span class="status-badge status-accepted">✅ Отправлено</span>`;
+    return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено</span>`;
   }
   function employeeStatusBadge(r) {
     if (!r.status || r.status === "В ожидании") {
@@ -5639,10 +5649,10 @@ function renderDogovorTable() {
       return `<span class="status-badge status-sent">⏳ Ожидает</span>`;
     }
     if (r.status === "Принято - ожидает финального PDF") {
-      return `<span class="status-badge status-accepted">✅ Согласился</span>`;
+      return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
     }
     if (r.status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `<span class="status-badge ${cls}">${escapeHtml(r.status)}</span>`;
@@ -5717,8 +5727,8 @@ function renderDoverennostTable() {
 
   function statusBadge2(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
-    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
   }
 
@@ -5808,8 +5818,8 @@ function renderRealschetTable() {
 
   function statusBadgeRealschet(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
-    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
   }
 
@@ -5890,8 +5900,8 @@ function renderZakaznaryadTable() {
 
   function statusBadgeZakaznaryad(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
-    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
   }
 
@@ -5970,8 +5980,8 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
 
   function statusBadgeOtherreq(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
-    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
   }
 
@@ -6065,13 +6075,13 @@ function renderBankTable() {
 
   function bankStatusBadge(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
-    if (status === "Выполнено") return `<span class="status-badge status-accepted">✅ Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected">📩 Закрыто (см. комментарий)</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
   }
   function bankTypeBadge(type) {
-    if (type === "Поступление") return `<span class="status-badge status-accepted">📥 Поступление</span>`;
-    if (type === "Списание") return `<span class="status-badge status-rejected">📤 Списание</span>`;
+    if (type === "Поступление") return `<span class="status-badge status-accepted"><i class='ti ti-download' aria-hidden='true'></i> Поступление</span>`;
+    if (type === "Списание") return `<span class="status-badge status-rejected"><i class='ti ti-upload' aria-hidden='true'></i> Списание</span>`;
     return escapeHtml(type);
   }
 
@@ -6203,7 +6213,7 @@ async function suggestResponsibles() {
   }
   isEditingRow = false;
   btn.disabled = false;
-  btn.textContent = "🎯 Подсказать ответственных";
+  btn.textContent = "<i class='ti ti-target' aria-hidden='true'></i> Подсказать ответственных";
   renderInvoicesTable();
   alert(`Готово: заполнено ${applied} из ${suggestions.length}.`);
 }
@@ -6235,13 +6245,13 @@ async function updateResp(rowIndex, value, selectEl) {
   // shu yerda oddiy o'zgartirishga yo'l QO'YMAYMIZ. Sabab: xabar hali ham
   // xato xodimning Telegram chatida turaveradi va u baribir "Принять/
   // Отклонить" bosa oladi - shunda qaror kimga tegishli ekani chalkashib
-  // qoladi. To'g'ri yo'l - avval 🗑️ "Отозвать" tugmasi bilan eski xabarni
+  // qoladi. To'g'ri yo'l - avval <i class='ti ti-trash' aria-hidden='true'></i>️ "Отозвать" tugmasi bilan eski xabarni
   // butunlay bekor qilish, keyin to'g'ri odamni tanlab qayta yuborish.
   if (decidedCls === "sent") {
     alert(
       "Этот счёт уже отправлен сотруднику - просто изменить ответственного нельзя " +
       "(сообщение всё ещё у него в Telegram, и решение может неправильно " +
-      "приписаться).\n\nСначала нажмите 🗑️ «Отозвать» в столбце «Статус», " +
+      "приписаться).\n\nСначала нажмите <i class='ti ti-trash' aria-hidden='true'></i>️ «Отозвать» в столбце «Статус», " +
       "затем назначьте нужного сотрудника и отправьте заново."
     );
     isEditingRow = false;
@@ -6318,7 +6328,7 @@ async function sendManualReminder(facturaid, btnEl) {
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B7`, facturaid);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B8`, new Date().toISOString());
-    btnEl.textContent = "✅";
+    btnEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
     setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 2000);
   } catch (e) {
     alert("Не удалось отправить напоминание: " + e.message);
@@ -6343,7 +6353,7 @@ async function recallInvoice(facturaid, btnEl) {
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B10`, facturaid);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B11`, new Date().toISOString());
-    btnEl.textContent = "✅";
+    btnEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
     setTimeout(() => { loadAllData(true); }, 1500);
   } catch (e) {
     alert("Не удалось отозвать счёт: " + e.message);
