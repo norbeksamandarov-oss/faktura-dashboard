@@ -2249,7 +2249,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="salaryLoadBtn" onclick="loadSalary()" class="login-submit-btn" style="width:auto;padding:9px 20px;"><i class='ti ti-refresh' aria-hidden='true'></i> Обновить</button>
+          <button id="salaryLoadBtn" onclick="loadSalary(true)" class="login-submit-btn" style="width:auto;padding:9px 20px;"><i class='ti ti-refresh' aria-hidden='true'></i> Обновить</button>
         </div>
       </div>
       <div id="salaryLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
@@ -2408,6 +2408,7 @@ const SHEET_OTHERREQ_REAL = "ДругиеЗапросыРеализация";
 const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu yerga vaqt yozadi
 
 const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 секунд (bot bilan bir xil - Google Sheets API limitiga tegmaslik uchun)
+const SALARY_BADGE_POLL_MS = 12000; // Зарплата so'rovlari SONI uchun - kamroq tez-tez, chunki alohida maxfiy so'rov
 
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
@@ -2526,6 +2527,28 @@ function filterByPeriod(rows, dateField) {
   });
 }
 let autoRefreshTimer = null;
+let salaryBadgeTimer = null;
+
+async function pollSalaryRequestsBadge() {
+  const groupBadge = document.getElementById("salaryReqNavBadge");
+  const subBadge = document.getElementById("pendingSalaryReqBadge");
+  try {
+    const data = await apiCall("getSalaryRequestsPendingCount", {});
+    const count = data.count || 0;
+    [groupBadge, subBadge].forEach(b => {
+      if (!b) return;
+      if (count > 0) {
+        b.textContent = count;
+        b.style.display = "inline-block";
+      } else {
+        b.style.display = "none";
+      }
+    });
+  } catch (e) {
+    // Jim - bu fon jarayoni, xato bo'lsa ham foydalanuvchiga ko'rsatmaymiz
+    console.warn("Не удалось обновить счётчик заявок на зарплату:", e.message);
+  }
+}
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
 let isLoading = false;      // защита от наложения параллельных запросов
 
@@ -2967,6 +2990,16 @@ async function onLoggedIn(forcePasswordChange) {
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
+  }
+
+  // "Зарплата" so'rovlari maxfiy bo'lgani uchun UMUMIY 3-soniyalik
+  // avtomatik yangilanish tsikliga (yuqorida) QO'SHILMAYDI - faqat
+  // admin/salary rolidagilarga, alohida (yengil, faqat SON so'rovchi)
+  // tekshiruv bilan ishlaydi.
+  if (currentRole === "admin" || currentRole === "salary") {
+    await pollSalaryRequestsBadge();
+    if (salaryBadgeTimer) clearInterval(salaryBadgeTimer);
+    salaryBadgeTimer = setInterval(pollSalaryRequestsBadge, SALARY_BADGE_POLL_MS);
   }
 
   if (forcePasswordChange) {
@@ -4949,14 +4982,25 @@ function fmtSalaryNum(v) {
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 0 });
 }
 
-async function loadSalaryRequests() {
+let salaryRequestsLastFetch = 0;
+const SALARY_CACHE_TTL_MS = 15000; // 15 soniya ichida qayta ochilsa - eski ma'lumotni ko'rsatamiz, qayta so'ramaymiz
+
+async function loadSalaryRequests(force) {
   const note = document.getElementById("salaryRequestsLoadingNote");
   const table = document.getElementById("salaryRequestsTable");
+  const now = Date.now();
+  if (!force && salaryRequestsCache.length && (now - salaryRequestsLastFetch) < SALARY_CACHE_TTL_MS) {
+    renderSalaryRequestsTable();
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+    return;
+  }
   if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
   if (table) table.style.display = "none";
   try {
     const data = await apiCall("getSalaryRequests", {});
     salaryRequestsCache = data.items || [];
+    salaryRequestsLastFetch = Date.now();
     renderSalaryRequestsTable();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
@@ -4998,21 +5042,32 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   buttons.forEach(b => b.disabled = true);
   try {
     await apiCall("decideSalaryRequest", { rowIndex, decision });
-    await loadSalaryRequests();
+    await loadSalaryRequests(true);
+    pollSalaryRequestsBadge();
   } catch (e) {
     alert("Не удалось выполнить: " + e.message);
     buttons.forEach(b => b.disabled = false);
   }
 }
 
-async function loadSalary() {
+let salaryDataLastFetch = 0;
+
+async function loadSalary(force) {
   const note = document.getElementById("salaryLoadingNote");
   const table = document.getElementById("salaryTable");
+  const now = Date.now();
+  if (!force && salaryDataCache.length && (now - salaryDataLastFetch) < SALARY_CACHE_TTL_MS) {
+    renderSalaryTable();
+    if (note) note.style.display = "none";
+    if (table) table.style.display = "";
+    return;
+  }
   if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
   if (table) table.style.display = "none";
   try {
     const data = await apiCall("getSalaryData", {});
     salaryDataCache = data.items || [];
+    salaryDataLastFetch = Date.now();
     const periodSelect = document.getElementById("salaryPeriodFilter");
     if (periodSelect) {
       const periods = data.periods || [];
