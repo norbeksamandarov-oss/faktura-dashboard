@@ -430,7 +430,7 @@
   .topbar-right { display: flex; align-items: center; gap: 16px; }
   #userInfo { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ice); }
   #userInfo img { width: 28px; height: 28px; border-radius: 50%; }
-  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn, #announcementBtn, #themeToggleBtn {
+  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn, #announcementBtn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     color: white;
@@ -441,7 +441,37 @@
     font-family: 'Inter', sans-serif;
     transition: background 0.18s ease;
   }
-  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover, #announcementBtn:hover, #themeToggleBtn:hover { background: rgba(255,255,255,0.16); }
+  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover, #announcementBtn:hover { background: rgba(255,255,255,0.16); }
+
+  /* ---------- Kun/Tun almashtirgichi (pill toggle) ---------- */
+  .theme-pill {
+    display: flex; align-items: center; gap: 2px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px; padding: 3px;
+  }
+  .theme-pill-opt {
+    display: flex; align-items: center; gap: 5px;
+    background: transparent; border: none; color: rgba(255,255,255,0.6);
+    padding: 6px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .theme-pill-opt.active#themeOptDay {
+    background: linear-gradient(135deg,#FFD65C,#FFB800); color: #3A2A00;
+  }
+  .theme-pill-opt.active#themeOptNight {
+    background: linear-gradient(135deg,#3A2E8C,#090979); color: #E8E4FF;
+  }
+  /* Sichqoncha ustiga kelganda - quyosh charaqlaydi, oy tunda yonayotgandek yorishadi */
+  #themeOptDay:hover i.ti-sun {
+    color: #FFD65C;
+    filter: drop-shadow(0 0 6px rgba(255,214,92,0.9)) drop-shadow(0 0 12px rgba(255,184,0,0.6));
+  }
+  #themeOptNight:hover i.ti-moon {
+    color: #C9C2FF;
+    filter: drop-shadow(0 0 6px rgba(180,170,255,0.9)) drop-shadow(0 0 12px rgba(108,99,255,0.6));
+  }
+  .theme-pill-opt i.ti { transition: color 0.2s ease, filter 0.2s ease; }
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(20,24,45,0.6);
     display: none; align-items: center; justify-content: center; z-index: 500;
@@ -1344,7 +1374,10 @@
     <div class="topbar-right">
       <div id="userInfo"></div>
       <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
-      <button id="themeToggleBtn" onclick="toggleTheme()" title="Переключить тему"><i class='ti ti-moon' aria-hidden='true'></i> Тёмная</button>
+      <div class="theme-pill" id="themeToggleBtn" title="Переключить тему">
+        <button class="theme-pill-opt" id="themeOptDay" onclick="setTheme('light')"><i class='ti ti-sun' aria-hidden='true'></i> День</button>
+        <button class="theme-pill-opt" id="themeOptNight" onclick="setTheme('dark')"><i class='ti ti-moon' aria-hidden='true'></i> Ночь</button>
+      </div>
       <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает"><i class='ti ti-bell' aria-hidden='true'></i> Уведомить сотрудников</button>
       <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам"><i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление</button>
       <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль"><i class='ti ti-key' aria-hidden='true'></i> Пароль</button>
@@ -3053,23 +3086,23 @@ async function submitForcePasswordChange() {
    "Пользователи" bo'limlarini yashiradi. Bu endi shunchaki interfeys emas -
    Apps Script backend'ning o'zi ham har bir admin-only amalni serverda
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
-// ---------- Qorong'i/yorug' rejim ----------
-function toggleTheme() {
-  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  if (isDark) {
-    document.documentElement.removeAttribute("data-theme");
-    localStorage.setItem("rm_theme", "light");
-  } else {
+// ---------- Kun/Tun almashtirgichi ----------
+function setTheme(mode) {
+  if (mode === "dark") {
     document.documentElement.setAttribute("data-theme", "dark");
     localStorage.setItem("rm_theme", "dark");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("rm_theme", "light");
   }
   syncThemeButtonLabel();
 }
 function syncThemeButtonLabel() {
-  const btn = document.getElementById("themeToggleBtn");
-  if (!btn) return;
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  btn.innerHTML = isDark ? "<i class='ti ti-sun' aria-hidden='true'></i> Светлая" : "<i class='ti ti-moon' aria-hidden='true'></i> Тёмная";
+  const dayBtn = document.getElementById("themeOptDay");
+  const nightBtn = document.getElementById("themeOptNight");
+  if (dayBtn) dayBtn.classList.toggle("active", !isDark);
+  if (nightBtn) nightBtn.classList.toggle("active", isDark);
 }
 syncThemeButtonLabel();
 
