@@ -3533,6 +3533,15 @@ function classifyStatus(status) {
   return "other";
 }
 
+// Google Sheets'dagi ba'zi qatorlar tarixdan qolgan emoji/belgi bilan
+// yozilgan bo'lishi mumkin (masalan eski "✓ Принято"). Buni interfeysda
+// ko'rsatishdan oldin tozalaymiz - aks holda bizning YANGI ikonimiz
+// eskisining ustiga qo'shilib, ikkilanib qolardi.
+const EMOJI_STRIP_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu;
+function stripEmoji(text) {
+  return String(text || "").replace(EMOJI_STRIP_RE, "").trim();
+}
+
 function statusBadge(status) {
   const cls = classifyStatus(status);
   const map = {
@@ -3546,7 +3555,8 @@ function statusBadge(status) {
     pendingboss: "ti-clock", other: "ti-hourglass"
   };
   const icon = iconMap[cls] || "ti-hourglass";
-  return `<span class="status-badge ${map[cls]}"><i class='ti ${icon}' aria-hidden='true'></i> ${status || "—"}</span>`;
+  const cleanStatus = stripEmoji(status);
+  return `<span class="status-badge ${map[cls]}"><i class='ti ${icon}' aria-hidden='true'></i> ${cleanStatus || "—"}</span>`;
 }
 
 function daysBadge(daysStr) {
@@ -4959,7 +4969,7 @@ function renderSalaryRequestsTable() {
       <td>${escapeHtml(r.fio)}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.pnfl)}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.chatId)}</td>
-      <td style="color:${statusColor};font-weight:600;">${escapeHtml(r.status)}</td>
+      <td style="color:${statusColor};font-weight:600;">${escapeHtml(stripEmoji(r.status))}</td>
       <td>${actions}</td>
     </tr>`;
   }).join("") || `<tr><td colspan="7" style="color:var(--muted)">Нет заявок</td></tr>`;
@@ -5716,7 +5726,7 @@ function renderDogovorTable() {
       return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
-    return `<span class="status-badge ${cls}">${escapeHtml(r.status)}</span>`;
+    return `<span class="status-badge ${cls}">${escapeHtml(stripEmoji(r.status))}</span>`;
   }
 
   const tbody = document.querySelector("#dogovorTable tbody");
@@ -5790,7 +5800,7 @@ function renderDoverennostTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
   const tbody = document.querySelector("#doverennostTable tbody");
@@ -5881,7 +5891,7 @@ function renderRealschetTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
   const tbody = document.querySelector("#realschetTable tbody");
@@ -5963,7 +5973,7 @@ function renderZakaznaryadTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
   const tbody = document.querySelector("#zakaznaryadTable tbody");
@@ -6043,7 +6053,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
   const tbody = document.querySelector(`#${prefix}Table tbody`);
@@ -6138,7 +6148,7 @@ function renderBankTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
   function bankTypeBadge(type) {
     if (type === "Поступление") return `<span class="status-badge status-accepted"><i class='ti ti-download' aria-hidden='true'></i> Поступление</span>`;
