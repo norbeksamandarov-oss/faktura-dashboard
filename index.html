@@ -43,7 +43,7 @@
     --chip-bg: #FFFFFF;
     --navy-text: var(--navy);
   }
-  /* ---------- Qorong'i rejim (<i class='ti ti-sun' aria-hidden='true'></i>️/<i class='ti ti-moon' aria-hidden='true'></i> tugmasi bilan almashtiriladi,
+  /* ---------- Qorong'i rejim (<i class='ti ti-sun' aria-hidden='true'></i>/<i class='ti ti-moon' aria-hidden='true'></i> tugmasi bilan almashtiriladi,
      tanlov localStorage'da saqlanadi - "rm_theme"). Sidebar har doim
      navy bo'lib qoladi (brend rangi), faqat asosiy kontent maydoni
      o'zgaradi. ---------- */
@@ -1393,7 +1393,7 @@
     </div>
 
     <div class="panel" style="margin-top:16px;">
-      <h2>⏱ Скорость по бухгалтерам <span class="sub">Договор, Доверенность, Банк, Счёт-фактура на авто, Заказ-наряд, Другой запрос</span></h2>
+      <h2><i class='ti ti-stopwatch' aria-hidden='true'></i> Скорость по бухгалтерам <span class="sub">Договор, Доверенность, Банк, Счёт-фактура на авто, Заказ-наряд, Другой запрос</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Только ВЫПОЛНЕННЫЕ запросы за всё время. Среднее время - от даты запроса до даты выполнения. "Опоздания" - запросы, выполненные дольше 3 дней.</p>
       <div class="table-wrap">
         <table class="invoices" id="approverSpeedTable">
@@ -1451,13 +1451,13 @@
           <div class="chart-box chart-box-tall"><canvas id="trendChart"></canvas></div>
         </div>
         <div class="panel">
-          <h2><i class='ti ti-calendar-event' aria-hidden='true'></i>️ По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
+          <h2><i class='ti ti-calendar-event' aria-hidden='true'></i> По дням недели <span class="sub">когда чаще всего приходят счета</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="weekdayChart"></canvas></div>
         </div>
       </div>
 
       <div class="panel" style="margin-top:20px;">
-        <h2><i class='ti ti-tool' aria-hidden='true'></i>️ Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
+        <h2><i class='ti ti-tool' aria-hidden='true'></i> Системные ошибки <span class="sub">технические проблемы при отправке</span></h2>
         <table class="mini-table" id="errorsTable">
           <thead><tr><th>Ошибка</th><th>Кол-во</th></tr></thead>
           <tbody></tbody>
@@ -1505,7 +1505,7 @@
 
       <div class="panels" style="margin-top:16px;grid-template-columns:1fr 1fr;">
         <div class="panel">
-          <h2>⏱️ Время ответа <span class="sub">распределение по сотрудникам</span></h2>
+          <h2><i class='ti ti-stopwatch' aria-hidden='true'></i> Время ответа <span class="sub">распределение по сотрудникам</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
         </div>
         <div class="panel">
@@ -1524,9 +1524,9 @@
 
       <div class="panel" style="margin-top:16px;">
         <h2><i class='ti ti-trophy' aria-hidden='true'></i> Уровни сотрудников
-          <span class="sub" style="cursor:help;border-bottom:1px dashed var(--muted);" title="Уровень растёт по мере того, сколько счетов вы обработали за ВСЁ время работы (не за месяц) - это просто элемент мотивации, не влияет на зарплату или оценку работы. Тот же уровень указывается в вашем ежемесячном личном отчёте в Telegram.">ℹ️ что это?</span>
+          <span class="sub" style="cursor:help;border-bottom:1px dashed var(--muted);" title="Уровень растёт по мере того, сколько счетов вы обработали за ВСЁ время работы (не за месяц) - это просто элемент мотивации, не влияет на зарплату или оценку работы. Тот же уровень указывается в вашем ежемесячном личном отчёте в Telegram.">ℹ что это?</span>
         </h2>
-        <p class="analytics-note">за всё время работы: <i class='ti ti-flag-2' aria-hidden='true'></i> Новичок → <i class='ti ti-car' aria-hidden='true'></i> Водитель (15) → <i class='ti ti-car' aria-hidden='true'></i>️ Профи (40) → <i class='ti ti-trophy' aria-hidden='true'></i> Гонщик (80) → <i class='ti ti-medal' aria-hidden='true'></i> Ас (130) → <i class='ti ti-crown' aria-hidden='true'></i> Чемпион (190) → <i class='ti ti-diamond' aria-hidden='true'></i> Легенда (250)</p>
+        <p class="analytics-note">за всё время работы: <i class='ti ti-flag-2' aria-hidden='true'></i> Новичок → <i class='ti ti-car' aria-hidden='true'></i> Водитель (15) → <i class='ti ti-car' aria-hidden='true'></i> Профи (40) → <i class='ti ti-trophy' aria-hidden='true'></i> Гонщик (80) → <i class='ti ti-medal' aria-hidden='true'></i> Ас (130) → <i class='ti ti-crown' aria-hidden='true'></i> Чемпион (190) → <i class='ti ti-diamond' aria-hidden='true'></i> Легенда (250)</p>
         <div class="rank-list" id="empLevelsTable"></div>
       </div>
 
@@ -1552,7 +1552,7 @@
 
         <div class="analytics-box">
           <div class="analytics-box-head">
-            <div class="analytics-box-icon" style="background:var(--red-bg);"><i class='ti ti-alert-triangle' aria-hidden='true'></i>️</div>
+            <div class="analytics-box-icon" style="background:var(--red-bg);"><i class='ti ti-alert-triangle' aria-hidden='true'></i></div>
             <h3>Контрагенты по отказам</h3>
           </div>
           <p class="analytics-note">от кого чаще всего приходят отклонённые счета</p>
@@ -1598,7 +1598,7 @@
           </div>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="statusFilter">
             <option value="">Все статусы</option>
             <option value="new">Не отправлено</option>
@@ -1610,7 +1610,7 @@
           </select>
         </div>
         <div class="filter-field">
-          <label>⏳ Дней с даты</label>
+          <label><i class='ti ti-hourglass' aria-hidden='true'></i> Дней с даты</label>
           <select class="status-filter" id="daysFilter">
             <option value="">Все</option>
             <option value="green"><span style='display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green-fg);'></span> В норме (&lt; 5 дней)</option>
@@ -1623,7 +1623,7 @@
           <select class="status-filter" id="didoxFilter">
             <option value="">Все</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Отмечено</option>
-            <option value="pending">⏳ Не отмечено</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> Не отмечено</option>
           </select>
         </div>
         <div class="filter-field">
@@ -1632,7 +1632,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="exportCsvBtn">⬇ Экспорт в Excel</button>
+          <button id="exportCsvBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
@@ -1663,7 +1663,7 @@
           <tbody id="invoicesBody"></tbody>
         </table>
       </div>
-      <p class="scroll-hint">↔️ Прокрутите таблицу вправо/влево (или используйте полосу прокрутки внизу), чтобы увидеть все столбцы</p>
+      <p class="scroll-hint">↔ Прокрутите таблицу вправо/влево (или используйте полосу прокрутки внизу), чтобы увидеть все столбцы</p>
     </div>
     </section>
 
@@ -1738,10 +1738,10 @@
           <select class="status-filter" id="dogovorApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="dogovorStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1751,7 +1751,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="dogovorExportBtn">⬇ Экспорт в Excel</button>
+          <button id="dogovorExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1783,10 +1783,10 @@
           <select class="status-filter" id="doverennostApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="doverennostStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1796,7 +1796,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="doverennostExportBtn">⬇ Экспорт в Excel</button>
+          <button id="doverennostExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1824,7 +1824,7 @@
           <select class="status-filter" id="bankOrgFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Тип</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Тип</label>
           <select class="status-filter" id="bankTypeFilter">
             <option value="">Все</option>
             <option value="Поступление"><i class='ti ti-download' aria-hidden='true'></i> Поступление</option>
@@ -1836,10 +1836,10 @@
           <select class="status-filter" id="bankApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="bankStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1849,7 +1849,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="bankExportBtn">⬇ Экспорт в Excel</button>
+          <button id="bankExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1885,10 +1885,10 @@
           <select class="status-filter" id="realschetApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="realschetStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1898,7 +1898,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="realschetExportBtn">⬇ Экспорт в Excel</button>
+          <button id="realschetExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1934,10 +1934,10 @@
           <select class="status-filter" id="zakaznaryadApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="zakaznaryadStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1947,7 +1947,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="zakaznaryadExportBtn">⬇ Экспорт в Excel</button>
+          <button id="zakaznaryadExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -1979,10 +1979,10 @@
           <select class="status-filter" id="otherreqPostApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="otherreqPostStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -1992,7 +1992,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="otherreqPostExportBtn">⬇ Экспорт в Excel</button>
+          <button id="otherreqPostExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -2024,10 +2024,10 @@
           <select class="status-filter" id="otherreqRealApproverFilter"><option value="">Все</option></select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Статус</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
           <select class="status-filter" id="otherreqRealStatusFilter">
             <option value="">Все</option>
-            <option value="pending">⏳ В ожидании</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
             <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
           </select>
         </div>
@@ -2037,7 +2037,7 @@
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button id="otherreqRealExportBtn">⬇ Экспорт в Excel</button>
+          <button id="otherreqRealExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -2112,7 +2112,7 @@
       </div>
       <textarea id="writeempMessageText" placeholder="Текст сообщения..." class="login-input" style="width:100%;max-width:520px;min-height:110px;margin-top:12px;font-family:'Inter';resize:vertical;"></textarea>
       <div style="margin-top:12px;">
-        <button id="writeempSendBtn" onclick="sendWriteEmp()" class="login-submit-btn" style="width:auto;padding:12px 22px;"><i class='ti ti-pencil' aria-hidden='true'></i>️ Отправить</button>
+        <button id="writeempSendBtn" onclick="sendWriteEmp()" class="login-submit-btn" style="width:auto;padding:12px 22px;"><i class='ti ti-pencil' aria-hidden='true'></i> Отправить</button>
       </div>
       <div id="writeempError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
       <div id="writeempSuccess" style="color:#1E7A4C;font-size:13px;margin-top:8px;"></div>
@@ -2175,7 +2175,7 @@
           </select>
         </div>
         <div class="filter-field">
-          <label><i class='ti ti-tag' aria-hidden='true'></i>️ Тип начисления</label>
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Тип начисления</label>
           <select id="salaryTypeFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
             <option value="">Все начисления</option>
             <option value="Больничные"><i class='ti ti-thermometer' aria-hidden='true'></i> Есть больничные</option>
@@ -2372,7 +2372,7 @@ let uniqueDepartments = [];
 const RANK_TIERS = [
   { min: 0, name: "Новичок", icon: "<i class='ti ti-flag-2' aria-hidden='true'></i>" },
   { min: 15, name: "Водитель", icon: "<i class='ti ti-car' aria-hidden='true'></i>" },
-  { min: 40, name: "Профи", icon: "<i class='ti ti-car' aria-hidden='true'></i>️" },
+  { min: 40, name: "Профи", icon: "<i class='ti ti-car' aria-hidden='true'></i>" },
   { min: 80, name: "Гонщик", icon: "<i class='ti ti-trophy' aria-hidden='true'></i>" },
   { min: 130, name: "Ас", icon: "<i class='ti ti-medal' aria-hidden='true'></i>" },
   { min: 190, name: "Чемпион", icon: "<i class='ti ti-crown' aria-hidden='true'></i>" },
@@ -2528,7 +2528,7 @@ async function handleLoginSubmit() {
     });
     document.getElementById("loginPassword").value = "";
     btn.classList.add("success");
-    btn.textContent = "<i class='ti ti-check' aria-hidden='true'></i> Готово";
+    btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово";
     setTimeout(() => onLoggedIn(!!data.mustChangePassword), 350);
   } catch (e) {
     errEl.textContent = e.message || "Ошибка входа";
@@ -2564,7 +2564,7 @@ function applyHolidayThemeIfNeeded() {
   const container = document.getElementById("confettiContainer");
 
   // Konfetti - avvalgidan ko'proq va rang-barang
-  const pieces = ["<i class='ti ti-confetti' aria-hidden='true'></i>", "<i class='ti ti-confetti' aria-hidden='true'></i>", "⭐", "<i class='ti ti-balloon' aria-hidden='true'></i>", "<i class='ti ti-sparkles' aria-hidden='true'></i>", "🇺🇿"];
+  const pieces = ["<i class='ti ti-confetti' aria-hidden='true'></i>", "<i class='ti ti-confetti' aria-hidden='true'></i>", "<i class='ti ti-star' aria-hidden='true'></i>", "<i class='ti ti-balloon' aria-hidden='true'></i>", "<i class='ti ti-sparkles' aria-hidden='true'></i>", "UZ"];
   const count = 45;
   for (let i = 0; i < count; i++) {
     const el = document.createElement("div");
@@ -2979,7 +2979,7 @@ function syncThemeButtonLabel() {
   const btn = document.getElementById("themeToggleBtn");
   if (!btn) return;
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-  btn.textContent = isDark ? "<i class='ti ti-sun' aria-hidden='true'></i>️ Светлая" : "<i class='ti ti-moon' aria-hidden='true'></i> Тёмная";
+  btn.innerHTML = isDark ? "<i class='ti ti-sun' aria-hidden='true'></i> Светлая" : "<i class='ti ti-moon' aria-hidden='true'></i> Тёмная";
 }
 syncThemeButtonLabel();
 
@@ -3027,11 +3027,11 @@ async function triggerStartupNotify() {
   const btn = document.getElementById("notifyBtn");
   const original = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "⏳ Отправка...";
+  btn.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i> Отправка...";
   try {
     const ts = new Date().toISOString();
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B2`, ts);
-    btn.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено!";
+    btn.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено!";
     setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 5000);
   } catch (e) {
     alert("Не удалось отправить уведомление: " + e.message + "\n\nВозможно, лист «Управление» ещё не создан - убедитесь, что бот запущен хотя бы раз после обновления.");
@@ -3225,7 +3225,7 @@ async function sendWriteEmp() {
     if (textEl) textEl.value = "";
     if (empInput) empInput.value = "";
     writeempSelectedChatId = "";
-    if (successEl) successEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i> Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
+    if (successEl) successEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
   } catch (e) {
     if (errorEl) errorEl.textContent = "Не удалось отправить: " + e.message;
   } finally {
@@ -3731,7 +3731,7 @@ function renderSummaryTable() {
   renderApproverSpeedTable();
 }
 
-/* ⏱ Скорость по бухгалтерам - Договор/Доверенность/Банк/Счёт-фактура на
+/* <i class='ti ti-stopwatch' aria-hidden='true'></i> Скорость по бухгалтерам - Договор/Доверенность/Банк/Счёт-фактура на
    авто/Заказ-наряд/Другой запрос uchun BIR XIL: har birida requestedAt
    (Дата запроса), doneAt (Дата выполнения) va approverName (Кому
    направлено) maydonlari bor - shu asosda o'rtacha bajarish vaqtini va
@@ -4011,10 +4011,10 @@ function renderStats() {
 
   const cards = [
     { label: "Всего счетов", val: total, pct: null, cls: "accent-total", icon: "<i class='ti ti-file-text' aria-hidden='true'></i>" },
-    { label: "Ожидают ответа", val: pending, pct: pct(pending), cls: "accent-pending", icon: "⏳" },
+    { label: "Ожидают ответа", val: pending, pct: pct(pending), cls: "accent-pending", icon: "<i class='ti ti-hourglass' aria-hidden='true'></i>" },
     { label: "Принято", val: accepted, pct: pct(accepted), cls: "accent-accepted", icon: "<i class='ti ti-circle-check' aria-hidden='true'></i>" },
     { label: "Отклонено", val: rejected, pct: pct(rejected), cls: "accent-rejected", icon: "<i class='ti ti-circle-x' aria-hidden='true'></i>" },
-    { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️" },
+    { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "<i class='ti ti-alert-triangle' aria-hidden='true'></i>" },
   ];
   document.getElementById("statsRow").innerHTML = cards.map(c => `
     <div class="stat-card ${c.cls}">
@@ -4139,7 +4139,7 @@ function renderInvoicesTable() {
           <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)"><i class='ti ti-bell' aria-hidden='true'></i></button>
         ` : ""}
         ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
-          <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i>️</button>
+          <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i></button>
         ` : ""}
       </td>
       <td>${daysBadge(r.days)}</td>
@@ -4473,7 +4473,7 @@ function renderAnalytics() {
 
   document.getElementById("analyticsSummary").innerHTML = `
     <div><span class="sum-icon"><i class='ti ti-clipboard-list' aria-hidden='true'></i></span><div><div class="num">${totalDecided}</div><div class="lbl">Всего решений</div></div></div>
-    <div><span class="sum-icon">⏱️</span><div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-stopwatch' aria-hidden='true'></i></span><div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-trending-down' aria-hidden='true'></i></span><div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Доля отказов</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-target' aria-hidden='true'></i></span><div><div class="num">${slaRate != null ? slaRate.toFixed(0) + "%" : "—"}</div><div class="lbl">В срок (до 8 дней)</div></div></div>
   `;
@@ -4812,7 +4812,7 @@ async function deleteEmployeeRow(rowIndex, name, btnEl) {
   } catch (e) {
     alert("Не удалось удалить: " + e.message);
     btnEl.disabled = false;
-    btnEl.textContent = "<i class='ti ti-trash' aria-hidden='true'></i> Удалить";
+    btnEl.innerHTML = "<i class='ti ti-trash' aria-hidden='true'></i> Удалить";
   }
 }
 
@@ -4854,7 +4854,7 @@ async function loadSuggestions() {
       <tr>
         <td style="color:var(--muted)">${i + 1}</td>
         <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.date)}</td>
-        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Жалоба" : "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение"}</td>
+        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Жалоба" : "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение"}</td>
         <td style="max-width:400px;font-size:13px;">${escapeHtml(it.text)}</td>
         <td>${escapeHtml(it.employeeName)}</td>
         <td>${it.comment ? `<span style="color:#1E7A4C;"><i class='ti ti-circle-check' aria-hidden='true'></i> да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
@@ -5076,7 +5076,7 @@ function renderUsersTable() {
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
       <td>${u.role === "admin" ? '<span style="color: var(--navy-text);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">salary</span>' : "employee")}
-        ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;">⏳ ждёт смены пароля</div>' : ""}
+        ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;"><i class="ti ti-hourglass" aria-hidden="true"></i> ждёт смены пароля</div>' : ""}
       </td>
       <td>${u.invoiceCount || 0}</td>
       <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
@@ -5193,8 +5193,8 @@ async function handleDeleteUser(rowIndex, username, btnEl) {
    ============================================================ */
 const AUDIT_ACTION_LABELS = {
   LOGIN_OK: () => "<i class='ti ti-circle-check' aria-hidden='true'></i> Успешный вход",
-  LOGIN_FAILED: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Неверный пароль при входе",
-  LOGIN_FAILED_NO_USER: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i>️ Попытка входа с несуществующим логином",
+  LOGIN_FAILED: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Неверный пароль при входе",
+  LOGIN_FAILED_NO_USER: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Попытка входа с несуществующим логином",
   CHANGE_OWN_PASSWORD: () => "<i class='ti ti-key' aria-hidden='true'></i> Сменил свой пароль",
   CREATE_USER: d => `<i class='ti ti-plus' aria-hidden='true'></i> Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
   RESET_PASSWORD: d => `<i class='ti ti-key' aria-hidden='true'></i> Сбросил пароль пользователю (строка ${d.rowIndex})`,
@@ -5207,12 +5207,12 @@ const AUDIT_ACTION_LABELS = {
   UPDATE_CELL: d => {
     const sheet = d.sheetName || "?";
     if (sheet === "Счета-фактуры" && /^J\d+$/.test(d.a1 || "")) {
-      return `<i class='ti ti-pencil' aria-hidden='true'></i>️ Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
+      return `<i class='ti ti-pencil' aria-hidden='true'></i> Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
     }
     if (sheet === "Счета-фактуры" && /^K\d+$/.test(d.a1 || "")) {
-      return `<i class='ti ti-square-check' aria-hidden='true'></i>️ Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
+      return `<i class='ti ti-square-check' aria-hidden='true'></i> Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
     }
-    return `<i class='ti ti-pencil' aria-hidden='true'></i>️ Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
+    return `<i class='ti ti-pencil' aria-hidden='true'></i> Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
   },
 };
 
@@ -5393,7 +5393,7 @@ function renderReconcileResults(results) {
   summaryEl.innerHTML = `
     <div><span class="sum-icon"><i class='ti ti-file-text' aria-hidden='true'></i></span><div><div class="num">${results.length}</div><div class="lbl">Всего принятых счетов</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-circle-check' aria-hidden='true'></i></span><div><div class="num">${ok}</div><div class="lbl">Найдено в 1С</div></div></div>
-    <div><span class="sum-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i>️</span><div><div class="num">${datediff}</div><div class="lbl">Найдено, но дата отличается</div></div></div>
+    <div><span class="sum-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i></span><div><div class="num">${datediff}</div><div class="lbl">Найдено, но дата отличается</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-circle-x' aria-hidden='true'></i></span><div><div class="num">${missing}</div><div class="lbl">Не найдено в 1С</div></div></div>
   `;
 
@@ -5631,10 +5631,10 @@ function renderDogovorTable() {
   // xodim qaror qabul qilganmi (Принято/Отклонено/Не моё) yoki kutilmoqda.
   function adminStatusBadge(status) {
     if (!status || status === "В ожидании") {
-      return `<span class="status-badge status-new">⏳ Не отправлено</span>`;
+      return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> Не отправлено</span>`;
     }
     if (status === "Принято - ожидает финального PDF") {
-      return `<span class="status-badge status-sent">⏳ Ждём финальный PDF от вас</span>`;
+      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ждём финальный PDF от вас</span>`;
     }
     if (status === "Закрыто (см. комментарий)") {
       return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
@@ -5646,7 +5646,7 @@ function renderDogovorTable() {
       return `<span style="color:var(--muted);font-size:12px;">—</span>`;
     }
     if (r.status === "Ожидает решения сотрудника") {
-      return `<span class="status-badge status-sent">⏳ Ожидает</span>`;
+      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ожидает</span>`;
     }
     if (r.status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
@@ -5726,7 +5726,7 @@ function renderDoverennostTable() {
   lastFilteredDoverennost = filtered;
 
   function statusBadge2(status) {
-    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
@@ -5817,7 +5817,7 @@ function renderRealschetTable() {
   lastFilteredRealschet = filtered;
 
   function statusBadgeRealschet(status) {
-    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
@@ -5899,7 +5899,7 @@ function renderZakaznaryadTable() {
   lastFilteredZakaznaryad = filtered;
 
   function statusBadgeZakaznaryad(status) {
-    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
@@ -5979,7 +5979,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
   lastFilteredSetter(filtered);
 
   function statusBadgeOtherreq(status) {
-    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
@@ -6074,7 +6074,7 @@ function renderBankTable() {
   lastFilteredBank = filtered;
 
   function bankStatusBadge(status) {
-    if (!status || status === "В ожидании") return `<span class="status-badge status-new">⏳ В ожидании</span>`;
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
@@ -6204,7 +6204,7 @@ async function suggestResponsibles() {
 
   const btn = document.getElementById("suggestRespBtn");
   btn.disabled = true;
-  btn.textContent = "⏳ Применяю...";
+  btn.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i> Применяю...";
   isEditingRow = true;
   let applied = 0;
   for (const s of suggestions) {
@@ -6213,7 +6213,7 @@ async function suggestResponsibles() {
   }
   isEditingRow = false;
   btn.disabled = false;
-  btn.textContent = "<i class='ti ti-target' aria-hidden='true'></i> Подсказать ответственных";
+  btn.innerHTML = "<i class='ti ti-target' aria-hidden='true'></i> Подсказать ответственных";
   renderInvoicesTable();
   alert(`Готово: заполнено ${applied} из ${suggestions.length}.`);
 }
@@ -6245,13 +6245,13 @@ async function updateResp(rowIndex, value, selectEl) {
   // shu yerda oddiy o'zgartirishga yo'l QO'YMAYMIZ. Sabab: xabar hali ham
   // xato xodimning Telegram chatida turaveradi va u baribir "Принять/
   // Отклонить" bosa oladi - shunda qaror kimga tegishli ekani chalkashib
-  // qoladi. To'g'ri yo'l - avval <i class='ti ti-trash' aria-hidden='true'></i>️ "Отозвать" tugmasi bilan eski xabarni
+  // qoladi. To'g'ri yo'l - avval <i class='ti ti-trash' aria-hidden='true'></i> "Отозвать" tugmasi bilan eski xabarni
   // butunlay bekor qilish, keyin to'g'ri odamni tanlab qayta yuborish.
   if (decidedCls === "sent") {
     alert(
       "Этот счёт уже отправлен сотруднику - просто изменить ответственного нельзя " +
       "(сообщение всё ещё у него в Telegram, и решение может неправильно " +
-      "приписаться).\n\nСначала нажмите <i class='ti ti-trash' aria-hidden='true'></i>️ «Отозвать» в столбце «Статус», " +
+      "приписаться).\n\nСначала нажмите <i class='ti ti-trash' aria-hidden='true'></i> «Отозвать» в столбце «Статус», " +
       "затем назначьте нужного сотрудника и отправьте заново."
     );
     isEditingRow = false;
@@ -6324,11 +6324,11 @@ function flashSaved(tr) {
 async function sendManualReminder(facturaid, btnEl) {
   btnEl.disabled = true;
   const original = btnEl.textContent;
-  btnEl.textContent = "⏳";
+  btnEl.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i>";
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B7`, facturaid);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B8`, new Date().toISOString());
-    btnEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
+    btnEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
     setTimeout(() => { btnEl.textContent = original; btnEl.disabled = false; }, 2000);
   } catch (e) {
     alert("Не удалось отправить напоминание: " + e.message);
@@ -6349,11 +6349,11 @@ async function recallInvoice(facturaid, btnEl) {
 
   btnEl.disabled = true;
   const original = btnEl.textContent;
-  btnEl.textContent = "⏳";
+  btnEl.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i>";
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B10`, facturaid);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B11`, new Date().toISOString());
-    btnEl.textContent = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
+    btnEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
     setTimeout(() => { loadAllData(true); }, 1500);
   } catch (e) {
     alert("Не удалось отозвать счёт: " + e.message);
