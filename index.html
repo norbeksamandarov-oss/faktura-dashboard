@@ -2088,6 +2088,18 @@
           </select>
         </div>
         <div class="filter-field">
+          <label>🏢 Организация</label>
+          <select id="salaryOrgFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
+            <option value="">Все организации</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>💼 Должность</label>
+          <select id="salaryPositionFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
+            <option value="">Все должности</option>
+          </select>
+        </div>
+        <div class="filter-field">
           <label>🔍 Поиск (ФИО/ПИНФЛ)</label>
           <input type="text" id="salarySearchInput" class="login-input" oninput="renderSalaryTable()" placeholder="Введите ФИО или ПИНФЛ">
         </div>
@@ -2101,7 +2113,7 @@
         <table class="invoices" id="salaryTable" style="display:none;">
           <thead>
             <tr>
-              <th>№</th><th>Период</th><th>ФИО</th><th>ПИНФЛ</th><th>Организация</th><th>Должность</th>
+              <th>№</th><th>Период</th><th>Организация</th><th>ФИО</th><th>ПИНФЛ</th><th>Должность</th>
               <th>Оклад</th><th>Удал. работа</th><th>KPI</th><th>Премии</th><th>Отпускные</th><th>Больничные</th>
               <th>Депремир.</th><th>Гросс</th><th>Налог</th><th>Нетто</th><th>Прочие выплаты</th><th>Аванс</th><th>Итого к выдаче</th>
             </tr>
@@ -4824,6 +4836,20 @@ async function loadSalary() {
       periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
       periodSelect.value = periods.includes(prevValue) ? prevValue : (periods[0] || "");
     }
+    const orgSelect = document.getElementById("salaryOrgFilter");
+    if (orgSelect) {
+      const orgs = [...new Set(salaryDataCache.map(r => r["Организация"]).filter(Boolean))].sort();
+      const prevValue = orgSelect.value;
+      orgSelect.innerHTML = `<option value="">Все организации</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+      orgSelect.value = orgs.includes(prevValue) ? prevValue : "";
+    }
+    const posSelect = document.getElementById("salaryPositionFilter");
+    if (posSelect) {
+      const positions = [...new Set(salaryDataCache.map(r => r["Профессия"]).filter(Boolean))].sort();
+      const prevValue = posSelect.value;
+      posSelect.innerHTML = `<option value="">Все должности</option>` + positions.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+      posSelect.value = positions.includes(prevValue) ? prevValue : "";
+    }
     renderSalaryTable();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
@@ -4834,12 +4860,16 @@ async function loadSalary() {
 
 function renderSalaryTable() {
   const period = document.getElementById("salaryPeriodFilter")?.value || "";
+  const org = document.getElementById("salaryOrgFilter")?.value || "";
+  const position = document.getElementById("salaryPositionFilter")?.value || "";
   const search = (document.getElementById("salarySearchInput")?.value || "").toLowerCase().trim();
   const tbody = document.querySelector("#salaryTable tbody");
   const sub = document.getElementById("salaryCountSub");
   if (!tbody) return;
   let rows = salaryDataCache;
   if (period) rows = rows.filter(r => String(r["Период"] || "") === period);
+  if (org) rows = rows.filter(r => String(r["Организация"] || "") === org);
+  if (position) rows = rows.filter(r => String(r["Профессия"] || "") === position);
   if (search) {
     rows = rows.filter(r =>
       String(r["ФИО"] || "").toLowerCase().includes(search) ||
@@ -4851,9 +4881,9 @@ function renderSalaryTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="white-space:nowrap;">${escapeHtml(r["Период"] || "")}</td>
+      <td>${escapeHtml(r["Организация"] || "")}</td>
       <td>${escapeHtml(r["ФИО"] || "")}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r["ПИНФЛ"] || "")}</td>
-      <td>${escapeHtml(r["Организация"] || "")}</td>
       <td>${escapeHtml(r["Профессия"] || "")}</td>
       <td>${fmtSalaryNum(r["ОкладОбщий"])}</td>
       <td>${fmtSalaryNum(r["УдаленнаяРабота"])}</td>
