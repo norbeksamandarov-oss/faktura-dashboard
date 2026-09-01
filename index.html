@@ -468,6 +468,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   }
   .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
   .nav-icon {
@@ -508,7 +509,11 @@
     padding: 28px 32px 60px;
   }
   .content-section { display: none; }
-  .content-section.active { display: block; }
+  .content-section.active { display: block; animation: sectionFadeIn 0.22s ease; }
+  @keyframes sectionFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* ---------- Sidebar'ni yig'ish/ochish (kollaps) ---------- */
   .sidebar { transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: visible; }
@@ -633,6 +638,7 @@
   table.emp-table th:first-child { border-radius: 8px 0 0 0; }
   table.emp-table th:last-child { border-radius: 0 8px 0 0; }
   table.emp-table td { padding: 9px 6px; border-bottom: 1px solid var(--border); }
+  table.emp-table tbody tr { transition: background 0.15s ease; }
   table.emp-table tbody tr:hover { background: var(--ice-soft); }
   table.emp-table tr:last-child td { border-bottom: none; }
   .pill {
@@ -754,6 +760,7 @@
     position: sticky; top: 0;
   }
   table.invoices tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.invoices tbody tr { transition: background 0.15s ease; }
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
   table.invoices td.num-cell, table.invoices th.num-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
