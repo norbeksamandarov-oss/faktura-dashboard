@@ -5695,28 +5695,31 @@ async function handleDeleteUser(rowIndex, username, btnEl) {
    oson matnga aylantirib ko'rsatadi.
    ============================================================ */
 const AUDIT_ACTION_LABELS = {
-  LOGIN_OK: () => "<i class='ti ti-circle-check' aria-hidden='true'></i> Успешный вход",
-  LOGIN_FAILED: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Неверный пароль при входе",
-  LOGIN_FAILED_NO_USER: () => "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Попытка входа с несуществующим логином",
-  CHANGE_OWN_PASSWORD: () => "<i class='ti ti-key' aria-hidden='true'></i> Сменил свой пароль",
-  CREATE_USER: d => `<i class='ti ti-plus' aria-hidden='true'></i> Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
-  RESET_PASSWORD: d => `<i class='ti ti-key' aria-hidden='true'></i> Сбросил пароль пользователю (строка ${d.rowIndex})`,
-  DELETE_USER: d => `<i class='ti ti-trash' aria-hidden='true'></i> Удалил пользователя (строка ${d.rowIndex})`,
-  SET_USER_ACTIVE: d => `<i class='ti ti-repeat' aria-hidden='true'></i> Изменил статус пользователя: ${d.active ? "включён" : "отключён"}`,
-  SET_EMPLOYEE_ACTIVE: d => `<i class='ti ti-repeat' aria-hidden='true'></i> Изменил статус сотрудника: ${d.active ? "активен" : "деактивирован"}`,
-  DELETE_ROW: d => `<i class='ti ti-trash' aria-hidden='true'></i> Удалил строку ${d.rowIndex} из листа «${d.sheetName || "?"}»`,
-  TRIGGER_NOTIFY: () => `<i class='ti ti-bell' aria-hidden='true'></i> Нажал «Уведомить сотрудников»`,
-  TRIGGER_BROADCAST: d => `<i class='ti ti-speakerphone' aria-hidden='true'></i> Отправил объявление: «${(d.message || "").slice(0, 70)}${(d.message || "").length > 70 ? "…" : ""}»`,
+  LOGIN_OK: () => "Успешный вход",
+  LOGIN_FAILED: () => "Неверный пароль при входе",
+  LOGIN_FAILED_NO_USER: () => "Попытка входа с несуществующим логином",
+  CHANGE_OWN_PASSWORD: () => "Сменил свой пароль",
+  CREATE_USER: d => `Создал пользователя «${d.username || "?"}» (роль: ${d.role === "admin" ? "admin" : "employee"})`,
+  RESET_PASSWORD: d => `Сбросил пароль пользователю (строка ${d.rowIndex})`,
+  DELETE_USER: d => `Удалил пользователя (строка ${d.rowIndex})`,
+  SET_USER_ACTIVE: d => `Изменил статус пользователя: ${d.active ? "включён" : "отключён"}`,
+  SET_EMPLOYEE_ACTIVE: d => `Изменил статус сотрудника: ${d.active ? "активен" : "деактивирован"}`,
+  DELETE_ROW: d => `Удалил строку ${d.rowIndex} из листа «${d.sheetName || "?"}»`,
+  TRIGGER_NOTIFY: () => `Нажал «Уведомить сотрудников»`,
+  TRIGGER_BROADCAST: d => `Отправил объявление: «${(d.message || "").slice(0, 70)}${(d.message || "").length > 70 ? "…" : ""}»`,
   UPDATE_CELL: d => {
     const sheet = d.sheetName || "?";
     if (sheet === "Счета-фактуры" && /^J\d+$/.test(d.a1 || "")) {
-      return `<i class='ti ti-pencil' aria-hidden='true'></i> Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
+      return `Указал ответственного «${d.value}» (счёт, строка ${(d.a1 || "").slice(1)})`;
     }
     if (sheet === "Счета-фактуры" && /^K\d+$/.test(d.a1 || "")) {
-      return `<i class='ti ti-square-check' aria-hidden='true'></i> Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
+      return `Отметил «Отправить» = ${d.value ? "да" : "нет"} (строка ${(d.a1 || "").slice(1)})`;
     }
-    return `<i class='ti ti-pencil' aria-hidden='true'></i> Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
+    return `Изменил «${sheet}» ${d.a1 || ""} → «${d.value}»`;
   },
+  DECIDE_SALARY_REQUEST: d => `Заявку на зарплату (строка ${d.rowIndex}) - ${d.decision === "Одобрено" ? "одобрил" : "отклонил"}`,
+  SET_FEATURE_TOGGLE: d => `Функцию «${d.key}» - ${d.active ? "включил" : "отключил"}`,
+  SET_USER_CHATID: d => `Привязал Telegram ID пользователю (строка ${d.rowIndex})${d.chatId ? `: ${d.chatId}` : " (очистил)"}`,
 };
 
 function formatAuditEntry(e) {
