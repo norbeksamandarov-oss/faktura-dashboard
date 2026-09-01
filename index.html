@@ -2461,26 +2461,30 @@
 
     <section id="section-taxes" class="content-section">
     <div class="panel" style="margin-bottom:16px;">
-      <h2>НДС по счетам <span class="sub">только «Принято» счета</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Сумма НДС по счетам-фактурам со статусом «Принято» - для отчёта по НДС.</p>
+      <h2>Налоги <span class="sub">общий фильтр для НДС и налогов с зарплаты</span></h2>
       <div class="toolbar">
         <div class="filter-field">
-          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период (дата счёта)</label>
+          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период</label>
           <div style="display:flex;align-items:center;gap:6px;">
-            <input type="date" id="taxNdsDateFrom" onchange="renderTaxesNds()">
+            <input type="date" id="taxDateFrom" onchange="renderAllTaxes()">
             <span>—</span>
-            <input type="date" id="taxNdsDateTo" onchange="renderTaxesNds()">
+            <input type="date" id="taxDateTo" onchange="renderAllTaxes()">
           </div>
         </div>
         <div class="filter-field">
           <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
-          <select id="taxNdsOrgFilter" onchange="renderTaxesNds()"><option value="">Все организации</option></select>
+          <select id="taxOrgFilter" onchange="renderAllTaxes()"><option value="">Все организации</option></select>
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
-          <button class="login-submit-btn" style="width:auto;padding:9px 20px;" onclick="document.getElementById('taxNdsDateFrom').value='';document.getElementById('taxNdsDateTo').value='';document.getElementById('taxNdsOrgFilter').value='';renderTaxesNds();"><i class='ti ti-x' aria-hidden='true'></i> Сбросить</button>
+          <button class="login-submit-btn" style="width:auto;padding:9px 20px;" onclick="document.getElementById('taxDateFrom').value='';document.getElementById('taxDateTo').value='';document.getElementById('taxOrgFilter').value='';renderAllTaxes();"><i class='ti ti-x' aria-hidden='true'></i> Сбросить</button>
         </div>
       </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px;">
+      <h2>НДС по счетам <span class="sub">только «Принято» счета</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Сумма НДС по счетам-фактурам со статусом «Принято» - для отчёта по НДС.</p>
       <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px;">
         <div class="stat-card accent-total">
           <div class="stat-icon"><i class='ti ti-receipt-tax' aria-hidden='true'></i></div>
@@ -2504,16 +2508,6 @@
       <p class="analytics-note" style="margin:0 0 16px;">
         Рассчитано от суммы «НачислениеГросс» по ставкам: <b>НДФЛ 11.9%</b>, <b>ИНПС 0.1%</b> (оба - удерживаются из зарплаты сотрудника), <b>Социальный налог 12%</b> (платит работодатель, в Excel-файле зарплаты не импортируется). Проверьте перед использованием в отчётности.
       </p>
-      <div class="toolbar">
-        <div class="filter-field">
-          <label><i class='ti ti-calendar' aria-hidden='true'></i> Период</label>
-          <select id="taxSalaryPeriodFilter" onchange="renderTaxesSalary()"><option value="">Все периоды</option></select>
-        </div>
-        <div class="filter-field">
-          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
-          <select id="taxSalaryOrgFilter" onchange="renderTaxesSalary()"><option value="">Все организации</option></select>
-        </div>
-      </div>
       <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px;">
         <div class="stat-card accent-pending">
           <div class="stat-icon"><i class='ti ti-file-percent' aria-hidden='true'></i></div>
@@ -5407,42 +5401,75 @@ function renderSalaryTable() {
    ============================================================ */
 let taxesInitDone = false;
 
+// Turlicha yozilgan tashkilot nomlarini ("BEDACHI" va "ИП ООО \"BEDACHI\""
+// kabi) BIR XIL kalitga tushiradi - shu orqali umumiy filtr ikkala
+// manbaga ham (счета-фактуры VA зарплата) mos tushadi.
+function normalizeOrgKey(s) {
+  return String(s || "")
+    .toUpperCase()
+    .replace(/["'«»]/g, "")
+    .replace(/\b(ИП|ООО|ЧП|OOO|MCHJ|XK|АК|AK)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// "Июль-26" -> "2026-07" (sana oralig'i filtri bilan solishtirish uchun).
+const RU_MONTH_NUM = {
+  "январь": "01", "февраль": "02", "март": "03", "апрель": "04",
+  "май": "05", "июнь": "06", "июль": "07", "август": "08",
+  "сентябрь": "09", "октябрь": "10", "ноябрь": "11", "декабрь": "12",
+};
+function periodLabelToYearMonth(label) {
+  const m = String(label || "").match(/^([А-Яа-яЁё]+)-(\d{2,4})$/);
+  if (!m) return null;
+  const monthNum = RU_MONTH_NUM[m[1].toLowerCase()];
+  if (!monthNum) return null;
+  let year = parseInt(m[2], 10);
+  if (year < 100) year += 2000;
+  return `${year}-${monthNum}`;
+}
+function isPeriodInDateRange(periodLabel, dateFrom, dateTo) {
+  const ym = periodLabelToYearMonth(periodLabel);
+  if (!ym) return true; // noma'lum format - filtrlab tashlamaymiz
+  if (dateFrom && ym < dateFrom.slice(0, 7)) return false;
+  if (dateTo && ym > dateTo.slice(0, 7)) return false;
+  return true;
+}
+
 function initTaxesSection() {
-  // Organizatsiya filtrini счета-фактуры ro'yxatidan bir marta to'ldiramiz.
-  const orgSelect = document.getElementById("taxNdsOrgFilter");
+  const orgSelect = document.getElementById("taxOrgFilter");
   if (orgSelect && orgSelect.options.length <= 1) {
-    const names = [...new Set(invoiceRows.map(r => canonicalBuyer(r.buyer)).filter(Boolean))].sort();
-    orgSelect.innerHTML = `<option value="">Все организации</option>` + names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    const orgMap = {};
+    invoiceRows.forEach(r => {
+      const disp = canonicalBuyer(r.buyer);
+      if (disp) { const key = normalizeOrgKey(disp); if (!orgMap[key]) orgMap[key] = disp; }
+    });
+    salaryDataCache.forEach(r => {
+      const disp = r["Организация"];
+      if (disp) { const key = normalizeOrgKey(disp); if (!orgMap[key]) orgMap[key] = disp; }
+    });
+    const orgOptions = Object.entries(orgMap).sort((a, b) => a[1].localeCompare(b[1]));
+    orgSelect.innerHTML = `<option value="">Все организации</option>` + orgOptions.map(([key, disp]) => `<option value="${escapeHtml(key)}">${escapeHtml(disp)}</option>`).join("");
   }
-  const periodSelect = document.getElementById("taxSalaryPeriodFilter");
-  if (periodSelect) {
-    const periods = [...new Set(salaryDataCache.map(r => r["Период"]).filter(Boolean))];
-    const prevValue = periodSelect.value;
-    periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-    periodSelect.value = periods.includes(prevValue) ? prevValue : "";
-  }
-  const salaryOrgSelect = document.getElementById("taxSalaryOrgFilter");
-  if (salaryOrgSelect) {
-    const orgs = [...new Set(salaryDataCache.map(r => r["Организация"]).filter(Boolean))].sort();
-    const prevOrgValue = salaryOrgSelect.value;
-    salaryOrgSelect.innerHTML = `<option value="">Все организации</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
-    salaryOrgSelect.value = orgs.includes(prevOrgValue) ? prevOrgValue : "";
-  }
-  renderTaxesNds();
-  renderTaxesSalary();
+  renderAllTaxes();
   taxesInitDone = true;
 }
 
+function renderAllTaxes() {
+  renderTaxesNds();
+  renderTaxesSalary();
+}
+
 function renderTaxesNds() {
-  const dateFrom = document.getElementById("taxNdsDateFrom")?.value || "";
-  const dateTo = document.getElementById("taxNdsDateTo")?.value || "";
-  const orgVal = document.getElementById("taxNdsOrgFilter")?.value || "";
+  const dateFrom = document.getElementById("taxDateFrom")?.value || "";
+  const dateTo = document.getElementById("taxDateTo")?.value || "";
+  const orgVal = document.getElementById("taxOrgFilter")?.value || "";
 
   const rows = invoiceRows.filter(r => {
     if (classifyStatus(r.status) !== "accepted") return false;
     if (dateFrom && r.date && r.date < dateFrom) return false;
     if (dateTo && r.date && r.date > dateTo) return false;
-    if (orgVal && canonicalBuyer(r.buyer) !== orgVal) return false;
+    if (orgVal && normalizeOrgKey(canonicalBuyer(r.buyer)) !== orgVal) return false;
     return true;
   });
 
@@ -5479,11 +5506,12 @@ function _parseSalaryNum(v) {
 }
 
 function renderTaxesSalary() {
-  const periodVal = document.getElementById("taxSalaryPeriodFilter")?.value || "";
-  const orgVal = document.getElementById("taxSalaryOrgFilter")?.value || "";
+  const dateFrom = document.getElementById("taxDateFrom")?.value || "";
+  const dateTo = document.getElementById("taxDateTo")?.value || "";
+  const orgVal = document.getElementById("taxOrgFilter")?.value || "";
   const rows = salaryDataCache.filter(r => {
-    if (periodVal && r["Период"] !== periodVal) return false;
-    if (orgVal && r["Организация"] !== orgVal) return false;
+    if (!isPeriodInDateRange(r["Период"], dateFrom, dateTo)) return false;
+    if (orgVal && normalizeOrgKey(r["Организация"]) !== orgVal) return false;
     return true;
   });
 
