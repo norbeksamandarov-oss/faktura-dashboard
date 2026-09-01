@@ -9,6 +9,16 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#1E2761">
+<script>
+  // Sahifa chizilishidan OLDIN mavzuni o'rnatamiz - aks holda avval yorug'
+  // rejim ko'rinib, keyin qorong'i rejimga "sakrab" o'tib ketardi (flash).
+  (function () {
+    try {
+      var saved = localStorage.getItem("rm_theme");
+      if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -28,7 +38,27 @@
     --red-bg:   #FBE7E7; --red-fg:   #B23A3A;
     --amber-bg: #FFF3DA; --amber-fg: #93610A;
     --gray-bg:  #EDEFF3; --gray-fg:  #5B6472;
+    --accent-grad: linear-gradient(135deg,#6C63FF,#00B4D8);
   }
+  /* ---------- Qorong'i rejim (☀️/🌙 tugmasi bilan almashtiriladi,
+     tanlov localStorage'da saqlanadi - "rm_theme"). Sidebar har doim
+     navy bo'lib qoladi (brend rangi), faqat asosiy kontent maydoni
+     o'zgaradi. ---------- */
+  [data-theme="dark"] {
+    --ice-soft: rgba(108,99,255,0.14);
+    --bg: #0F1222;
+    --card: #181C33;
+    --text: #E7E9F5;
+    --muted: #8890B5;
+    --border: rgba(255,255,255,0.09);
+    --green-bg: rgba(0,212,140,0.14); --green-fg: #00D48C;
+    --red-bg:   rgba(255,90,90,0.16); --red-fg:   #FF7A7A;
+    --amber-bg: rgba(255,184,0,0.16); --amber-fg: #FFC53D;
+    --gray-bg:  rgba(255,255,255,0.07); --gray-fg: #AEB4D6;
+  }
+  [data-theme="dark"] body { background: var(--bg); }
+  [data-theme="dark"] .login-input,
+  [data-theme="dark"] .login-submit-btn { background: #fff; color: #1E2761; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -37,6 +67,7 @@
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    transition: background 0.25s ease, color 0.25s ease;
   }
   h1, h2, h3, .display {
     font-family: 'Fraunces', serif;
@@ -371,7 +402,7 @@
   .topbar-right { display: flex; align-items: center; gap: 16px; }
   #userInfo { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ice); }
   #userInfo img { width: 28px; height: 28px; border-radius: 50%; }
-  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn, #announcementBtn {
+  #refreshBtn, #logoutBtn, #notifyBtn, #changePasswordBtn, #announcementBtn, #themeToggleBtn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.18);
     color: white;
@@ -380,8 +411,9 @@
     font-size: 13px;
     cursor: pointer;
     font-family: 'Inter', sans-serif;
+    transition: background 0.18s ease;
   }
-  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover, #announcementBtn:hover { background: rgba(255,255,255,0.16); }
+  #refreshBtn:hover, #logoutBtn:hover, #notifyBtn:hover, #changePasswordBtn:hover, #announcementBtn:hover, #themeToggleBtn:hover { background: rgba(255,255,255,0.16); }
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(20,24,45,0.6);
     display: none; align-items: center; justify-content: center; z-index: 500;
@@ -578,8 +610,20 @@
     border-radius: 16px;
     padding: 18px 20px;
     display: flex; align-items: center; gap: 14px;
-    transition: transform .15s, box-shadow .15s;
+    transition: transform .15s, box-shadow .15s, background .25s ease, border-color .25s ease;
+    position: relative;
+    overflow: hidden;
   }
+  .stat-card::before {
+    content: "";
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--stat-glow, rgba(108,99,255,0.12)), transparent 70%);
+    pointer-events: none;
+  }
+  .stat-card > * { position: relative; }
   .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(30,39,97,0.08); }
   .stat-card .stat-icon {
     width: 42px; height: 42px; border-radius: 12px; flex: 0 0 auto;
@@ -590,13 +634,17 @@
   .stat-card .label { margin-top: 4px; font-size: 12px; color: var(--muted); }
   .stat-card.accent-total .stat-icon { background: var(--ice-soft); }
   .stat-card.accent-total .num { color: var(--navy); }
+  .stat-card.accent-total { --stat-glow: rgba(108,99,255,0.14); }
   .stat-card.accent-pending .stat-icon { background: var(--amber-bg); }
   .stat-card.accent-pending .num { color: var(--amber-fg); }
+  .stat-card.accent-pending { --stat-glow: rgba(255,184,0,0.16); }
   .stat-card.accent-accepted .stat-icon { background: var(--green-bg); }
   .stat-card.accent-accepted .num { color: var(--green-fg); }
+  .stat-card.accent-accepted { --stat-glow: rgba(0,180,120,0.16); }
   .stat-card.accent-rejected .stat-icon { background: var(--red-bg); }
   .stat-card.accent-rejected .num { color: var(--red-fg); }
-  .stat-card.accent-overdue { background: var(--red-bg); border-color: #F3C6C6; }
+  .stat-card.accent-rejected { --stat-glow: rgba(255,90,90,0.14); }
+  .stat-card.accent-overdue { background: var(--red-bg); border-color: #F3C6C6; --stat-glow: rgba(255,90,90,0.2); }
   .stat-card.accent-overdue .stat-icon { background: rgba(255,255,255,0.6); }
   .stat-card.accent-overdue .num { color: var(--red-fg); }
   .stat-card.accent-overdue .label { color: var(--red-fg); font-weight: 600; }
@@ -619,6 +667,7 @@
     padding: 22px 24px;
     box-shadow: 0 1px 2px rgba(20,24,45,0.03);
     min-height: 0;
+    transition: background 0.25s ease, border-color 0.25s ease;
   }
   .panel h2 {
     font-size: 16px;
@@ -1228,6 +1277,7 @@
     <div class="topbar-right">
       <div id="userInfo"></div>
       <span style="font-size:12px;color:var(--ice);"><span class="live-dot"></span>Авто-обновление</span>
+      <button id="themeToggleBtn" onclick="toggleTheme()" title="Переключить тему">🌙 Тёмная</button>
       <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает">🔔 Уведомить сотрудников</button>
       <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам">📢 Объявление</button>
       <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль">🔑 Пароль</button>
@@ -2903,6 +2953,26 @@ async function submitForcePasswordChange() {
    "Пользователи" bo'limlarini yashiradi. Bu endi shunchaki interfeys emas -
    Apps Script backend'ning o'zi ham har bir admin-only amalni serverda
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
+// ---------- Qorong'i/yorug' rejim ----------
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  if (isDark) {
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("rm_theme", "light");
+  } else {
+    document.documentElement.setAttribute("data-theme", "dark");
+    localStorage.setItem("rm_theme", "dark");
+  }
+  syncThemeButtonLabel();
+}
+function syncThemeButtonLabel() {
+  const btn = document.getElementById("themeToggleBtn");
+  if (!btn) return;
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  btn.textContent = isDark ? "☀️ Светлая" : "🌙 Тёмная";
+}
+syncThemeButtonLabel();
+
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
