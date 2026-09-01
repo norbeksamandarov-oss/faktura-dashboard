@@ -2100,6 +2100,19 @@
           </select>
         </div>
         <div class="filter-field">
+          <label>🏷️ Тип начисления</label>
+          <select id="salaryTypeFilter" class="login-input" style="max-width:200px;" onchange="renderSalaryTable()">
+            <option value="">Все начисления</option>
+            <option value="Больничные">🤒 Есть больничные</option>
+            <option value="Отпускные">🏖 Есть отпускные</option>
+            <option value="KPI">➕ Есть KPI</option>
+            <option value="Премии">➕ Есть премии</option>
+            <option value="Депремирование">➖ Есть депремирование</option>
+            <option value="УдаленнаяРабота">🏠 Есть удалённая работа</option>
+            <option value="ПрочиеВыплаты">➖ Есть прочие выплаты</option>
+          </select>
+        </div>
+        <div class="filter-field">
           <label>🔍 Поиск (ФИО/ПИНФЛ)</label>
           <input type="text" id="salarySearchInput" class="login-input" oninput="renderSalaryTable()" placeholder="Введите ФИО или ПИНФЛ">
         </div>
@@ -4862,6 +4875,7 @@ function renderSalaryTable() {
   const period = document.getElementById("salaryPeriodFilter")?.value || "";
   const org = document.getElementById("salaryOrgFilter")?.value || "";
   const position = document.getElementById("salaryPositionFilter")?.value || "";
+  const type = document.getElementById("salaryTypeFilter")?.value || "";
   const search = (document.getElementById("salarySearchInput")?.value || "").toLowerCase().trim();
   const tbody = document.querySelector("#salaryTable tbody");
   const sub = document.getElementById("salaryCountSub");
@@ -4870,6 +4884,12 @@ function renderSalaryTable() {
   if (period) rows = rows.filter(r => String(r["Период"] || "") === period);
   if (org) rows = rows.filter(r => String(r["Организация"] || "") === org);
   if (position) rows = rows.filter(r => String(r["Профессия"] || "") === position);
+  if (type) {
+    rows = rows.filter(r => {
+      const raw = String(r[type] || "0").replace(/\s/g, "").replace(",", ".");
+      return parseFloat(raw) !== 0 && !isNaN(parseFloat(raw));
+    });
+  }
   if (search) {
     rows = rows.filter(r =>
       String(r["ФИО"] || "").toLowerCase().includes(search) ||
