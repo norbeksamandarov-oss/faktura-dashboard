@@ -713,8 +713,14 @@
   /* ---------- Search + table ---------- */
   .toolbar {
     display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
-    background: var(--ice-soft); border: 1px solid var(--border);
-    border-radius: 14px; padding: 18px 20px; margin-bottom: 18px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 18px 20px; margin-bottom: 18px;
+    position: relative; overflow: hidden;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+  .toolbar::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent-grad);
   }
   .filter-field { display: flex; flex-direction: column; gap: 5px; }
   .filter-field label {
@@ -815,14 +821,16 @@
     display: flex; align-items: center; gap: 6px;
     font-size: 11.5px; color: var(--muted); margin: 8px 0 0;
   }
-  table.invoices { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
+  table.invoices { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; min-width: 900px; }
   table.invoices thead th {
-    background: var(--navy); color: white;
-    text-align: left; padding: 8px 10px; font-size: 10.5px;
+    background: var(--accent-grad); color: white;
+    text-align: left; padding: 10px 10px; font-size: 10.5px;
     text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;
     position: sticky; top: 0;
   }
-  table.invoices tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.invoices thead th:first-child { border-top-left-radius: 10px; }
+  table.invoices thead th:last-child { border-top-right-radius: 10px; }
+  table.invoices tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
   table.invoices tbody tr { transition: background 0.15s ease; }
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
@@ -905,7 +913,7 @@
   tr.row-overdue { background: var(--red-bg) !important; }
   tr.row-overdue:hover { background: #F7D5D0 !important; }
 
-  .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
   .status-new { background: var(--gray-bg); color: var(--gray-fg); }
   .status-sent { background: var(--amber-bg); color: var(--amber-fg); }
   .status-accepted { background: var(--green-bg); color: var(--green-fg); }
@@ -3504,7 +3512,13 @@ function statusBadge(status) {
     rejected: "status-rejected", notmine: "status-notmine", error: "status-error",
     pendingboss: "status-pendingboss", other: "status-new"
   };
-  return `<span class="status-badge ${map[cls]}">${status || "—"}</span>`;
+  const iconMap = {
+    new: "ti-hourglass", sent: "ti-mail", accepted: "ti-circle-check",
+    rejected: "ti-circle-x", notmine: "ti-user-x", error: "ti-alert-triangle",
+    pendingboss: "ti-clock", other: "ti-hourglass"
+  };
+  const icon = iconMap[cls] || "ti-hourglass";
+  return `<span class="status-badge ${map[cls]}"><i class='ti ${icon}' aria-hidden='true'></i> ${status || "—"}</span>`;
 }
 
 function daysBadge(daysStr) {
@@ -4777,7 +4791,7 @@ function renderEmployeesManage() {
         </label>
         <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${e.active ? "Активен" : "Деактивирован"}</span>
         ` : `
-        <span class="status-badge ${e.active ? "status-accepted" : "status-new"}">${e.active ? "Активен" : "Деактивирован"}</span>
+        <span class="status-badge ${e.active ? "status-accepted" : "status-new"}"><i class='ti ${e.active ? "ti-circle-check" : "ti-circle-x"}' aria-hidden='true'></i> ${e.active ? "Активен" : "Деактивирован"}</span>
         `}
       </td>
       ${isAdmin ? `<td><button class="emp-delete-btn" onclick="deleteEmployeeRow(${e.rowIndex}, '${escapeHtml(e.name).replace(/'/g, "\\'")}', this)"><i class='ti ti-trash' aria-hidden='true'></i> Удалить</button></td>` : ""}
@@ -5733,7 +5747,7 @@ function renderDoverennostTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
   }
 
   const tbody = document.querySelector("#doverennostTable tbody");
@@ -5824,7 +5838,7 @@ function renderRealschetTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
   }
 
   const tbody = document.querySelector("#realschetTable tbody");
@@ -5906,7 +5920,7 @@ function renderZakaznaryadTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
   }
 
   const tbody = document.querySelector("#zakaznaryadTable tbody");
@@ -5986,7 +6000,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
   }
 
   const tbody = document.querySelector(`#${prefix}Table tbody`);
@@ -6081,7 +6095,7 @@ function renderBankTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    return `<span class="status-badge status-new">${escapeHtml(status)}</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(status)}</span>`;
   }
   function bankTypeBadge(type) {
     if (type === "Поступление") return `<span class="status-badge status-accepted"><i class='ti ti-download' aria-hidden='true'></i> Поступление</span>`;
