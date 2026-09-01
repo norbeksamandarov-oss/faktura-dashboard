@@ -39,7 +39,8 @@
     --red-bg:   #FBE7E7; --red-fg:   #B23A3A;
     --amber-bg: #FFF3DA; --amber-fg: #93610A;
     --gray-bg:  #EDEFF3; --gray-fg:  #5B6472;
-    --accent-grad: linear-gradient(135deg,#6C63FF,#00B4D8);
+    --accent-grad: linear-gradient(135deg,#090979,#00D4FF);
+    --navy-grad: linear-gradient(160deg,#020024 0%,#090979 55%,#00D4FF 130%);
     --chip-bg: #FFFFFF;
     --navy-text: var(--navy);
   }
@@ -105,7 +106,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 20% 15%, #241A5C 0%, var(--navy) 45%, #06041A 100%);
+    background: linear-gradient(160deg, #020024 0%, #090979 55%, #00D4FF 130%);
     position: relative;
     overflow: hidden;
   }
@@ -409,7 +410,7 @@
   /* ---------- App shell ---------- */
   #app { display: none; min-height: 100vh; }
   header.topbar {
-    background: var(--navy);
+    background: var(--navy-grad);
     color: white;
     padding: 18px 32px;
     display: flex;
@@ -506,7 +507,7 @@
   .sidebar {
     width: 220px;
     flex-shrink: 0;
-    background: var(--navy);
+    background: var(--navy-grad);
     min-height: calc(100vh - 66px);
     padding: 28px 0 18px;
     display: flex;
@@ -1115,7 +1116,7 @@
   .org-card.empty { opacity: 0.45; }
   .org-vat { font-size: 12px; font-weight: 600; color: var(--amber-fg); }
   .org-card-total {
-    background: var(--navy); border-color: var(--navy-text);
+    background: var(--navy-grad); border-color: var(--navy-text);
     grid-column: 1 / -1;
     display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
   }
