@@ -2488,10 +2488,11 @@
       <div class="table-wrap">
         <table class="invoices" id="gtdTable">
           <thead><tr>
-            <th>№ декларации</th><th>Экспортёр</th><th>Импортёр</th>
+            <th>№ декларации</th><th>Организация</th><th>Контрагент</th>
             <th>Товар</th><th class="num-cell">Валюта</th><th class="num-cell">Курс</th>
             <th class="num-cell">Фактур. стоимость</th><th class="num-cell">Таможен. стоимость</th>
-            <th class="num-cell">Сборы</th><th class="num-cell">Пошлина</th><th class="num-cell">Акциз</th><th class="num-cell">НДС</th>
+            <th class="num-cell">Сборы</th><th class="num-cell">Пошлина</th><th class="num-cell">НДС</th>
+            <th class="num-cell">Акциз</th><th class="num-cell">Спец.защ.пош.</th>
             <th>Добавил</th>
           </tr></thead>
           <tbody></tbody>
@@ -3272,6 +3273,15 @@ async function onLoggedIn(forcePasswordChange) {
       pollSalaryRequestsBadge();
       pollSalaryDataBackground();
     }, SALARY_BADGE_POLL_MS);
+  }
+
+  // ГТД ma'lumotlari ham faqat admin ko'radi - shuning uchun UMUMIY
+  // avtomatik yangilanish tsikliga qo'shilmaydi, alohida fon jarayonida
+  // yuklanadi (Зарплата kabi) - bo'limga kirganda DARHOL tayyor turadi.
+  if (currentRole === "admin") {
+    await pollGtdBackground();
+    if (gtdBadgeTimer) clearInterval(gtdBadgeTimer);
+    gtdBadgeTimer = setInterval(pollGtdBackground, SALARY_BADGE_POLL_MS);
   }
 
   if (forcePasswordChange) {
@@ -5621,21 +5631,39 @@ function renderTaxesSalary() {
 
 let gtdDataCache = [];
 
-async function loadGtdItems() {
-  const tbody = document.querySelector("#gtdTable tbody");
-  if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="color:var(--muted)">Загрузка...</td></tr>`;
+let gtdBadgeTimer = null;
+
+async function pollGtdBackground() {
   try {
     const data = await apiCall("getGtdItems", {});
     gtdDataCache = data.items || [];
     const curSelect = document.getElementById("gtdCurrencyFilter");
-    if (curSelect && curSelect.options.length <= 1) {
+    if (curSelect) {
       const currencies = [...new Set(gtdDataCache.map(r => r["Валюта"]).filter(Boolean))].sort();
+      const prevVal = curSelect.value;
       curSelect.innerHTML = `<option value="">Все</option>` + currencies.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      if (currencies.includes(prevVal)) curSelect.value = prevVal;
     }
-    renderGtdTable();
+    if (document.getElementById("section-gtdimport")?.classList.contains("active")) {
+      renderGtdTable();
+    }
   } catch (e) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
+    console.warn("Не удалось обновить ГТД:", e.message);
   }
+}
+
+async function loadGtdItems() {
+  // Fon jarayoni (pollGtdBackground) ma'lumotni ALLAQACHON yuklab
+  // qo'ygan bo'lishi kerak - shuning uchun bu yerda faqat QAYTA
+  // chizamiz, qayta so'rov yubormaymiz (tezroq ochiladi).
+  if (gtdDataCache.length) {
+    renderGtdTable();
+    return;
+  }
+  const tbody = document.querySelector("#gtdTable tbody");
+  if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="color:var(--muted)">Загрузка...</td></tr>`;
+  await pollGtdBackground();
+  renderGtdTable();
 }
 
 // "412000" -> "412 000" (rus formatida, mingliklar bo'sh joy bilan).
@@ -5671,8 +5699,8 @@ function renderGtdTable() {
   tbody.innerHTML = rows.map(r => `
     <tr>
       <td style="white-space:nowrap;">${escapeHtml(r["СправочныйНомер"])}</td>
-      <td>${escapeHtml(r["Экспортер"])}</td>
       <td>${escapeHtml(r["Импортер"])}</td>
+      <td>${escapeHtml(r["Экспортер"])}</td>
       <td>${escapeHtml(r["ОписаниеТовара"])}</td>
       <td class="num-cell">${escapeHtml(r["Валюта"])}</td>
       <td class="num-cell">${fmtGtdNum(r["Курс"])}</td>
@@ -5680,10 +5708,11 @@ function renderGtdTable() {
       <td class="num-cell">${fmtGtdNum(r["ТаможеннаяСтоимость"])}</td>
       <td class="num-cell">${fmtGtdNum(r["Сборы_10"])}</td>
       <td class="num-cell">${fmtGtdNum(r["Пошлина_20"])}</td>
-      <td class="num-cell">${fmtGtdNum(r["АкцизВвоз_27"])}</td>
       <td class="num-cell">${fmtGtdNum(r["НДС_29"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["Акциз_27"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["СпецЗащПошлина_21"])}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r["Добавил"])}</td>
-    </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Пока нет данных</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="14" style="color:var(--muted)">Пока нет данных</td></tr>`;
 }
 
 let featuresDataCache = [];
