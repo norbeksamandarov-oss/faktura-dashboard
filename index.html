@@ -1477,6 +1477,7 @@
         <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="nav-subgroup" id="postupleniyaSubgroup">
+        <button class="nav-item nav-sub-item" data-section="gtdimport" onclick="showSection('gtdimport')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="nav-label">Импорт</span></button>
         <button class="nav-item nav-sub-item" data-section="invoices" onclick="showSection('invoices')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></span><span class="nav-label">Счета-фактуры</span></button>
         <button class="nav-item nav-sub-item" data-section="dogovor" onclick="showSection('dogovor')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договоры</span> <span id="pendingDogovorBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="doverennost" onclick="showSection('doverennost')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg></span><span class="nav-label">Доверенности</span> <span id="pendingDoverennostBadge" class="nav-badge" style="display:none;"></span></button>
@@ -2459,6 +2460,34 @@
     </div>
     </section>
 
+    <section id="section-gtdimport" class="content-section">
+    <div class="panel">
+      <h2>Импорт (ГТД) <span class="sub" id="gtdCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">
+        Данные распознаются ботом из PDF грузовых таможенных деклараций (OCR) и сохраняются только после подтверждения в Telegram.
+        Пока поддерживаются только декларации с <b>одним товаром</b> - многотоварные нужно вносить вручную.
+      </p>
+      <div class="toolbar">
+        <div class="filter-field">
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (№, экспортёр, импортёр, товар)</label>
+          <input type="text" id="gtdSearchFilter" placeholder="Поиск..." oninput="renderGtdTable()">
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="gtdTable">
+          <thead><tr>
+            <th>Дата</th><th>№ декларации</th><th>Экспортёр</th><th>Импортёр</th>
+            <th>Товар</th><th class="num-cell">Валюта</th><th class="num-cell">Курс</th>
+            <th class="num-cell">Фактур. стоимость</th><th class="num-cell">Таможен. стоимость</th>
+            <th class="num-cell">Сборы</th><th class="num-cell">Пошлина</th><th class="num-cell">Акциз</th><th class="num-cell">НДС</th>
+            <th>Добавил</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-taxes" class="content-section">
     <div class="panel" style="margin-bottom:16px;">
       <h2>Налоги <span class="sub">общий фильтр для НДС и налогов с зарплаты</span></h2>
@@ -3160,6 +3189,9 @@ function showSection(name) {
   if (name === "taxes" && currentRole === "admin") {
     initTaxesSection();
   }
+  if (name === "gtdimport" && currentRole === "admin") {
+    loadGtdItems();
+  }
 }
 
 function toggleNavGroup(toggleId, subgroupId) {
@@ -3303,7 +3335,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="gtdimport"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -3319,7 +3351,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features", "taxes"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes", "gtdimport"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -5573,6 +5605,53 @@ function renderTaxesSalary() {
       </tr>`;
     }).join("") || `<tr><td colspan="6" style="color:var(--muted)">Нет данных за выбранный период</td></tr>`;
   }
+}
+
+let gtdDataCache = [];
+
+async function loadGtdItems() {
+  const tbody = document.querySelector("#gtdTable tbody");
+  if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="color:var(--muted)">Загрузка...</td></tr>`;
+  try {
+    const data = await apiCall("getGtdItems", {});
+    gtdDataCache = data.items || [];
+    renderGtdTable();
+  } catch (e) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+function renderGtdTable() {
+  const searchVal = normalizeForSearch(document.getElementById("gtdSearchFilter")?.value || "");
+  const rows = searchVal
+    ? gtdDataCache.filter(r =>
+        [r["СправочныйНомер"], r["Экспортер"], r["Импортер"], r["ОписаниеТовара"]]
+          .some(v => normalizeForSearch(v).includes(searchVal))
+      )
+    : gtdDataCache;
+
+  const countEl = document.getElementById("gtdCountSub");
+  if (countEl) countEl.textContent = searchVal ? `найдено ${rows.length} из ${gtdDataCache.length}` : `всего ${gtdDataCache.length}`;
+
+  const tbody = document.querySelector("#gtdTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r["ДатаИмпорта"])}</td>
+      <td style="white-space:nowrap;">${escapeHtml(r["СправочныйНомер"])}</td>
+      <td>${escapeHtml(r["Экспортер"])}</td>
+      <td>${escapeHtml(r["Импортер"])}</td>
+      <td>${escapeHtml(r["ОписаниеТовара"])}</td>
+      <td class="num-cell">${escapeHtml(r["Валюта"])}</td>
+      <td class="num-cell">${escapeHtml(r["Курс"])}</td>
+      <td class="num-cell">${escapeHtml(r["ФактурнаяСтоимость"])}</td>
+      <td class="num-cell">${escapeHtml(r["ТаможеннаяСтоимость"])}</td>
+      <td class="num-cell">${escapeHtml(r["Сборы_10"])}</td>
+      <td class="num-cell">${escapeHtml(r["Пошлина_20"])}</td>
+      <td class="num-cell">${escapeHtml(r["АкцизВвоз_27"])}</td>
+      <td class="num-cell">${escapeHtml(r["НДС_29"])}</td>
+      <td style="font-size:12px;color:var(--muted);">${escapeHtml(r["Добавил"])}</td>
+    </tr>`).join("") || `<tr><td colspan="14" style="color:var(--muted)">Пока нет данных</td></tr>`;
 }
 
 let featuresDataCache = [];
