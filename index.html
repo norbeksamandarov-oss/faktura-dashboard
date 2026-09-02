@@ -2464,19 +2464,31 @@
     <div class="panel">
       <h2>Импорт (ГТД) <span class="sub" id="gtdCountSub"></span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">
-        Данные распознаются ботом из PDF грузовых таможенных деклараций (OCR) и сохраняются только после подтверждения в Telegram.
+        Данные распознаются ботом из PDF грузовых таможенных деклараций (OCR) и сохраняются автоматически.
         Пока поддерживаются только декларации с <b>одним товаром</b> - многотоварные нужно вносить вручную.
       </p>
       <div class="toolbar">
         <div class="filter-field">
-          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (№, экспортёр, импортёр, товар)</label>
+          <label><i class='ti ti-hash' aria-hidden='true'></i> № декларации</label>
+          <input type="text" id="gtdRefFilter" placeholder="Например 00102..." oninput="renderGtdTable()">
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-building' aria-hidden='true'></i> Контрагент (экспортёр)</label>
+          <input type="text" id="gtdExporterFilter" placeholder="Название..." oninput="renderGtdTable()">
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-currency-dollar' aria-hidden='true'></i> Валюта</label>
+          <select id="gtdCurrencyFilter" onchange="renderGtdTable()"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (товар, импортёр)</label>
           <input type="text" id="gtdSearchFilter" placeholder="Поиск..." oninput="renderGtdTable()">
         </div>
       </div>
       <div class="table-wrap">
         <table class="invoices" id="gtdTable">
           <thead><tr>
-            <th>Дата</th><th>№ декларации</th><th>Экспортёр</th><th>Импортёр</th>
+            <th>№ декларации</th><th>Экспортёр</th><th>Импортёр</th>
             <th>Товар</th><th class="num-cell">Валюта</th><th class="num-cell">Курс</th>
             <th class="num-cell">Фактур. стоимость</th><th class="num-cell">Таможен. стоимость</th>
             <th class="num-cell">Сборы</th><th class="num-cell">Пошлина</th><th class="num-cell">Акциз</th><th class="num-cell">НДС</th>
@@ -5611,47 +5623,67 @@ let gtdDataCache = [];
 
 async function loadGtdItems() {
   const tbody = document.querySelector("#gtdTable tbody");
-  if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="color:var(--muted)">Загрузка...</td></tr>`;
+  if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="color:var(--muted)">Загрузка...</td></tr>`;
   try {
     const data = await apiCall("getGtdItems", {});
     gtdDataCache = data.items || [];
+    const curSelect = document.getElementById("gtdCurrencyFilter");
+    if (curSelect && curSelect.options.length <= 1) {
+      const currencies = [...new Set(gtdDataCache.map(r => r["Валюта"]).filter(Boolean))].sort();
+      curSelect.innerHTML = `<option value="">Все</option>` + currencies.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    }
     renderGtdTable();
   } catch (e) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="13" style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</td></tr>`;
   }
+}
+
+// "412000" -> "412 000" (rus formatida, mingliklar bo'sh joy bilan).
+// Kiritilgan qiymat son bo'lmasa (masalan bo'sh yoki matn) - o'zgarishsiz qaytaradi.
+function fmtGtdNum(val) {
+  const n = parseFloat(String(val || "").replace(",", "."));
+  if (isNaN(n)) return escapeHtml(val || "");
+  return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 }
 
 function renderGtdTable() {
   const searchVal = normalizeForSearch(document.getElementById("gtdSearchFilter")?.value || "");
-  const rows = searchVal
-    ? gtdDataCache.filter(r =>
-        [r["СправочныйНомер"], r["Экспортер"], r["Импортер"], r["ОписаниеТовара"]]
-          .some(v => normalizeForSearch(v).includes(searchVal))
-      )
-    : gtdDataCache;
+  const refVal = normalizeForSearch(document.getElementById("gtdRefFilter")?.value || "");
+  const expVal = normalizeForSearch(document.getElementById("gtdExporterFilter")?.value || "");
+  const curVal = document.getElementById("gtdCurrencyFilter")?.value || "";
+
+  const rows = gtdDataCache.filter(r => {
+    if (searchVal && ![r["ОписаниеТовара"], r["Импортер"]].some(v => normalizeForSearch(v).includes(searchVal))) return false;
+    if (refVal && !normalizeForSearch(r["СправочныйНомер"]).includes(refVal)) return false;
+    if (expVal && !normalizeForSearch(r["Экспортер"]).includes(expVal)) return false;
+    if (curVal && r["Валюта"] !== curVal) return false;
+    return true;
+  });
 
   const countEl = document.getElementById("gtdCountSub");
-  if (countEl) countEl.textContent = searchVal ? `найдено ${rows.length} из ${gtdDataCache.length}` : `всего ${gtdDataCache.length}`;
+  if (countEl) {
+    const filtered = searchVal || refVal || expVal || curVal;
+    countEl.textContent = filtered ? `найдено ${rows.length} из ${gtdDataCache.length}` : `всего ${gtdDataCache.length}`;
+  }
 
   const tbody = document.querySelector("#gtdTable tbody");
   if (!tbody) return;
   tbody.innerHTML = rows.map(r => `
     <tr>
-      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r["ДатаИмпорта"])}</td>
       <td style="white-space:nowrap;">${escapeHtml(r["СправочныйНомер"])}</td>
       <td>${escapeHtml(r["Экспортер"])}</td>
       <td>${escapeHtml(r["Импортер"])}</td>
       <td>${escapeHtml(r["ОписаниеТовара"])}</td>
       <td class="num-cell">${escapeHtml(r["Валюта"])}</td>
-      <td class="num-cell">${escapeHtml(r["Курс"])}</td>
-      <td class="num-cell">${escapeHtml(r["ФактурнаяСтоимость"])}</td>
-      <td class="num-cell">${escapeHtml(r["ТаможеннаяСтоимость"])}</td>
-      <td class="num-cell">${escapeHtml(r["Сборы_10"])}</td>
-      <td class="num-cell">${escapeHtml(r["Пошлина_20"])}</td>
-      <td class="num-cell">${escapeHtml(r["АкцизВвоз_27"])}</td>
-      <td class="num-cell">${escapeHtml(r["НДС_29"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["Курс"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["ФактурнаяСтоимость"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["ТаможеннаяСтоимость"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["Сборы_10"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["Пошлина_20"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["АкцизВвоз_27"])}</td>
+      <td class="num-cell">${fmtGtdNum(r["НДС_29"])}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r["Добавил"])}</td>
-    </tr>`).join("") || `<tr><td colspan="14" style="color:var(--muted)">Пока нет данных</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Пока нет данных</td></tr>`;
 }
 
 let featuresDataCache = [];
