@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Заявки — Royal Motors</title>
+<meta name="theme-color" content="#090979">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @font-face {
+    font-family: 'Satoshi';
+    src: local('Satoshi');
+  }
+  :root {
+    --bg: #F6F5FC;
+    --card: #FFFFFF;
+    --text: #1B1F2A;
+    --muted: #6B7280;
+    --border: #E3E8F2;
+    --accent-grad: linear-gradient(135deg,#090979,#00D4FF);
+    --navy-grad: linear-gradient(160deg,#020024 0%,#090979 55%,#00D4FF 130%);
+    --danger: #E5484D;
+    --ok: #1EB53A;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body { padding-bottom: 32px; }
+  .topbar {
+    background: var(--navy-grad); color: #fff;
+    padding: 18px 18px 22px; position: sticky; top: 0; z-index: 10;
+    border-radius: 0 0 18px 18px;
+  }
+  .topbar h1 { margin: 0; font-size: 19px; font-weight: 700; }
+  .topbar p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+  .back-btn {
+    display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.14);
+    border: none; color: #fff; padding: 7px 12px; border-radius: 10px;
+    font-family: 'Satoshi', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 10px; cursor: pointer;
+  }
+  .content { padding: 16px; }
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .menu-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 14px; text-align: left; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(20,20,60,0.05);
+  }
+  .menu-item .icon { font-size: 26px; display: block; margin-bottom: 8px; }
+  .menu-item .label { font-weight: 700; font-size: 14px; line-height: 1.25; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(20,20,60,0.05);
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .field input[type=text], .field textarea, .field select {
+    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+    font-family: 'Satoshi', sans-serif; font-size: 15px; background: #FBFBFF; color: var(--text);
+  }
+  .field textarea { resize: vertical; min-height: 90px; }
+  .org-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .org-btn {
+    padding: 12px 8px; border-radius: 12px; border: 1.5px solid var(--border);
+    background: #FBFBFF; font-family: 'Satoshi', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; text-align: center; color: var(--text);
+  }
+  .org-btn.selected { border-color: transparent; background: var(--accent-grad); color: #fff; }
+  .type-row { display: flex; gap: 8px; }
+  .type-row .org-btn { flex: 1; }
+  .file-drop {
+    border: 1.5px dashed var(--border); border-radius: 14px; padding: 18px;
+    text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; background: #FBFBFF;
+  }
+  .file-drop.has-file { border-style: solid; border-color: #00D4FF; color: var(--text); }
+  .file-list { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .file-list div { padding: 3px 0; }
+  .submit-btn {
+    width: 100%; padding: 15px; border: none; border-radius: 14px;
+    background: var(--accent-grad); color: #fff; font-family: 'Satoshi', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+  }
+  .submit-btn:disabled { opacity: 0.55; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .toast {
+    position: fixed; bottom: 18px; left: 16px; right: 16px; z-index: 50;
+    background: #1B1F2A; color: #fff; padding: 13px 16px; border-radius: 12px;
+    font-size: 13px; text-align: center; opacity: 0; transform: translateY(12px);
+    transition: all 0.25s ease; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { background: var(--danger); }
+  .toast.ok { background: var(--ok); }
+  .step-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn">← Назад к списку</button>
+  <h1 id="pageTitle">📋 Заявки</h1>
+  <p id="pageSub">Выберите тип запроса</p>
+</div>
+
+<div class="content" id="content"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  var API_URL = "https://script.google.com/macros/s/AKfycbzi9RqBAUtexFo4SW0ZVvCq6kjkmLKMCX8_1L6pS5eBYbqDrffaak2yqTveuMPqxadl/exec";
+
+  var ORGS = [
+    "TOSHTAN AUTO", "OLTIN TULPOR TRADE", "OLTIN TULPOR MOTORS", "OLTIN TULPOR MOTOR",
+    "BEDACHI", "HYUNDAI RM", "HYUNDAI UZBEKISTAN", "GEE MOTORS", "GEE KD",
+  ];
+
+  var content = document.getElementById("content");
+  var pageTitle = document.getElementById("pageTitle");
+  var pageSub = document.getElementById("pageSub");
+  var backBtn = document.getElementById("backBtn");
+  var toastEl = document.getElementById("toast");
+
+  function toast(msg, kind) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast show" + (kind ? " " + kind : "");
+    setTimeout(function () { toastEl.className = "toast"; }, 2600);
+  }
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = reader.result;
+        var base64 = result.split(",")[1] || "";
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadFile(file) {
+    var base64 = await fileToBase64(file);
+    var resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "uploadFile",
+        filename: file.name,
+        mimeType: file.type || "application/octet-stream",
+        base64: base64,
+      }),
+    });
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data; // { ok, url, fileId, name }
+  }
+
+  function sendToBot(payload) {
+    if (!tg || !tg.sendData) {
+      toast("Откройте это через кнопку в боте.", "err");
+      return;
+    }
+    tg.sendData(JSON.stringify(payload));
+    // Odatda sendData chaqirilgach Mini App avtomatik yopiladi (Telegram
+    // shunday ishlaydi), lekin ehtiyot uchun bir oz kutib, ochiq qolsa,
+    // xabar ko'rsatamiz.
+    setTimeout(function () {
+      toast("Отправлено! Можно закрыть окно.", "ok");
+    }, 300);
+  }
+
+  // ------------------------------------------------------------
+  // Umumiy komponentlar
+  // ------------------------------------------------------------
+  function renderOrgPicker(container, onSelect, selectedOrg) {
+    var wrap = document.createElement("div");
+    wrap.className = "org-grid";
+    ORGS.forEach(function (org) {
+      var btn = document.createElement("div");
+      btn.className = "org-btn" + (org === selectedOrg ? " selected" : "");
+      btn.textContent = org;
+      btn.onclick = function () {
+        Array.prototype.forEach.call(wrap.children, function (c) { c.classList.remove("selected"); });
+        btn.classList.add("selected");
+        onSelect(org);
+      };
+      wrap.appendChild(btn);
+    });
+    container.appendChild(wrap);
+    return wrap;
+  }
+
+  function makeCard() {
+    var c = document.createElement("div");
+    c.className = "card";
+    content.appendChild(c);
+    return c;
+  }
+
+  function makeField(card, labelText, tag, opts) {
+    opts = opts || {};
+    var f = document.createElement("div");
+    f.className = "field";
+    var label = document.createElement("label");
+    label.textContent = labelText;
+    f.appendChild(label);
+    var el = document.createElement(tag);
+    if (tag === "textarea") { el.rows = opts.rows || 3; }
+    if (opts.placeholder) el.placeholder = opts.placeholder;
+    f.appendChild(el);
+    if (opts.hint) {
+      var h = document.createElement("div");
+      h.className = "hint";
+      h.textContent = opts.hint;
+      f.appendChild(h);
+    }
+    card.appendChild(f);
+    return el;
+  }
+
+  function makeFileDrop(card, label, multiple) {
+    var wrap = document.createElement("div");
+    wrap.className = "field";
+    var l = document.createElement("label");
+    l.textContent = label;
+    wrap.appendChild(l);
+    var drop = document.createElement("div");
+    drop.className = "file-drop";
+    drop.textContent = "📎 Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+    var input = document.createElement("input");
+    input.type = "file";
+    input.style.display = "none";
+    if (multiple) input.multiple = true;
+    var list = document.createElement("div");
+    list.className = "file-list";
+    var files = [];
+    drop.onclick = function () { input.click(); };
+    input.onchange = function () {
+      files = Array.prototype.slice.call(input.files);
+      list.innerHTML = "";
+      if (files.length) {
+        drop.classList.add("has-file");
+        drop.textContent = "✅ Выбрано: " + files.length + " файл(ов) — нажмите, чтобы изменить";
+        files.forEach(function (f) {
+          var d = document.createElement("div");
+          d.textContent = "• " + f.name;
+          list.appendChild(d);
+        });
+      } else {
+        drop.classList.remove("has-file");
+        drop.textContent = "📎 Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+      }
+    };
+    wrap.appendChild(drop);
+    wrap.appendChild(input);
+    wrap.appendChild(list);
+    card.appendChild(wrap);
+    return { getFiles: function () { return files; } };
+  }
+
+  function makeSubmitBtn(card, label) {
+    var btn = document.createElement("button");
+    btn.className = "submit-btn";
+    btn.textContent = label;
+    card.appendChild(btn);
+    return btn;
+  }
+
+  async function withBusy(btn, fn) {
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "⏳ Отправка...";
+    try {
+      await fn();
+    } catch (e) {
+      toast("Ошибка: " + (e && e.message ? e.message : e), "err");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Har bir bo'lim uchun forma
+  // ------------------------------------------------------------
+  var SECTIONS = {
+    dogovor: {
+      icon: "📝", label: "Договор", title: "📝 Запрос по договору",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var step1 = document.createElement("div");
+        step1.className = "step-label";
+        step1.textContent = "1. Организация";
+        card.appendChild(step1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+
+        var text = makeField(card, "2. Номер, дата договора и контрагент", "textarea", {
+          placeholder: "Договор №15 от 20.08.2026 с «Kadi Agency»",
+        });
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!text.value.trim()) { toast("Напишите текст договора", "err"); return; }
+          withBusy(btn, async function () {
+            sendToBot({ action: "dogovor", org: selOrg, text: text.value.trim() });
+          });
+        };
+      },
+    },
+    doverennost: {
+      icon: "📋", label: "Доверенность", title: "📋 Запрос по доверенности",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. Файл (PDF/Excel/Word) или скриншот");
+        var kontragent = makeField(card, "3. Для кого (поставщик/контрагент)", "input", { placeholder: "Например: ООО Kadi Agency" });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация (если есть, например VIN)", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите файл", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            sendToBot({
+              action: "doverennost", org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+          });
+        };
+      },
+    },
+    bank: {
+      icon: "🏦", label: "Банк", title: "🏦 Банковский запрос",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null, selType = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+
+        var s2 = document.createElement("div"); s2.className = "step-label"; s2.style.marginTop = "14px"; s2.textContent = "2. Тип операции";
+        card.appendChild(s2);
+        var typeRow = document.createElement("div");
+        typeRow.className = "type-row";
+        ["Поступление", "Списание"].forEach(function (label) {
+          var b = document.createElement("div");
+          b.className = "org-btn";
+          b.textContent = (label === "Поступление" ? "📥 " : "📤 ") + label;
+          b.onclick = function () {
+            Array.prototype.forEach.call(typeRow.children, function (c) { c.classList.remove("selected"); });
+            b.classList.add("selected");
+            selType = label;
+          };
+          typeRow.appendChild(b);
+        });
+        card.appendChild(typeRow);
+
+        var details = makeField(card, "3. Банк, контрагент, договор, сумма, комментарий", "textarea", {
+          rows: 4, placeholder: "Банк: ...\nКонтрагент: ...\nДоговор: №.. от ..\nСумма: ...\nКомментарий: ...",
+        });
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!selType) { toast("Выберите тип операции", "err"); return; }
+          if (!details.value.trim()) { toast("Заполните детали", "err"); return; }
+          withBusy(btn, async function () {
+            sendToBot({ action: "bank", org: selOrg, type: selType, details: details.value.trim() });
+          });
+        };
+      },
+    },
+    realschet: {
+      icon: "📄", label: "Счёт-фактура", title: "📄 Запрос на счёт-фактуру",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. PDF со сканами (договор, доп. соглашения, приложения)");
+        var kontragent = makeField(card, "3. Контрагент (покупатель)", "input", {
+          placeholder: "Название и ИНН/ПНФЛ", hint: "⚠️ Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+        });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация (например VIN)", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите PDF", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            sendToBot({
+              action: "realschet", org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+          });
+        };
+      },
+    },
+    zakaznaryad: {
+      icon: "🔧", label: "Заказ-наряд", title: "🔧 Запрос на заказ-наряд",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. Файл (заказ-наряд, документы)");
+        var kontragent = makeField(card, "3. Контрагент (заказчик)", "input", {
+          placeholder: "Название и ИНН/ПНФЛ", hint: "⚠️ Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+        });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите файл", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            sendToBot({
+              action: "zakaznaryad", org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+          });
+        };
+      },
+    },
+    otherreq_post: {
+      icon: "❓", label: "Другой запрос (Поступления)", title: "❓ Другой запрос — Поступления",
+      render: function () { renderOtherReq("Поступления"); },
+    },
+    otherreq_real: {
+      icon: "❓", label: "Другой запрос (Реализация)", title: "❓ Другой запрос — Реализация",
+      render: function () { renderOtherReq("Реализация"); },
+    },
+    suggestion: {
+      icon: "💡", label: "Предложение / Жалоба", title: "💡 Предложение или жалоба",
+      render: function () {
+        var card = makeCard();
+        var selType = "Предложение";
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "Тип обращения";
+        card.appendChild(s1);
+        var row = document.createElement("div");
+        row.className = "type-row";
+        [["Предложение", "💡"], ["Жалоба", "⚠️"]].forEach(function (pair, i) {
+          var b = document.createElement("div");
+          b.className = "org-btn" + (i === 0 ? " selected" : "");
+          b.textContent = pair[1] + " " + pair[0];
+          b.onclick = function () {
+            Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("selected"); });
+            b.classList.add("selected");
+            selType = pair[0];
+          };
+          row.appendChild(b);
+        });
+        card.appendChild(row);
+        var text = makeField(card, "Текст обращения", "textarea", { rows: 4, placeholder: "Напишите текст..." });
+        var btn = makeSubmitBtn(card, "Отправить");
+        btn.onclick = function () {
+          if (!text.value.trim()) { toast("Напишите текст", "err"); return; }
+          withBusy(btn, async function () {
+            sendToBot({ action: "suggestion", type: selType, text: text.value.trim() });
+          });
+        };
+      },
+    },
+  };
+
+  function renderOtherReq(category) {
+    var card = makeCard();
+    var selOrg = null;
+    var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+    card.appendChild(s1);
+    renderOrgPicker(card, function (org) { selOrg = org; });
+    var text = makeField(card, "2. Текст запроса", "textarea", { rows: 4, placeholder: "Опишите запрос..." });
+    var fileCtl = makeFileDrop(card, "3. Файлы (можно несколько, необязательно)", true);
+    var btn = makeSubmitBtn(card, "Отправить запрос");
+    btn.onclick = function () {
+      var files = fileCtl.getFiles();
+      if (!selOrg) { toast("Выберите организацию", "err"); return; }
+      if (!text.value.trim() && !files.length) { toast("Напишите текст или приложите файл", "err"); return; }
+      withBusy(btn, async function () {
+        var uploaded = [];
+        for (var i = 0; i < files.length; i++) {
+          var up = await uploadFile(files[i]);
+          uploaded.push({ url: up.url, name: up.name });
+        }
+        sendToBot({
+          action: "otherreq", org: selOrg, category: category,
+          text: text.value.trim(), files: uploaded,
+        });
+      });
+    };
+  }
+
+  // ------------------------------------------------------------
+  // Navigatsiya: menyu <-> forma
+  // ------------------------------------------------------------
+  function showMenu() {
+    content.innerHTML = "";
+    pageTitle.textContent = "📋 Заявки";
+    pageSub.textContent = "Выберите тип запроса";
+    backBtn.style.display = "none";
+    if (tg && tg.BackButton) tg.BackButton.hide();
+
+    var grid = document.createElement("div");
+    grid.className = "menu-grid";
+    Object.keys(SECTIONS).forEach(function (key) {
+      var s = SECTIONS[key];
+      var item = document.createElement("div");
+      item.className = "menu-item";
+      item.innerHTML = '<span class="icon">' + s.icon + '</span><span class="label">' + esc(s.label) + '</span>';
+      item.onclick = function () { showSection(key); };
+      grid.appendChild(item);
+    });
+    content.appendChild(grid);
+  }
+
+  function showSection(key) {
+    var s = SECTIONS[key];
+    content.innerHTML = "";
+    pageTitle.textContent = s.title;
+    pageSub.textContent = "Заполните форму ниже";
+    backBtn.style.display = "inline-flex";
+    if (tg && tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(showMenu);
+    }
+    s.render();
+  }
+
+  backBtn.onclick = showMenu;
+  showMenu();
+})();
+</script>
+</body>
+</html>
