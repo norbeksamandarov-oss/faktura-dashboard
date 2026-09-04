@@ -155,6 +155,46 @@
     background: rgba(255,255,255,0.055);
     border-color: rgba(255,255,255,0.12);
   }
+  /* Topbar va sidebar - brend kitob 07-bo'limidagi maketga mos, to'q ko'k
+     panel o'rniga OQ/och fon (faqat login ekrani navy-cobalt gradientda
+     qoladi - u yerga tegilmadi). */
+  [data-brand="crb"] header.topbar {
+    background: #FFFFFF;
+    color: var(--navy);
+    border-bottom: 1px solid var(--border);
+  }
+  [data-brand="crb"] .brand-text .title { color: var(--navy); }
+  [data-brand="crb"] .brand-text .subtitle { color: var(--muted); }
+  [data-brand="crb"] #userInfo,
+  [data-brand="crb"] .topbar-right > span { color: var(--muted) !important; }
+  [data-brand="crb"] .theme-pill {
+    background: var(--bg); border-color: var(--border);
+  }
+  [data-brand="crb"] .theme-pill-opt { color: var(--muted); }
+  [data-brand="crb"] #refreshBtn, [data-brand="crb"] #logoutBtn,
+  [data-brand="crb"] #notifyBtn, [data-brand="crb"] #changePasswordBtn,
+  [data-brand="crb"] #announcementBtn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--navy);
+  }
+  [data-brand="crb"] #refreshBtn:hover, [data-brand="crb"] #logoutBtn:hover,
+  [data-brand="crb"] #notifyBtn:hover, [data-brand="crb"] #changePasswordBtn:hover,
+  [data-brand="crb"] #announcementBtn:hover { background: var(--ice-soft); }
+  [data-brand="crb"] .sidebar {
+    background: #FFFFFF;
+    border-right: 1px solid var(--border);
+  }
+  [data-brand="crb"] #sidebarToggleBtn { color: var(--muted); }
+  [data-brand="crb"] .nav-item { color: var(--muted); }
+  [data-brand="crb"] .nav-item:hover { background: var(--ice-soft); color: var(--navy); }
+  [data-brand="crb"] .nav-item.active {
+    background: var(--ice-soft);
+    color: #2563EB;
+    border-left-color: #2563EB;
+    font-weight: 600;
+  }
+  [data-brand="crb"] .nav-badge { background: #2563EB; }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -2945,7 +2985,7 @@ function applyBrandTheme() {
   }
   const markEl = document.getElementById("brandMark");
   const titleEl = document.getElementById("brandTitle");
-  if (markEl) markEl.textContent = isBrandUser ? "CRB." : "RM";
+  if (markEl) markEl.textContent = isBrandUser ? "C" : "RM";
   if (titleEl) titleEl.textContent = isBrandUser ? "CRB." : "Royal Motors";
 }
 
