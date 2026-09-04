@@ -234,11 +234,35 @@
     --stat-glow: rgba(37,99,235,0.16); --stat-ring: #0B132B; --stat-ring2: #2563EB;
   }
   [data-brand="crb"] table.invoices thead th {
-    background: linear-gradient(180deg, rgba(11,19,43,0.9), rgba(37,99,235,0.85));
+    background: #0B132B;
   }
-  [data-brand="crb"] .analytics-summary > div:nth-child(4n+1) {
-    --sum-glow: rgba(37,99,235,0.18); --sum-ring: #0B132B; --sum-ring2: #2563EB;
+  [data-brand="crb"] .analytics-summary > div {
+    background-color: rgba(255,255,255,0.9) !important;
+    background-image: none !important;
+    border: 1.5px solid var(--border) !important;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04) !important;
   }
+  [data-brand="crb"] .analytics-summary > div::before {
+    display: none;
+  }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+1),
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+3) {
+    --sum-ring: #0B132B; --sum-ring2: #0B132B;
+  }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+2),
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+4) {
+    --sum-ring: #2563EB; --sum-ring2: #2563EB;
+  }
+  [data-brand="crb"] .analytics-summary .sum-icon {
+    background: var(--sum-ring, #0B132B) !important;
+  }
+  [data-brand="crb"] .status-new { background: #94A3B8; }
+  [data-brand="crb"] .status-sent { background: #E08A00; }
+  [data-brand="crb"] .status-accepted { background: #1E7A4C; }
+  [data-brand="crb"] .status-rejected { background: #B23A3A; }
+  [data-brand="crb"] .status-notmine { background: #C2650F; }
+  [data-brand="crb"] .status-error { background: #B23A3A; }
+  [data-brand="crb"] .status-pendingboss { background: #2563EB; }
   [data-brand="crb"] .org-card {
     background-image: none;
     border: 1.5px solid var(--border);
@@ -301,6 +325,9 @@
   [data-brand="crb"] .org-card-total {
     background-color: #0B132B !important;
     background-image: none !important;
+  }
+  [data-brand="crb"] .stat-card::before {
+    display: none;
   }
   [data-brand="crb"] .stat-card .stat-icon {
     background: #2563EB !important;
@@ -383,8 +410,8 @@
   [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
   [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
   [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
-    background: linear-gradient(135deg, rgba(11,19,43,0.9), rgba(37,99,235,0.85)) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px -6px rgba(37,99,235,0.5);
+    background: #2563EB !important;
+    box-shadow: 0 4px 10px -4px rgba(37,99,235,0.5);
   }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
