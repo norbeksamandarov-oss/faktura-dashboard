@@ -84,6 +84,26 @@
   [data-theme="dark"] body { background: var(--bg); }
   [data-theme="dark"] .login-input,
   [data-theme="dark"] .login-submit-btn { background: #fff; color: #0F0B2E; }
+
+  /* ---------- CRB brend rejimi ----------
+     Faqat bitta administrator loginiga bog'langan (JS: applyBrandTheme()),
+     boshqa foydalanuvchilarga ko'rinmaydi - ular hozirgi "Royal Motors"
+     dizaynini ko'radi. Faqat brend ranglari (navy/accent) almashtiriladi,
+     layout/struktura o'zgarmaydi. */
+  [data-brand="crb"] {
+    --navy: #0B132B;
+    --navy-light: #1B2540;
+    --accent-grad: linear-gradient(135deg,#0B132B,#2563EB);
+    --navy-grad: linear-gradient(160deg,#0B132B 0%,#151F3D 55%,#2563EB 130%);
+    --navy-text: var(--navy);
+  }
+  [data-brand="crb"][data-theme="dark"] {
+    --navy-text: #6E8CFF;
+  }
+  [data-brand="crb"] .brand .mark {
+    background: #2563EB;
+    color: #fff;
+  }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -1456,9 +1476,9 @@
 <div id="app">
   <header class="topbar">
     <div class="brand">
-      <div class="mark">RM</div>
+      <div class="mark" id="brandMark">RM</div>
       <div class="brand-text">
-        <div class="title">Royal Motors</div>
+        <div class="title" id="brandTitle">Royal Motors</div>
         <div class="subtitle">Счета-фактуры · онлайн</div>
       </div>
     </div>
@@ -2858,6 +2878,24 @@ function showLoginScreen() {
   document.getElementById("loginSubmitBtn").disabled = false;
   document.getElementById("loginSubmitBtn").textContent = "Войти";
   document.getElementById("loginSubmitBtn").classList.remove("success");
+  applyBrandTheme(); // hech kim login qilmagan holatga qaytadi -> Royal Motors
+}
+
+// ---------- CRB brend rejimi ----------
+// Faqat shu loginga kirganda yangi CRB dizayni (rang + logotip) ko'rinadi,
+// boshqa barcha xodimlar odatiy "Royal Motors" dizaynini ko'rishda davom etadi.
+const CRB_BRAND_USERNAME = "norbek";
+function applyBrandTheme() {
+  const isBrandUser = currentUsername === CRB_BRAND_USERNAME;
+  if (isBrandUser) {
+    document.documentElement.setAttribute("data-brand", "crb");
+  } else {
+    document.documentElement.removeAttribute("data-brand");
+  }
+  const markEl = document.getElementById("brandMark");
+  const titleEl = document.getElementById("brandTitle");
+  if (markEl) markEl.textContent = isBrandUser ? "CRB." : "RM";
+  if (titleEl) titleEl.textContent = isBrandUser ? "CRB." : "Royal Motors";
 }
 
 async function handleLoginSubmit() {
@@ -3262,6 +3300,7 @@ async function onLoggedIn(forcePasswordChange) {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("app").style.display = "block";
   document.getElementById("userInfo").innerHTML = `<span>${escapeHtml(currentUserName || currentUsername || "Пользователь")}</span>`;
+  applyBrandTheme();
   applyRolePermissions(currentRole);
 
   // Расчётный бухгалтер (role: "salary") - boshqa hech qanday ma'lumot
