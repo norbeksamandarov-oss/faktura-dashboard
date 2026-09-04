@@ -424,6 +424,13 @@
   }
   [data-brand="crb"][data-theme="dark"] .nav-item:hover { color: #EAF0FF; }
   [data-brand="crb"][data-theme="dark"] .nav-item.active { color: #6E8CFF; }
+  [data-brand="crb"][data-theme="dark"] #clearFiltersBtn, [data-brand="crb"][data-theme="dark"] #dogovorClearFiltersBtn,
+  [data-brand="crb"][data-theme="dark"] #doverennostClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #bankClearFiltersBtn,
+  [data-brand="crb"][data-theme="dark"] #realschetClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #zakaznaryadClearFiltersBtn,
+  [data-brand="crb"][data-theme="dark"] #otherreqPostClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #otherreqRealClearFiltersBtn,
+  [data-brand="crb"][data-theme="dark"] #summaryClearFiltersBtn {
+    color: #EAF0FF !important;
+  }
   [data-brand="crb"][data-theme="dark"] input[type="text"],
   [data-brand="crb"][data-theme="dark"] input[type="date"],
   [data-brand="crb"][data-theme="dark"] select,
@@ -444,6 +451,9 @@
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
   * { box-sizing: border-box; }
+  html.theme-switching * {
+    transition: none !important;
+  }
   body {
     margin: 0;
     font-family: 'Satoshi', sans-serif;
@@ -3751,6 +3761,7 @@ async function submitForcePasswordChange() {
    qayta tekshiradi (requireAdmin), shuning uchun bu HAQIQIY himoya. */
 // ---------- Kun/Tun almashtirgichi ----------
 function setTheme(mode) {
+  document.documentElement.classList.add("theme-switching");
   if (mode === "dark") {
     document.documentElement.setAttribute("data-theme", "dark");
     localStorage.setItem("rm_theme", "dark");
@@ -3759,6 +3770,11 @@ function setTheme(mode) {
     localStorage.setItem("rm_theme", "light");
   }
   syncThemeButtonLabel();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove("theme-switching");
+    });
+  });
 }
 function syncThemeButtonLabel() {
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
