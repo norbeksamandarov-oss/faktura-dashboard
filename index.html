@@ -269,14 +269,42 @@
   [data-brand="crb"] .analytics-summary {
     background: rgba(255,255,255,0.85) !important;
     border: 1px solid var(--border) !important;
-    box-shadow: 0 1px 2px rgba(11,19,43,0.04) !important;
+    border-radius: 16px !important;
+    padding: 22px 24px !important;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04), 0 10px 24px -20px rgba(11,19,43,0.15) !important;
   }
   [data-brand="crb"] .stat-card,
   [data-brand="crb"] .org-card,
   [data-brand="crb"] .contragent-card,
   [data-brand="crb"] .modal-card {
     background-color: rgba(255,255,255,0.9);
+    padding: 22px 22px;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04), 0 8px 20px -16px rgba(11,19,43,0.18);
   }
+  [data-brand="crb"] .stat-card .num {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+  }
+  [data-brand="crb"] .stat-card .label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94A3B8;
+  }
+  [data-brand="crb"] .stat-card .stat-pct {
+    background: #E3F5E9;
+    color: #1E7A4C;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  [data-brand="crb"] .stat-card.accent-pending .stat-pct { background: #FFF3DA; color: #93610A; }
+  [data-brand="crb"] .stat-card.accent-rejected .stat-pct,
+  [data-brand="crb"] .stat-card.accent-overdue .stat-pct { background: #FBE7E7; color: #B23A3A; }
   [data-brand="crb"] #refreshBtn, [data-brand="crb"] #logoutBtn,
   [data-brand="crb"] #notifyBtn, [data-brand="crb"] #changePasswordBtn,
   [data-brand="crb"] #announcementBtn, [data-brand="crb"] .theme-pill,
@@ -1738,7 +1766,7 @@
           <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <div class="nav-group-label">ASOSIY</div>
+      <div class="nav-group-label">ОСНОВНОЕ</div>
       <button class="nav-item" data-section="summary" onclick="showSection('summary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">Сводка</span> <span id="pendingSummaryBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-label">Аналитика</span></button>
       <button class="nav-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
@@ -1779,7 +1807,7 @@
         <button class="nav-item nav-sub-item" data-section="salaryrequests" onclick="showSection('salaryrequests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">Заявки</span> <span id="pendingSalaryReqBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="salary" onclick="showSection('salary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg></span><span class="nav-label">Оклады</span></button>
       </div>
-      <div class="nav-group-label">BOSHQARUV</div>
+      <div class="nav-group-label">УПРАВЛЕНИЕ</div>
       <button class="nav-item nav-group-toggle" id="personalToggle" onclick="togglePersonalGroup()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
         <span class="nav-label">Персонал</span>
@@ -1802,7 +1830,7 @@
     <section id="section-summary" class="content-section">
     <div id="crbGreeting" style="display:none;margin-bottom:16px;">
       <div style="font-size:20px;font-weight:800;color:#0B132B;font-family:'Manrope',sans-serif;" id="crbGreetingTitle"></div>
-      <div style="font-size:12.5px;color:#64748B;margin-top:2px;">Bugungi holat qisqacha</div>
+      <div style="font-size:12.5px;color:#64748B;margin-top:2px;">Краткая сводка на сегодня</div>
     </div>
     <div class="panel">
       <h2>Сводка <span class="sub" id="summaryCountSub">все ожидающие запросы, из всех разделов, старые сверху</span></h2>
@@ -3144,7 +3172,7 @@ function applyBrandTheme() {
   if (greetingEl) greetingEl.style.display = isBrandUser ? "block" : "none";
   if (greetingTitleEl && isBrandUser) {
     const hour = new Date().getHours();
-    const timeGreeting = hour < 6 ? "Xayrli tun" : hour < 12 ? "Xayrli tong" : hour < 18 ? "Xayrli kun" : "Xayrli kech";
+    const timeGreeting = hour < 6 ? "Доброй ночи" : hour < 12 ? "Доброе утро" : hour < 18 ? "Добрый день" : "Добрый вечер";
     const firstName = (currentUserName || "").split(" ")[0] || "Norbek";
     greetingTitleEl.textContent = `${timeGreeting}, ${firstName}`;
   }
