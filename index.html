@@ -38,6 +38,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -88,21 +89,71 @@
   /* ---------- CRB brend rejimi ----------
      Faqat bitta administrator loginiga bog'langan (JS: applyBrandTheme()),
      boshqa foydalanuvchilarga ko'rinmaydi - ular hozirgi "Royal Motors"
-     dizaynini ko'radi. Faqat brend ranglari (navy/accent) almashtiriladi,
-     layout/struktura o'zgarmaydi. */
+     dizaynini ko'radi. Brend kitobiga (01-07 bo'limlar) mos: to'liq rang
+     palitrasi, Manrope shrifti, va "aurora glass-morphism" o'rniga tekis/
+     minimal karta uslubi ("Soddalik" tamoyiliga mos). Layout/struktura
+     o'zgarmaydi - faqat ko'rinish. */
   [data-brand="crb"] {
     --navy: #0B132B;
     --navy-light: #1B2540;
+    --bg: #F6F7F9;
+    --card: #FFFFFF;
+    --border: #E5E7EB;
+    --muted: #64748B;
+    --ice: #A9C2FF;
+    --ice-soft: #EAF0FF;
+    --chip-bg: #FFFFFF;
     --accent-grad: linear-gradient(135deg,#0B132B,#2563EB);
     --navy-grad: linear-gradient(160deg,#0B132B 0%,#151F3D 55%,#2563EB 130%);
     --navy-text: var(--navy);
+    --stat-ring: #0B132B;
+    --stat-ring2: #2563EB;
+    --stat-glow: rgba(37,99,235,0.14);
   }
   [data-brand="crb"][data-theme="dark"] {
+    --bg: #0B0F1A;
+    --card: #121728;
+    --border: rgba(255,255,255,0.08);
+    --muted: #8B93A8;
     --navy-text: #6E8CFF;
+    --stat-ring: #2563EB;
+    --stat-ring2: #6E8CFF;
+  }
+  [data-brand="crb"] body,
+  [data-brand="crb"] div,
+  [data-brand="crb"] span,
+  [data-brand="crb"] p,
+  [data-brand="crb"] h1, [data-brand="crb"] h2, [data-brand="crb"] h3, [data-brand="crb"] h4,
+  [data-brand="crb"] button,
+  [data-brand="crb"] input,
+  [data-brand="crb"] select,
+  [data-brand="crb"] textarea,
+  [data-brand="crb"] td, [data-brand="crb"] th,
+  [data-brand="crb"] a, [data-brand="crb"] label {
+    font-family: 'Manrope', sans-serif !important;
   }
   [data-brand="crb"] .brand .mark {
     background: #2563EB;
     color: #fff;
+  }
+  /* Panellar/statistika kartalari - "aurora" shaffof-loyqa (glass) uslub
+     o'rniga tekis, aniq chegarali minimal karta (brend kitob 06-bo'lim). */
+  [data-brand="crb"] .panel {
+    background: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04);
+  }
+  [data-brand="crb"] .analytics-summary {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  [data-brand="crb"] .login-card {
+    background: rgba(255,255,255,0.055);
+    border-color: rgba(255,255,255,0.12);
   }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
