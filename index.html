@@ -2950,7 +2950,7 @@ function attemptSessionRestore() {
 function applyHolidayThemeIfNeeded() {
   const now = new Date();
   const start = new Date(2026, 7, 25); // oy 0-indeksli: 7 = avgust
-  const end = new Date(2026, 8, 4, 23, 59, 59); // 8 = sentabr
+  const end = new Date(2026, 8, 3, 23, 59, 59); // 8 = sentabr; 03.09 kechasigacha, 04.09'dan o'chadi
   if (now < start || now > end) return;
 
   document.getElementById("loginScreen").classList.add("holiday");
