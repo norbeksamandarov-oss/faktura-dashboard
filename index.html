@@ -195,6 +195,24 @@
     font-weight: 600;
   }
   [data-brand="crb"] .nav-badge { background: #2563EB; }
+  [data-brand="crb"] .theme-pill-opt.active#themeOptNight {
+    background: linear-gradient(135deg,#0B132B,#2563EB); color: #EAF0FF;
+  }
+  [data-brand="crb"] .stat-card.accent-total {
+    --stat-glow: rgba(37,99,235,0.16); --stat-ring: #0B132B; --stat-ring2: #2563EB;
+  }
+  [data-brand="crb"] table.invoices thead th {
+    background: linear-gradient(180deg, #0B132B, #2563EB);
+  }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+1) {
+    --sum-glow: rgba(37,99,235,0.18); --sum-ring: #0B132B; --sum-ring2: #2563EB;
+  }
+  [data-brand="crb"] .org-card {
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg,#0B132B,#2563EB);
+  }
+  [data-brand="crb"] .org-card .org-icon {
+    background: linear-gradient(135deg,#0B132B,#2563EB);
+  }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -5129,11 +5147,12 @@ function renderWeekdayChart(rows) {
   const labels = order.map(i => dayLabels[i]);
   const data = order.map(i => counts[i]);
 
+  const barColor = document.documentElement.getAttribute("data-brand") === "crb" ? "#0B132B" : "#241A5C";
   const ctx = document.getElementById("weekdayChart");
   if (weekdayChartInstance) weekdayChartInstance.destroy();
   weekdayChartInstance = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: "#241A5C", borderRadius: 4 }] },
+    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: barColor, borderRadius: 4 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
