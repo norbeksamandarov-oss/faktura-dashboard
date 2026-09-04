@@ -267,6 +267,13 @@
   }
   [data-brand="crb"] .analytics-summary .lbl { color: #8B93A8 !important; }
   [data-brand="crb"] .analytics-summary > div:last-child .num { color: #2563EB !important; }
+  [data-brand="crb"] .days-badge {
+    background-image: none !important;
+    border: none !important;
+  }
+  [data-brand="crb"] .days-green { background: #E3F5E9 !important; color: #1E7A4C !important; }
+  [data-brand="crb"] .days-amber { background: #FFF0DC !important; color: #C2650F !important; }
+  [data-brand="crb"] .days-red { background: #FBE7E7 !important; color: #B23A3A !important; }
   [data-brand="crb"] .status-new { background: #F1F5F9 !important; color: #64748B !important; }
   [data-brand="crb"] .status-sent { background: #FFF0DC !important; color: #C2650F !important; }
   [data-brand="crb"] .status-accepted { background: #E3F5E9 !important; color: #1E7A4C !important; }
@@ -409,10 +416,21 @@
   [data-brand="crb"][data-theme="dark"] .table-wrap {
     background: rgba(18,23,40,0.92) !important;
     border-color: rgba(255,255,255,0.1) !important;
+    color: #EAF0FF !important;
   }
   [data-brand="crb"][data-theme="dark"] header.topbar,
   [data-brand="crb"][data-theme="dark"] .sidebar {
     background: rgba(11,15,26,0.75);
+  }
+  [data-brand="crb"][data-theme="dark"] .nav-item:hover { color: #EAF0FF; }
+  [data-brand="crb"][data-theme="dark"] input[type="text"],
+  [data-brand="crb"][data-theme="dark"] input[type="date"],
+  [data-brand="crb"][data-theme="dark"] select,
+  [data-brand="crb"][data-theme="dark"] .contragent-search {
+    color: #EAF0FF !important;
+  }
+  [data-brand="crb"][data-theme="dark"] input[type="text"]::placeholder {
+    color: #6B7590 !important;
   }
   [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn,
   [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
