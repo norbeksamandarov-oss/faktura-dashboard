@@ -213,6 +213,92 @@
   [data-brand="crb"] .org-card .org-icon {
     background: linear-gradient(135deg,#0B132B,#2563EB);
   }
+  /* ---------- "Liquid Glass" qatlami (Apple uslubidagi shaffof-loyqa
+     oynasimon interfeys) - CRB rejimida asosiy fon ustiga yengil rangli
+     nurlar qo'yiladi, shunda ustidagi shaffof/loyqa panellar chinakam
+     "oyna" his qilinadi (orqa fonda hech narsa bo'lmasa, blur ko'rinmaydi). */
+  [data-brand="crb"] body {
+    background:
+      radial-gradient(circle at 12% 8%, rgba(37,99,235,0.12), transparent 42%),
+      radial-gradient(circle at 88% 18%, rgba(11,19,43,0.08), transparent 40%),
+      radial-gradient(circle at 30% 90%, rgba(37,99,235,0.08), transparent 45%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  [data-brand="crb"] header.topbar {
+    background: rgba(255,255,255,0.55);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 8px 30px -22px rgba(11,19,43,0.25);
+  }
+  [data-brand="crb"] .sidebar {
+    background: rgba(255,255,255,0.5);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border-right: 1px solid rgba(255,255,255,0.6);
+  }
+  [data-brand="crb"] .panel,
+  [data-brand="crb"] .analytics-summary {
+    background: rgba(255,255,255,0.55) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    border: 1px solid rgba(255,255,255,0.65) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 30px -20px rgba(11,19,43,0.2) !important;
+  }
+  [data-brand="crb"] .stat-card,
+  [data-brand="crb"] .org-card,
+  [data-brand="crb"] .contragent-card,
+  [data-brand="crb"] .modal-card {
+    background-color: rgba(255,255,255,0.6);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    backdrop-filter: blur(14px) saturate(180%);
+  }
+  [data-brand="crb"] #refreshBtn, [data-brand="crb"] #logoutBtn,
+  [data-brand="crb"] #notifyBtn, [data-brand="crb"] #changePasswordBtn,
+  [data-brand="crb"] #announcementBtn, [data-brand="crb"] .theme-pill,
+  [data-brand="crb"] .contragent-search,
+  [data-brand="crb"] select,
+  [data-brand="crb"] input[type="text"],
+  [data-brand="crb"] input[type="date"] {
+    background: rgba(255,255,255,0.55) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.7) !important;
+  }
+  [data-brand="crb"][data-theme="dark"] body {
+    background:
+      radial-gradient(circle at 12% 8%, rgba(37,99,235,0.16), transparent 42%),
+      radial-gradient(circle at 88% 18%, rgba(37,99,235,0.08), transparent 40%),
+      radial-gradient(circle at 30% 90%, rgba(11,19,43,0.3), transparent 45%),
+      var(--bg);
+    background-attachment: fixed;
+  }
+  [data-brand="crb"][data-theme="dark"] header.topbar,
+  [data-brand="crb"][data-theme="dark"] .sidebar,
+  [data-brand="crb"][data-theme="dark"] .panel,
+  [data-brand="crb"][data-theme="dark"] .analytics-summary,
+  [data-brand="crb"][data-theme="dark"] .stat-card,
+  [data-brand="crb"][data-theme="dark"] .org-card,
+  [data-brand="crb"][data-theme="dark"] .contragent-card,
+  [data-brand="crb"][data-theme="dark"] .modal-card,
+  [data-brand="crb"][data-theme="dark"] #refreshBtn, [data-brand="crb"][data-theme="dark"] #logoutBtn,
+  [data-brand="crb"][data-theme="dark"] #notifyBtn, [data-brand="crb"][data-theme="dark"] #changePasswordBtn,
+  [data-brand="crb"][data-theme="dark"] #announcementBtn, [data-brand="crb"][data-theme="dark"] .theme-pill,
+  [data-brand="crb"][data-theme="dark"] .contragent-search,
+  [data-brand="crb"][data-theme="dark"] select,
+  [data-brand="crb"][data-theme="dark"] input[type="text"],
+  [data-brand="crb"][data-theme="dark"] input[type="date"] {
+    background: rgba(18,23,40,0.55) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -20px rgba(0,0,0,0.5) !important;
+  }
+  [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn,
+  [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
+  [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
+  [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px -6px rgba(37,99,235,0.5);
+  }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -1586,6 +1672,17 @@
   <header class="topbar">
     <div class="brand">
       <div class="mark" id="brandMark">RM</div>
+      <svg id="crbWordmark" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" style="display:none;height:26px;width:auto;">
+        <path d="M244.3,230.7 A110,110 0 1 1 244.3,89.3" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M380,60 L380,260" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M382,65 C462,65 462,175 382,175" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M405,172 L487,260" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M582,60 L582,260" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M584,65 C664,65 664,155 584,155" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M584,165 C664,165 664,255 584,255" fill="none" stroke="#0B132B" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="582" y="140" width="52" height="40" rx="20" fill="#2563EB"/>
+        <circle cx="700" cy="260" r="26" fill="#2563EB"/>
+      </svg>
       <div class="brand-text">
         <div class="title" id="brandTitle">Royal Motors</div>
         <div class="subtitle">Счета-фактуры · онлайн</div>
@@ -3003,8 +3100,11 @@ function applyBrandTheme() {
   }
   const markEl = document.getElementById("brandMark");
   const titleEl = document.getElementById("brandTitle");
-  if (markEl) markEl.textContent = isBrandUser ? "C" : "RM";
-  if (titleEl) titleEl.textContent = isBrandUser ? "CRB." : "Royal Motors";
+  const wordmarkEl = document.getElementById("crbWordmark");
+  if (markEl) markEl.style.display = isBrandUser ? "none" : "";
+  if (titleEl) titleEl.style.display = isBrandUser ? "none" : "";
+  if (wordmarkEl) wordmarkEl.style.display = isBrandUser ? "block" : "none";
+  if (titleEl && !isBrandUser) titleEl.textContent = "Royal Motors";
 }
 
 async function handleLoginSubmit() {
