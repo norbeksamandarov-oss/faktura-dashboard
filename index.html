@@ -212,14 +212,21 @@
   }
   .nav-group-label { display: none; }
   [data-brand="crb"] .nav-group-label {
-    display: block;
-    font-size: 9.5px;
+    display: flex !important;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    text-indent: 0;
+    direction: ltr;
+    white-space: nowrap;
+    overflow: visible;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.05em;
     color: #94A3B8;
-    padding: 12px 24px 6px;
+    padding: 12px 24px 6px 24px !important;
   }
-  [data-brand="crb"] .sidebar.collapsed .nav-group-label { display: none; }
+  [data-brand="crb"] .sidebar.collapsed .nav-group-label { display: none !important; }
   [data-brand="crb"] .theme-pill-opt.active#themeOptNight {
     background: linear-gradient(135deg,#0B132B,#2563EB); color: #EAF0FF;
   }
