@@ -202,7 +202,9 @@
     --stat-glow: rgba(37,99,235,0.16); --stat-ring: #0B132B; --stat-ring2: #2563EB;
   }
   [data-brand="crb"] table.invoices thead th {
-    background: linear-gradient(180deg, #0B132B, #2563EB);
+    background: linear-gradient(180deg, rgba(11,19,43,0.8), rgba(37,99,235,0.75));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
   [data-brand="crb"] .analytics-summary > div:nth-child(4n+1) {
     --sum-glow: rgba(37,99,235,0.18); --sum-ring: #0B132B; --sum-ring2: #2563EB;
@@ -261,13 +263,20 @@
   [data-brand="crb"] select,
   [data-brand="crb"] input[type="text"],
   [data-brand="crb"] input[type="date"],
-  [data-brand="crb"] .toolbar,
   [data-brand="crb"] .filter-field input,
-  [data-brand="crb"] .filter-field select,
+  [data-brand="crb"] .filter-field select {
+    background: rgba(255,255,255,0.7) !important;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.8) !important;
+  }
+  [data-brand="crb"] .toolbar,
   [data-brand="crb"] .table-wrap {
-    background: rgba(255,255,255,0.55) !important;
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
-    backdrop-filter: blur(10px) saturate(160%);
+    background:
+      linear-gradient(135deg, rgba(11,19,43,0.03), rgba(37,99,235,0.05)),
+      rgba(255,255,255,0.7) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
     border: 1px solid rgba(255,255,255,0.7) !important;
   }
   [data-brand="crb"][data-theme="dark"] body {
@@ -305,6 +314,9 @@
   [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
   [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
   [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
+    background: linear-gradient(135deg, rgba(11,19,43,0.8), rgba(37,99,235,0.75)) !important;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px -6px rgba(37,99,235,0.5);
   }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
