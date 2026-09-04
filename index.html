@@ -202,9 +202,7 @@
     --stat-glow: rgba(37,99,235,0.16); --stat-ring: #0B132B; --stat-ring2: #2563EB;
   }
   [data-brand="crb"] table.invoices thead th {
-    background: linear-gradient(180deg, rgba(11,19,43,0.8), rgba(37,99,235,0.75));
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(11,19,43,0.9), rgba(37,99,235,0.85));
   }
   [data-brand="crb"] .analytics-summary > div:nth-child(4n+1) {
     --sum-glow: rgba(37,99,235,0.18); --sum-ring: #0B132B; --sum-ring2: #2563EB;
@@ -215,10 +213,12 @@
   [data-brand="crb"] .org-card .org-icon {
     background: linear-gradient(135deg,#0B132B,#2563EB);
   }
-  /* ---------- "Liquid Glass" qatlami (Apple uslubidagi shaffof-loyqa
-     oynasimon interfeys) - CRB rejimida asosiy fon ustiga yengil rangli
-     nurlar qo'yiladi, shunda ustidagi shaffof/loyqa panellar chinakam
-     "oyna" his qilinadi (orqa fonda hech narsa bo'lmasa, blur ko'rinmaydi). */
+  /* ---------- "Liquid Glass" - FAQAT topbar va sidebar'da (kichik, statik
+     elementlar). Boshqa joylarda (panellar, jadval, kartalar, tugmalar)
+     blur ISHLATILMAYDI - ko'p joyga qo'yilgan backdrop-filter sahifani
+     "qotib-qotib" ishlashiga (lag) sabab bo'lgan edi, ayniqsa 259 qatorli
+     jadval o'ramida. Rang tusi saqlanadi, faqat blur olib tashlanadi -
+     tezlik tiklanadi, ko'rinish deyarli bir xil qoladi. */
   [data-brand="crb"] body {
     background:
       radial-gradient(circle at 12% 8%, rgba(37,99,235,0.12), transparent 42%),
@@ -228,33 +228,29 @@
     background-attachment: fixed;
   }
   [data-brand="crb"] header.topbar {
-    background: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.75);
     -webkit-backdrop-filter: blur(22px) saturate(180%);
     backdrop-filter: blur(22px) saturate(180%);
     border-bottom: 1px solid rgba(255,255,255,0.6);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 8px 30px -22px rgba(11,19,43,0.25);
   }
   [data-brand="crb"] .sidebar {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.7);
     -webkit-backdrop-filter: blur(22px) saturate(180%);
     backdrop-filter: blur(22px) saturate(180%);
     border-right: 1px solid rgba(255,255,255,0.6);
   }
   [data-brand="crb"] .panel,
   [data-brand="crb"] .analytics-summary {
-    background: rgba(255,255,255,0.55) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-    backdrop-filter: blur(18px) saturate(180%) !important;
-    border: 1px solid rgba(255,255,255,0.65) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 30px -20px rgba(11,19,43,0.2) !important;
+    background: rgba(255,255,255,0.85) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04) !important;
   }
   [data-brand="crb"] .stat-card,
   [data-brand="crb"] .org-card,
   [data-brand="crb"] .contragent-card,
   [data-brand="crb"] .modal-card {
-    background-color: rgba(255,255,255,0.6);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
-    backdrop-filter: blur(14px) saturate(180%);
+    background-color: rgba(255,255,255,0.9);
   }
   [data-brand="crb"] #refreshBtn, [data-brand="crb"] #logoutBtn,
   [data-brand="crb"] #notifyBtn, [data-brand="crb"] #changePasswordBtn,
@@ -265,19 +261,15 @@
   [data-brand="crb"] input[type="date"],
   [data-brand="crb"] .filter-field input,
   [data-brand="crb"] .filter-field select {
-    background: rgba(255,255,255,0.7) !important;
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.8) !important;
+    background: rgba(255,255,255,0.85) !important;
+    border: 1px solid var(--border) !important;
   }
   [data-brand="crb"] .toolbar,
   [data-brand="crb"] .table-wrap {
     background:
       linear-gradient(135deg, rgba(11,19,43,0.03), rgba(37,99,235,0.05)),
-      rgba(255,255,255,0.7) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    backdrop-filter: blur(16px) saturate(150%);
-    border: 1px solid rgba(255,255,255,0.7) !important;
+      rgba(255,255,255,0.92) !important;
+    border: 1px solid var(--border) !important;
   }
   [data-brand="crb"][data-theme="dark"] body {
     background:
@@ -287,8 +279,6 @@
       var(--bg);
     background-attachment: fixed;
   }
-  [data-brand="crb"][data-theme="dark"] header.topbar,
-  [data-brand="crb"][data-theme="dark"] .sidebar,
   [data-brand="crb"][data-theme="dark"] .panel,
   [data-brand="crb"][data-theme="dark"] .analytics-summary,
   [data-brand="crb"][data-theme="dark"] .stat-card,
@@ -306,17 +296,18 @@
   [data-brand="crb"][data-theme="dark"] .filter-field input,
   [data-brand="crb"][data-theme="dark"] .filter-field select,
   [data-brand="crb"][data-theme="dark"] .table-wrap {
-    background: rgba(18,23,40,0.55) !important;
+    background: rgba(18,23,40,0.92) !important;
     border-color: rgba(255,255,255,0.1) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 30px -20px rgba(0,0,0,0.5) !important;
+  }
+  [data-brand="crb"][data-theme="dark"] header.topbar,
+  [data-brand="crb"][data-theme="dark"] .sidebar {
+    background: rgba(11,15,26,0.75);
   }
   [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn,
   [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
   [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
   [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
-    background: linear-gradient(135deg, rgba(11,19,43,0.8), rgba(37,99,235,0.75)) !important;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(11,19,43,0.9), rgba(37,99,235,0.85)) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px -6px rgba(37,99,235,0.5);
   }
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
