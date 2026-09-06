@@ -555,23 +555,57 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(ellipse 1000px 800px at 50% 30%, #1a2140 0%, #0a0e1a 55%, #000000 100%);
+    background: linear-gradient(160deg, #050608 0%, #0c1024 45%, #05060c 100%);
     position: relative;
     overflow: hidden;
   }
-  #loginScreen::before {
+  #loginScreen .aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    pointer-events: none;
+    will-change: transform;
+  }
+  #loginScreen .aurora-blob.b1 {
+    width: 480px; height: 480px;
+    top: -10%; left: -8%;
+    background: radial-gradient(circle, rgba(76,60,220,0.45), transparent 70%);
+    animation: aurora-drift-1 22s ease-in-out infinite;
+  }
+  #loginScreen .aurora-blob.b2 {
+    width: 420px; height: 420px;
+    top: 30%; right: -12%;
+    background: radial-gradient(circle, rgba(37,99,235,0.40), transparent 70%);
+    animation: aurora-drift-2 26s ease-in-out infinite;
+  }
+  #loginScreen .aurora-blob.b3 {
+    width: 380px; height: 380px;
+    bottom: -14%; left: 22%;
+    background: radial-gradient(circle, rgba(110,140,255,0.30), transparent 70%);
+    animation: aurora-drift-3 19s ease-in-out infinite;
+  }
+  @keyframes aurora-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, 40px) scale(1.1); }
+    66% { transform: translate(20px, -30px) scale(0.95); }
+  }
+  @keyframes aurora-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-70px, 50px) scale(1.08); }
+  }
+  @keyframes aurora-drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    40% { transform: translate(40px, -40px) scale(1.05); }
+    75% { transform: translate(-30px, -10px) scale(0.97); }
+  }
+  #loginScreen::after {
+    /* nozik "grain" tekstura - tekis gradientni jonli va sifatli ko'rsatadi */
     content: "";
     position: absolute; inset: 0;
-    background:
-      radial-gradient(circle 380px at 28% 22%, rgba(37,99,235,0.30), transparent 70%),
-      radial-gradient(circle 420px at 76% 30%, rgba(110,140,255,0.18), transparent 70%),
-      radial-gradient(circle 360px at 50% 78%, rgba(37,99,235,0.16), transparent 70%);
-    animation: login-aurora-breathe 9s ease-in-out infinite alternate;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    mix-blend-mode: overlay;
     pointer-events: none;
-  }
-  @keyframes login-aurora-breathe {
-    0% { opacity: 0.75; transform: scale(1); }
-    100% { opacity: 1; transform: scale(1.05); }
   }
   #confettiContainer {
     position: absolute; inset: 0; overflow: hidden; pointer-events: none;
@@ -596,47 +630,13 @@
     position: relative;
     z-index: 2;
   }
-  .mark-wrap {
-    position: relative;
-    width: 76px; height: 76px;
-    margin: 0 auto 22px;
-  }
-  .mark-ring {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 76px; height: 76px;
-    margin: -38px 0 0 -38px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(90,135,255,0.55);
-    animation: mark-ring-pulse 2.8s cubic-bezier(0.35,0,0.25,1) infinite;
-    pointer-events: none;
-  }
-  .mark-ring.r2 { animation-delay: 1.4s; }
-  @keyframes mark-ring-pulse {
-    0% { transform: scale(1); opacity: 0.65; }
-    100% { transform: scale(2.1); opacity: 0; }
-  }
-  .login-card .mark {
-    opacity: 0;
-    animation: login-mark-in 0.5s cubic-bezier(0.32,0.72,0,1) 0.12s forwards, mark-float 4.5s ease-in-out 0.7s infinite;
-  }
-  @keyframes login-mark-in {
-    0% { opacity: 0; transform: scale(0.7); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes mark-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
   .login-card h1, .login-card .brand-sub, .login-card p, .login-card form, .login-card .login-footer {
     opacity: 0;
     animation: login-fade-up 0.45s ease forwards;
   }
-  .login-card h1 { animation-delay: 0.18s; }
-  .login-card .brand-sub { animation-delay: 0.23s; }
-  .login-card p { animation-delay: 0.28s; }
-  .login-card form { animation-delay: 0.33s; }
-  .login-card .login-footer { animation-delay: 0.4s; }
+  .login-card p { animation-delay: 0.08s; }
+  .login-card form { animation-delay: 0.16s; }
+  .login-card .login-footer { animation-delay: 0.26s; }
   @keyframes login-fade-up {
     0% { opacity: 0; transform: translateY(6px); }
     100% { opacity: 1; transform: translateY(0); }
@@ -2516,6 +2516,9 @@
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="loginScreen">
+  <div class="aurora-blob b1"></div>
+  <div class="aurora-blob b2"></div>
+  <div class="aurora-blob b3"></div>
   <div class="theme-pill login-theme-toggle" id="loginThemeToggleBtn" title="Переключить тему">
     <button class="theme-pill-opt" id="themeOptDayLogin" onclick="setTheme('light')"><i class='ti ti-sun' aria-hidden='true'></i></button>
     <button class="theme-pill-opt" id="themeOptNightLogin" onclick="setTheme('dark')"><i class='ti ti-moon' aria-hidden='true'></i></button>
@@ -2652,13 +2655,6 @@
 
     <div class="holiday-banner"><i class='ti ti-confetti' aria-hidden='true'></i> С Днём Независимости Узбекистана! <i class='ti ti-confetti' aria-hidden='true'></i></div>
     <div class="holiday-quote">Мустақиллик байрамингиз муборак бўлсин!</div>
-    <div class="mark-wrap">
-      <div class="mark-ring r1"></div>
-      <div class="mark-ring r2"></div>
-      <div class="mark">RM</div>
-    </div>
-    <h1>Royal Motors</h1>
-    <div class="brand-sub">dashboard</div>
     <p>Введите логин и пароль, выданные администратором.</p>
     <form id="loginForm" onsubmit="return false;">
       <div class="login-input-wrap">
