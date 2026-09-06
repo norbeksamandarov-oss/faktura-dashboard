@@ -577,29 +577,59 @@
     0% { opacity: 0.7; }
     100% { opacity: 1; }
   }
-  /* --- Fonda dashboard elementlarining xira "sharpasi" (glass panellar) --- */
-  .login-bg-ghost {
+  /* --- Kosmik fon: yulduzlar, tuman (nebula) sharlari, uchar yulduzlar --- */
+  #loginCosmos { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .cosmo-star {
     position: absolute;
-    border-radius: 18px;
-    background: rgba(255,255,255,0.035);
-    border: 1px solid rgba(110,140,255,0.10);
-    filter: blur(1px);
+    border-radius: 50%;
+    background: #fff;
+    animation: cosmo-twinkle ease-in-out infinite;
+  }
+  @keyframes cosmo-twinkle {
+    0%, 100% { opacity: 0.15; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+  .cosmo-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(38px);
+    animation: cosmo-drift ease-in-out infinite, cosmo-breathe ease-in-out infinite;
     pointer-events: none;
-    animation: login-ghost-float 9s ease-in-out infinite;
   }
-  .login-bg-ghost.g1 { width: 220px; height: 130px; top: 9%; left: 7%; transform: rotate(-4deg); animation-duration: 10s; animation-delay: -1.5s; }
-  .login-bg-ghost.g2 { width: 170px; height: 90px; top: 68%; left: 11%; transform: rotate(3deg); animation-duration: 8s; animation-delay: -4s; }
-  .login-bg-ghost.g3 { width: 190px; height: 250px; top: 14%; right: 8%; transform: rotate(3deg); animation-duration: 11s; animation-delay: -6.5s; }
-  .login-bg-ghost.g4 { width: 150px; height: 90px; top: 72%; right: 12%; transform: rotate(-3deg); animation-duration: 9s; animation-delay: -2.5s; }
-  @keyframes login-ghost-float {
-    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
-    50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+  @keyframes cosmo-drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(24px, -18px); }
   }
-  .login-bg-ghost.g1 { --r: -4deg; }
-  .login-bg-ghost.g2 { --r: 3deg; }
-  .login-bg-ghost.g3 { --r: 3deg; }
-  .login-bg-ghost.g4 { --r: -3deg; }
-  @media (max-width: 900px) { .login-bg-ghost { display: none; } }
+  @keyframes cosmo-breathe {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.65; }
+  }
+  .cosmo-shooting-star {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 1px rgba(255,255,255,0.9);
+    opacity: 0;
+  }
+  .cosmo-shooting-star::before {
+    content: "";
+    position: absolute;
+    top: 50%; right: 0;
+    width: 90px; height: 1px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, rgba(255,255,255,0.85), transparent);
+  }
+  .cosmo-shooting-star.fly {
+    animation: cosmo-shoot 1.1s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  }
+  @keyframes cosmo-shoot {
+    0% { opacity: 0; transform: translate(0, 0); }
+    8% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-260px, 170px); }
+  }
+  @media (max-width: 900px) { #loginCosmos { opacity: 0.6; } }
   #confettiContainer {
     position: absolute; inset: 0; overflow: hidden; pointer-events: none;
   }
@@ -2527,10 +2557,7 @@
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="loginScreen">
-  <div class="login-bg-ghost g1"></div>
-  <div class="login-bg-ghost g2"></div>
-  <div class="login-bg-ghost g3"></div>
-  <div class="login-bg-ghost g4"></div>
+  <div id="loginCosmos"></div>
   <div class="theme-pill login-theme-toggle" id="loginThemeToggleBtn" title="Переключить тему">
     <button class="theme-pill-opt" id="themeOptDayLogin" onclick="setTheme('light')"><i class='ti ti-sun' aria-hidden='true'></i></button>
     <button class="theme-pill-opt" id="themeOptNightLogin" onclick="setTheme('dark')"><i class='ti ti-moon' aria-hidden='true'></i></button>
@@ -4288,8 +4315,70 @@ function restoreSidebarState() {
   }
 }
 
+// ---------- Login fonidagi kosmik animatsiya (yulduzlar, tuman, uchar yulduz) ----------
+function initLoginCosmos() {
+  const cosmos = document.getElementById("loginCosmos");
+  if (!cosmos || cosmos.dataset.ready) return;
+  cosmos.dataset.ready = "1";
+
+  // Yulduzlar - tasodifiy joylashgan, har xil tezlikda miltillovchi kichik nuqtalar
+  const starCount = 70;
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement("div");
+    star.className = "cosmo-star";
+    const size = 1 + Math.random() * 2;
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.animationDuration = `${2 + Math.random() * 4}s`;
+    star.style.animationDelay = `${Math.random() * 5}s`;
+    star.style.boxShadow = size > 2.2 ? "0 0 4px 1px rgba(255,255,255,0.6)" : "none";
+    cosmos.appendChild(star);
+  }
+
+  // Tuman (nebula) sharlari - sekin suzib yuruvchi, yumshoq nafas oluvchi rangli dog'lar
+  const orbs = [
+    { top: "12%", left: "12%", size: 260, color: "rgba(37,99,235,0.35)" },
+    { top: "62%", left: "78%", size: 220, color: "rgba(110,140,255,0.30)" },
+    { top: "78%", left: "18%", size: 180, color: "rgba(37,99,235,0.22)" },
+    { top: "20%", left: "82%", size: 200, color: "rgba(110,140,255,0.20)" },
+  ];
+  orbs.forEach((o, i) => {
+    const orb = document.createElement("div");
+    orb.className = "cosmo-orb";
+    orb.style.top = o.top;
+    orb.style.left = o.left;
+    orb.style.width = `${o.size}px`;
+    orb.style.height = `${o.size}px`;
+    orb.style.background = `radial-gradient(circle, ${o.color}, transparent 70%)`;
+    orb.style.animationDuration = `${14 + i * 3}s, ${6 + i * 1.5}s`;
+    orb.style.animationDelay = `${-i * 2}s, ${-i}s`;
+    cosmos.appendChild(orb);
+  });
+
+  // Uchar yulduzlar - vaqti-vaqti bilan tasodifiy joydan diagonal uchib o'tadi
+  function spawnShootingStar() {
+    const s = document.createElement("div");
+    s.className = "cosmo-shooting-star";
+    s.style.top = `${5 + Math.random() * 40}%`;
+    s.style.left = `${40 + Math.random() * 55}%`;
+    cosmos.appendChild(s);
+    requestAnimationFrame(() => s.classList.add("fly"));
+    setTimeout(() => s.remove(), 1300);
+  }
+  function scheduleShootingStar() {
+    setTimeout(() => {
+      spawnShootingStar();
+      scheduleShootingStar();
+    }, 3500 + Math.random() * 4500);
+  }
+  scheduleShootingStar();
+}
+
 window.onload = () => {
   applyHolidayThemeIfNeeded();
+  initLoginCosmos();
   restoreSidebarState();
   document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
   document.getElementById("loginSubmitBtn").addEventListener("click", handleLoginSubmit);
