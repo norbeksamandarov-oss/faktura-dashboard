@@ -1990,6 +1990,12 @@
     color: #2563EB;
     transition: color 0.15s ease;
   }
+  /* Qorong'i rejimda ko'k rang past kontrastli - o'qish qiyinlashadi.
+     Shu yerda oq, biroz qalinroq (bold) rangga o'tkazamiz. */
+  [data-brand="crb"][data-theme="dark"] .filter-field label {
+    color: #F1F5F9;
+    font-weight: 800;
+  }
   [data-brand="crb"] .ms-btn, [data-brand="crb"] select.status-filter {
     border-radius: 9px;
     transition: border-color 0.15s ease, box-shadow 0.2s var(--ease-snap), transform 0.1s ease;
