@@ -352,7 +352,11 @@
     font-family: 'Manrope', sans-serif;
     font-weight: 800;
     font-size: 26px;
+    letter-spacing: -0.02em; /* katta raqam - manfiy tracking (Apple typography) */
   }
+  [data-brand="crb"] .org-card .org-count { letter-spacing: -0.015em; }
+  [data-brand="crb"] .analytics-summary .num { letter-spacing: -0.015em; }
+  [data-brand="crb"] .login-card h1 { letter-spacing: -0.02em; }
   [data-brand="crb"] .stat-card .label {
     font-size: 10.5px;
     font-weight: 700;
@@ -447,6 +451,40 @@
     background: linear-gradient(135deg, rgba(11,19,43,0.9), rgba(37,99,235,0.85)) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px -6px rgba(37,99,235,0.5);
   }
+  /* ---------- Bosilganda darhol javob (Response) ----------
+     FAQAT CRB brend rejimi uchun (hozircha faqat "norbek" loginiga
+     ko'rinadi) - boshqa xodimlar hamon odatiy "Royal Motors" ko'rinishni
+     ko'radi, bu yerdagi o'zgarish ularga tegmaydi. Kursor kelganda emas,
+     aynan BOSILGAN zumda (pointer-down) darhol qisqarib ko'rinadi. */
+  [data-brand="crb"] button:not(:disabled):active,
+  [data-brand="crb"] .nav-item:active,
+  [data-brand="crb"] .reg-btn:active,
+  [data-brand="crb"] .emp-delete-btn:active,
+  [data-brand="crb"] .rank-toggle-btn:active,
+  [data-brand="crb"] .org-dept-toggle:active,
+  [data-brand="crb"] .contragent-card:active,
+  [data-brand="crb"] .theme-pill-opt:active {
+    transform: scale(0.97);
+    transition: transform 90ms ease-out;
+  }
+  [data-brand="crb"] .toggle-switch:active .toggle-slider { filter: brightness(0.94); }
+  [data-brand="crb"] #refreshBtn:active, [data-brand="crb"] #logoutBtn:active, [data-brand="crb"] #notifyBtn:active,
+  [data-brand="crb"] #changePasswordBtn:active, [data-brand="crb"] #announcementBtn:active,
+  [data-brand="crb"] #clearFiltersBtn:active, [data-brand="crb"] #dogovorClearFiltersBtn:active,
+  [data-brand="crb"] #doverennostClearFiltersBtn:active, [data-brand="crb"] #bankClearFiltersBtn:active,
+  [data-brand="crb"] #realschetClearFiltersBtn:active, [data-brand="crb"] #zakaznaryadClearFiltersBtn:active,
+  [data-brand="crb"] #otherreqPostClearFiltersBtn:active, [data-brand="crb"] #otherreqRealClearFiltersBtn:active,
+  [data-brand="crb"] #summaryClearFiltersBtn:active,
+  [data-brand="crb"] #exportCsvBtn:active, [data-brand="crb"] #dogovorExportBtn:active,
+  [data-brand="crb"] #doverennostExportBtn:active, [data-brand="crb"] #bankExportBtn:active,
+  [data-brand="crb"] #realschetExportBtn:active, [data-brand="crb"] #zakaznaryadExportBtn:active,
+  [data-brand="crb"] #otherreqPostExportBtn:active, [data-brand="crb"] #otherreqRealExportBtn:active,
+  [data-brand="crb"] #suggestRespBtn:active, [data-brand="crb"] .login-submit-btn:active,
+  [data-brand="crb"] .modal-actions button:active {
+    transform: scale(0.96);
+    transition: transform 90ms ease-out;
+  }
+
   i.ti { font-size: 1.05em; vertical-align: -0.12em; line-height: 1; }
   i.ti:not(:last-child) { margin-right: 5px; }
   h1 i.ti, h2 i.ti, h3 i.ti { margin-right: 8px; }
@@ -863,6 +901,30 @@
     background: var(--card); border-radius: 16px; padding: 28px;
     width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     transition: background 0.25s ease;
+  }
+  /* ---------- Modal "materiallashishi" - FAQAT CRB brend rejimi uchun.
+     Boshqa xodimlar hamon oddiy Royal Motors ko'rinishidagi zumda
+     ochiladigan/yopiladigan modalni ko'radi (yuqoridagi qoida o'zgarishsiz
+     qoladi). CRB rejimida esa karta biroz pastdan kattalashib chiqadi
+     (Materialize, don't just fade). JS shu bilan bir vaqtda 'open'
+     klassini qo'shadi/olib tashlaydi, 'display' esa avvalgidek ishlaydi. */
+  [data-brand="crb"] .modal-overlay {
+    background: rgba(20,24,45,0); -webkit-backdrop-filter: blur(0px); backdrop-filter: blur(0px);
+    transition: opacity 0.22s ease, background-color 0.22s ease, backdrop-filter 0.22s ease;
+    opacity: 0;
+  }
+  [data-brand="crb"] .modal-overlay.open {
+    background: rgba(20,24,45,0.55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    opacity: 1;
+  }
+  [data-brand="crb"] .modal-card {
+    transition: background 0.25s ease, transform 0.24s cubic-bezier(0.34, 1.2, 0.4, 1), opacity 0.2s ease;
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+  }
+  [data-brand="crb"] .modal-overlay.open .modal-card {
+    transform: scale(1) translateY(0);
+    opacity: 1;
   }
   .modal-card h3 { margin: 0 0 14px; color: var(--navy-text); font-family: 'Satoshi', sans-serif; }
   .modal-card textarea {
@@ -1427,6 +1489,16 @@
 
   .save-flash { font-size: 11px; color: var(--green-fg); margin-left: 6px; opacity: 0; transition: opacity .3s; }
   .save-flash.show { opacity: 1; }
+  /* Saqlash belgisi shunchaki paydo bo'lish o'rniga biroz "moddiylashadi"
+     (kichik scale-pop) - FAQAT CRB rejimida. */
+  [data-brand="crb"] .save-flash {
+    display: inline-block;
+    transform: scale(0.6);
+    transition: opacity .25s ease, transform .25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  [data-brand="crb"] .save-flash.show {
+    transform: scale(1);
+  }
 
   #loadingOverlay {
     position: fixed; inset: 0; background: rgba(245,247,251,0.85);
@@ -1661,6 +1733,65 @@
   @media (max-width: 700px) {
     .period-filter-box { flex-direction: column; align-items: stretch; }
     #analyticsPeriodNote { margin-left: 0 !important; }
+  }
+
+  /* ---------- Harakatni kamaytirish / shaffoflikni kamaytirish / kontrast
+     oshirish - FAQAT CRB brend rejimi uchun (hozircha faqat "norbek"
+     loginiga ko'rinadi; boshqa xodimlarning ko'rinishi o'zgarmaydi). ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    [data-brand="crb"] .confetti-piece,
+    [data-brand="crb"] .firework,
+    [data-brand="crb"] .flag-cloth,
+    [data-brand="crb"] #loginScreen.holiday::after,
+    [data-brand="crb"] #loginScreen.holiday .login-card,
+    [data-brand="crb"] #loginScreen.holiday .holiday-banner,
+    [data-brand="crb"] #loginScreen.holiday .mark,
+    [data-brand="crb"] .live-dot,
+    [data-brand="crb"] .anniversary-badge {
+      animation: none !important;
+    }
+    [data-brand="crb"] .content-section.active { animation: none !important; }
+    [data-brand="crb"] .modal-card, [data-brand="crb"] .modal-overlay {
+      transition: opacity 0.15s ease !important;
+      transform: none !important;
+    }
+    [data-brand="crb"] .sidebar,
+    [data-brand="crb"] .nav-subgroup,
+    [data-brand="crb"] #sidebarToggleBtn,
+    [data-brand="crb"] #sidebarToggleBtn svg {
+      transition-duration: 0.01ms !important;
+    }
+    [data-brand="crb"] button:active,
+    [data-brand="crb"] .nav-item:active {
+      transform: none !important;
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    [data-brand="crb"] header.topbar,
+    [data-brand="crb"] .sidebar,
+    [data-brand="crb"] .panel,
+    [data-brand="crb"] .analytics-summary,
+    [data-brand="crb"] .modal-overlay.open {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      background-color: var(--card) !important;
+    }
+    [data-brand="crb"] .login-card {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      background: rgba(20,24,45,0.92) !important;
+    }
+  }
+  @media (prefers-contrast: more) {
+    [data-brand="crb"] .panel,
+    [data-brand="crb"] .stat-card,
+    [data-brand="crb"] .org-card,
+    [data-brand="crb"] .contragent-card,
+    [data-brand="crb"] .modal-card,
+    [data-brand="crb"] input, [data-brand="crb"] select {
+      border: 1.5px solid var(--text) !important;
+      background: var(--bg) !important;
+    }
   }
 </style>
 </head>
@@ -3710,7 +3841,9 @@ async function onLoggedIn(forcePasswordChange) {
   }
 
   if (forcePasswordChange) {
-    document.getElementById("forcePasswordModal").style.display = "flex";
+    const fpModal = document.getElementById("forcePasswordModal");
+    fpModal.style.display = "flex";
+    requestAnimationFrame(() => fpModal.classList.add("open"));
   }
 }
 
@@ -3743,6 +3876,7 @@ async function submitForcePasswordChange() {
     // aks holda keyingi sahifa yangilanganda modal yana chiqib qoladi.
     const session = loadSession();
     if (session) saveSession({ ...session, mustChangePassword: false });
+    document.getElementById("forcePasswordModal").classList.remove("open");
     document.getElementById("forcePasswordModal").style.display = "none";
     document.getElementById("forceOldPassword").value = "";
     document.getElementById("forceNewPassword").value = "";
@@ -3849,9 +3983,12 @@ async function triggerStartupNotify() {
    yozamiz, bot buni kuzatib o'zi yuboradi. */
 function openAnnouncementModal() {
   document.getElementById("announcementText").value = "";
-  document.getElementById("announcementModal").style.display = "flex";
+  const annModal = document.getElementById("announcementModal");
+  annModal.style.display = "flex";
+  requestAnimationFrame(() => annModal.classList.add("open"));
 }
 function closeAnnouncementModal() {
+  document.getElementById("announcementModal").classList.remove("open");
   document.getElementById("announcementModal").style.display = "none";
 }
 async function sendAnnouncement() {
@@ -6713,10 +6850,13 @@ function openContragentCard(encodedName) {
       <button class="btn-primary" onclick="closeContragentModal()">Закрыть</button>
     </div>
   `;
-  document.getElementById("contragentModal").style.display = "flex";
+  const cModal = document.getElementById("contragentModal");
+  cModal.style.display = "flex";
+  requestAnimationFrame(() => cModal.classList.add("open"));
 }
 
 function closeContragentModal() {
+  document.getElementById("contragentModal").classList.remove("open");
   document.getElementById("contragentModal").style.display = "none";
 }
 
