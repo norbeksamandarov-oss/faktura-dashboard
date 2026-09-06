@@ -1955,6 +1955,105 @@
   [data-brand="crb"] button:not(:disabled):active {
     transform: scale(0.95) !important;
   }
+
+  /* ============================================================
+     JADVALLAR VA STATISTIKA - davomi (FAQAT CRB rejimi)
+     ============================================================ */
+
+  /* ---------- Jadval - zebra-chiziq, izchil radius, yumshoq scroll ---------- */
+  [data-brand="crb"] .table-wrap {
+    border-radius: 14px;
+    box-shadow: 0 6px 18px -16px rgba(11,19,43,0.2);
+  }
+  [data-brand="crb"] table.invoices tbody tr:nth-child(even):not(.row-overdue) {
+    background: rgba(37,99,235,0.025);
+  }
+  [data-brand="crb"] table.invoices tbody tr:nth-child(even):not(.row-overdue):hover {
+    background: rgba(37,99,235,0.07) !important;
+  }
+  [data-brand="crb"][data-theme="dark"] table.invoices tbody tr:nth-child(even):not(.row-overdue) {
+    background: rgba(110,140,255,0.035);
+  }
+  [data-brand="crb"] table.invoices tbody td {
+    transition: color 0.15s ease;
+  }
+  [data-brand="crb"] .pill, [data-brand="crb"] .days-badge {
+    transition: transform 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] tr:hover .pill,
+  [data-brand="crb"] tr:hover .days-badge {
+    transform: scale(1.06);
+  }
+
+  /* ---------- Filtr maydonlari va tugmalar - fokus/hover chuqurligi ---------- */
+  [data-brand="crb"] .filter-field label {
+    color: #2563EB;
+    transition: color 0.15s ease;
+  }
+  [data-brand="crb"] .ms-btn, [data-brand="crb"] select.status-filter {
+    border-radius: 9px;
+    transition: border-color 0.15s ease, box-shadow 0.2s var(--ease-snap), transform 0.1s ease;
+  }
+  [data-brand="crb"] .ms-btn:hover, [data-brand="crb"] .ms-btn.open {
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.14);
+  }
+  [data-brand="crb"] #clearFiltersBtn, [data-brand="crb"] #dogovorClearFiltersBtn, [data-brand="crb"] #doverennostClearFiltersBtn,
+  [data-brand="crb"] #bankClearFiltersBtn, [data-brand="crb"] #realschetClearFiltersBtn, [data-brand="crb"] #zakaznaryadClearFiltersBtn,
+  [data-brand="crb"] #otherreqPostClearFiltersBtn, [data-brand="crb"] #otherreqRealClearFiltersBtn, [data-brand="crb"] #summaryClearFiltersBtn {
+    border-radius: 9px;
+    transition: background 0.15s ease, transform 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] #clearFiltersBtn:hover, [data-brand="crb"] #dogovorClearFiltersBtn:hover, [data-brand="crb"] #doverennostClearFiltersBtn:hover,
+  [data-brand="crb"] #bankClearFiltersBtn:hover, [data-brand="crb"] #realschetClearFiltersBtn:hover, [data-brand="crb"] #zakaznaryadClearFiltersBtn:hover,
+  [data-brand="crb"] #otherreqPostClearFiltersBtn:hover, [data-brand="crb"] #otherreqRealClearFiltersBtn:hover, [data-brand="crb"] #summaryClearFiltersBtn:hover {
+    transform: translateY(-1px);
+  }
+
+  /* ---------- Grafik konteynerlari (Chart.js o'ralgan panel) - chuqurlik ---------- */
+  [data-brand="crb"] .chart-box, [data-brand="crb"] .chart-box-tall {
+    border-radius: 12px;
+    transition: transform 0.25s var(--ease-snap);
+  }
+  [data-brand="crb"] .analytics-box-icon {
+    transition: transform 0.25s var(--ease-snap);
+  }
+  [data-brand="crb"] .analytics-box:hover .analytics-box-icon {
+    transform: scale(1.12) rotate(-4deg);
+  }
+
+  /* ---------- Umumiy аналитика (analytics-summary) kartalari - hover ---------- */
+  [data-brand="crb"] .analytics-summary > div {
+    transition: transform 0.2s var(--ease-snap);
+  }
+  [data-brand="crb"] .analytics-summary > div:hover {
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Reyting ustunlari (Топ-5) - progress-bar animatsiyasi ---------- */
+  [data-brand="crb"] .rank-bar-fill {
+    transition: width 0.5s var(--ease-snap);
+  }
+  [data-brand="crb"] .rank-badge2 {
+    transition: transform 0.2s var(--ease-snap);
+  }
+  [data-brand="crb"] .rank-row:hover .rank-badge2 {
+    transform: scale(1.12);
+  }
+
+  /* ---------- Period-filter box (Аналитика davr filtri) ---------- */
+  [data-brand="crb"] .period-filter-box {
+    border-radius: 12px;
+    background: rgba(37,99,235,0.05);
+    border-color: rgba(37,99,235,0.25);
+  }
+  [data-brand="crb"][data-theme="dark"] .period-filter-box {
+    background: rgba(110,140,255,0.08);
+    border-color: rgba(110,140,255,0.25);
+  }
+
+  /* ---------- Stat-grid (Налоги bo'limi) va org-grid - bir xil chuqurlik ---------- */
+  [data-brand="crb"] .stats-grid .stat-card { border-radius: 16px; }
+  [data-brand="crb"] .org-grid { gap: 12px; }
 </style>
 </head>
 <body>
@@ -5723,14 +5822,16 @@ function renderWeekdayChart(rows) {
   const labels = order.map(i => dayLabels[i]);
   const data = order.map(i => counts[i]);
 
-  const barColor = document.documentElement.getAttribute("data-brand") === "crb" ? "#0B132B" : "#241A5C";
+  const isCrbWeekday = document.documentElement.getAttribute("data-brand") === "crb";
+  const barColor = isCrbWeekday ? "#2563EB" : "#241A5C";
   const ctx = document.getElementById("weekdayChart");
   if (weekdayChartInstance) weekdayChartInstance.destroy();
   weekdayChartInstance = new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: barColor, borderRadius: 4 }] },
+    data: { labels, datasets: [{ label: "Счетов", data, backgroundColor: barColor, hoverBackgroundColor: isCrbWeekday ? "#0B132B" : barColor, borderRadius: isCrbWeekday ? 6 : 4 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: isCrbWeekday ? { duration: 600, easing: "easeOutQuint" } : {},
       plugins: { legend: { display: false } },
       scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
     }
@@ -5758,6 +5859,11 @@ function renderTrendChart() {
     buckets.new.push(dayRows.filter(r => classifyStatus(r.status) === "new").length);
   });
 
+  const isCrb = document.documentElement.getAttribute("data-brand") === "crb";
+  const trendColors = isCrb
+    ? { accepted: "#16A34A", rejected: "#DC2626", sent: "#2563EB", new: "#94A3B8" }
+    : { accepted: "#5FBE84", rejected: "#E8837E", sent: "#FFC876", new: "#D7DCE5" };
+
   const ctx = document.getElementById("trendChart");
   if (trendChartInstance) trendChartInstance.destroy();
   trendChartInstance = new Chart(ctx, {
@@ -5765,14 +5871,15 @@ function renderTrendChart() {
     data: {
       labels,
       datasets: [
-        { label: "Принято", data: buckets.accepted, backgroundColor: "#5FBE84", stack: "s" },
-        { label: "Отклонено", data: buckets.rejected, backgroundColor: "#E8837E", stack: "s" },
-        { label: "Ожидают", data: buckets.sent, backgroundColor: "#FFC876", stack: "s" },
-        { label: "Не отправлено", data: buckets.new, backgroundColor: "#D7DCE5", stack: "s" },
+        { label: "Принято", data: buckets.accepted, backgroundColor: trendColors.accepted, stack: "s", borderRadius: isCrb ? 3 : 0 },
+        { label: "Отклонено", data: buckets.rejected, backgroundColor: trendColors.rejected, stack: "s", borderRadius: isCrb ? 3 : 0 },
+        { label: "Ожидают", data: buckets.sent, backgroundColor: trendColors.sent, stack: "s", borderRadius: isCrb ? 3 : 0 },
+        { label: "Не отправлено", data: buckets.new, backgroundColor: trendColors.new, stack: "s", borderRadius: isCrb ? 3 : 0 },
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      animation: isCrb ? { duration: 650, easing: "easeOutQuint" } : {},
       scales: {
         x: { stacked: true, ticks: { font: { size: 9 }, maxRotation: 90, minRotation: 90 } },
         y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
