@@ -4126,16 +4126,55 @@ function applyHolidayThemeIfNeeded() {
 
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebarNav");
-  const collapsed = sidebar.classList.toggle("collapsed");
-  localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+  const contentArea = document.querySelector(".content-area");
+  const isCrbSidebar = document.documentElement.getAttribute("data-brand") === "crb";
+
+  // Faqat CRB rejimida (va faqat content-area haqiqatan ham mavjud bo'lsa)
+  // "FLIP" texnikasi qo'llaniladi: sidebar torayganda/kengayganda,
+  // yonidagi katta jadval/grafik bloki (content-area) HAR FREYMDA
+  // qayta joylashtirilishi (reflow) - aynan "qotib-qotib" (jank)
+  // ko'rinishning asosiy sababi edi. Yechim: content-area'ning haqiqiy
+  // o'lchamini BIR MARTA (zumda) to'g'ri holatga o'tkazamiz, so'ng uni
+  // faqat vizual ravishda (transform - GPU, arzon, reflow keltirmaydi)
+  // eski joyidan yangi joyiga "sirg'anib" boradigan qilib ko'rsatamiz.
+  if (isCrbSidebar && contentArea) {
+    const oldRect = contentArea.getBoundingClientRect();
+
+    const collapsed = sidebar.classList.toggle("collapsed");
+    localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+
+    const newRect = contentArea.getBoundingClientRect();
+    const deltaX = oldRect.left - newRect.left;
+    const scaleX = newRect.width ? oldRect.width / newRect.width : 1;
+
+    if (deltaX !== 0 || scaleX !== 1) {
+      contentArea.style.transition = "none";
+      contentArea.style.transformOrigin = "top left";
+      contentArea.style.transform = `translateX(${deltaX}px) scaleX(${scaleX})`;
+      // Yuqoridagi qatorni darhol (animatsiyasiz) qo'llash uchun majburiy
+      // reflow - shundan keyingina animatsiyani boshlaymiz.
+      void contentArea.offsetWidth;
+      requestAnimationFrame(() => {
+        contentArea.style.transition = "transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)";
+        contentArea.style.transform = "translateX(0) scaleX(1)";
+      });
+      setTimeout(() => {
+        contentArea.style.transition = "";
+        contentArea.style.transform = "";
+        contentArea.style.transformOrigin = "";
+      }, 320);
+    }
+  } else {
+    const collapsed = sidebar.classList.toggle("collapsed");
+    localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+  }
+
   const btn = document.getElementById("sidebarToggleBtn");
   btn.classList.remove("pop");
   void btn.offsetWidth; // reflow - qayta animatsiya ishga tushishi uchun
   btn.classList.add("pop");
-  // "width" animatsiyasi + blur (backdrop-filter) birga ishlagani
-  // brauzerni har freymda qayta hisoblashga majburlab, "qotib-qotib"
-  // (jank) ko'rinishga sabab bo'lardi - shuning uchun animatsiya
-  // davomida blur vaqtincha o'chiriladi, tugagach qaytariladi.
+  // Sidebar'ning O'Z eni animatsiyasi (kichik, arzon - atigi ~15 ta
+  // menyu elementi) davomida blur vaqtincha o'chiriladi.
   sidebar.classList.add("sidebar-animating");
   setTimeout(() => sidebar.classList.remove("sidebar-animating"), 320);
 }
