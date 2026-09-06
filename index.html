@@ -2254,6 +2254,139 @@
   [data-brand="crb"][data-theme="dark"] #section-analytics .analytics-summary > div {
     background-color: rgba(24,28,51,0.68) !important;
   }
+
+  /* ============================================================
+     KARTOCHKALARNI NOLDAN QAYTA QURISH - zamonaviy SaaS-dashboard
+     uslubi (FAQAT CRB). Eski aylana progress-halqasi (past sifatli
+     ko'rinardi) olib tashlandi, o'rniga toza foiz-nishon (badge).
+     ============================================================ */
+
+  /* ---------- Tashkilot kartasi v2 ---------- */
+  [data-brand="crb"] .org-card-v2 {
+    background-color: rgba(255,255,255,0.78);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: transform 0.28s var(--ease-snap), box-shadow 0.28s var(--ease-snap), border-color 0.2s ease;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04);
+  }
+  [data-brand="crb"][data-theme="dark"] .org-card-v2 {
+    background-color: rgba(24,28,51,0.68);
+    border-color: rgba(255,255,255,0.08);
+  }
+  [data-brand="crb"] .org-card-v2:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 38px -20px rgba(11,19,43,0.3);
+    border-color: rgba(37,99,235,0.35);
+  }
+  [data-brand="crb"] .org-card-v2.empty { opacity: 0.5; }
+  [data-brand="crb"] .ocv2-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  [data-brand="crb"] .ocv2-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, #0B132B, #2563EB);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex: 0 0 auto;
+    transition: transform 0.25s var(--ease-snap);
+  }
+  [data-brand="crb"] .org-card-v2:hover .ocv2-icon { transform: scale(1.1) rotate(-4deg); }
+  [data-brand="crb"] .ocv2-share {
+    font-size: 11px; font-weight: 800; color: #2563EB;
+    background: rgba(37,99,235,0.1); padding: 3px 9px; border-radius: 20px;
+  }
+  [data-brand="crb"][data-theme="dark"] .ocv2-share { background: rgba(110,140,255,0.16); color: #6E8CFF; }
+  [data-brand="crb"] .ocv2-name {
+    font-weight: 700; font-size: 13px; color: var(--text);
+    margin-bottom: 6px; line-height: 1.3;
+    min-height: 34px;
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  [data-brand="crb"] .ocv2-count {
+    font-family: 'Manrope', sans-serif; font-size: 28px; font-weight: 800;
+    color: var(--text); letter-spacing: -0.02em; line-height: 1;
+    display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px;
+  }
+  [data-brand="crb"] .ocv2-count-lbl { font-size: 11px; font-weight: 500; color: var(--muted); }
+  [data-brand="crb"] .ocv2-divider { height: 1px; background: var(--border); margin: 4px 0 8px; }
+  [data-brand="crb"] .ocv2-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted); padding: 3px 0;
+  }
+  [data-brand="crb"] .ocv2-row b { color: var(--text); font-weight: 700; }
+  [data-brand="crb"] .ocv2-row:nth-child(6) b { color: #16A34A; } /* Сумма */
+
+  /* ---------- ИТОГО hero-karta v2 ---------- */
+  [data-brand="crb"] .org-card-v2-total {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #0B132B 0%, #151F3D 55%, #2563EB 150%) !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    border: none;
+    padding: 26px 30px;
+  }
+  [data-brand="crb"] .org-card-v2-total .ocv2-name {
+    color: #fff; font-size: 14px; font-weight: 700; opacity: 0.85;
+    -webkit-line-clamp: 1; min-height: auto; margin-bottom: 16px;
+  }
+  [data-brand="crb"] .ocv2t-row { display: flex; gap: 40px; flex-wrap: wrap; }
+  [data-brand="crb"] .ocv2t-num {
+    font-family: 'Manrope', sans-serif; font-size: 32px; font-weight: 800;
+    color: #fff; letter-spacing: -0.02em; line-height: 1;
+  }
+  [data-brand="crb"] .ocv2t-lbl { font-size: 11.5px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+
+  /* ---------- Statistika kartasi v2 (pastki KPI qatori) ---------- */
+  [data-brand="crb"] .stat-card-v2 {
+    background-color: rgba(255,255,255,0.78);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+    transition: transform 0.28s var(--ease-snap), box-shadow 0.28s var(--ease-snap), border-color 0.2s ease;
+    box-shadow: 0 1px 2px rgba(11,19,43,0.04);
+  }
+  [data-brand="crb"][data-theme="dark"] .stat-card-v2 {
+    background-color: rgba(24,28,51,0.68);
+    border-color: rgba(255,255,255,0.08);
+  }
+  [data-brand="crb"] .stat-card-v2:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 38px -20px rgba(11,19,43,0.3);
+  }
+  [data-brand="crb"] .scv2-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  [data-brand="crb"] .scv2-icon {
+    width: 38px; height: 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 17px; color: #fff;
+    transition: transform 0.25s var(--ease-snap);
+  }
+  [data-brand="crb"] .stat-card-v2:hover .scv2-icon { transform: scale(1.12) rotate(-4deg); }
+  [data-brand="crb"] .stat-card-v2.accent-total .scv2-icon { background: linear-gradient(135deg, #0B132B, #2563EB); }
+  [data-brand="crb"] .stat-card-v2.accent-pending .scv2-icon { background: linear-gradient(135deg, #D97706, #F59E0B); }
+  [data-brand="crb"] .stat-card-v2.accent-accepted .scv2-icon { background: linear-gradient(135deg, #16A34A, #22C55E); }
+  [data-brand="crb"] .stat-card-v2.accent-rejected .scv2-icon { background: linear-gradient(135deg, #DC2626, #EF4444); }
+  [data-brand="crb"] .stat-card-v2.accent-overdue .scv2-icon { background: linear-gradient(135deg, #991B1B, #DC2626); }
+  [data-brand="crb"] .scv2-pct { font-size: 11px; font-weight: 800; color: var(--muted); background: rgba(100,116,139,0.1); padding: 3px 9px; border-radius: 20px; }
+  [data-brand="crb"] .scv2-num {
+    font-family: 'Manrope', sans-serif; font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; color: var(--text);
+  }
+  [data-brand="crb"] .stat-card-v2.accent-pending .scv2-num { color: #D97706; }
+  [data-brand="crb"] .stat-card-v2.accent-accepted .scv2-num { color: #16A34A; }
+  [data-brand="crb"] .stat-card-v2.accent-rejected .scv2-num { color: #DC2626; }
+  [data-brand="crb"] .stat-card-v2.accent-overdue .scv2-num { color: #DC2626; }
+  [data-brand="crb"] .stat-card-v2.accent-total .scv2-num {
+    background: linear-gradient(135deg, #0B132B, #2563EB);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  [data-brand="crb"] .scv2-label { font-size: 12px; color: var(--muted); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -5433,6 +5566,19 @@ function renderStats() {
     { label: "Отклонено", val: rejected, pct: pct(rejected), cls: "accent-rejected", icon: "<i class='ti ti-circle-x' aria-hidden='true'></i>" },
     { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "<i class='ti ti-alert-triangle' aria-hidden='true'></i>" },
   ];
+  const isCrbStats = document.documentElement.getAttribute("data-brand") === "crb";
+  if (isCrbStats) {
+    document.getElementById("statsRow").innerHTML = cards.map(c => `
+      <div class="stat-card-v2 ${c.cls}">
+        <div class="scv2-top">
+          <div class="scv2-icon">${c.icon}</div>
+          ${c.pct ? `<div class="scv2-pct">${c.pct}</div>` : ""}
+        </div>
+        <div class="scv2-num">${c.val}</div>
+        <div class="scv2-label">${c.label}</div>
+      </div>`).join("");
+    return;
+  }
   document.getElementById("statsRow").innerHTML = cards.map(c => `
     <div class="stat-card ${c.cls}">
       <div class="stat-icon">${c.icon}</div>
@@ -5659,15 +5805,25 @@ function renderOrgBreakdown(periodInvoiceRows) {
           </div>`).join("")}
       </div>` : "";
     const sharePct = totalCount ? (s.count / totalCount * 100) : 0;
+    const isCrbCard = document.documentElement.getAttribute("data-brand") === "crb";
+    if (isCrbCard) {
+      return `
+      <div class="org-card-v2 ${s.count === 0 ? "empty" : ""}">
+        <div class="ocv2-top">
+          <div class="ocv2-icon"><i class='ti ti-building' aria-hidden='true'></i></div>
+          ${s.count > 0 ? `<div class="ocv2-share">${sharePct.toFixed(0)}%</div>` : ""}
+        </div>
+        <div class="ocv2-name">${escapeHtml(name)}</div>
+        <div class="ocv2-count">${s.count}<span class="ocv2-count-lbl">счетов</span></div>
+        <div class="ocv2-divider"></div>
+        <div class="ocv2-row"><span>Сумма</span><b>${s.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</b></div>
+        <div class="ocv2-row"><span>НДС</span><b>${s.vat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</b></div>
+        ${deptToggleHtml}
+      </div>`;
+    }
     const ringCirc = 138.2;
     const ringOffset = ringCirc - (ringCirc * sharePct / 100);
-    const ringHtml = document.documentElement.getAttribute("data-brand") === "crb" ? `
-      <svg class="org-ring" width="44" height="44" viewBox="0 0 52 52" aria-hidden="true">
-        <circle cx="26" cy="26" r="22" fill="none" stroke="#EEF0F3" stroke-width="6"/>
-        <circle cx="26" cy="26" r="22" fill="none" stroke="#2563EB" stroke-width="6"
-                stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOffset}"
-                stroke-linecap="round" transform="rotate(-90 26 26)"/>
-      </svg>` : "";
+    const ringHtml = "";
     return `
     <div class="org-card ${s.count === 0 ? "empty" : ""}">
       ${ringHtml}
@@ -5683,7 +5839,16 @@ function renderOrgBreakdown(periodInvoiceRows) {
     </div>`;
   }).join("");
 
-  const totalHtml = `
+  const isCrbTotal = document.documentElement.getAttribute("data-brand") === "crb";
+  const totalHtml = isCrbTotal ? `
+    <div class="org-card-v2 org-card-v2-total">
+      <div class="ocv2-name">ИТОГО (все организации)</div>
+      <div class="ocv2t-row">
+        <div><div class="ocv2t-num">${totalCount}</div><div class="ocv2t-lbl">счетов</div></div>
+        <div><div class="ocv2t-num">${totalSum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="ocv2t-lbl">сумма всего</div></div>
+        <div><div class="ocv2t-num">${totalVat.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="ocv2t-lbl">НДС</div></div>
+      </div>
+    </div>` : `
     <div class="org-card org-card-total">
       <div class="org-name">ИТОГО (все организации)</div>
       <div class="stat-block"><div class="org-count">${totalCount}</div><div class="org-count-lbl">счетов</div></div>
