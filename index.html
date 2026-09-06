@@ -190,12 +190,11 @@
   [data-brand="crb"] #sidebarToggleBtn { color: var(--muted); }
   [data-brand="crb"] .nav-item { color: var(--muted); }
   [data-brand="crb"] .nav-item:hover { background: var(--ice-soft); color: var(--navy); }
-  [data-brand="crb"] .nav-item.active {
-    background: var(--ice-soft);
-    color: #2563EB;
-    border-left-color: #2563EB;
-    font-weight: 600;
-  }
+  /* Eski oddiy "active" ko'rinishi (xira fon + ko'k matn) shu yerdan
+     OLIB TASHLANDI - u pastdagi yagona gradient-pill qoidasi (§yangi
+     vizual yangilanish) bilan bir xil elementga tegishli edi va ikkalasi
+     bir-biriga zid ishlab, ba'zan tanlangan bo'lim rangi "kamroq"
+     ko'rinishiga sabab bo'lardi. Endi FAQAT bitta qoida bor. */
   [data-brand="crb"] .nav-badge { background: #2563EB; }
   .resp-avatar { display: none; }
   [data-brand="crb"] .resp-avatar {
@@ -455,7 +454,6 @@
     background: rgba(11,15,26,0.75);
   }
   [data-brand="crb"][data-theme="dark"] .nav-item:hover { color: #EAF0FF; }
-  [data-brand="crb"][data-theme="dark"] .nav-item.active { color: #6E8CFF; }
   [data-brand="crb"][data-theme="dark"] #clearFiltersBtn, [data-brand="crb"][data-theme="dark"] #dogovorClearFiltersBtn,
   [data-brand="crb"][data-theme="dark"] #doverennostClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #bankClearFiltersBtn,
   [data-brand="crb"][data-theme="dark"] #realschetClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #zakaznaryadClearFiltersBtn,
