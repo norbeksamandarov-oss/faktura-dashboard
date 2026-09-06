@@ -1874,6 +1874,20 @@
     border-left: none !important;
     transition: background 0.2s var(--ease-snap), color 0.2s ease, transform 0.15s var(--ease-snap);
   }
+  /* Sidebar yig'ilganda margin/border-radius olib tashlanadi - aks holda
+     faol elementning rangli qutisi boshqa (fon rangi bo'lmagan) ikonka
+     qatoridan kengroq/torroq bo'lib, ustun notekis ko'rinardi. Yig'ilgan
+     holatda barcha elementlar TO'LIQ kenglikda va bir xil bo'lishi kerak. */
+  [data-brand="crb"] .sidebar.collapsed .nav-item {
+    margin: 0;
+    border-radius: 0;
+  }
+  [data-brand="crb"] .sidebar.collapsed .nav-item:hover {
+    transform: none;
+  }
+  [data-brand="crb"] .sidebar.collapsed .nav-item.active {
+    box-shadow: none;
+  }
   [data-brand="crb"] .nav-item:hover {
     background: rgba(37,99,235,0.12) !important;
     color: var(--navy) !important;
