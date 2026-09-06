@@ -1404,6 +1404,9 @@
     margin-left: 6px; border: none; background: none; cursor: pointer;
     font-size: 13px; opacity: 0.6; transition: opacity .15s, transform .15s;
     vertical-align: middle;
+    color: inherit; /* <button> ranga meros olmaydi (brauzer standarti) -
+                        buni ANIQ ko'rsatmasak, qorong'i fonda qora
+                        (ko'rinmas) bo'lib qolar edi. */
   }
   .remind-btn:hover { opacity: 1; transform: scale(1.15); }
   .remind-btn:disabled { opacity: 0.3; cursor: default; transform: none; }
