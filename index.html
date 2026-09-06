@@ -518,6 +518,12 @@
   html.theme-switching * {
     transition: none !important;
   }
+  /* #app'ni yuqoridagi "hammasini o'chirish" qoidasidan chiqarib
+     tashlaymiz - aks holda pastda qo'shilgan fade-animatsiya ham
+     shu yerda "o'ldirilib", sakrab (animatsiyasiz) ishlar edi. */
+  html.theme-switching #app {
+    transition: opacity 0.12s ease !important;
+  }
   body {
     margin: 0;
     font-family: 'Satoshi', sans-serif;
@@ -2409,6 +2415,18 @@
   [data-brand="crb"] .sidebar.sidebar-animating {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+    will-change: width;
+    contain: layout style paint;
+  }
+  /* Ichidagi HAR BIR elementning o'z transition'lari (hover/active rang
+     o'zgarishi, ikonka aylanishi va h.k.) "width" animatsiyasi bilan bir
+     vaqtda hisoblanishi ustma-ust qo'shilib, sekinlikni yanada
+     kuchaytirar edi - shu 320ms davomida ULARNING BARCHASI o'chiriladi. */
+  [data-brand="crb"] .sidebar.sidebar-animating * {
+    transition: none !important;
+  }
+  [data-brand="crb"] .content-area {
+    contain: layout style;
   }
 </style>
 </head>
