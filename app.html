@@ -3,105 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Заявки — Royal Motors</title>
-<meta name="theme-color" content="#090979">
+<title>Заявки — CRB</title>
+<meta name="theme-color" content="#0B132B">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @font-face {
-    font-family: 'Satoshi';
-    src: local('Satoshi');
-  }
   :root {
-    --bg: #F6F5FC;
+    --navy: #0B132B;
+    --bg: #EEF1F8;
     --card: #FFFFFF;
-    --text: #1B1F2A;
-    --muted: #6B7280;
-    --border: #E3E8F2;
-    --accent-grad: linear-gradient(135deg,#090979,#00D4FF);
-    --navy-grad: linear-gradient(160deg,#020024 0%,#090979 55%,#00D4FF 130%);
-    --danger: #E5484D;
-    --ok: #1EB53A;
+    --text: #0B132B;
+    --muted: #64748B;
+    --border: #E5E7EB;
+    --ice-soft: #EAF0FF;
+    --accent: #2563EB;
+    --danger: #B23A3A;
+    --danger-bg: #FBE7E7;
+    --ok: #1E7A4C;
+    --ok-bg: #E3F5E9;
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
+    min-height: 100vh;
     background: var(--bg); color: var(--text);
-    font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
-  body { padding-bottom: 32px; }
+  body {
+    padding-bottom: 32px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* --- Fon: yumshoq "liquid glass" nur dog'lari (login ekrani bilan bir xil ruhda) --- */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(circle 340px at 14% 8%, rgba(37,99,235,0.16), transparent 70%),
+      radial-gradient(circle 380px at 90% 18%, rgba(110,140,255,0.14), transparent 70%),
+      radial-gradient(circle 320px at 30% 92%, rgba(37,99,235,0.10), transparent 70%),
+      var(--bg);
+  }
   .topbar {
-    background: var(--navy-grad); color: #fff;
-    padding: 18px 18px 22px; position: sticky; top: 0; z-index: 10;
-    border-radius: 0 0 18px 18px;
+    background: rgba(11,19,43,0.82);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    color: #fff;
+    padding: 18px 18px 20px; position: sticky; top: 0; z-index: 10;
+    border-radius: 0 0 22px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 12px 30px -18px rgba(11,19,43,0.55);
   }
-  .topbar h1 { margin: 0; font-size: 19px; font-weight: 700; }
-  .topbar p { margin: 4px 0 0; font-size: 13px; opacity: 0.85; }
+  .topbar-row { display: flex; align-items: center; gap: 10px; }
+  .topbar-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(160deg, #3D7BFF, #0B132B 130%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .topbar h1 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+  .topbar p { margin: 4px 0 0 44px; font-size: 13px; color: rgba(255,255,255,0.55); }
   .back-btn {
-    display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.14);
-    border: none; color: #fff; padding: 7px 12px; border-radius: 10px;
-    font-family: 'Satoshi', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 10px; cursor: pointer;
+    display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.14); color: #fff; padding: 7px 13px; border-radius: 999px;
+    font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 12px; cursor: pointer;
   }
+  .back-btn:active { background: rgba(255,255,255,0.18); }
   .content { padding: 16px; }
   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .menu-item {
-    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-    padding: 18px 14px; text-align: left; cursor: pointer;
-    box-shadow: 0 2px 10px rgba(20,20,60,0.05);
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 18px;
+    padding: 16px 14px; text-align: left; cursor: pointer;
+    box-shadow: 0 8px 22px -14px rgba(11,19,43,0.25);
+    transition: transform 0.12s ease;
   }
-  .menu-item .icon { font-size: 26px; display: block; margin-bottom: 8px; }
-  .menu-item .label { font-weight: 700; font-size: 14px; line-height: 1.25; }
+  .menu-item:active { transform: scale(0.97); }
+  .menu-item.category {
+    background: linear-gradient(160deg, rgba(37,99,235,0.14), rgba(255,255,255,0.65));
+  }
+  .menu-item .icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(37,99,235,0.12);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; margin-bottom: 10px;
+  }
+  .menu-item .label { font-weight: 700; font-size: 13.5px; line-height: 1.25; color: var(--navy); }
+  .menu-item .chevron {
+    float: right; color: var(--muted); font-size: 15px; margin-top: 8px;
+  }
   .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-    padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(20,20,60,0.05);
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 18px;
+    padding: 18px; margin-bottom: 14px;
+    box-shadow: 0 10px 26px -16px rgba(11,19,43,0.25);
   }
   .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
   .field input[type=text], .field textarea, .field select {
-    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
-    font-family: 'Satoshi', sans-serif; font-size: 15px; background: #FBFBFF; color: var(--text);
+    width: 100%; padding: 12px 14px; border-radius: 13px; border: 1px solid rgba(11,19,43,0.1);
+    font-family: 'Manrope', sans-serif; font-size: 15px; background: rgba(255,255,255,0.7); color: var(--text);
+  }
+  .field input[type=text]:focus, .field textarea:focus {
+    outline: none; border-color: var(--accent); background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.14);
   }
   .field textarea { resize: vertical; min-height: 90px; }
   .org-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .org-btn {
-    padding: 12px 8px; border-radius: 12px; border: 1.5px solid var(--border);
-    background: #FBFBFF; font-family: 'Satoshi', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 12px 8px; border-radius: 13px; border: 1.5px solid rgba(11,19,43,0.1);
+    background: rgba(255,255,255,0.6); font-family: 'Manrope', sans-serif; font-size: 12.5px; font-weight: 700;
     cursor: pointer; text-align: center; color: var(--text);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
-  .org-btn.selected { border-color: transparent; background: var(--accent-grad); color: #fff; }
+  .org-btn.selected { border-color: var(--accent); background: var(--accent); color: #fff; }
   .type-row { display: flex; gap: 8px; }
   .type-row .org-btn { flex: 1; }
   .file-drop {
-    border: 1.5px dashed var(--border); border-radius: 14px; padding: 18px;
-    text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; background: #FBFBFF;
+    border: 1.5px dashed rgba(11,19,43,0.16); border-radius: 15px; padding: 18px;
+    text-align: center; color: var(--muted); font-size: 13px; cursor: pointer; background: rgba(255,255,255,0.5);
   }
-  .file-drop.has-file { border-style: solid; border-color: #00D4FF; color: var(--text); }
+  .file-drop i { margin-right: 5px; }
+  .file-drop.has-file { border-style: solid; border-color: var(--accent); color: var(--text); background: var(--ice-soft); }
   .file-list { margin-top: 8px; font-size: 12px; color: var(--muted); }
   .file-list div { padding: 3px 0; }
   .submit-btn {
     width: 100%; padding: 15px; border: none; border-radius: 14px;
-    background: var(--accent-grad); color: #fff; font-family: 'Satoshi', sans-serif;
+    background: var(--accent); color: #fff; font-family: 'Manrope', sans-serif;
     font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+    box-shadow: 0 12px 24px -10px rgba(37,99,235,0.5);
+    transition: opacity 0.15s ease, transform 0.1s ease;
   }
-  .submit-btn:disabled { opacity: 0.55; }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.55; box-shadow: none; }
+  .submit-btn i.ti-loader-2 { animation: spin 0.8s linear infinite; margin-right: 5px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .hint i { color: #C2650F; margin-right: 2px; }
   .toast {
     position: fixed; bottom: 18px; left: 16px; right: 16px; z-index: 50;
-    background: #1B1F2A; color: #fff; padding: 13px 16px; border-radius: 12px;
-    font-size: 13px; text-align: center; opacity: 0; transform: translateY(12px);
+    background: rgba(11,19,43,0.9);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    color: #fff; padding: 13px 16px; border-radius: 14px;
+    font-size: 13px; text-align: center; font-weight: 600; opacity: 0; transform: translateY(12px);
     transition: all 0.25s ease; pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.err { background: var(--danger); }
-  .toast.ok { background: var(--ok); }
-  .step-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+  .toast.err { background: rgba(178,58,58,0.92); }
+  .toast.ok { background: rgba(30,122,76,0.92); }
+  .step-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <button class="back-btn" id="backBtn">← Назад к списку</button>
-  <h1 id="pageTitle">📋 Заявки</h1>
+  <button class="back-btn" id="backBtn"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад</button>
+  <div class="topbar-row">
+    <div class="topbar-icon"><i class="ti ti-list-details" aria-hidden="true" style="color:#fff;"></i></div>
+    <h1 id="pageTitle">Заявки</h1>
+  </div>
   <p id="pageSub">Выберите тип запроса</p>
 </div>
 
@@ -225,7 +299,7 @@
     if (opts.hint) {
       var h = document.createElement("div");
       h.className = "hint";
-      h.textContent = opts.hint;
+      h.innerHTML = "<i class='ti ti-alert-circle' aria-hidden='true'></i> " + opts.hint;
       f.appendChild(h);
     }
     card.appendChild(f);
@@ -240,7 +314,8 @@
     wrap.appendChild(l);
     var drop = document.createElement("div");
     drop.className = "file-drop";
-    drop.textContent = "📎 Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+    var emptyHtml = "<i class='ti ti-paperclip' aria-hidden='true'></i>Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+    drop.innerHTML = emptyHtml;
     var input = document.createElement("input");
     input.type = "file";
     input.style.display = "none";
@@ -254,7 +329,7 @@
       list.innerHTML = "";
       if (files.length) {
         drop.classList.add("has-file");
-        drop.textContent = "✅ Выбрано: " + files.length + " файл(ов) — нажмите, чтобы изменить";
+        drop.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>Выбрано: " + files.length + " файл(ов) — нажмите, чтобы изменить";
         files.forEach(function (f) {
           var d = document.createElement("div");
           d.textContent = "• " + f.name;
@@ -262,7 +337,7 @@
         });
       } else {
         drop.classList.remove("has-file");
-        drop.textContent = "📎 Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+        drop.innerHTML = emptyHtml;
       }
     };
     wrap.appendChild(drop);
@@ -283,7 +358,7 @@
   async function withBusy(btn, fn) {
     var original = btn.textContent;
     btn.disabled = true;
-    btn.textContent = "⏳ Отправка...";
+    btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i>Отправка...";
     try {
       await fn();
     } catch (e) {
@@ -299,7 +374,7 @@
   // ------------------------------------------------------------
   var SECTIONS = {
     dogovor: {
-      icon: "📝", label: "Договор", title: "📝 Запрос по договору",
+      icon: "ti-file-text", label: "Договор", title: "Запрос по договору",
       render: function () {
         var card = makeCard();
         var selOrg = null;
@@ -323,7 +398,7 @@
       },
     },
     doverennost: {
-      icon: "📋", label: "Доверенность", title: "📋 Запрос по доверенности",
+      icon: "ti-certificate", label: "Доверенность", title: "Запрос по доверенности",
       render: function () {
         var card = makeCard();
         var selOrg = null;
@@ -352,7 +427,7 @@
       },
     },
     bank: {
-      icon: "🏦", label: "Банк", title: "🏦 Банковский запрос",
+      icon: "ti-building-bank", label: "Банк", title: "Банковский запрос",
       render: function () {
         var card = makeCard();
         var selOrg = null, selType = null;
@@ -367,7 +442,7 @@
         ["Поступление", "Списание"].forEach(function (label) {
           var b = document.createElement("div");
           b.className = "org-btn";
-          b.textContent = (label === "Поступление" ? "📥 " : "📤 ") + label;
+          b.textContent = label;
           b.onclick = function () {
             Array.prototype.forEach.call(typeRow.children, function (c) { c.classList.remove("selected"); });
             b.classList.add("selected");
@@ -392,7 +467,7 @@
       },
     },
     realschet: {
-      icon: "📄", label: "Счёт-фактура", title: "📄 Запрос на счёт-фактуру",
+      icon: "ti-receipt", label: "Счёт-фактура", title: "Запрос на счёт-фактуру",
       render: function () {
         var card = makeCard();
         var selOrg = null;
@@ -401,7 +476,7 @@
         renderOrgPicker(card, function (org) { selOrg = org; });
         var fileCtl = makeFileDrop(card, "2. PDF со сканами (договор, доп. соглашения, приложения)");
         var kontragent = makeField(card, "3. Контрагент (покупатель)", "input", {
-          placeholder: "Название и ИНН/ПНФЛ", hint: "⚠️ Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+          placeholder: "Название и ИНН/ПНФЛ", hint: "Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
         });
         kontragent.type = "text";
         var note = makeField(card, "Доп. информация (например VIN)", "input", { placeholder: "Необязательно" });
@@ -423,7 +498,7 @@
       },
     },
     zakaznaryad: {
-      icon: "🔧", label: "Заказ-наряд", title: "🔧 Запрос на заказ-наряд",
+      icon: "ti-tool", label: "Заказ-наряд", title: "Запрос на заказ-наряд",
       render: function () {
         var card = makeCard();
         var selOrg = null;
@@ -432,7 +507,7 @@
         renderOrgPicker(card, function (org) { selOrg = org; });
         var fileCtl = makeFileDrop(card, "2. Файл (заказ-наряд, документы)");
         var kontragent = makeField(card, "3. Контрагент (заказчик)", "input", {
-          placeholder: "Название и ИНН/ПНФЛ", hint: "⚠️ Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+          placeholder: "Название и ИНН/ПНФЛ", hint: "Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
         });
         kontragent.type = "text";
         var note = makeField(card, "Доп. информация", "input", { placeholder: "Необязательно" });
@@ -454,15 +529,31 @@
       },
     },
     otherreq_post: {
-      icon: "❓", label: "Другой запрос (Поступления)", title: "❓ Другой запрос — Поступления",
+      icon: "ti-help-circle", label: "Другой запрос", title: "Другой запрос — Поступления",
       render: function () { renderOtherReq("Поступления"); },
     },
     otherreq_real: {
-      icon: "❓", label: "Другой запрос (Реализация)", title: "❓ Другой запрос — Реализация",
+      icon: "ti-help-circle", label: "Другой запрос", title: "Другой запрос — Реализация",
       render: function () { renderOtherReq("Реализация"); },
     },
+    salary: {
+      icon: "ti-wallet", label: "Зарплата", title: "Зарплата",
+      render: function () {
+        var card = makeCard();
+        var info = document.createElement("p");
+        info.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 16px;";
+        info.textContent = "Нажмите кнопку ниже, чтобы бот прислал актуальную информацию по вашей зарплате в чат.";
+        card.appendChild(info);
+        var btn = makeSubmitBtn(card, "Запросить зарплату");
+        btn.onclick = function () {
+          withBusy(btn, async function () {
+            sendToBot({ action: "salary" });
+          });
+        };
+      },
+    },
     suggestion: {
-      icon: "💡", label: "Предложение / Жалоба", title: "💡 Предложение или жалоба",
+      icon: "ti-bulb", label: "Предложение / Жалоба", title: "Предложение или жалоба",
       render: function () {
         var card = makeCard();
         var selType = "Предложение";
@@ -470,14 +561,14 @@
         card.appendChild(s1);
         var row = document.createElement("div");
         row.className = "type-row";
-        [["Предложение", "💡"], ["Жалоба", "⚠️"]].forEach(function (pair, i) {
+        ["Предложение", "Жалоба"].forEach(function (label, i) {
           var b = document.createElement("div");
           b.className = "org-btn" + (i === 0 ? " selected" : "");
-          b.textContent = pair[1] + " " + pair[0];
+          b.textContent = label;
           b.onclick = function () {
             Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("selected"); });
             b.classList.add("selected");
-            selType = pair[0];
+            selType = label;
           };
           row.appendChild(b);
         });
@@ -522,42 +613,94 @@
   }
 
   // ------------------------------------------------------------
-  // Navigatsiya: menyu <-> forma
+  // Navigatsiya: asosiy menyu -> kategoriya -> forma
   // ------------------------------------------------------------
-  function showMenu() {
-    content.innerHTML = "";
-    pageTitle.textContent = "📋 Заявки";
-    pageSub.textContent = "Выберите тип запроса";
-    backBtn.style.display = "none";
-    if (tg && tg.BackButton) tg.BackButton.hide();
+  var CATEGORIES = {
+    postupleniya: {
+      icon: "ti-arrow-down-left", label: "Поступления", title: "Поступления",
+      items: ["dogovor", "doverennost", "bank", "otherreq_post"],
+    },
+    realizatsiya: {
+      icon: "ti-arrow-up-right", label: "Реализация", title: "Реализация",
+      items: ["realschet", "zakaznaryad", "otherreq_real"],
+    },
+  };
+  var TOP_MENU = [
+    { type: "cat", key: "postupleniya" },
+    { type: "cat", key: "realizatsiya" },
+    { type: "sec", key: "salary" },
+    { type: "sec", key: "suggestion" },
+  ];
 
+  function renderGrid(entries, getMeta, onClick) {
+    content.innerHTML = "";
     var grid = document.createElement("div");
     grid.className = "menu-grid";
-    Object.keys(SECTIONS).forEach(function (key) {
-      var s = SECTIONS[key];
+    entries.forEach(function (entry) {
+      var meta = getMeta(entry);
       var item = document.createElement("div");
-      item.className = "menu-item";
-      item.innerHTML = '<span class="icon">' + s.icon + '</span><span class="label">' + esc(s.label) + '</span>';
-      item.onclick = function () { showSection(key); };
+      item.className = "menu-item" + (meta.isCategory ? " category" : "");
+      item.innerHTML =
+        '<span class="icon"><i class="ti ' + meta.icon + '" aria-hidden="true"></i></span>' +
+        (meta.isCategory ? '<i class="ti ti-chevron-right chevron" aria-hidden="true"></i>' : '') +
+        '<div class="label">' + esc(meta.label) + '</div>';
+      item.onclick = function () { onClick(entry); };
       grid.appendChild(item);
     });
     content.appendChild(grid);
   }
 
-  function showSection(key) {
+  function showMenu() {
+    pageTitle.textContent = "Заявки";
+    pageSub.textContent = "Выберите тип запроса";
+    backBtn.style.display = "none";
+    if (tg && tg.BackButton) tg.BackButton.hide();
+
+    renderGrid(TOP_MENU, function (entry) {
+      if (entry.type === "cat") {
+        var c = CATEGORIES[entry.key];
+        return { icon: c.icon, label: c.label, isCategory: true };
+      }
+      var s = SECTIONS[entry.key];
+      return { icon: s.icon, label: s.label, isCategory: false };
+    }, function (entry) {
+      if (entry.type === "cat") showCategory(entry.key);
+      else showSection(entry.key, showMenu);
+    });
+  }
+
+  function showCategory(catKey) {
+    var cat = CATEGORIES[catKey];
+    pageTitle.textContent = cat.title;
+    pageSub.textContent = "Выберите тип запроса";
+    backBtn.style.display = "inline-flex";
+    backBtn.onclick = showMenu;
+    if (tg && tg.BackButton) {
+      tg.BackButton.show();
+      tg.BackButton.onClick(showMenu);
+    }
+    renderGrid(cat.items, function (key) {
+      var s = SECTIONS[key];
+      return { icon: s.icon, label: s.label, isCategory: false };
+    }, function (key) {
+      showSection(key, function () { showCategory(catKey); });
+    });
+  }
+
+  function showSection(key, onBack) {
     var s = SECTIONS[key];
     content.innerHTML = "";
     pageTitle.textContent = s.title;
     pageSub.textContent = "Заполните форму ниже";
     backBtn.style.display = "inline-flex";
+    backBtn.onclick = onBack;
     if (tg && tg.BackButton) {
       tg.BackButton.show();
-      tg.BackButton.onClick(showMenu);
+      tg.BackButton.onClick(onBack);
     }
     s.render();
   }
 
-  backBtn.onclick = showMenu;
   showMenu();
 })();
 </script>
