@@ -2088,6 +2088,59 @@
   /* ---------- Stat-grid (Налоги bo'limi) va org-grid - bir xil chuqurlik ---------- */
   [data-brand="crb"] .stats-grid .stat-card { border-radius: 16px; }
   [data-brand="crb"] .org-grid { gap: 12px; }
+
+  /* ============================================================
+     ANALITIKA - RANGLARNI IZCHIL PALITRAGA KELTIRISH (FAQAT CRB)
+     Asl binafsha/siyanor (#6C63FF, #00D4FF) gradientlar CRB brend
+     kitobiga mos emas edi - endi hammasi navy/ko'k/yashil/qizil/
+     amber izchil to'plamiga o'tkaziladi (accent-total allaqachon
+     to'g'irlangan edi, qolganlari endi mos keladi).
+     ============================================================ */
+  [data-brand="crb"] .stat-card.accent-pending {
+    --stat-glow: rgba(217,119,6,0.16); --stat-ring: #D97706; --stat-ring2: #F59E0B;
+  }
+  [data-brand="crb"] .stat-card.accent-accepted {
+    --stat-glow: rgba(22,163,74,0.16); --stat-ring: #16A34A; --stat-ring2: #22C55E;
+  }
+  [data-brand="crb"] .stat-card.accent-rejected {
+    --stat-glow: rgba(220,38,38,0.16); --stat-ring: #DC2626; --stat-ring2: #EF4444;
+  }
+  [data-brand="crb"] .stat-card.accent-overdue {
+    background-image: linear-gradient(var(--red-bg), var(--red-bg)), linear-gradient(135deg,#DC2626,#991B1B) !important;
+    --stat-glow: rgba(220,38,38,0.2); --stat-ring: #DC2626; --stat-ring2: #991B1B;
+  }
+  [data-brand="crb"] .stat-card.accent-overdue .stat-icon { background: linear-gradient(135deg,#DC2626,#991B1B) !important; }
+
+  /* ---------- Tashkilot kartalari (org-card) - halqa rangi navy->ko'k ---------- */
+  [data-brand="crb"] .org-card {
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg, #0B132B, #2563EB) !important;
+  }
+  [data-brand="crb"] .org-card.empty {
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg, var(--border), var(--border)) !important;
+  }
+  [data-brand="crb"] .org-card .org-icon {
+    background: linear-gradient(135deg, #0B132B, #2563EB) !important;
+  }
+  [data-brand="crb"] .org-card.empty .org-icon {
+    background: linear-gradient(135deg, var(--muted), var(--border)) !important;
+  }
+
+  /* ---------- Umumiy аналитика kartalari (analytics-summary) - bir xil
+     navy/ko'k palitra, tasodifiy binafsha/pushti/sariq aylanish o'rniga ---------- */
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+1) { --sum-glow: rgba(37,99,235,0.18); --sum-ring: #0B132B; --sum-ring2: #2563EB; }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+2) { --sum-glow: rgba(217,119,6,0.2); --sum-ring: #D97706; --sum-ring2: #F59E0B; }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+3) { --sum-glow: rgba(220,38,38,0.18); --sum-ring: #DC2626; --sum-ring2: #EF4444; }
+  [data-brand="crb"] .analytics-summary > div:nth-child(4n+4) { --sum-glow: rgba(22,163,74,0.2); --sum-ring: #16A34A; --sum-ring2: #22C55E; }
+
+  /* ---------- Pill (nagruzka jadvali "Просрочено"/"0") - izchil rang ---------- */
+  [data-brand="crb"] .pill.overdue {
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg,#DC2626,#EF4444) !important;
+    color: #B91C1C;
+  }
+  [data-brand="crb"] .pill.ok {
+    background-image: linear-gradient(var(--card), var(--card)), linear-gradient(135deg,#16A34A,#22C55E) !important;
+    color: #15803D;
+  }
 </style>
 </head>
 <body>
