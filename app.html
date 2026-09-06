@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" translate="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
 <title>Заявки — CRB</title>
 <meta name="theme-color" content="#0B132B">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -618,7 +619,7 @@
   var CATEGORIES = {
     postupleniya: {
       icon: "ti-arrow-down-left", label: "Поступления", title: "Поступления",
-      items: ["dogovor", "doverennost", "bank", "otherreq_post"],
+      items: ["dogovor", "doverennost", "otherreq_post"],
     },
     realizatsiya: {
       icon: "ti-arrow-up-right", label: "Реализация", title: "Реализация",
@@ -628,6 +629,7 @@
   var TOP_MENU = [
     { type: "cat", key: "postupleniya" },
     { type: "cat", key: "realizatsiya" },
+    { type: "sec", key: "bank" },
     { type: "sec", key: "salary" },
     { type: "sec", key: "suggestion" },
   ];
