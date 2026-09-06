@@ -1846,9 +1846,19 @@
     transition: background 0.2s var(--ease-snap), color 0.2s ease, transform 0.15s var(--ease-snap);
   }
   [data-brand="crb"] .nav-item:hover {
-    background: rgba(37,99,235,0.1) !important;
+    background: rgba(37,99,235,0.12) !important;
     color: var(--navy) !important;
     transform: translateX(2px);
+  }
+  /* Qorong'i rejimda fon HAM to'q bo'lgani uchun matnni to'q-navy qilib
+     bo'lmaydi - u fonga singib, ko'rinmay qoladi. Shu yerda ANIQ ochroq
+     rangga qaytaramiz (mavjud light/hover fonlari uchun mos). */
+  [data-brand="crb"][data-theme="dark"] .nav-item:hover {
+    background: rgba(110,140,255,0.18) !important;
+    color: #EAF0FF !important;
+  }
+  [data-brand="crb"][data-theme="dark"] .nav-item:hover .nav-icon svg {
+    stroke: #EAF0FF;
   }
   [data-brand="crb"] .nav-item:active { transform: translateX(2px) scale(0.98); }
   [data-brand="crb"] .nav-item.active {
