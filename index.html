@@ -2403,6 +2403,13 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   [data-brand="crb"] .scv2-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  /* Sidebar yig'ish/ochish animatsiyasi paytida blur o'chiriladi -
+     "width" o'zgarishi bilan backdrop-filter birga hisoblanishi jankka
+     sabab bo'lardi. Faqat CRB rejimida (blur faqat shu yerda bor). */
+  [data-brand="crb"] .sidebar.sidebar-animating {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 </style>
 </head>
 <body>
@@ -4107,6 +4114,12 @@ function toggleSidebar() {
   btn.classList.remove("pop");
   void btn.offsetWidth; // reflow - qayta animatsiya ishga tushishi uchun
   btn.classList.add("pop");
+  // "width" animatsiyasi + blur (backdrop-filter) birga ishlagani
+  // brauzerni har freymda qayta hisoblashga majburlab, "qotib-qotib"
+  // (jank) ko'rinishga sabab bo'lardi - shuning uchun animatsiya
+  // davomida blur vaqtincha o'chiriladi, tugagach qaytariladi.
+  sidebar.classList.add("sidebar-animating");
+  setTimeout(() => sidebar.classList.remove("sidebar-animating"), 320);
 }
 
 function restoreSidebarState() {
@@ -4506,19 +4519,42 @@ async function submitForcePasswordChange() {
 // ---------- Kun/Tun almashtirgichi ----------
 function setTheme(mode) {
   document.documentElement.classList.add("theme-switching");
-  if (mode === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    localStorage.setItem("rm_theme", "dark");
-  } else {
-    document.documentElement.removeAttribute("data-theme");
-    localStorage.setItem("rm_theme", "light");
+  const isCrbTheme = document.documentElement.getAttribute("data-brand") === "crb";
+  const app = document.getElementById("app");
+  // Kunduz/tun almashishi avval BUTUNLAY animatsiyasiz, keskin (qo'pol)
+  // edi - yuzlab elementni alohida animatsiya qilish sekinlikka sabab
+  // bo'lgani uchun shunday qilingan edi. Endi CRB rejimida faqat BITTA
+  // qatlamni (#app) biroz xiralashtirib-yorishtirish orqali yumshoq
+  // o'tish beriladi - bu arzon (faqat opacity, GPU tomonidan tez
+  // ishlanadi), lekin ko'zga chiroyli ko'rinadi.
+  if (isCrbTheme && app) {
+    app.style.transition = "opacity 0.12s ease";
+    app.style.opacity = "0.45";
   }
-  syncThemeButtonLabel();
-  requestAnimationFrame(() => {
+  const applyThemeChange = () => {
+    if (mode === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("rm_theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("rm_theme", "light");
+    }
+    syncThemeButtonLabel();
+    if (isCrbTheme && app) {
+      requestAnimationFrame(() => { app.style.opacity = "1"; });
+    }
     requestAnimationFrame(() => {
-      document.documentElement.classList.remove("theme-switching");
+      requestAnimationFrame(() => {
+        document.documentElement.classList.remove("theme-switching");
+        if (isCrbTheme && app) setTimeout(() => { app.style.transition = ""; }, 150);
+      });
     });
-  });
+  };
+  if (isCrbTheme && app) {
+    setTimeout(applyThemeChange, 110);
+  } else {
+    applyThemeChange();
+  }
 }
 function syncThemeButtonLabel() {
   const isDark = document.documentElement.getAttribute("data-theme") === "dark";
