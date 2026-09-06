@@ -585,16 +585,32 @@
     border: 1px solid rgba(110,140,255,0.10);
     filter: blur(1px);
     pointer-events: none;
+    animation: login-ghost-float 9s ease-in-out infinite;
   }
-  .login-bg-ghost.g1 { width: 220px; height: 130px; top: 9%; left: 7%; transform: rotate(-4deg); }
-  .login-bg-ghost.g2 { width: 170px; height: 90px; top: 68%; left: 11%; transform: rotate(3deg); }
-  .login-bg-ghost.g3 { width: 190px; height: 250px; top: 14%; right: 8%; transform: rotate(3deg); }
-  .login-bg-ghost.g4 { width: 150px; height: 90px; top: 72%; right: 12%; transform: rotate(-3deg); }
+  .login-bg-ghost.g1 { width: 220px; height: 130px; top: 9%; left: 7%; transform: rotate(-4deg); animation-duration: 10s; animation-delay: -1.5s; }
+  .login-bg-ghost.g2 { width: 170px; height: 90px; top: 68%; left: 11%; transform: rotate(3deg); animation-duration: 8s; animation-delay: -4s; }
+  .login-bg-ghost.g3 { width: 190px; height: 250px; top: 14%; right: 8%; transform: rotate(3deg); animation-duration: 11s; animation-delay: -6.5s; }
+  .login-bg-ghost.g4 { width: 150px; height: 90px; top: 72%; right: 12%; transform: rotate(-3deg); animation-duration: 9s; animation-delay: -2.5s; }
+  @keyframes login-ghost-float {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+  }
+  .login-bg-ghost.g1 { --r: -4deg; }
+  .login-bg-ghost.g2 { --r: 3deg; }
+  .login-bg-ghost.g3 { --r: 3deg; }
+  .login-bg-ghost.g4 { --r: -3deg; }
   @media (max-width: 900px) { .login-bg-ghost { display: none; } }
   #confettiContainer {
     position: absolute; inset: 0; overflow: hidden; pointer-events: none;
   }
-  .login-theme-toggle { position: absolute; top: 24px; right: 28px; z-index: 3; }
+  .login-theme-toggle {
+    position: absolute; top: 24px; right: 28px; z-index: 3;
+    opacity: 0; animation: login-toggle-in 0.5s ease 0.55s forwards;
+  }
+  @keyframes login-toggle-in {
+    0% { opacity: 0; transform: translateY(-8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
   .login-card {
     text-align: center;
     color: white;
@@ -610,6 +626,16 @@
     position: relative;
     overflow: hidden;
     z-index: 2;
+    opacity: 0;
+    animation: login-card-in 0.6s cubic-bezier(0.16,1,0.3,1) forwards, login-card-glow 5s ease-in-out 0.6s infinite;
+  }
+  @keyframes login-card-in {
+    0% { opacity: 0; transform: translateY(22px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes login-card-glow {
+    0%, 100% { box-shadow: 0 30px 70px -25px rgba(0,0,0,0.55), 0 0 50px -14px rgba(37,99,235,0.45), inset 0 1px 0 rgba(255,255,255,0.06); }
+    50% { box-shadow: 0 30px 70px -25px rgba(0,0,0,0.55), 0 0 68px -10px rgba(37,99,235,0.65), inset 0 1px 0 rgba(255,255,255,0.06); }
   }
   .login-card::before {
     content: "";
@@ -617,7 +643,43 @@
     top: 0; left: 0; right: 0;
     height: 2px;
     background: linear-gradient(90deg, transparent, #2563EB 30%, #6E8CFF 70%, transparent);
+    background-size: 200% 100%;
+    animation: login-shimmer 4s linear infinite;
   }
+  @keyframes login-shimmer {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+  }
+  .login-card .mark {
+    opacity: 0;
+    animation: login-mark-in 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.15s forwards;
+  }
+  @keyframes login-mark-in {
+    0% { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+  .login-card h1, .login-card .brand-sub, .login-card p, .login-card form, .login-card .login-footer {
+    opacity: 0;
+    animation: login-fade-up 0.5s ease forwards;
+  }
+  .login-card h1 { animation-delay: 0.25s; }
+  .login-card .brand-sub { animation-delay: 0.32s; }
+  .login-card p { animation-delay: 0.38s; }
+  .login-card form { animation-delay: 0.45s; }
+  .login-card .login-footer { animation-delay: 0.55s; }
+  @keyframes login-fade-up {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .login-input {
+    transition: background 0.25s ease, color 0.25s ease, transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+  .login-input:focus { transform: translateY(-1px); }
+  .login-submit-btn {
+    transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .login-submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(37,99,235,0.5); }
+  .login-submit-btn:active:not(:disabled) { transform: translateY(0); }
 
   /* ---------- MUSTAQILLIK BAYRAMI (25.08 - 04.09.2026, avtomatik) ---------- */
   #loginScreen.holiday {
