@@ -273,15 +273,43 @@
     background-image: none !important;
     border: none !important;
   }
-  [data-brand="crb"] .days-green { background: #E3F5E9 !important; color: #1E7A4C !important; }
-  [data-brand="crb"] .days-amber { background: #FFF0DC !important; color: #C2650F !important; }
-  [data-brand="crb"] .days-red { background: #FBE7E7 !important; color: #B23A3A !important; }
-  [data-brand="crb"] .status-new { background: #F1F5F9 !important; color: #64748B !important; }
-  [data-brand="crb"] .status-sent { background: #FFF0DC !important; color: #C2650F !important; }
-  [data-brand="crb"] .status-accepted { background: #E3F5E9 !important; color: #1E7A4C !important; }
-  [data-brand="crb"] .status-rejected { background: #FBE7E7 !important; color: #B23A3A !important; }
-  [data-brand="crb"] .status-notmine { background: #FFF0DC !important; color: #C2650F !important; }
-  [data-brand="crb"] .status-error { background: #FBE7E7 !important; color: #B23A3A !important; }
+  /* ---------- Status/kunlar belgilari - yangilangan dizayn: rangli
+     border-halqa + qalinroq shrift, ikkala rejimda ham aniq farqlanadi.
+     Yorug' rejim - pastel fon (o'zgarmadi), Qorong'i rejim - ilovaning
+     o'zida ALLAQACHON mavjud bo'lgan --green-fg/--red-fg/--amber-fg/
+     --gray-fg o'zgaruvchilaridan foydalanadi (avval bular ishlatilmay,
+     yorug' rejim rangi majburlangan edi - shu sabab qorong'ida hammasi
+     bir xil xira ko'rinardi). */
+  [data-brand="crb"] .status-badge, [data-brand="crb"] .days-badge, [data-brand="crb"] .pill {
+    font-weight: 700;
+    border: 1.5px solid transparent;
+  }
+  [data-brand="crb"] .days-green { background: #E3F5E9 !important; color: #1E7A4C !important; border-color: rgba(30,122,76,0.3); }
+  [data-brand="crb"] .days-amber { background: #FFF0DC !important; color: #C2650F !important; border-color: rgba(194,101,15,0.3); }
+  [data-brand="crb"] .days-red { background: #FBE7E7 !important; color: #B23A3A !important; border-color: rgba(178,58,58,0.3); }
+  [data-brand="crb"] .status-new { background: #F1F5F9 !important; color: #64748B !important; border-color: rgba(100,116,139,0.25); }
+  [data-brand="crb"] .status-sent { background: #FFF0DC !important; color: #C2650F !important; border-color: rgba(194,101,15,0.3); }
+  [data-brand="crb"] .status-accepted { background: #E3F5E9 !important; color: #1E7A4C !important; border-color: rgba(30,122,76,0.3); }
+  [data-brand="crb"] .status-rejected { background: #FBE7E7 !important; color: #B23A3A !important; border-color: rgba(178,58,58,0.3); }
+  [data-brand="crb"] .status-notmine { background: #FFF0DC !important; color: #C2650F !important; border-color: rgba(194,101,15,0.3); }
+  [data-brand="crb"] .status-error { background: #FBE7E7 !important; color: #B23A3A !important; border-color: rgba(178,58,58,0.3); }
+  [data-brand="crb"] .status-pendingboss { background: rgba(37,99,235,0.1) !important; color: #2563EB !important; border-color: rgba(37,99,235,0.3); }
+
+  /* Qorong'i rejim - butunlay boshqa, yorqinroq va aniq farqlanadigan
+     rang to'plami (pastel emas, chunki pastel fonlar to'q sirt ustida
+     "xira dog'"dek ko'rinib, farqlanmay qoladi). */
+  [data-brand="crb"][data-theme="dark"] .days-green { background: var(--green-bg) !important; color: var(--green-fg) !important; border-color: rgba(0,212,140,0.4); }
+  [data-brand="crb"][data-theme="dark"] .days-amber { background: var(--amber-bg) !important; color: var(--amber-fg) !important; border-color: rgba(255,197,61,0.4); }
+  [data-brand="crb"][data-theme="dark"] .days-red { background: var(--red-bg) !important; color: var(--red-fg) !important; border-color: rgba(255,122,122,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-new { background: var(--gray-bg) !important; color: var(--gray-fg) !important; border-color: rgba(174,180,214,0.35); }
+  [data-brand="crb"][data-theme="dark"] .status-sent { background: var(--amber-bg) !important; color: var(--amber-fg) !important; border-color: rgba(255,197,61,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-accepted { background: var(--green-bg) !important; color: var(--green-fg) !important; border-color: rgba(0,212,140,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-rejected { background: var(--red-bg) !important; color: var(--red-fg) !important; border-color: rgba(255,122,122,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-notmine { background: var(--amber-bg) !important; color: var(--amber-fg) !important; border-color: rgba(255,197,61,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-error { background: var(--red-bg) !important; color: var(--red-fg) !important; border-color: rgba(255,122,122,0.4); }
+  [data-brand="crb"][data-theme="dark"] .status-pendingboss { background: rgba(110,140,255,0.16) !important; color: #6E8CFF !important; border-color: rgba(110,140,255,0.4); }
+  [data-brand="crb"][data-theme="dark"] .pill.overdue { background: var(--red-bg) !important; color: var(--red-fg) !important; border-color: rgba(255,122,122,0.4); }
+  [data-brand="crb"][data-theme="dark"] .pill.ok { background: var(--green-bg) !important; color: var(--green-fg) !important; border-color: rgba(0,212,140,0.4); }
   [data-brand="crb"] .status-pendingboss { background: #EAF0FF !important; color: #2563EB !important; }
   [data-brand="crb"] .org-card {
     background-image: none;
