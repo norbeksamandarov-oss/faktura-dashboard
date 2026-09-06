@@ -1793,6 +1793,158 @@
       background: var(--bg) !important;
     }
   }
+
+  /* ============================================================
+     KATTA VIZUAL YANGILANISH - FAQAT CRB rejimi (norbek login)
+     apple-design skilliga asosan: depth/elevation, spring-uslub
+     harakat, izchil radius/shadow tizimi, aniq hover/press holatlar.
+     Boshqa xodimlarga bu bo'lim umuman tegmaydi.
+     ============================================================ */
+
+  /* ---------- Umumiy harakat egri chizig'i - "critically damped"
+     spring taassurotini beradi (bounce yo'q, lekin tez va tabiiy) ---------- */
+  [data-brand="crb"] { --ease-snap: cubic-bezier(0.22, 1, 0.36, 1); }
+
+  /* ---------- Kartalar: chuqurlik (elevation) va hover ko'tarilishi ---------- */
+  [data-brand="crb"] .stat-card,
+  [data-brand="crb"] .org-card,
+  [data-brand="crb"] .contragent-card,
+  [data-brand="crb"] .panel,
+  [data-brand="crb"] .analytics-box {
+    transition: transform 0.28s var(--ease-snap), box-shadow 0.28s var(--ease-snap), border-color 0.2s ease;
+  }
+  [data-brand="crb"] .stat-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 0 18px 36px -18px rgba(11,19,43,0.28), 0 4px 10px -4px rgba(11,19,43,0.12);
+    border-color: rgba(37,99,235,0.35);
+  }
+  [data-brand="crb"] .org-card:hover,
+  [data-brand="crb"] .contragent-card:hover,
+  [data-brand="crb"] .analytics-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -18px rgba(11,19,43,0.25);
+  }
+  [data-brand="crb"] .stat-card:active,
+  [data-brand="crb"] .org-card:active,
+  [data-brand="crb"] .contragent-card:active {
+    transform: translateY(-1px) scale(0.995);
+    transition-duration: 0.1s;
+  }
+  [data-brand="crb"] .stat-card .stat-icon {
+    transition: transform 0.3s var(--ease-snap);
+  }
+  [data-brand="crb"] .stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(-4deg);
+  }
+
+  /* ---------- Sidebar navigatsiya - aniq "pill" active holat,
+     ikon harakati, spring-uslub o'tish ---------- */
+  [data-brand="crb"] .nav-item {
+    margin: 0 10px;
+    border-radius: 10px;
+    border-left: none !important;
+    transition: background 0.2s var(--ease-snap), color 0.2s ease, transform 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] .nav-item:hover {
+    background: rgba(37,99,235,0.1) !important;
+    color: var(--navy) !important;
+    transform: translateX(2px);
+  }
+  [data-brand="crb"] .nav-item:active { transform: translateX(2px) scale(0.98); }
+  [data-brand="crb"] .nav-item.active {
+    background: linear-gradient(135deg, #0B132B, #2563EB) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 16px -8px rgba(37,99,235,0.55);
+  }
+  [data-brand="crb"] .nav-item.active .nav-icon svg { stroke: #fff; }
+  [data-brand="crb"] .nav-icon svg { transition: transform 0.25s var(--ease-snap); }
+  [data-brand="crb"] .nav-item:hover .nav-icon svg { transform: scale(1.12); }
+  [data-brand="crb"] .sidebar { padding-top: 20px; }
+
+  /* ---------- Tugmalar - izchil radius, chuqurlik va bosilish tuyg'usi ---------- */
+  [data-brand="crb"] #refreshBtn, [data-brand="crb"] #logoutBtn, [data-brand="crb"] #notifyBtn,
+  [data-brand="crb"] #changePasswordBtn, [data-brand="crb"] #announcementBtn {
+    border-radius: 10px;
+    transition: transform 0.18s var(--ease-snap), background 0.18s ease, box-shadow 0.18s ease;
+  }
+  [data-brand="crb"] #refreshBtn:hover, [data-brand="crb"] #logoutBtn:hover, [data-brand="crb"] #notifyBtn:hover,
+  [data-brand="crb"] #changePasswordBtn:hover, [data-brand="crb"] #announcementBtn:hover {
+    transform: translateY(-1px);
+  }
+  [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn, [data-brand="crb"] #doverennostExportBtn,
+  [data-brand="crb"] #bankExportBtn, [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
+  [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
+    border-radius: 10px;
+    transition: transform 0.18s var(--ease-snap), filter 0.18s ease, box-shadow 0.18s ease;
+  }
+  [data-brand="crb"] #exportCsvBtn:hover, [data-brand="crb"] #dogovorExportBtn:hover, [data-brand="crb"] #doverennostExportBtn:hover,
+  [data-brand="crb"] #bankExportBtn:hover, [data-brand="crb"] #realschetExportBtn:hover, [data-brand="crb"] #zakaznaryadExportBtn:hover,
+  [data-brand="crb"] #otherreqPostExportBtn:hover, [data-brand="crb"] #otherreqRealExportBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px -8px rgba(37,99,235,0.55);
+  }
+  [data-brand="crb"] .reg-btn, [data-brand="crb"] .emp-delete-btn, [data-brand="crb"] .rank-toggle-btn {
+    border-radius: 8px;
+    transition: transform 0.15s var(--ease-snap), background 0.15s ease;
+  }
+  [data-brand="crb"] .reg-btn:hover, [data-brand="crb"] .emp-delete-btn:hover { transform: translateY(-1px); }
+
+  /* ---------- Toolbar - biroz chuqurlik va yumshoqroq chegara ---------- */
+  [data-brand="crb"] .toolbar {
+    border-radius: 14px;
+    box-shadow: 0 6px 18px -14px rgba(11,19,43,0.2);
+  }
+  [data-brand="crb"] .filter-field input,
+  [data-brand="crb"] .filter-field select,
+  [data-brand="crb"] select.status-filter {
+    border-radius: 9px;
+    transition: border-color 0.15s ease, box-shadow 0.15s var(--ease-snap), transform 0.1s ease;
+  }
+  [data-brand="crb"] .filter-field input:focus,
+  [data-brand="crb"] .filter-field select:focus {
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.16);
+    border-color: #2563EB !important;
+  }
+
+  /* ---------- Jadval - qatorlar orasidagi bosqichma-bosqich fikr-mulohaza ---------- */
+  [data-brand="crb"] table.invoices tbody tr {
+    transition: background 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] table.invoices tbody tr:hover {
+    background: rgba(37,99,235,0.06) !important;
+  }
+  [data-brand="crb"] table.invoices thead th {
+    background: #0B132B !important;
+  }
+  [data-brand="crb"] .status-badge {
+    border-radius: 20px;
+    transition: transform 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] tr:hover .status-badge { transform: scale(1.04); }
+
+  /* ---------- Panel sarlavhalari - aniqroq ierarxiya (Craft) ---------- */
+  [data-brand="crb"] .panel h2 {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  [data-brand="crb"] .panel { border-radius: 18px; }
+  [data-brand="crb"] .org-card, [data-brand="crb"] .contragent-card, [data-brand="crb"] .stat-card { border-radius: 16px; }
+
+  /* ---------- Rank-list qatorlari - yengil hover chuqurligi ---------- */
+  [data-brand="crb"] .rank-row {
+    border-radius: 8px;
+    transition: background 0.15s var(--ease-snap), transform 0.15s var(--ease-snap);
+  }
+  [data-brand="crb"] .rank-row:hover {
+    background: rgba(37,99,235,0.06);
+    transform: translateX(2px);
+  }
+
+  /* ---------- Sichqoncha bilan bosilganda kuchliroq, aniq "press" ---------- */
+  [data-brand="crb"] button:not(:disabled):active {
+    transform: scale(0.95) !important;
+  }
 </style>
 </head>
 <body>
