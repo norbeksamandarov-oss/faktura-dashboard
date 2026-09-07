@@ -907,6 +907,18 @@
     transform: translateY(-1px);
     box-shadow: 0 0 0 3px rgba(37,99,235,0.4), 0 10px 22px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16);
   }
+  /* Brauzer avtofill (login/parolni eslab qolganda) oq fonni majburan
+     qo'yib yuborishining oldini olamiz - shisha uslub buzilmasin */
+  .login-input:-webkit-autofill,
+  .login-input:-webkit-autofill:hover,
+  .login-input:-webkit-autofill:focus,
+  .login-input:-webkit-autofill:active {
+    -webkit-text-fill-color: #fff;
+    caret-color: #fff;
+    -webkit-box-shadow: 0 0 0 1000px rgba(20,26,46,0.55) inset, inset 0 1px 0 rgba(255,255,255,0.14);
+    box-shadow: 0 0 0 1000px rgba(20,26,46,0.55) inset, inset 0 1px 0 rgba(255,255,255,0.14);
+    transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
+  }
   .login-submit-btn {
     width: 100%;
     background: #0A84FF; color: #fff; border: none;
@@ -3930,9 +3942,9 @@ function rankForTotal(total) {
    shuning uchun filtrlash uchun ularni bitta "kanonik" nomga birlashtiramiz.
    ============================================================ */
 const ORG_GROUPS = [
-  { canonical: "OLTIN TULPOR MOTORS", re: /OLTIN\s*TULPOR\s*MOTORS\b/i },
-  { canonical: "OLTIN TULPOR MOTOR", re: /OLTIN\s*TULPOR\s*MOTOR\b/i },
-  { canonical: "OLTIN TULPOR TRADE", re: /OLTIN\s*TULPOR\s*TRADE/i },
+  { canonical: "OLTIN TULPOR MOTORS", re: /OLT[IY]N?\s*TULPOR\s*MOTORS\b/i },
+  { canonical: "OLTIN TULPOR MOTOR", re: /OLT[IY]N?\s*TULPOR\s*MOTOR\b/i },
+  { canonical: "OLTIN TULPOR TRADE", re: /OLT[IY]N?\s*TULPOR\s*(TRADE|TA[YI]OTA|TOYOTA)/i },
   { canonical: "BEDACHI", re: /BEDACHI/i },
   { canonical: "HYUNDAI RM", re: /H[YU]+NDAI\s*RM/i },
   { canonical: "HYUNDAI UZBEKISTAN", re: /H[YU]+NDAI\s*UZ/i },
@@ -3946,7 +3958,9 @@ function canonicalBuyer(name) {
   for (const g of ORG_GROUPS) {
     if (g.re.test(n)) return g.canonical;
   }
-  return n; // notanish nom bo'lsa - o'zgarishsiz qoldiramiz
+  // Ro'yxatda yo'q, notanish nom - hech bo'lmasa qo'shtirnoq/prefiks/katta-kichik
+  // harf farqlarini olib tashlab, shunga o'xshash yozuvlarni birlashtiramiz.
+  return normalizeOrgKey(n) || n;
 }
 
 let authToken = null;
