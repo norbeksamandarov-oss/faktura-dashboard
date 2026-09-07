@@ -403,7 +403,7 @@
   [data-brand="crb"] #announcementBtn, [data-brand="crb"] .theme-pill,
   [data-brand="crb"] .contragent-search,
   [data-brand="crb"] select,
-  [data-brand="crb"] input[type="text"],
+  [data-brand="crb"] input[type="text"]:not(.login-input),
   [data-brand="crb"] input[type="date"],
   [data-brand="crb"] .filter-field input,
   [data-brand="crb"] .filter-field select {
@@ -435,7 +435,7 @@
   [data-brand="crb"][data-theme="dark"] #announcementBtn, [data-brand="crb"][data-theme="dark"] .theme-pill,
   [data-brand="crb"][data-theme="dark"] .contragent-search,
   [data-brand="crb"][data-theme="dark"] select,
-  [data-brand="crb"][data-theme="dark"] input[type="text"],
+  [data-brand="crb"][data-theme="dark"] input[type="text"]:not(.login-input),
   [data-brand="crb"][data-theme="dark"] input[type="date"],
   [data-brand="crb"][data-theme="dark"] .toolbar,
   [data-brand="crb"][data-theme="dark"] .filter-field input,
@@ -457,13 +457,13 @@
   [data-brand="crb"][data-theme="dark"] #summaryClearFiltersBtn {
     color: #EAF0FF !important;
   }
-  [data-brand="crb"][data-theme="dark"] input[type="text"],
+  [data-brand="crb"][data-theme="dark"] input[type="text"]:not(.login-input),
   [data-brand="crb"][data-theme="dark"] input[type="date"],
   [data-brand="crb"][data-theme="dark"] select,
   [data-brand="crb"][data-theme="dark"] .contragent-search {
     color: #EAF0FF !important;
   }
-  [data-brand="crb"][data-theme="dark"] input[type="text"]::placeholder {
+  [data-brand="crb"][data-theme="dark"] input[type="text"]:not(.login-input)::placeholder {
     color: #6B7590 !important;
   }
   [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn,
@@ -924,6 +924,8 @@
     background-color: rgba(20,26,46,0.65) !important;
     background-clip: content-box !important;
     -webkit-background-clip: content-box !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
   }
   .login-submit-btn {
