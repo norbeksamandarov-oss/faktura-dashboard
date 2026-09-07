@@ -4144,6 +4144,8 @@ function applyBrandTheme() {
 }
 
 async function handleLoginSubmit() {
+  const btn = document.getElementById("loginSubmitBtn");
+  if (btn.disabled) return; // qo'sh-bosish/qo'sh-hodisadan himoya
   const username = document.getElementById("loginUsername").value.trim();
   const password = document.getElementById("loginPassword").value;
   const errEl = document.getElementById("loginError");
@@ -4152,7 +4154,6 @@ async function handleLoginSubmit() {
     errEl.textContent = "Введите логин и пароль";
     return;
   }
-  const btn = document.getElementById("loginSubmitBtn");
   btn.disabled = true;
   btn.textContent = "Вход...";
   try {
@@ -4298,8 +4299,14 @@ function restoreSidebarState() {
 window.onload = () => {
   applyHolidayThemeIfNeeded();
   restoreSidebarState();
+  // MUHIM: faqat "submit" hodisasiga ulanadi. Tugma type="submit"
+  // bo'lgani uchun uni bosish AVTOMATIK ravishda forma submit
+  // hodisasini ham chaqiradi - agar shu yerga YANA alohida "click"
+  // listener ham qo'shilsa (avval shunday edi), bitta bosishda
+  // handleLoginSubmit IKKI MARTA (parallel) chaqirilib, ikkita login
+  // so'rovi bir-biriga xalaqit berar edi - shu sabab ko'pincha 2-3
+  // marta parol terishga to'g'ri kelardi.
   document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
-  document.getElementById("loginSubmitBtn").addEventListener("click", handleLoginSubmit);
 
   document.getElementById("logoutBtn").onclick = () => {
     apiCall("logout", {}).catch(() => {}); // fonda, natijasini kutmasdan
