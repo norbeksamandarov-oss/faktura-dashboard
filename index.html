@@ -4091,11 +4091,10 @@ function showLoginScreen() {
 }
 
 // ---------- CRB brend rejimi ----------
-// Faqat shu loginga kirganda yangi CRB dizayni (rang + logotip) ko'rinadi,
-// boshqa barcha xodimlar odatiy "Royal Motors" dizaynini ko'rishda davom etadi.
-const CRB_BRAND_USERNAME = "norbek";
+// Endi barcha xodimlar uchun yoqilgan - kim login qilganidan qat'iy nazar
+// CRB dizayni (rang + logotip) ko'rsatiladi.
 function applyBrandTheme() {
-  const isBrandUser = currentUsername === CRB_BRAND_USERNAME;
+  const isBrandUser = true;
   if (isBrandUser) {
     document.documentElement.setAttribute("data-brand", "crb");
   } else {
