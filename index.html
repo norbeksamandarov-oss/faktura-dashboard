@@ -908,16 +908,23 @@
     box-shadow: 0 0 0 3px rgba(37,99,235,0.4), 0 10px 22px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16);
   }
   /* Brauzer avtofill (login/parolni eslab qolganda) oq fonni majburan
-     qo'yib yuborishining oldini olamiz - shisha uslub buzilmasin */
+     qo'yib yuborishining oldini olamiz - shisha uslub buzilmasin.
+     Turli brauzerlar (Chrome/Edge eski va yangi versiyalari, Safari)
+     turlicha pseudo-class ishlatgani uchun barchasini qamrab olamiz. */
   .login-input:-webkit-autofill,
   .login-input:-webkit-autofill:hover,
   .login-input:-webkit-autofill:focus,
-  .login-input:-webkit-autofill:active {
-    -webkit-text-fill-color: #fff;
+  .login-input:-webkit-autofill:active,
+  .login-input:autofill {
+    -webkit-text-fill-color: #fff !important;
+    color: #fff !important;
     caret-color: #fff;
-    -webkit-box-shadow: 0 0 0 1000px rgba(20,26,46,0.55) inset, inset 0 1px 0 rgba(255,255,255,0.14);
-    box-shadow: 0 0 0 1000px rgba(20,26,46,0.55) inset, inset 0 1px 0 rgba(255,255,255,0.14);
-    transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
+    -webkit-box-shadow: 0 0 0 1000px rgba(20,26,46,0.65) inset, inset 0 1px 0 rgba(255,255,255,0.14) !important;
+    box-shadow: 0 0 0 1000px rgba(20,26,46,0.65) inset, inset 0 1px 0 rgba(255,255,255,0.14) !important;
+    background-color: rgba(20,26,46,0.65) !important;
+    background-clip: content-box !important;
+    -webkit-background-clip: content-box !important;
+    transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
   }
   .login-submit-btn {
     width: 100%;
