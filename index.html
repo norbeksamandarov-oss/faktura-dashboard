@@ -4133,6 +4133,7 @@ async function pollSalaryDataBackground() {
 }
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
 let isLoading = false;      // защита от наложения параллельных запросов
+let justLoggedInAt = null;  // login'dan keyingi qisqa "imtiyoz" oynasi uchun (pastga qarang, apiCall'da)
 
 /* ============================================================
    АВТОРИЗАЦИЯ (login/parol - Apps Script backend orqali).
@@ -4215,6 +4216,7 @@ async function handleLoginSubmit() {
     currentRole = data.role;
     currentUserName = data.name;
     currentUsername = username;
+    justLoggedInAt = Date.now();
     saveSession({
       token: authToken, role: currentRole, name: currentUserName, username: currentUsername,
       mustChangePassword: !!data.mustChangePassword,
@@ -5080,17 +5082,51 @@ async function sendWriteEmp() {
 async function apiCall(action, params, skipToken) {
   const body = Object.assign({ action }, params || {});
   if (!skipToken) body.token = authToken;
-  const res = await fetch(API_URL, {
-    method: "POST",
-    // MUHIM: text/plain - brauzer CORS "preflight" so'rovini yubormasligi
-    // uchun (Apps Script buni JSON sifatida to'g'ri o'qiydi).
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(body),
-  });
+
+  // MUHIM: avvalgi kodda so'rov uchun VAQT CHEGARASI umuman yo'q edi -
+  // agar server (Apps Script) sekinlashib qolsa yoki javob bermay
+  // qolsa, so'rov ABADIY "osilib" qolar edi (tugma "Вход..." holatida
+  // qotib qolardi, hech qanday xato chiqmasdan). Endi 25 soniyadan
+  // keyin so'rov o'zi to'xtatiladi va tushunarli xato beriladi.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+  let res;
+  try {
+    res = await fetch(API_URL, {
+      method: "POST",
+      // MUHIM: text/plain - brauzer CORS "preflight" so'rovini yubormasligi
+      // uchun (Apps Script buni JSON sifatida to'g'ri o'qiydi).
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e.name === "AbortError") {
+      throw new Error("Сервер не отвечает - проверьте интернет и попробуйте ещё раз");
+    }
+    throw new Error("Не удалось связаться с сервером: " + e.message);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
   if (!res.ok) throw new Error("Сервер недоступен: " + res.status);
   const data = await res.json();
   if (data && data.error) {
     if (data.error === "AUTH_REQUIRED") {
+      // MUHIM: login qilingandan so'ng ILK bir necha soniyada kelgan
+      // "AUTH_REQUIRED" xatosiga DARHOL ishonmaymiz - server tomonida
+      // yangi token hali to'liq saqlanib ulgurmagan bo'lishi mumkin
+      // (real foydalanishda bir necha marta kuzatilgan: login
+      // muvaffaqiyatli bo'lib, DARHOL qayta login ekraniga otib
+      // yuborilardi). Shu qisqa "imtiyoz" oynasida - 1 marta qisqa
+      // kutib, SO'ROVNI QAYTA yuboramiz; faqat shundan keyin ham
+      // AUTH_REQUIRED qaytsa, chindan sessiya tugagan deb hisoblaymiz.
+      const graceMs = 4000;
+      if (!skipToken && justLoggedInAt && (Date.now() - justLoggedInAt) < graceMs) {
+        await new Promise(r => setTimeout(r, 800));
+        return apiCall(action, params, skipToken);
+      }
       clearSession();
       showLoginScreen();
     }
