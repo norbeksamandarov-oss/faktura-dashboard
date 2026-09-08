@@ -3236,7 +3236,7 @@
       <div class="table-wrap">
         <table class="invoices" id="dogovorRealTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -5137,7 +5137,7 @@ async function loadAllData(silent) {
       `'${SHEET_HISTORY}'!A2:L3000`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
       `'${SHEET_DOGOVOR}'!A2:L500`,
-      `'${SHEET_DOGOVOR_REAL}'!A2:L500`,
+      `'${SHEET_DOGOVOR_REAL}'!A2:K500`,
       `'${SHEET_DOVERENNOST}'!A2:K500`,
       `'${SHEET_BANK}'!A2:L500`,
       `'${SHEET_REALSCHET}'!A2:L500`,
@@ -5218,7 +5218,8 @@ async function loadAllData(silent) {
       approverName: String(r[10] || ""),
     })).filter(r => r.description).reverse(); // eng yangisi tepada
 
-    // ДоговорРеализация - Договоры bilan bir xil tuzilish, mustaqil varaq.
+    // ДоговорРеализация - Договоры bilan bir xil tuzilish (lekin bitta
+    // ustun kamroq - ikkinchi bosqich yo'q), mustaqil varaq.
     dogovorRealRows = dogovorRealRaw.map((r, idx) => ({
       rowIndex: idx + 2,
       org: String(r[0] || ""),
@@ -5228,7 +5229,7 @@ async function loadAllData(silent) {
       status: String(r[5] || ""),
       doneAt: String(r[6] || ""),
       comment: String(r[8] || ""),
-      approverName: String(r[10] || ""),
+      approverName: String(r[9] || ""),
     })).filter(r => r.description).reverse();
 
     doverennostRows = doverennostRaw.map((r, idx) => ({
@@ -7944,7 +7945,7 @@ function renderDogovorTable() {
 
 function renderDogovorRealTable() {
   const sub = document.getElementById("dogovorRealCountSub");
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
   const pendingCount = dogovorRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRealRows.length} · в ожидании: ${pendingCount}`;
 
@@ -7992,33 +7993,11 @@ function renderDogovorRealTable() {
   });
   lastFilteredDogovorReal = filtered;
 
-  function adminStatusBadge(status) {
-    if (!status || status === "В ожидании") {
-      return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> Не отправлено</span>`;
-    }
-    if (status === "Принято - ожидает финального PDF") {
-      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ждём финальный PDF от вас</span>`;
-    }
-    if (status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
-    }
-    return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено</span>`;
-  }
-  function employeeStatusBadge(r) {
-    if (!r.status || r.status === "В ожидании") {
-      return `<span style="color:var(--muted);font-size:12px;">—</span>`;
-    }
-    if (r.status === "Ожидает решения сотрудника") {
-      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ожидает</span>`;
-    }
-    if (r.status === "Принято - ожидает финального PDF") {
-      return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
-    }
-    if (r.status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    }
-    const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
-    return `<span class="status-badge ${cls}">${escapeHtml(stripEmoji(r.status))}</span>`;
+  function statusBadge(status) {
+    if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
+    if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
   const tbody = document.querySelector("#dogovorRealTable tbody");
@@ -8031,11 +8010,10 @@ function renderDogovorRealTable() {
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
-      <td>${adminStatusBadge(r.status)}</td>
-      <td>${employeeStatusBadge(r)}</td>
-      <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function renderDoverennostTable() {
@@ -8113,10 +8091,9 @@ function renderDoverennostTable() {
 
 function updateRealizatsiyaGroupBadge() {
   const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
-  const DOGOVOR_DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
   const total = realschetRows.filter(r => !DONE_STATUSES.includes(r.status)).length
     + zakaznaryadRows.filter(r => !DONE_STATUSES.includes(r.status)).length
-    + dogovorRealRows.filter(r => !DOGOVOR_DONE_STATUSES.includes(r.status)).length
+    + dogovorRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length
     + otherreqRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   const groupBadge = document.getElementById("realizatsiyaBadge");
   if (groupBadge) {
