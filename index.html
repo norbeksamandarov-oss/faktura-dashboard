@@ -4635,6 +4635,10 @@ async function onLoggedIn(forcePasswordChange) {
     await pollGtdBackground();
     if (gtdBadgeTimer) clearInterval(gtdBadgeTimer);
     gtdBadgeTimer = setInterval(pollGtdBackground, SALARY_BADGE_POLL_MS);
+
+    await pollSuggestionsBackground();
+    if (suggestionsBadgeTimer) clearInterval(suggestionsBadgeTimer);
+    suggestionsBadgeTimer = setInterval(pollSuggestionsBackground, SALARY_BADGE_POLL_MS);
   }
 
   if (forcePasswordChange) {
@@ -6679,6 +6683,25 @@ async function renderUsersManage() {
   }
 }
 
+async function pollSuggestionsBackground() {
+  const badge = document.getElementById("pendingSuggestionsBadge");
+  try {
+    const data = await apiCall("adminGetSuggestions", {});
+    const items = data.items || [];
+    if (badge) {
+      if (items.length > 0) { badge.textContent = items.length; badge.style.display = "inline-block"; }
+      else badge.style.display = "none";
+    }
+    // Agar admin hozir aynan shu bo'limda tursa - jadvalni ham jonli yangilaymiz.
+    if (document.getElementById("section-suggestions")?.classList.contains("active")) {
+      loadSuggestions();
+    }
+  } catch (e) {
+    // Jim - bu fon jarayoni, xato bo'lsa ham foydalanuvchiga ko'rsatmaymiz
+    console.warn("Не удалось обновить предложения/жалобы:", e.message);
+  }
+}
+
 async function loadSuggestions() {
   const note = document.getElementById("suggestionsLoadingNote");
   const table = document.getElementById("suggestionsTable");
@@ -7076,6 +7099,7 @@ function renderTaxesSalary() {
 let gtdDataCache = [];
 
 let gtdBadgeTimer = null;
+let suggestionsBadgeTimer = null;
 
 async function pollGtdBackground() {
   try {
