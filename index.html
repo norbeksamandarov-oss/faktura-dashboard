@@ -162,7 +162,7 @@
     border-bottom: 1px solid var(--border);
   }
   [data-brand="crb"] .brand-text .title { color: var(--navy); }
-  [data-brand="crb"] .brand-text .subtitle { color: var(--muted); letter-spacing: 0.12em; font-weight: 600; }
+  [data-brand="crb"] .brand-text .subtitle { color: var(--muted); letter-spacing: 0.12em; font-weight: 700; font-size: 12px; }
   [data-brand="crb"] #userInfo,
   [data-brand="crb"] .topbar-right > span { color: var(--muted) !important; }
   [data-brand="crb"] .theme-pill {
@@ -2702,8 +2702,8 @@
   <header class="topbar">
     <div class="brand">
       <div class="mark" id="brandMark">RM</div>
-      <div id="crbWordmark" style="display:none;background:#0B132B;border-radius:9px;padding:6px 13px;line-height:1;">
-        <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.02em;color:#fff;">CRB<span style="color:#2563EB;">.</span></span>
+      <div id="crbWordmark" style="display:none;background:#0B132B;border-radius:12px;padding:10px 20px;line-height:1;">
+        <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:32px;letter-spacing:-0.02em;color:#fff;">CRB<span style="color:#2563EB;">.</span></span>
       </div>
       <div class="brand-text">
         <div class="title" id="brandTitle">Royal Motors</div>
@@ -4186,7 +4186,7 @@ function applyBrandTheme() {
   if (titleEl) titleEl.style.display = isBrandUser ? "none" : "";
   if (wordmarkEl) wordmarkEl.style.display = isBrandUser ? "block" : "none";
   if (titleEl && !isBrandUser) titleEl.textContent = "Royal Motors";
-  if (subtitleEl) subtitleEl.textContent = isBrandUser ? "AUTOMATION SYSTEM" : "Счета-фактуры · онлайн";
+  if (subtitleEl) subtitleEl.textContent = isBrandUser ? "CONTROLLING SYSTEM" : "Счета-фактуры · онлайн";
   if (greetingEl) greetingEl.style.display = isBrandUser ? "block" : "none";
   if (greetingTitleEl && isBrandUser) {
     const hour = new Date().getHours();
