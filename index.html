@@ -4032,6 +4032,13 @@ let invoiceRows = [];   // {rowIndex, ...cols}
 let historyRows = [];
 let allHistoryRows = [];
 let pendingRegistrations = [];
+// Foydalanuvchi Одобрить/Отклонить bosgan qatorlar - fon avto-yangilanishi
+// (8 soniyada bir marta, loadAllData(true)) hali yozuv jadvalga TO'LIQ
+// yozilib ulgurmasdan qayta o'qib, qatorni yana "kutilmoqda" holida
+// ko'rsatib qo'yishi mumkin edi (podtverdit oynasi qayta chiqardi).
+// Shu qatorlarni doim chetlab o'tamiz - ular ikkinchi marta pending
+// bo'lib qolmaydi (bir marta ishlangan qator qaytadan ochilmaydi).
+let locallyResolvedRegRows = new Set();
 let allEmployeesRaw = [];
 let processedRegistrations = [];
 let dogovorRows = [];
@@ -5241,7 +5248,7 @@ async function loadAllData(silent) {
       status: r[4] || "",
       processed: String(r[5] || "").toUpperCase() === "TRUE"
     })).filter(r => r.name);
-    pendingRegistrations = regParsed.filter(r => !r.processed && (r.status === "" || r.status === "Ожидает"));
+    pendingRegistrations = regParsed.filter(r => !r.processed && (r.status === "" || r.status === "Ожидает") && !locallyResolvedRegRows.has(r.rowIndex));
     processedRegistrations = regParsed.filter(r => r.processed || (r.status && r.status !== "Ожидает"))
       .slice().reverse();
 
@@ -6697,12 +6704,17 @@ function renderRegistrations() {
 async function updateRegistrationStatus(rowIndex, status, btnEl) {
   const range = `'${SHEET_REGISTRATIONS}'!E${rowIndex}`;
   btnEl.disabled = true;
+  // Darhol "hal qilingan" deb belgilaymiz - fon avto-yangilanishi (8 soniyada
+  // bir marta) yozuv hali serverga yetib bormagan holatda ushbu qatorni
+  // qayta o'qib, "kutilmoqda"ga qaytarib qo'ymasligi uchun.
+  locallyResolvedRegRows.add(rowIndex);
   try {
     await sheetsUpdateCell(range, status);
     // Локально сразу убираем из списка "ожидающих", чтобы не ждать 3 секунды
     pendingRegistrations = pendingRegistrations.filter(r => r.rowIndex !== rowIndex);
     renderRegistrations();
   } catch (e) {
+    locallyResolvedRegRows.delete(rowIndex);
     alert("Не удалось сохранить: " + e.message);
     btnEl.disabled = false;
   }
@@ -6870,7 +6882,7 @@ function fmtSalaryNum(v) {
 let salaryRequestsLastFetch = 0;
 const SALARY_CACHE_TTL_MS = 15000; // 15 soniya ichida qayta ochilsa - eski ma'lumotni ko'rsatamiz, qayta so'ramaymiz
 
-async function loadSalaryRequests(force) {
+async function loadSalaryRequests(force, silent) {
   const note = document.getElementById("salaryRequestsLoadingNote");
   const table = document.getElementById("salaryRequestsTable");
   const now = Date.now();
@@ -6880,8 +6892,13 @@ async function loadSalaryRequests(force) {
     if (table) table.style.display = "";
     return;
   }
-  if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
-  if (table) table.style.display = "none";
+  // silent = true -> masalan Одобрить/Отклонить bosgandan keyingi yangilanish:
+  // jadvalni yashirib, "Загрузка..." ko'rsatib butun oynani qayta ochgandek
+  // ko'rsatmaymiz, faqat ma'lumotni jimgina yangilab qayta chizamiz.
+  if (!silent) {
+    if (note) { note.style.display = ""; note.textContent = "Загрузка..."; note.style.color = ""; }
+    if (table) table.style.display = "none";
+  }
   try {
     const data = await apiCall("getSalaryRequests", {});
     salaryRequestsCache = data.items || [];
@@ -6890,7 +6907,7 @@ async function loadSalaryRequests(force) {
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
   } catch (e) {
-    if (note) { note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
+    if (note) { note.style.display = ""; note.textContent = "Ошибка: " + e.message; note.style.color = "#C0392B"; }
   }
 }
 
@@ -6936,7 +6953,7 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   btnEl.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> ...";
   try {
     await apiCall("decideSalaryRequest", { rowIndex, decision });
-    await loadSalaryRequests(true);
+    await loadSalaryRequests(true, true);
     pollSalaryRequestsBadge();
   } catch (e) {
     alert("Не удалось выполнить: " + e.message);
