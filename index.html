@@ -451,6 +451,7 @@
   }
   [data-brand="crb"][data-theme="dark"] .nav-item:hover { color: #EAF0FF; }
   [data-brand="crb"][data-theme="dark"] #clearFiltersBtn, [data-brand="crb"][data-theme="dark"] #dogovorClearFiltersBtn,
+  [data-brand="crb"][data-theme="dark"] #dogovorRealClearFiltersBtn,
   [data-brand="crb"][data-theme="dark"] #doverennostClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #bankClearFiltersBtn,
   [data-brand="crb"][data-theme="dark"] #realschetClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #zakaznaryadClearFiltersBtn,
   [data-brand="crb"][data-theme="dark"] #otherreqPostClearFiltersBtn, [data-brand="crb"][data-theme="dark"] #otherreqRealClearFiltersBtn,
@@ -467,6 +468,7 @@
     color: #6B7590 !important;
   }
   [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn,
+  [data-brand="crb"] #dogovorRealExportBtn,
   [data-brand="crb"] #doverennostExportBtn, [data-brand="crb"] #bankExportBtn,
   [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
   [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
@@ -493,11 +495,13 @@
   [data-brand="crb"] #refreshBtn:active, [data-brand="crb"] #logoutBtn:active, [data-brand="crb"] #notifyBtn:active,
   [data-brand="crb"] #changePasswordBtn:active, [data-brand="crb"] #announcementBtn:active,
   [data-brand="crb"] #clearFiltersBtn:active, [data-brand="crb"] #dogovorClearFiltersBtn:active,
+  [data-brand="crb"] #dogovorRealClearFiltersBtn:active,
   [data-brand="crb"] #doverennostClearFiltersBtn:active, [data-brand="crb"] #bankClearFiltersBtn:active,
   [data-brand="crb"] #realschetClearFiltersBtn:active, [data-brand="crb"] #zakaznaryadClearFiltersBtn:active,
   [data-brand="crb"] #otherreqPostClearFiltersBtn:active, [data-brand="crb"] #otherreqRealClearFiltersBtn:active,
   [data-brand="crb"] #summaryClearFiltersBtn:active,
   [data-brand="crb"] #exportCsvBtn:active, [data-brand="crb"] #dogovorExportBtn:active,
+  [data-brand="crb"] #dogovorRealExportBtn:active,
   [data-brand="crb"] #doverennostExportBtn:active, [data-brand="crb"] #bankExportBtn:active,
   [data-brand="crb"] #realschetExportBtn:active, [data-brand="crb"] #zakaznaryadExportBtn:active,
   [data-brand="crb"] #otherreqPostExportBtn:active, [data-brand="crb"] #otherreqRealExportBtn:active,
@@ -1421,19 +1425,19 @@
     transition: border-color .15s, box-shadow .15s, background .25s ease;
   }
   select.status-filter:focus { outline: none; border-color: var(--navy-text); box-shadow: 0 0 0 3px rgba(30,39,97,0.1); }
-  #clearFiltersBtn, #dogovorClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn, #otherreqPostClearFiltersBtn, #otherreqRealClearFiltersBtn, #summaryClearFiltersBtn {
+  #clearFiltersBtn, #dogovorClearFiltersBtn, #dogovorRealClearFiltersBtn, #doverennostClearFiltersBtn, #bankClearFiltersBtn, #realschetClearFiltersBtn, #zakaznaryadClearFiltersBtn, #otherreqPostClearFiltersBtn, #otherreqRealClearFiltersBtn, #summaryClearFiltersBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--border);
     background: var(--chip-bg); color: var(--navy); font-family: 'Satoshi';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background .15s;
   }
-  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover, #otherreqPostClearFiltersBtn:hover, #otherreqRealClearFiltersBtn:hover, #summaryClearFiltersBtn:hover { background: var(--ice); }
-  #exportCsvBtn, #dogovorExportBtn, #doverennostExportBtn, #bankExportBtn, #realschetExportBtn, #zakaznaryadExportBtn, #otherreqPostExportBtn, #otherreqRealExportBtn {
+  #clearFiltersBtn:hover, #dogovorClearFiltersBtn:hover, #dogovorRealClearFiltersBtn:hover, #doverennostClearFiltersBtn:hover, #bankClearFiltersBtn:hover, #realschetClearFiltersBtn:hover, #zakaznaryadClearFiltersBtn:hover, #otherreqPostClearFiltersBtn:hover, #otherreqRealClearFiltersBtn:hover, #summaryClearFiltersBtn:hover { background: var(--ice); }
+  #exportCsvBtn, #dogovorExportBtn, #dogovorRealExportBtn, #doverennostExportBtn, #bankExportBtn, #realschetExportBtn, #zakaznaryadExportBtn, #otherreqPostExportBtn, #otherreqRealExportBtn {
     padding: 9px 18px; border-radius: 10px; border: none;
     background: var(--accent-grad); color: white; font-family: 'Satoshi';
     font-size: 12.5px; font-weight: 600; cursor: pointer; transition: filter .15s, transform .1s;
     box-shadow: 0 6px 16px -6px rgba(108,99,255,0.5);
   }
-  #exportCsvBtn:hover, #dogovorExportBtn:hover, #doverennostExportBtn:hover, #bankExportBtn:hover, #realschetExportBtn:hover, #zakaznaryadExportBtn:hover, #otherreqPostExportBtn:hover, #otherreqRealExportBtn:hover { filter: brightness(1.08); }
+  #exportCsvBtn:hover, #dogovorExportBtn:hover, #dogovorRealExportBtn:hover, #doverennostExportBtn:hover, #bankExportBtn:hover, #realschetExportBtn:hover, #zakaznaryadExportBtn:hover, #otherreqPostExportBtn:hover, #otherreqRealExportBtn:hover { filter: brightness(1.08); }
   #suggestRespBtn {
     padding: 9px 16px; border-radius: 9px; border: 1px solid var(--amber-fg);
     background: var(--amber-bg); color: var(--amber-fg); font-family: 'Satoshi';
@@ -2034,13 +2038,13 @@
   [data-brand="crb"] #changePasswordBtn:hover, [data-brand="crb"] #announcementBtn:hover {
     transform: translateY(-1px);
   }
-  [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn, [data-brand="crb"] #doverennostExportBtn,
+  [data-brand="crb"] #exportCsvBtn, [data-brand="crb"] #dogovorExportBtn, [data-brand="crb"] #dogovorRealExportBtn, [data-brand="crb"] #doverennostExportBtn,
   [data-brand="crb"] #bankExportBtn, [data-brand="crb"] #realschetExportBtn, [data-brand="crb"] #zakaznaryadExportBtn,
   [data-brand="crb"] #otherreqPostExportBtn, [data-brand="crb"] #otherreqRealExportBtn {
     border-radius: 10px;
     transition: transform 0.18s var(--ease-snap), filter 0.18s ease, box-shadow 0.18s ease;
   }
-  [data-brand="crb"] #exportCsvBtn:hover, [data-brand="crb"] #dogovorExportBtn:hover, [data-brand="crb"] #doverennostExportBtn:hover,
+  [data-brand="crb"] #exportCsvBtn:hover, [data-brand="crb"] #dogovorExportBtn:hover, [data-brand="crb"] #dogovorRealExportBtn:hover, [data-brand="crb"] #doverennostExportBtn:hover,
   [data-brand="crb"] #bankExportBtn:hover, [data-brand="crb"] #realschetExportBtn:hover, [data-brand="crb"] #zakaznaryadExportBtn:hover,
   [data-brand="crb"] #otherreqPostExportBtn:hover, [data-brand="crb"] #otherreqRealExportBtn:hover {
     transform: translateY(-1px);
@@ -2156,13 +2160,13 @@
   [data-brand="crb"] .ms-btn:hover, [data-brand="crb"] .ms-btn.open {
     box-shadow: 0 0 0 3px rgba(37,99,235,0.14);
   }
-  [data-brand="crb"] #clearFiltersBtn, [data-brand="crb"] #dogovorClearFiltersBtn, [data-brand="crb"] #doverennostClearFiltersBtn,
+  [data-brand="crb"] #clearFiltersBtn, [data-brand="crb"] #dogovorClearFiltersBtn, [data-brand="crb"] #dogovorRealClearFiltersBtn, [data-brand="crb"] #doverennostClearFiltersBtn,
   [data-brand="crb"] #bankClearFiltersBtn, [data-brand="crb"] #realschetClearFiltersBtn, [data-brand="crb"] #zakaznaryadClearFiltersBtn,
   [data-brand="crb"] #otherreqPostClearFiltersBtn, [data-brand="crb"] #otherreqRealClearFiltersBtn, [data-brand="crb"] #summaryClearFiltersBtn {
     border-radius: 9px;
     transition: background 0.15s ease, transform 0.15s var(--ease-snap);
   }
-  [data-brand="crb"] #clearFiltersBtn:hover, [data-brand="crb"] #dogovorClearFiltersBtn:hover, [data-brand="crb"] #doverennostClearFiltersBtn:hover,
+  [data-brand="crb"] #clearFiltersBtn:hover, [data-brand="crb"] #dogovorClearFiltersBtn:hover, [data-brand="crb"] #dogovorRealClearFiltersBtn:hover, [data-brand="crb"] #doverennostClearFiltersBtn:hover,
   [data-brand="crb"] #bankClearFiltersBtn:hover, [data-brand="crb"] #realschetClearFiltersBtn:hover, [data-brand="crb"] #zakaznaryadClearFiltersBtn:hover,
   [data-brand="crb"] #otherreqPostClearFiltersBtn:hover, [data-brand="crb"] #otherreqRealClearFiltersBtn:hover, [data-brand="crb"] #summaryClearFiltersBtn:hover {
     transform: translateY(-1px);
