@@ -2754,6 +2754,7 @@
       <div class="nav-subgroup" id="realizatsiyaSubgroup">
         <button class="nav-item nav-sub-item" data-section="realschet" onclick="showSection('realschet')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-label">Счёт-фактура на авто</span> <span id="pendingRealschetBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="zakaznaryad" onclick="showSection('zakaznaryad')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="nav-label">Заказ-наряд</span> <span id="pendingZakaznaryadBadge" class="nav-badge" style="display:none;"></span></button>
+        <button class="nav-item nav-sub-item" data-section="dogovorreal" onclick="showSection('dogovorreal')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8"/><polyline points="14 2 14 8 20 8"/><path d="M15.5 17.5 21 12l1.5 1.5L17 19l-2 .5.5-2Z"/></svg></span><span class="nav-label">Договор</span> <span id="pendingDogovorRealBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="otherreqreal" onclick="showSection('otherreqreal')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="nav-label">Другой запрос</span> <span id="pendingOtherreqRealBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
@@ -3189,6 +3190,51 @@
       </div>
       <div class="table-wrap">
         <table class="invoices" id="dogovorTable">
+          <thead>
+            <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
+    <section id="section-dogovorreal" class="content-section">
+    <div class="panel">
+      <h2>Договор (Реализация) <span class="sub" id="dogovorRealCountSub"></span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Запросы по договорам со стороны Реализации через Telegram-бот - мустақил список, не связан с «Договоры» (Поступления). Как только PDF отправлен сотруднику, статус меняется на «Выполнено».</p>
+      <div class="toolbar" style="margin-bottom:16px;">
+        <div class="filter-field" style="min-width:200px;">
+          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
+          <input type="text" class="status-filter" id="dogovorRealSearchInput" placeholder="Поиск по всем полям...">
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-building' aria-hidden='true'></i> Организация</label>
+          <select class="status-filter" id="dogovorRealOrgFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-user' aria-hidden='true'></i> Кому</label>
+          <select class="status-filter" id="dogovorRealApproverFilter"><option value="">Все</option></select>
+        </div>
+        <div class="filter-field">
+          <label><i class='ti ti-tag' aria-hidden='true'></i> Статус</label>
+          <select class="status-filter" id="dogovorRealStatusFilter">
+            <option value="">Все</option>
+            <option value="pending"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</option>
+            <option value="done"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="dogovorRealClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="dogovorRealExportBtn"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="invoices" id="dogovorRealTable">
           <thead>
             <tr><th>№</th><th>Организация</th><th>Описание</th><th>Сотрудник</th><th>Кому</th><th>Дата запроса</th><th>Статус (админ)</th><th>Статус (сотрудник)</th><th>Комментарий</th><th>Дата выполнения</th></tr>
           </thead>
@@ -3899,6 +3945,7 @@ const SHEET_HISTORY = "История";
 const SHEET_REGISTRATIONS = "Заявки";
 const SHEET_EMPLOYEES = "Xodimlar";
 const SHEET_DOGOVOR = "Договоры";
+const SHEET_DOGOVOR_REAL = "ДоговорРеализация";
 const SHEET_DOVERENNOST = "Доверенности";
 const SHEET_BANK = "Банк";
 const SHEET_REALSCHET = "РеализацияСчет";
@@ -3984,6 +4031,7 @@ let pendingRegistrations = [];
 let allEmployeesRaw = [];
 let processedRegistrations = [];
 let dogovorRows = [];
+let dogovorRealRows = [];
 let doverennostRows = [];
 let bankRows = [];
 let realschetRows = [];
@@ -3995,6 +4043,7 @@ let lastFilteredZakaznaryad = [];
 let lastFilteredOtherreqPost = [];
 let lastFilteredOtherreqReal = [];
 let lastFilteredDogovor = [];
+let lastFilteredDogovorReal = [];
 let lastFilteredDoverennost = [];
 let lastFilteredBank = [];
 let statusChart = null;
@@ -4323,6 +4372,9 @@ window.onload = () => {
   document.getElementById("didoxFilter").addEventListener("change", renderInvoicesTable);
   document.getElementById("dogovorOrgFilter")?.addEventListener("change", renderDogovorTable);
   document.getElementById("dogovorApproverFilter")?.addEventListener("change", renderDogovorTable);
+  document.getElementById("dogovorRealOrgFilter")?.addEventListener("change", renderDogovorRealTable);
+  document.getElementById("dogovorRealApproverFilter")?.addEventListener("change", renderDogovorRealTable);
+  document.getElementById("dogovorRealStatusFilter")?.addEventListener("change", renderDogovorRealTable);
   document.getElementById("doverennostOrgFilter")?.addEventListener("change", renderDoverennostTable);
   document.getElementById("doverennostApproverFilter")?.addEventListener("change", renderDoverennostTable);
   document.getElementById("doverennostStatusFilter")?.addEventListener("change", renderDoverennostTable);
@@ -4331,9 +4383,11 @@ window.onload = () => {
   document.getElementById("bankApproverFilter")?.addEventListener("change", renderBankTable);
   document.getElementById("bankStatusFilter")?.addEventListener("change", renderBankTable);
   document.getElementById("dogovorSearchInput")?.addEventListener("input", renderDogovorTable);
+  document.getElementById("dogovorRealSearchInput")?.addEventListener("input", renderDogovorRealTable);
   document.getElementById("doverennostSearchInput")?.addEventListener("input", renderDoverennostTable);
   document.getElementById("bankSearchInput")?.addEventListener("input", renderBankTable);
   document.getElementById("dogovorExportBtn")?.addEventListener("click", exportDogovorExcel);
+  document.getElementById("dogovorRealExportBtn")?.addEventListener("click", exportDogovorRealExcel);
   document.getElementById("doverennostExportBtn")?.addEventListener("click", exportDoverennostExcel);
   document.getElementById("bankExportBtn")?.addEventListener("click", exportBankExcel);
   document.getElementById("dogovorClearFiltersBtn")?.addEventListener("click", () => {
@@ -4342,6 +4396,13 @@ window.onload = () => {
     document.getElementById("dogovorApproverFilter").value = "";
     document.getElementById("dogovorStatusFilter").value = "";
     renderDogovorTable();
+  });
+  document.getElementById("dogovorRealClearFiltersBtn")?.addEventListener("click", () => {
+    document.getElementById("dogovorRealSearchInput").value = "";
+    document.getElementById("dogovorRealOrgFilter").value = "";
+    document.getElementById("dogovorRealApproverFilter").value = "";
+    document.getElementById("dogovorRealStatusFilter").value = "";
+    renderDogovorRealTable();
   });
   document.getElementById("doverennostClearFiltersBtn")?.addEventListener("click", () => {
     document.getElementById("doverennostSearchInput").value = "";
@@ -4490,6 +4551,12 @@ function exportDogovorExcel() {
   exportTableToExcel(headers, rows, "dogovory");
 }
 
+function exportDogovorRealExcel() {
+  const headers = ["Организация", "Описание", "Сотрудник", "Кому", "Дата запроса", "Статус (админ)", "Статус (сотрудник)", "Комментарий", "Дата выполнения"];
+  const rows = lastFilteredDogovorReal.map(r => [r.org, r.description, r.employeeName, r.approverName, r.requestedAt, r.status, r.status, r.comment, r.doneAt]);
+  exportTableToExcel(headers, rows, "dogovor_realizatsiya");
+}
+
 function exportDoverennostExcel() {
   const headers = ["Организация", "Кому нужна", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
   const rows = lastFilteredDoverennost.map(r => [r.org, r.kого, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
@@ -4504,7 +4571,7 @@ function exportBankExcel() {
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
 const PERSONAL_SECTIONS = ["requests", "employees", "users", "writeemp", "suggestions"];
-const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "otherreqreal"];
+const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
@@ -5064,12 +5131,13 @@ async function loadAllData(silent) {
     // Script'ga har bir yangilanishda faqat 1 marta murojaat qilinadi).
     // "Заявки" hali yaratilmagan bo'lsa ham (bot birinchi marta ishga
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
-    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqPostRaw, otherreqRealRaw] = await sheetsGetBatch([
+    const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, dogovorRealRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqPostRaw, otherreqRealRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
       `'${SHEET_INVOICES}'!A2:U500`,
       `'${SHEET_HISTORY}'!A2:L3000`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
       `'${SHEET_DOGOVOR}'!A2:L500`,
+      `'${SHEET_DOGOVOR_REAL}'!A2:L500`,
       `'${SHEET_DOVERENNOST}'!A2:K500`,
       `'${SHEET_BANK}'!A2:L500`,
       `'${SHEET_REALSCHET}'!A2:L500`,
@@ -5149,6 +5217,19 @@ async function loadAllData(silent) {
       comment: String(r[8] || ""),
       approverName: String(r[10] || ""),
     })).filter(r => r.description).reverse(); // eng yangisi tepada
+
+    // ДоговорРеализация - Договоры bilan bir xil tuzilish, mustaqil varaq.
+    dogovorRealRows = dogovorRealRaw.map((r, idx) => ({
+      rowIndex: idx + 2,
+      org: String(r[0] || ""),
+      description: String(r[1] || ""),
+      employeeName: String(r[2] || ""),
+      requestedAt: String(r[4] || ""),
+      status: String(r[5] || ""),
+      doneAt: String(r[6] || ""),
+      comment: String(r[8] || ""),
+      approverName: String(r[10] || ""),
+    })).filter(r => r.description).reverse();
 
     doverennostRows = doverennostRaw.map((r, idx) => ({
       rowIndex: idx + 2,
@@ -5325,6 +5406,7 @@ function renderAll(silent) {
   renderEmployeesManage();
   renderContragentsList();
   renderDogovorTable();
+  renderDogovorRealTable();
   renderDoverennostTable();
   renderBankTable();
   renderRealschetTable();
@@ -7860,6 +7942,102 @@ function renderDogovorTable() {
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
+function renderDogovorRealTable() {
+  const sub = document.getElementById("dogovorRealCountSub");
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
+  const pendingCount = dogovorRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
+  if (sub) sub.textContent = `всего: ${dogovorRealRows.length} · в ожидании: ${pendingCount}`;
+
+  const badge = document.getElementById("pendingDogovorRealBadge");
+  if (badge) {
+    if (pendingCount > 0) {
+      badge.textContent = pendingCount;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  const orgSelect = document.getElementById("dogovorRealOrgFilter");
+  const prevOrgVal = orgSelect ? orgSelect.value : "";
+  const orgs = [...new Set(dogovorRealRows.map(r => r.org).filter(Boolean))].sort();
+  if (orgSelect) {
+    orgSelect.innerHTML = `<option value="">Все</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevOrgVal) ? prevOrgVal : "";
+  }
+
+  const approverSelect = document.getElementById("dogovorRealApproverFilter");
+  const prevApproverVal = approverSelect ? approverSelect.value : "";
+  const approvers = [...new Set(dogovorRealRows.map(r => r.approverName).filter(Boolean))].sort();
+  if (approverSelect) {
+    approverSelect.innerHTML = `<option value="">Все</option>` + approvers.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+    approverSelect.value = approvers.includes(prevApproverVal) ? prevApproverVal : "";
+  }
+
+  const orgFilterVal = document.getElementById("dogovorRealOrgFilter")?.value || "";
+  const approverFilterVal = document.getElementById("dogovorRealApproverFilter")?.value || "";
+  const statusFilterVal = document.getElementById("dogovorRealStatusFilter")?.value || "";
+  const searchVal = (document.getElementById("dogovorRealSearchInput")?.value || "").trim().toLowerCase();
+
+  const filtered = dogovorRealRows.filter(r => {
+    if (orgFilterVal && r.org !== orgFilterVal) return false;
+    if (approverFilterVal && r.approverName !== approverFilterVal) return false;
+    if (statusFilterVal === "done" && !DONE_STATUSES.includes(r.status)) return false;
+    if (statusFilterVal === "pending" && DONE_STATUSES.includes(r.status)) return false;
+    if (searchVal) {
+      const haystack = [r.org, r.description, r.employeeName, r.approverName, r.comment, r.status].join(" ").toLowerCase();
+      if (!haystack.includes(searchVal)) return false;
+    }
+    return true;
+  });
+  lastFilteredDogovorReal = filtered;
+
+  function adminStatusBadge(status) {
+    if (!status || status === "В ожидании") {
+      return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> Не отправлено</span>`;
+    }
+    if (status === "Принято - ожидает финального PDF") {
+      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ждём финальный PDF от вас</span>`;
+    }
+    if (status === "Закрыто (см. комментарий)") {
+      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
+    }
+    return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено</span>`;
+  }
+  function employeeStatusBadge(r) {
+    if (!r.status || r.status === "В ожидании") {
+      return `<span style="color:var(--muted);font-size:12px;">—</span>`;
+    }
+    if (r.status === "Ожидает решения сотрудника") {
+      return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ожидает</span>`;
+    }
+    if (r.status === "Принято - ожидает финального PDF") {
+      return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
+    }
+    if (r.status === "Закрыто (см. комментарий)") {
+      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    }
+    const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
+    return `<span class="status-badge ${cls}">${escapeHtml(stripEmoji(r.status))}</span>`;
+  }
+
+  const tbody = document.querySelector("#dogovorRealTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = filtered.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td>${escapeHtml(r.org)}</td>
+      <td style="max-width:320px;">${escapeHtml(r.description)}</td>
+      <td>${escapeHtml(r.employeeName)}</td>
+      <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(r.requestedAt)}</td>
+      <td>${adminStatusBadge(r.status)}</td>
+      <td>${employeeStatusBadge(r)}</td>
+      <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
+    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+}
+
 function renderDoverennostTable() {
   const sub = document.getElementById("doverennostCountSub");
   const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
@@ -7935,8 +8113,10 @@ function renderDoverennostTable() {
 
 function updateRealizatsiyaGroupBadge() {
   const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DOGOVOR_DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
   const total = realschetRows.filter(r => !DONE_STATUSES.includes(r.status)).length
     + zakaznaryadRows.filter(r => !DONE_STATUSES.includes(r.status)).length
+    + dogovorRealRows.filter(r => !DOGOVOR_DONE_STATUSES.includes(r.status)).length
     + otherreqRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   const groupBadge = document.getElementById("realizatsiyaBadge");
   if (groupBadge) {
