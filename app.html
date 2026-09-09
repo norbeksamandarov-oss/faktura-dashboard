@@ -520,7 +520,13 @@
           if (!selOrg) { toast("Выберите организацию", "err"); return; }
           if (!text.value.trim()) { toast("Напишите текст договора", "err"); return; }
           withBusy(btn, async function () {
-            sendToBot({ action: "dogovor", org: selOrg, text: text.value.trim() });
+            var res = await callApi("miniAppSubmitDogovor", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, text: text.value.trim(),
+            });
+            toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+            content.innerHTML = "";
+            SECTIONS.dogovor.render();
           });
         };
       },
@@ -546,10 +552,14 @@
           if (!kontragent.value.trim()) { toast("Укажите контрагента", "err"); return; }
           withBusy(btn, async function () {
             var up = await uploadFile(files[0]);
-            sendToBot({
-              action: "doverennost", org: selOrg, kontragent: kontragent.value.trim(),
+            var res = await callApi("miniAppSubmitDoverennost", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
               note: note.value.trim(), file_url: up.url, file_name: up.name,
             });
+            toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+            content.innerHTML = "";
+            SECTIONS.doverennost.render();
           });
         };
       },
@@ -589,7 +599,13 @@
           if (!selType) { toast("Выберите тип операции", "err"); return; }
           if (!details.value.trim()) { toast("Заполните детали", "err"); return; }
           withBusy(btn, async function () {
-            sendToBot({ action: "bank", org: selOrg, type: selType, details: details.value.trim() });
+            var res = await callApi("miniAppSubmitBank", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, type: selType, details: details.value.trim(),
+            });
+            toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+            content.innerHTML = "";
+            SECTIONS.bank.render();
           });
         };
       },
@@ -736,7 +752,13 @@
         btn.onclick = function () {
           if (!text.value.trim()) { toast("Напишите текст", "err"); return; }
           withBusy(btn, async function () {
-            sendToBot({ action: "suggestion", type: selType, text: text.value.trim() });
+            await callApi("miniAppSubmitSuggestion", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              type: selType, text: text.value.trim(),
+            });
+            toast("Отправлено! Можно отправить ещё одно обращение.", "ok");
+            content.innerHTML = "";
+            SECTIONS.suggestion.render();
           });
         };
       },
@@ -762,23 +784,14 @@
           var up = await uploadFile(files[i]);
           uploaded.push({ url: up.url, name: up.name });
         }
-        // "Реализация" uchun - to'g'ridan-to'g'ri backend (Mini App
-        // OCHIQ qoladi); "Поступления" uchun hozircha eski yo'l
-        // (tg.sendData(), so'ng app yopiladi) - hali ko'chirilmagan.
-        if (category === "Реализация") {
-          var res = await callApi("miniAppSubmitOtherReqReal", {
-            chatId: getChatId(), employeeName: getEmployeeName(),
-            org: selOrg, text: text.value.trim(), files: uploaded,
-          });
-          toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
-          content.innerHTML = "";
-          renderOtherReq(category);
-          return;
-        }
-        sendToBot({
-          action: "otherreq", org: selOrg, category: category,
-          text: text.value.trim(), files: uploaded,
+        var action = category === "Реализация" ? "miniAppSubmitOtherReqReal" : "miniAppSubmitOtherReqPost";
+        var res = await callApi(action, {
+          chatId: getChatId(), employeeName: getEmployeeName(),
+          org: selOrg, text: text.value.trim(), files: uploaded,
         });
+        toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+        content.innerHTML = "";
+        renderOtherReq(category);
       });
     };
   }
