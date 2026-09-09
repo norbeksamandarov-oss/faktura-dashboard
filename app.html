@@ -331,6 +331,23 @@
     return data; // { ok, url, fileId, name }
   }
 
+  // "Зарплата" bo'limi uchun - tg.sendData() ISHLATMAYDI, to'g'ridan-
+  // to'g'ri shu backend'ga so'rov yuboradi (Mini App OCHIQ qoladi).
+  function getChatId() {
+    return (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id)
+      ? String(tg.initDataUnsafe.user.id) : "";
+  }
+
+  async function callApi(action, params) {
+    var resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(Object.assign({ action: action }, params || {})),
+    });
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
   function sendToBot(payload) {
     if (!tg || !tg.sendData) {
       toast("Откройте это через кнопку в боте.", "err");
@@ -628,16 +645,38 @@
       icon: "ti-wallet", label: "Зарплата", title: "Зарплата",
       render: function () {
         var card = makeCard();
-        var info = document.createElement("p");
-        info.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 16px;";
-        info.textContent = "Нажмите кнопку ниже, чтобы бот прислал актуальную информацию по вашей зарплате в чат.";
-        card.appendChild(info);
-        var btn = makeSubmitBtn(card, "Запросить зарплату");
-        btn.onclick = function () {
-          withBusy(btn, async function () {
-            sendToBot({ action: "salary" });
-          });
-        };
+        var chatId = getChatId();
+        if (!chatId) {
+          var errInfo = document.createElement("p");
+          errInfo.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+          errInfo.textContent = "Не удалось определить ваш Telegram ID. Откройте это через кнопку в боте.";
+          card.appendChild(errInfo);
+          return;
+        }
+        var loading = document.createElement("p");
+        loading.style.cssText = "color:var(--muted);font-size:14px;margin:0;";
+        loading.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...";
+        card.appendChild(loading);
+
+        callApi("miniAppSalaryStatus", { chatId: chatId }).then(function (res) {
+          card.innerHTML = "";
+          if (res.status === "linked") {
+            renderSalaryView(card, chatId);
+          } else if (res.status === "pending") {
+            var p = document.createElement("p");
+            p.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+            p.innerHTML = "<i class='ti ti-clock' aria-hidden='true'></i> Ваш запрос на доступ к «Зарплате» отправлен и ожидает решения администратора. Как только вас одобрят, здесь появятся данные.";
+            card.appendChild(p);
+          } else {
+            renderSalaryRequestForm(card);
+          }
+        }).catch(function (e) {
+          card.innerHTML = "";
+          var p = document.createElement("p");
+          p.style.cssText = "color:var(--danger);font-size:14px;margin:0;";
+          p.textContent = "Ошибка: " + (e && e.message ? e.message : e);
+          card.appendChild(p);
+        });
       },
     },
     suggestion: {
@@ -698,6 +737,125 @@
         });
       });
     };
+  }
+
+  // ------------------------------------------------------------
+  // "Зарплата" - Mini App ichida to'liq (app yopilmasdan)
+  // ------------------------------------------------------------
+  function fmtMoneyMA(n) {
+    n = Number(n) || 0;
+    var parts = n.toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts[0] + (parts[1] !== "00" ? "," + parts[1] : "") + " сум";
+  }
+
+  function renderSalaryRequestForm(card) {
+    var info = document.createElement("p");
+    info.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 16px;";
+    info.textContent = "У вас пока нет доступа к разделу «Зарплата». Введите свой ПИНФЛ (14 цифр), чтобы отправить запрос администратору.";
+    card.appendChild(info);
+    var pnflInput = makeField(card, "ПИНФЛ", "input", { placeholder: "14 цифр" });
+    pnflInput.setAttribute("inputmode", "numeric");
+    pnflInput.setAttribute("maxlength", "14");
+    var btn = makeSubmitBtn(card, "Отправить запрос");
+    btn.onclick = function () {
+      var pnfl = pnflInput.value.trim();
+      if (!/^\d{14}$/.test(pnfl)) { toast("ПИНФЛ должен состоять из 14 цифр", "err"); return; }
+      withBusy(btn, async function () {
+        var fio = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
+          ? [tg.initDataUnsafe.user.first_name, tg.initDataUnsafe.user.last_name].filter(Boolean).join(" ")
+          : "";
+        await callApi("miniAppRequestSalaryAccess", { chatId: getChatId(), pnfl: pnfl, fio: fio });
+        card.innerHTML = "";
+        var ok = document.createElement("p");
+        ok.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+        ok.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Запрос отправлен! Как только администратор подтвердит, данные появятся здесь же.";
+        card.appendChild(ok);
+      });
+    };
+  }
+
+  function renderSalaryOrgBlock(container, row, showOrg) {
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);";
+    var lines = [];
+    if (showOrg) {
+      lines.push('<div style="font-weight:800;margin-bottom:4px;">' + esc(row["Организация"] || "") + "</div>");
+      if (row["Профессия"]) lines.push('<div style="color:var(--muted);font-size:13px;margin-bottom:6px;">' + esc(row["Профессия"]) + "</div>");
+    }
+    var topFields = [
+      ["Оклад", "ОкладОбщий"], ["Удалённая работа", "УдаленнаяРабота"], ["KPI", "KPI"],
+      ["Премии/бонусы", "Премии"], ["Отпускные", "Отпускные"], ["Больничные", "Больничные"],
+      ["Депремирование", "Депремирование"],
+    ];
+    topFields.forEach(function (pair) {
+      var v = Number(row[pair[1]]) || 0;
+      if (v !== 0) lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+        "<span>" + pair[0] + "</span><span>" + fmtMoneyMA(v) + "</span></div>");
+    });
+    var gross = Number(row["НачислениеГросс"]) || 0;
+    var taxes = Number(row["НалогиУдержано"]) || 0;
+    var taxPct = gross ? (taxes / gross * 100) : 0;
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:6px 0 2px;">' +
+      "<span>Начислено (Гросс)</span><span>" + fmtMoneyMA(gross) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);padding:2px 0;">' +
+      "<span>Налог (" + taxPct.toFixed(1) + "%)</span><span>" + fmtMoneyMA(taxes) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:2px 0;">' +
+      "<span>Начислено (Нетто)</span><span>" + fmtMoneyMA(Number(row["НачислениеНетто"]) || 0) + "</span></div>");
+    var other = Number(row["ПрочиеВыплаты"]) || 0;
+    if (other !== 0) lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+      "<span>Прочие выплаты</span><span>" + fmtMoneyMA(other) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+      "<span>Выплата аванса</span><span>" + fmtMoneyMA(Number(row["ВыплатаАванса"]) || 0) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:800;font-size:15px;color:var(--ok);padding:6px 0 0;">' +
+      "<span>Зарплата</span><span>" + fmtMoneyMA(Number(row["ИтогоКВыдаче"]) || 0) + "</span></div>");
+    wrap.innerHTML = lines.join("");
+    container.appendChild(wrap);
+  }
+
+  function renderSalaryData(card, data) {
+    var breakdowns = data.org_breakdowns || [];
+    var showOrg = breakdowns.length > 1;
+    breakdowns.forEach(function (row) { renderSalaryOrgBlock(card, row, showOrg); });
+    if (showOrg) {
+      var totalWrap = document.createElement("div");
+      var h = document.createElement("div");
+      h.style.cssText = "font-weight:800;margin-bottom:4px;";
+      h.textContent = "Итого по всем организациям";
+      totalWrap.appendChild(h);
+      card.appendChild(totalWrap);
+      renderSalaryOrgBlock(card, data.total, false);
+    }
+  }
+
+  function renderSalaryView(card, chatId) {
+    var periodRow = document.createElement("div");
+    periodRow.className = "field";
+    var sel = document.createElement("select");
+    periodRow.appendChild(sel);
+    card.appendChild(periodRow);
+    var dataWrap = document.createElement("div");
+    card.appendChild(dataWrap);
+
+    function load(period) {
+      dataWrap.innerHTML = "<p style='color:var(--muted);font-size:14px;'><i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...</p>";
+      callApi("miniAppGetSalary", { chatId: chatId, period: period }).then(function (res) {
+        if (sel.options.length === 0) {
+          (res.periods || []).forEach(function (p) {
+            var opt = document.createElement("option");
+            opt.value = p; opt.textContent = p;
+            sel.appendChild(opt);
+          });
+          sel.value = res.data.period;
+          sel.onchange = function () { load(sel.value); };
+        }
+        dataWrap.innerHTML = "";
+        renderSalaryData(dataWrap, res.data);
+      }).catch(function (e) {
+        dataWrap.innerHTML = "<p style='color:var(--danger);font-size:14px;'>Ошибка: " + esc(e.message || e) + "</p>";
+      });
+    }
+    load(null);
   }
 
   // ------------------------------------------------------------
@@ -809,7 +967,23 @@
     s.render();
   }
 
-  showMenu();
+  // MUHIM: agar Mini App admin javobidagi "🔁 Отправить ещё" tugmasi
+  // orqali ?section=... bilan ochilgan bo'lsa - to'g'ridan-to'g'ri O'SHA
+  // bo'limga o'tamiz (asosiy menyudan qayta navigatsiya qilishga hojat
+  // qolmaydi - real foydalanuvchi so'ragan yaxshilanish).
+  function tryDeepLink() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var section = params.get("section");
+      if (section && SECTIONS[section]) {
+        showSection(section, showMenu);
+        return true;
+      }
+    } catch (e) { /* eski brauzer yoki noto'g'ri parametr - jim menyuga o'tamiz */ }
+    return false;
+  }
+
+  if (!tryDeepLink()) showMenu();
 })();
 </script>
 </body>
