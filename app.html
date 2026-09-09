@@ -338,6 +338,14 @@
       ? String(tg.initDataUnsafe.user.id) : "";
   }
 
+  function getEmployeeName() {
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      var u = tg.initDataUnsafe.user;
+      return [u.first_name, u.last_name].filter(Boolean).join(" ") || u.username || "";
+    }
+    return "";
+  }
+
   async function callApi(action, params) {
     var resp = await fetch(API_URL, {
       method: "POST",
@@ -594,10 +602,14 @@
           if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
           withBusy(btn, async function () {
             var up = await uploadFile(files[0]);
-            sendToBot({
-              action: "realschet", org: selOrg, kontragent: kontragent.value.trim(),
+            var res = await callApi("miniAppSubmitRealschet", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
               note: note.value.trim(), file_url: up.url, file_name: up.name,
             });
+            toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+            content.innerHTML = "";
+            SECTIONS.realschet.render();
           });
         };
       },
@@ -625,10 +637,14 @@
           if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
           withBusy(btn, async function () {
             var up = await uploadFile(files[0]);
-            sendToBot({
-              action: "zakaznaryad", org: selOrg, kontragent: kontragent.value.trim(),
+            var res = await callApi("miniAppSubmitZakaznaryad", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
               note: note.value.trim(), file_url: up.url, file_name: up.name,
             });
+            toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+            content.innerHTML = "";
+            SECTIONS.zakaznaryad.render();
           });
         };
       },
@@ -731,6 +747,19 @@
           var up = await uploadFile(files[i]);
           uploaded.push({ url: up.url, name: up.name });
         }
+        // "Реализация" uchun - to'g'ridan-to'g'ri backend (Mini App
+        // OCHIQ qoladi); "Поступления" uchun hozircha eski yo'l
+        // (tg.sendData(), so'ng app yopiladi) - hali ko'chirilmagan.
+        if (category === "Реализация") {
+          var res = await callApi("miniAppSubmitOtherReqReal", {
+            chatId: getChatId(), employeeName: getEmployeeName(),
+            org: selOrg, text: text.value.trim(), files: uploaded,
+          });
+          toast("Отправлено (" + res.approverName + ")! Можно отправить ещё один запрос.", "ok");
+          content.innerHTML = "";
+          renderOtherReq(category);
+          return;
+        }
         sendToBot({
           action: "otherreq", org: selOrg, category: category,
           text: text.value.trim(), files: uploaded,
@@ -762,9 +791,7 @@
       var pnfl = pnflInput.value.trim();
       if (!/^\d{14}$/.test(pnfl)) { toast("ПИНФЛ должен состоять из 14 цифр", "err"); return; }
       withBusy(btn, async function () {
-        var fio = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user)
-          ? [tg.initDataUnsafe.user.first_name, tg.initDataUnsafe.user.last_name].filter(Boolean).join(" ")
-          : "";
+        var fio = getEmployeeName();
         await callApi("miniAppRequestSalaryAccess", { chatId: getChatId(), pnfl: pnfl, fio: fio });
         card.innerHTML = "";
         var ok = document.createElement("p");
