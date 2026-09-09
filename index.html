@@ -4090,6 +4090,7 @@ let salaryBadgeTimer = null;
 // turadi - shunda bo'limga kirganda boshqa jadvallar kabi DARHOL
 // tayyor turadi, "Загрузка..." kutilmaydi.
 async function pollSalaryRequestsBadge() {
+  if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   const groupBadge = document.getElementById("salaryReqNavBadge");
   const subBadge = document.getElementById("pendingSalaryReqBadge");
   try {
@@ -4118,6 +4119,7 @@ async function pollSalaryRequestsBadge() {
 }
 
 async function pollSalaryDataBackground() {
+  if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   try {
     const data = await apiCall("getSalaryData", {});
     salaryDataCache = data.items || [];
@@ -4133,6 +4135,16 @@ async function pollSalaryDataBackground() {
 }
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
 let isLoading = false;      // защита от наложения параллельных запросов
+
+// MUHIM: admin biror amalni (masalan "Одобрить") bosgan payt, fondagi
+// avtomatik yangilanishlar (har 8 soniyada BARCHA ma'lumot, va yana 3 ta
+// alohida "badge" so'rovi) AYNAN O'SHA payt serverga tirband qilib
+// qo'yishi mumkin edi - natijada tugma bosish "osilib qolgandek" tuyular
+// yoki 2-3 marta bosishga to'g'ri kelardi (real foydalanuvchi xabar
+// bergan xato). Shu bayroq TRUE bo'lgan vaqtda barcha fon-so'rovlar
+// o'z navbatini butunlay o'tkazib yuboradi - shunda foydalanuvchi
+// boshlagan amal serverga XALAQITSIZ, tezroq yetib boradi.
+let uiActionInFlight = false;
 let justLoggedInAt = null;  // login'dan keyingi qisqa "imtiyoz" oynasi uchun (pastga qarang, apiCall'da)
 
 /* ============================================================
@@ -5162,6 +5174,7 @@ function colLetter(i) {
  */
 async function loadAllData(silent) {
   if (isLoading) return; // не накладываем параллельные запросы друг на друга
+  if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   isLoading = true;
 
   if (!silent) document.getElementById("loadingOverlay").style.display = "flex";
@@ -6697,6 +6710,9 @@ function renderRegistrations() {
 async function updateRegistrationStatus(rowIndex, status, btnEl) {
   const range = `'${SHEET_REGISTRATIONS}'!E${rowIndex}`;
   btnEl.disabled = true;
+  // Amal davomida fon-yangilanishlarni to'xtatib turamiz - shunda bu
+  // so'rov serverga XALAQITSIZ, tezroq yetib boradi (qarang: uiActionInFlight).
+  uiActionInFlight = true;
   try {
     await sheetsUpdateCell(range, status);
     // Локально сразу убираем из списка "ожидающих", чтобы не ждать 3 секунды
@@ -6705,6 +6721,8 @@ async function updateRegistrationStatus(rowIndex, status, btnEl) {
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
     btnEl.disabled = false;
+  } finally {
+    uiActionInFlight = false;
   }
 }
 
@@ -6807,6 +6825,7 @@ async function renderUsersManage() {
 }
 
 async function pollSuggestionsBackground() {
+  if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   const badge = document.getElementById("pendingSuggestionsBadge");
   try {
     const data = await apiCall("adminGetSuggestions", {});
@@ -6934,14 +6953,23 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   buttons.forEach(b => b.disabled = true);
   const originalHtml = btnEl.innerHTML;
   btnEl.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> ...";
+  // Amal davomida fon-yangilanishlarni to'xtatib turamiz - shunda bu
+  // so'rov serverga XALAQITSIZ, tezroq yetib boradi (qarang: uiActionInFlight).
+  uiActionInFlight = true;
   try {
     await apiCall("decideSalaryRequest", { rowIndex, decision });
-    await loadSalaryRequests(true);
-    pollSalaryRequestsBadge();
+    // MUHIM: butun jadvalni serverdan qayta yuklash ("Загрузка...")
+    // o'rniga - shu qatorni ekrandan LOKAL o'chirib tashlaymiz. Bu ham
+    // tezroq, ham dashboard "qotib qolgandek" ko'rinishining oldini
+    // oladi (real foydalanuvchi xabar bergan xato).
+    salaryRequestsCache = salaryRequestsCache.filter(r => r.rowIndex !== rowIndex);
+    renderSalaryRequestsTable();
   } catch (e) {
     alert("Не удалось выполнить: " + e.message);
     buttons.forEach(b => b.disabled = false);
     btnEl.innerHTML = originalHtml;
+  } finally {
+    uiActionInFlight = false;
   }
 }
 
@@ -7225,6 +7253,7 @@ let gtdBadgeTimer = null;
 let suggestionsBadgeTimer = null;
 
 async function pollGtdBackground() {
+  if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   try {
     const data = await apiCall("getGtdItems", {});
     gtdDataCache = data.items || [];
