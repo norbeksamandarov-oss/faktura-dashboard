@@ -234,6 +234,12 @@
   .submit-btn:disabled { opacity: 0.5; box-shadow: none; }
   .submit-btn i.ti-loader-2 { display: inline-block; animation: spin 0.7s linear infinite; margin-right: 6px; font-size: 17px; vertical-align: -2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  /* Umumiy "yuklanmoqda" indikatori - faqat tugma ichida emas, istalgan
+     joyda ishlatish uchun (masalan Зарплата bo'limi yuklanayotganda) -
+     aks holda spinner belgisi harakatsiz turib, "qotib qolgan"day
+     ko'rinardi (real foydalanuvchi xabar bergan xato). */
+  .loading-row { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; padding: 6px 0; }
+  .loading-row i { display: inline-block; animation: spin 0.7s linear infinite; font-size: 18px; }
   /* iOS uslubidagi "yuborilmoqda" holati - tugma sekin nafas olganday
      xira-yorqin bo'lib turadi, shunda 5 soniya kutish ham "qotib
      qolgan" emas, "ishlayapti" degan hissi beradi. */
@@ -773,8 +779,8 @@
           card.appendChild(errInfo);
           return;
         }
-        var loading = document.createElement("p");
-        loading.style.cssText = "color:var(--muted);font-size:14px;margin:0;";
+        var loading = document.createElement("div");
+        loading.className = "loading-row";
         loading.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...";
         card.appendChild(loading);
 
@@ -899,6 +905,15 @@
     };
   }
 
+  var MONTH_NAMES_RU_MA = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  function fmtPeriodMA(p) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(p || ""));
+    if (!m) return p;
+    var mi = parseInt(m[2], 10) - 1;
+    return (MONTH_NAMES_RU_MA[mi] || m[2]) + " " + m[1];
+  }
+
   function renderSalaryOrgBlock(container, row, showOrg) {
     var wrap = document.createElement("div");
     wrap.style.cssText = "margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);";
@@ -920,11 +935,11 @@
     var gross = Number(row["НачислениеГросс"]) || 0;
     var taxes = Number(row["НалогиУдержано"]) || 0;
     var taxPct = gross ? (taxes / gross * 100) : 0;
-    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:6px 0 2px;">' +
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:6px 0 2px;color:var(--danger);">' +
       "<span>Начислено (Гросс)</span><span>" + fmtMoneyMA(gross) + "</span></div>");
     lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);padding:2px 0;">' +
       "<span>Налог (" + taxPct.toFixed(1) + "%)</span><span>" + fmtMoneyMA(taxes) + "</span></div>");
-    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:2px 0;">' +
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:2px 0;color:var(--ok);">' +
       "<span>Начислено (Нетто)</span><span>" + fmtMoneyMA(Number(row["НачислениеНетто"]) || 0) + "</span></div>");
     var other = Number(row["ПрочиеВыплаты"]) || 0;
     if (other !== 0) lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
@@ -962,12 +977,12 @@
     card.appendChild(dataWrap);
 
     function load(period) {
-      dataWrap.innerHTML = "<p style='color:var(--muted);font-size:14px;'><i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...</p>";
+      dataWrap.innerHTML = "<div class='loading-row'><i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...</div>";
       callApi("miniAppGetSalary", { chatId: chatId, period: period }).then(function (res) {
         if (sel.options.length === 0) {
           (res.periods || []).forEach(function (p) {
             var opt = document.createElement("option");
-            opt.value = p; opt.textContent = p;
+            opt.value = p; opt.textContent = fmtPeriodMA(p);
             sel.appendChild(opt);
           });
           sel.value = res.data.period;
