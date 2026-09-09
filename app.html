@@ -369,9 +369,31 @@
     });
   }
 
+  // MUHIM: oddiy fetch() hech qachon o'zi "vaqti tugadi" deb to'xtamaydi -
+  // agar server (Apps Script) sekinlashib ketsa yoki internet uzilib
+  // qolsa, so'rov ABADIY kutib turadi va tugma "Отправка..." holatida
+  // qotib qoladi (real foydalanuvchi xabar bergan xato). Shu sabab har
+  // bir so'rovga aniq vaqt chegarasi qo'yamiz - shundan keyin so'rov
+  // avtomatik bekor qilinib, tushunarli xato ko'rsatiladi va tugma
+  // yana bosish mumkin bo'lgan holatga qaytadi.
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    try {
+      return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+    } catch (e) {
+      if (e && e.name === "AbortError") {
+        throw new Error("Сервер не отвечает. Проверьте интернет и попробуйте ещё раз.");
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function uploadFile(file) {
     var base64 = await fileToBase64(file);
-    var resp = await fetch(API_URL, {
+    var resp = await fetchWithTimeout(API_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "uploadFile",
@@ -379,7 +401,7 @@
         mimeType: file.type || "application/octet-stream",
         base64: base64,
       }),
-    });
+    }, 45000);
     var data = await resp.json();
     if (data.error) throw new Error(data.error);
     return data; // { ok, url, fileId, name }
@@ -401,10 +423,10 @@
   }
 
   async function callApi(action, params) {
-    var resp = await fetch(API_URL, {
+    var resp = await fetchWithTimeout(API_URL, {
       method: "POST",
       body: JSON.stringify(Object.assign({ action: action }, params || {})),
-    });
+    }, 30000);
     var data = await resp.json();
     if (data.error) throw new Error(data.error);
     return data;
