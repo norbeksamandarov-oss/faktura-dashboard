@@ -4281,8 +4281,9 @@ async function handleLoginSubmit() {
   const password = document.getElementById("loginPassword").value;
   const errEl = document.getElementById("loginError");
   errEl.textContent = "";
+  errEl.style.display = "none";
   if (!username || !password) {
-    errEl.textContent = "Введите логин и пароль";
+    showLoginError("Введите логин и пароль");
     return;
   }
   btn.disabled = true;
@@ -4303,7 +4304,12 @@ async function handleLoginSubmit() {
     btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово";
     setTimeout(() => onLoggedIn(!!data.mustChangePassword), 350);
   } catch (e) {
-    errEl.textContent = e.message || "Ошибка входа";
+    // MUHIM: xato matni shu yerda YOZILARDI, lekin #loginError standart
+    // holatda "display:none" (CSS) - shuning uchun matn borligi hech
+    // narsani o'zgartirmasdi va foydalanuvchi HECH QANDAY xabar
+    // ko'rmasdi (faqat tugma yana "Войти"ga qaytardi). showLoginError()
+    // esa display:block qilib, xabarni HAQIQATAN HAM qizil qilib chiqaradi.
+    showLoginError(e.message || "Неверный логин или пароль");
     btn.disabled = false;
     btn.textContent = "Войти";
   }
