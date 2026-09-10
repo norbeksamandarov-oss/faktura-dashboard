@@ -3376,17 +3376,17 @@
         </div>
         <div>
           <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;">Организация</label>
-          <select id="numberingOrgSelect" class="login-input" style="min-width:220px;">
+          <select id="numberingOrgSelect" class="login-input" style="min-width:240px;">
             <option value="">— Выберите организацию —</option>
-            <option value="OLTIN TULPOR MOTORS">OLTIN TULPOR MOTORS</option>
-            <option value="OLTIN TULPOR MOTOR">OLTIN TULPOR MOTOR</option>
-            <option value="OLTIN TULPOR TRADE">OLTIN TULPOR TRADE</option>
-            <option value="BEDACHI">BEDACHI</option>
-            <option value="HYUNDAI RM">HYUNDAI RM</option>
-            <option value="HYUNDAI UZBEKISTAN">HYUNDAI UZBEKISTAN</option>
-            <option value="GEE MOTORS">GEE MOTORS</option>
-            <option value="GEE KD">GEE KD</option>
-            <option value="TOSHTAN AUTO">TOSHTAN AUTO</option>
+            <option value="OTM|OLTIN TULPOR MOTOR">OLTIN TULPOR MOTOR (OTM)</option>
+            <option value="OTMS|OLTIN TULPOR MOTORS">OLTIN TULPOR MOTORS (OTMS)</option>
+            <option value="OTT|OLTIN TULPOR TRADE">OLTIN TULPOR TRADE (OTT)</option>
+            <option value="BED|BEDACHI">BEDACHI (BED)</option>
+            <option value="HRM|HYUNDAI RM">HYUNDAI RM (HRM)</option>
+            <option value="HUZ|HYUNDAI UZBEKISTAN">HYUNDAI UZBEKISTAN (HUZ)</option>
+            <option value="GMS|GEE MOTORS">GEE MOTORS (GMS)</option>
+            <option value="GKD|GEE KD">GEE KD (GKD)</option>
+            <option value="TOS|TOSHTAN AUTO">TOSHTAN AUTO (TOS)</option>
           </select>
         </div>
         <div>
@@ -4740,16 +4740,19 @@ async function issueNumberClick() {
     typeCode = parts[0];
     typeLabel = parts[1];
   }
-  const org = document.getElementById("numberingOrgSelect").value;
-  if (!org) {
+  const orgSel = document.getElementById("numberingOrgSelect");
+  if (!orgSel.value) {
     errEl.textContent = "Выберите организацию";
     return;
   }
+  const orgParts = orgSel.value.split("|");
+  const orgCode = orgParts[0];
+  const org = orgParts[1];
   const comment = document.getElementById("numberingComment").value.trim();
   const btn = document.getElementById("numberingIssueBtn");
   btn.disabled = true;
   try {
-    const res = await apiCall("issueDocNumber", { typeCode, typeLabel, org, comment });
+    const res = await apiCall("issueDocNumber", { typeCode, typeLabel, orgCode, org, comment });
     if (res.error) { errEl.textContent = res.error; return; }
     okEl.textContent = "Номер присвоен: " + res.number;
     document.getElementById("numberingComment").value = "";
