@@ -2788,6 +2788,7 @@
         <button class="nav-item nav-sub-item" data-section="writeemp" onclick="showSection('writeemp')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="nav-label">Написать сотруднику</span></button>
         <button class="nav-item nav-sub-item" data-section="suggestions" onclick="showSection('suggestions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Предложения и жалобы</span> <span id="pendingSuggestionsBadge" class="nav-badge" style="display:none;"></span></button>
       </div>
+      <button class="nav-item" data-section="numbering" onclick="showSection('numbering')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span><span class="nav-label">Нумерация</span></button>
       <button class="nav-item" data-section="features" onclick="showSection('features')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg></span><span class="nav-label">Функции</span></button>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><span class="nav-label">Журнал действий</span></button>
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
@@ -3339,6 +3340,55 @@
         <table class="invoices" id="bankTable">
           <thead>
             <tr><th>№</th><th>Организация</th><th>Тип</th><th>Детали</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
+    <section id="section-numbering" class="content-section">
+    <div class="panel">
+      <h2>Нумерация документов <span class="sub">единый номер для любого документа</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Номер присваивается ТОЛЬКО системой - вводить его вручную нельзя. Выберите тип документа (или укажите свой), при желании добавьте комментарий и нажмите «Получить номер». Список ниже виден всем сотрудникам.</p>
+
+      <div class="user-create-form" style="position:relative;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;">Тип документа</label>
+          <select id="numberingTypeSelect" class="login-input" style="min-width:220px;" onchange="onNumberingTypeChange()">
+            <option value="SF|Счёт-фактура">Счёт-фактура (SF)</option>
+            <option value="ZN|Заказ-наряд">Заказ-наряд (ZN)</option>
+            <option value="DG|Договор">Договор (DG)</option>
+            <option value="DV|Доверенность">Доверенность (DV)</option>
+            <option value="XT|Письмо">Письмо (XT)</option>
+            <option value="custom">Другое (указать код и название)...</option>
+          </select>
+        </div>
+        <div id="numberingCustomFields" style="display:none;gap:12px;flex-wrap:wrap;">
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;">Код (2-4 буквы)</label>
+            <input type="text" id="numberingCustomCode" class="login-input" style="max-width:110px;text-transform:uppercase;" maxlength="4" placeholder="ABC">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;">Название типа</label>
+            <input type="text" id="numberingCustomLabel" class="login-input" style="max-width:220px;" placeholder="Название документа">
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px;">Комментарий (необязательно)</label>
+          <input type="text" id="numberingComment" class="login-input" style="min-width:220px;" placeholder="Например: для ООО Ромашка">
+        </div>
+        <div>
+          <button id="numberingIssueBtn" onclick="issueNumberClick()" class="login-submit-btn" style="width:auto;padding:12px 22px;"><i class='ti ti-hash' aria-hidden='true'></i> Получить номер</button>
+        </div>
+      </div>
+      <div id="numberingError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
+      <div id="numberingSuccess" style="color:#1E7A4C;font-size:14px;font-weight:700;margin-top:8px;"></div>
+
+      <div class="table-wrap" style="margin-top:20px;">
+        <table class="invoices" id="numberingTable">
+          <thead>
+            <tr><th>Номер</th><th>Тип</th><th>Комментарий</th><th>Дата/время</th><th>Кто выдал</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -4642,6 +4692,76 @@ function showSection(name) {
   if (name === "gtdimport" && currentRole === "admin") {
     loadGtdItems();
   }
+  if (name === "numbering") {
+    loadNumberingList();
+  }
+}
+
+/* ============================================================
+   НУМЕРАЦИЯ - "Получить номер" bo'limi (barcha xodimlarga ochiq).
+   ============================================================ */
+function onNumberingTypeChange() {
+  const sel = document.getElementById("numberingTypeSelect");
+  const customWrap = document.getElementById("numberingCustomFields");
+  customWrap.style.display = sel.value === "custom" ? "flex" : "none";
+}
+
+async function issueNumberClick() {
+  const errEl = document.getElementById("numberingError");
+  const okEl = document.getElementById("numberingSuccess");
+  errEl.textContent = "";
+  okEl.textContent = "";
+  const sel = document.getElementById("numberingTypeSelect");
+  let typeCode, typeLabel;
+  if (sel.value === "custom") {
+    typeCode = document.getElementById("numberingCustomCode").value.trim();
+    typeLabel = document.getElementById("numberingCustomLabel").value.trim();
+    if (!typeCode || !typeLabel) {
+      errEl.textContent = "Укажите код и название типа документа";
+      return;
+    }
+  } else {
+    const parts = sel.value.split("|");
+    typeCode = parts[0];
+    typeLabel = parts[1];
+  }
+  const comment = document.getElementById("numberingComment").value.trim();
+  const btn = document.getElementById("numberingIssueBtn");
+  btn.disabled = true;
+  try {
+    const res = await apiCall("issueDocNumber", { typeCode, typeLabel, comment });
+    if (res.error) { errEl.textContent = res.error; return; }
+    okEl.textContent = "Номер присвоен: " + res.number;
+    document.getElementById("numberingComment").value = "";
+    if (sel.value === "custom") {
+      document.getElementById("numberingCustomCode").value = "";
+      document.getElementById("numberingCustomLabel").value = "";
+    }
+    loadNumberingList();
+  } catch (e) {
+    errEl.textContent = e.message || "Ошибка";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadNumberingList() {
+  try {
+    const res = await apiCall("getNumberingList", {});
+    if (res.error) return;
+    renderNumberingTable(res.rows || []);
+  } catch (e) { /* jim - ro'yxat keyingi safar yangilanadi */ }
+}
+
+function renderNumberingTable(rows) {
+  const tbody = document.querySelector("#numberingTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  rows.forEach(function (r) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td><strong>" + r.number + "</strong></td><td>" + (r.typeLabel || "") + "</td><td>" + (r.comment || "") + "</td><td>" + (r.dateStr || "") + "</td><td>" + (r.issuedBy || "") + "</td>";
+    tbody.appendChild(tr);
+  });
 }
 
 function toggleNavGroup(toggleId, subgroupId) {
