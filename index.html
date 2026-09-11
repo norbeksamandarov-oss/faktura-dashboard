@@ -2784,6 +2784,7 @@
       <div class="nav-subgroup" id="personalSubgroup">
         <button class="nav-item nav-sub-item" data-section="requests" onclick="showSection('requests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span><span class="nav-label">Заявки</span> <span id="pendingRegBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="employees" onclick="showSection('employees')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="nav-label">Сотрудники</span></button>
+        <button class="nav-item nav-sub-item" data-section="positions" onclick="showSection('positions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="8.5" y="14" width="7" height="7" rx="1"/><path d="M6.5 10v2a2 2 0 0 0 2 2h1"/><path d="M17.5 10v2a2 2 0 0 1-2 2h-1"/></svg></span><span class="nav-label">Позиции</span></button>
         <button class="nav-item nav-sub-item" data-section="users" onclick="showSection('users')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="nav-label">Пользователи</span></button>
         <button class="nav-item nav-sub-item" data-section="writeemp" onclick="showSection('writeemp')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="nav-label">Написать сотруднику</span></button>
         <button class="nav-item nav-sub-item" data-section="suggestions" onclick="showSection('suggestions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Предложения и жалобы</span> <span id="pendingSuggestionsBadge" class="nav-badge" style="display:none;"></span></button>
@@ -3616,6 +3617,88 @@
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+    </div>
+    </section>
+
+    <section id="section-positions" class="content-section">
+    <div class="panel">
+      <h2>Позиции <span class="sub">организационная схема и открытые вакансии</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст (сохраняются в браузере автоматически).</p>
+
+      <style>
+        #section-positions .pz-stage{position:relative;padding-top:4px;font-family:'Manrope',sans-serif;}
+        #section-positions .pz-top-center{display:flex;flex-direction:column;align-items:center;}
+        #section-positions .pz-vline{width:1.5px;height:18px;background:#d7dce8;}
+        #section-positions .pz-deniz-floater{position:absolute;top:0;right:0;}
+        #section-positions .pz-dilfruza-floater{position:absolute;top:0;left:0;display:flex;flex-direction:column;align-items:flex-start;width:fit-content;}
+        #section-positions .pz-note{font-size:10px;color:#9aa3b8;text-align:left;margin-top:3px;font-style:italic;max-width:170px;}
+        #section-positions .pz-branch-row{display:flex;gap:16px;margin-top:18px;position:relative;}
+        #section-positions .pz-branch-row::before{content:'';position:absolute;top:-18px;left:calc(100%/6);right:calc(100%/6);height:1.5px;background:#d7dce8;}
+        #section-positions .pz-groups{display:flex;gap:16px;margin-top:0;width:100%;}
+        #section-positions .pz-group{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;position:relative;}
+        #section-positions .pz-group::before{content:'';position:absolute;top:-18px;width:1.5px;height:18px;background:#d7dce8;}
+        #section-positions .pz-node{background:#fff;border:1.5px solid #d7dce8;border-radius:10px;padding:8px 12px;width:100%;max-width:170px;text-align:center;position:relative;box-shadow:0 1px 2px rgba(11,19,43,0.04);}
+        #section-positions .pz-node.pz-top{border-color:#0B132B;max-width:200px;}
+        #section-positions .pz-node .pz-role{font-weight:700;font-size:12.5px;outline:none;border-radius:5px;padding:1px 3px;overflow-wrap:break-word;color:#0B132B;}
+        #section-positions .pz-node .pz-role:focus{background:#e8effe;}
+        #section-positions .pz-node .pz-name{font-size:11px;color:#6b7385;margin-top:2px;outline:none;border-radius:5px;padding:1px 3px;min-height:14px;overflow-wrap:break-word;}
+        #section-positions .pz-node .pz-name:focus{background:#e8effe;color:#0B132B;}
+        #section-positions .pz-node .pz-name:empty:before{content:'нет сотрудника';color:#c6cbd8;font-style:italic;}
+        #section-positions .pz-node.pz-vacant{border-color:#e11d48;background:#fde8ec;}
+        #section-positions .pz-remove-x{position:absolute;top:-7px;left:-7px;width:15px;height:15px;border-radius:50%;background:#fff;border:1px solid #d7dce8;color:#6b7385;font-size:9px;line-height:13px;text-align:center;cursor:pointer;display:none;}
+        #section-positions .pz-node:hover .pz-remove-x{display:block;}
+        #section-positions .pz-remove-x:hover{border-color:#e11d48;color:#e11d48;}
+        #section-positions .pz-kids{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;width:100%;}
+        #section-positions .pz-kids .pz-node{max-width:none;padding:7px 8px;}
+        #section-positions .pz-kids .pz-node .pz-role{font-size:11px;}
+        #section-positions .pz-kids .pz-node .pz-name{font-size:10px;}
+        #section-positions .pz-add-btn{grid-column:1 / -1;margin-top:2px;background:none;border:1px dashed #d7dce8;color:#6b7385;font-size:10px;font-family:inherit;padding:3px 8px;border-radius:6px;cursor:pointer;}
+        #section-positions .pz-add-btn:hover{border-color:#2563EB;color:#2563EB;}
+        #section-positions .pz-legend{display:flex;gap:16px;margin-top:18px;font-size:11px;color:#6b7385;flex-wrap:wrap;}
+        #section-positions .pz-legend span{display:inline-flex;align-items:center;gap:5px;}
+        #section-positions .pz-dot{width:9px;height:9px;border-radius:50%;}
+        #section-positions .pz-summary{margin-top:28px;background:#0B132B;border-radius:16px;padding:22px 24px;color:#fff;display:flex;gap:28px;flex-wrap:wrap;align-items:center;}
+        #section-positions .pz-stat{min-width:110px;}
+        #section-positions .pz-stat .pz-num{font-size:26px;font-weight:800;line-height:1;}
+        #section-positions .pz-stat .pz-lbl{font-size:11px;color:#aab2cc;margin-top:4px;}
+        #section-positions .pz-stat.pz-need .pz-num{color:#7ea2ff;}
+        #section-positions .pz-stat.pz-vac .pz-num{color:#ff8fa3;}
+        #section-positions .pz-target-row{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#aab2cc;}
+        #section-positions .pz-target-row input{width:48px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;border-radius:6px;padding:5px 6px;font-family:inherit;font-size:12px;text-align:center;}
+        #section-positions .pz-hint{margin-top:10px;font-size:11px;color:#6b7385;}
+        #section-positions .pz-vacancy-panel{margin-top:18px;background:#fde8ec;border:1px solid #f5c2cf;border-radius:14px;padding:16px 20px;}
+        #section-positions .pz-vacancy-title{font-weight:700;font-size:13px;color:#9c1c3a;margin-bottom:8px;}
+        #section-positions .pz-vacancy-list{display:flex;flex-wrap:wrap;gap:8px;}
+        #section-positions .pz-vacancy-item{background:#fff;border:1px solid #f5c2cf;border-radius:8px;padding:5px 10px;font-size:11.5px;color:#0B132B;}
+        #section-positions .pz-vacancy-item span{color:#6b7385;font-size:10.5px;}
+        #section-positions .pz-vacancy-empty{font-size:12px;color:#9c1c3a;font-style:italic;}
+      </style>
+
+      <div class="pz-stage" id="pzChart">
+        <div class="pz-top-center" id="pzTopCenter"></div>
+        <div class="pz-deniz-floater" id="pzDeniz"></div>
+        <div class="pz-dilfruza-floater" id="pzDilfruza"></div>
+        <div class="pz-branch-row"><div class="pz-groups" id="pzGroups"></div></div>
+      </div>
+
+      <div class="pz-legend">
+        <span><span class="pz-dot" style="background:#fff;border:1px solid #d7dce8"></span> занято</span>
+        <span><span class="pz-dot" style="background:#e11d48"></span> вакансия (нет сотрудника)</span>
+      </div>
+
+      <div class="pz-summary">
+        <div class="pz-stat"><div class="pz-num" id="pzStatTotal">0</div><div class="pz-lbl">Всего позиций</div></div>
+        <div class="pz-stat"><div class="pz-num" id="pzStatFilled">0</div><div class="pz-lbl">Занято</div></div>
+        <div class="pz-stat pz-vac"><div class="pz-num" id="pzStatVacant">0</div><div class="pz-lbl">Вакансий</div></div>
+        <div class="pz-stat pz-need"><div class="pz-num" id="pzStatNeeded">0</div><div class="pz-lbl">Не хватает до цели</div></div>
+        <div class="pz-target-row">Целевое число позиций: <input type="number" id="pzTargetInput" value="14" min="0"></div>
+      </div>
+      <div class="pz-hint">Дениз — отдельно, ни у кого в подчинении. Дилфруза — куратор левой и средней групп, не подчиняется ГБ/Заму. Все три «Старший бухгалтер» формально подчиняются Норбеку. Наведите на позицию для удаления (×), «+ позиция» — чтобы добавить.</div>
+
+      <div class="pz-vacancy-panel">
+        <div class="pz-vacancy-title">Открытые позиции — нужно нанять</div>
+        <div class="pz-vacancy-list" id="pzVacancyList"></div>
       </div>
     </div>
     </section>
@@ -4659,7 +4742,7 @@ function exportBankExcel() {
 }
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
-const PERSONAL_SECTIONS = ["requests", "employees", "users", "writeemp", "suggestions"];
+const PERSONAL_SECTIONS = ["requests", "employees", "positions", "users", "writeemp", "suggestions"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
 const NAV_GROUPS = [
@@ -4984,7 +5067,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="gtdimport"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="gtdimport"], .nav-item[data-section="positions"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -5000,7 +5083,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features", "taxes", "gtdimport"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes", "gtdimport", "positions"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -8954,6 +9037,152 @@ async function recallInvoice(facturaid, btnEl) {
     btnEl.disabled = false;
   }
 }
+
+/* ---------- Раздел "Позиции" (org-chart, локальный, без Sheets) ---------- */
+(function initPositionsChart(){
+  const PZ_POSITIONS = ['Материальный', 'Банк', 'Расчётный', 'Розница'];
+
+  const pzDeniz = {role:'Контроллинг и аудит', name:'Дениз'};
+  const pzDilfruza = {role:'Финансовый менеджер', name:'Дилфруза'};
+
+  const pzGroupsData = [
+    { senior: {role:'Старший бухгалтер 1', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
+    { senior: {role:'Старший бухгалтер 2', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
+    { senior: {role:'Старший бухгалтер 3', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) }
+  ];
+
+  function pzMakeNode(role, name, extraClass){
+    const node = document.createElement('div');
+    node.className = 'pz-node' + (extraClass ? ' ' + extraClass : '');
+
+    const x = document.createElement('div');
+    x.className = 'pz-remove-x';
+    x.textContent = '×';
+    x.onclick = (e) => { e.stopPropagation(); node.remove(); pzUpdateStats(); };
+    node.appendChild(x);
+
+    const r = document.createElement('div');
+    r.className = 'pz-role';
+    r.contentEditable = true;
+    r.textContent = role;
+    node.appendChild(r);
+
+    const n = document.createElement('div');
+    n.className = 'pz-name';
+    n.contentEditable = true;
+    n.textContent = name;
+    node.appendChild(n);
+
+    function refreshVacant(){
+      node.classList.toggle('pz-vacant', n.textContent.trim() === '');
+      pzUpdateStats();
+    }
+    n.addEventListener('input', refreshVacant);
+    r.addEventListener('input', pzUpdateStats);
+    refreshVacant();
+    return node;
+  }
+
+  function pzUpdateStats(){
+    const chart = document.getElementById('pzChart');
+    if (!chart) return;
+    const nodes = chart.querySelectorAll('.pz-node');
+    let total = 0, filled = 0;
+    const vacancies = [];
+    nodes.forEach(node => {
+      total++;
+      const nameEl = node.querySelector('.pz-name');
+      const roleEl = node.querySelector('.pz-role');
+      const isVacant = nameEl && nameEl.textContent.trim() === '';
+      if(!isVacant) filled++;
+      else vacancies.push(roleEl ? roleEl.textContent.trim() : '');
+    });
+    const vacant = total - filled;
+    const target = parseInt(document.getElementById('pzTargetInput').value) || 0;
+    const needed = Math.max(target - total, 0);
+    document.getElementById('pzStatTotal').textContent = total;
+    document.getElementById('pzStatFilled').textContent = filled;
+    document.getElementById('pzStatVacant').textContent = vacant;
+    document.getElementById('pzStatNeeded').textContent = needed;
+
+    const listEl = document.getElementById('pzVacancyList');
+    listEl.innerHTML = '';
+    if(vacancies.length === 0){
+      const none = document.createElement('div');
+      none.className = 'pz-vacancy-empty';
+      none.textContent = 'Открытых позиций нет — все укомплектовано.';
+      listEl.appendChild(none);
+    } else {
+      const counts = {};
+      vacancies.forEach(role => { counts[role] = (counts[role] || 0) + 1; });
+      Object.keys(counts).forEach(role => {
+        const item = document.createElement('div');
+        item.className = 'pz-vacancy-item';
+        item.innerHTML = '<b>' + role + '</b> <span>— нужно: ' + counts[role] + '</span>';
+        listEl.appendChild(item);
+      });
+    }
+  }
+
+  function pzBuild(){
+    const topCenter = document.getElementById('pzTopCenter');
+    if (!topCenter || topCenter.dataset.built) return;
+    topCenter.dataset.built = '1';
+
+    topCenter.appendChild(pzMakeNode('Главный бухгалтер', 'Севара Г.', 'pz-top'));
+    const v1 = document.createElement('div'); v1.className = 'pz-vline'; topCenter.appendChild(v1);
+    topCenter.appendChild(pzMakeNode('Заместитель главного бухгалтера', 'Норбек', 'pz-top'));
+    const v2 = document.createElement('div'); v2.className = 'pz-vline'; topCenter.appendChild(v2);
+
+    const denizWrap = document.getElementById('pzDeniz');
+    denizWrap.appendChild(pzMakeNode(pzDeniz.role, pzDeniz.name, 'pz-top'));
+    const denizNote = document.createElement('div');
+    denizNote.className = 'pz-note';
+    denizNote.textContent = 'отдельно, ни у кого в подчинении';
+    denizWrap.appendChild(denizNote);
+
+    const dilfruzaWrap = document.getElementById('pzDilfruza');
+    dilfruzaWrap.appendChild(pzMakeNode(pzDilfruza.role, pzDilfruza.name, 'pz-top'));
+    const dilfruzaNote = document.createElement('div');
+    dilfruzaNote.className = 'pz-note';
+    dilfruzaNote.textContent = 'куратор левой и средней групп, не подчиняется ГБ/Заму';
+    dilfruzaWrap.appendChild(dilfruzaNote);
+
+    const groupsEl = document.getElementById('pzGroups');
+    pzGroupsData.forEach(g => {
+      const col = document.createElement('div');
+      col.className = 'pz-group';
+      col.appendChild(pzMakeNode(g.senior.role, g.senior.name));
+
+      const kidsWrap = document.createElement('div');
+      kidsWrap.className = 'pz-kids';
+      g.kids.forEach(k => kidsWrap.appendChild(pzMakeNode(k.role, k.name)));
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'pz-add-btn';
+      addBtn.type = 'button';
+      addBtn.textContent = '+ позиция';
+      addBtn.onclick = () => {
+        const newNode = pzMakeNode('Новая позиция', '');
+        kidsWrap.insertBefore(newNode, addBtn);
+        pzUpdateStats();
+      };
+      kidsWrap.appendChild(addBtn);
+
+      col.appendChild(kidsWrap);
+      groupsEl.appendChild(col);
+    });
+
+    document.getElementById('pzTargetInput').addEventListener('input', pzUpdateStats);
+    pzUpdateStats();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', pzBuild);
+  } else {
+    pzBuild();
+  }
+})();
 </script>
 </body>
 </html>
