@@ -4778,6 +4778,9 @@ function showSection(name) {
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
   }
+  if (name === "positions" && currentRole === "admin" && typeof pzInit === "function") {
+    pzInit();
+  }
   if (name === "suggestions" && currentRole === "admin") {
     loadSuggestions();
   }
@@ -9038,49 +9041,98 @@ async function recallInvoice(facturaid, btnEl) {
   }
 }
 
-/* ---------- Раздел "Позиции" (org-chart, локальный, без Sheets) ---------- */
+/* ---------- Раздел "Позиции" (хранится в Google Sheets, лист "Позиции") ---------- */
 (function initPositionsChart(){
   const PZ_POSITIONS = ['Материальный', 'Банк', 'Расчётный', 'Розница'];
+  const PZ_POLL_MS = 8000;
 
-  const pzDeniz = {role:'Контроллинг и аудит', name:'Дениз'};
-  const pzDilfruza = {role:'Финансовый менеджер', name:'Дилфруза'};
+  function pzDefaultState(){
+    return {
+      target: 14,
+      sevara: {role:'Главный бухгалтер', name:'Севара Г.'},
+      norbek: {role:'Заместитель главного бухгалтера', name:'Норбек'},
+      deniz: {role:'Контроллинг и аудит', name:'Дениз'},
+      dilfruza: {role:'Финансовый менеджер', name:'Дилфруза'},
+      groups: [
+        { senior: {role:'Старший бухгалтер 1', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
+        { senior: {role:'Старший бухгалтер 2', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
+        { senior: {role:'Старший бухгалтер 3', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) }
+      ]
+    };
+  }
 
-  const pzGroupsData = [
-    { senior: {role:'Старший бухгалтер 1', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
-    { senior: {role:'Старший бухгалтер 2', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) },
-    { senior: {role:'Старший бухгалтер 3', name:''}, kids: PZ_POSITIONS.map(r => ({role:r, name:''})) }
-  ];
+  let pzState = null;
+  let pzLastSavedJson = '';
+  let pzSaveTimer = null;
+  let pzPollTimer = null;
+  let pzSaving = false;
 
-  function pzMakeNode(role, name, extraClass){
+  function pzIsEditingNow(){
+    const chart = document.getElementById('pzChart');
+    return !!(chart && document.activeElement && chart.contains(document.activeElement));
+  }
+
+  function pzScheduleSave(){
+    clearTimeout(pzSaveTimer);
+    pzSaveTimer = setTimeout(pzSaveNow, 700);
+  }
+
+  async function pzSaveNow(){
+    const json = JSON.stringify(pzState);
+    if (json === pzLastSavedJson) return;
+    pzSaving = true;
+    try {
+      await apiCall('savePositions', { state: json });
+      pzLastSavedJson = json;
+    } catch(e) {
+      console.warn('Не удалось сохранить "Позиции":', e.message);
+    } finally {
+      pzSaving = false;
+    }
+  }
+
+  // node._pzRef - объект {role,name} внутри pzState, который этот node представляет.
+  function pzMakeNode(stateRef, extraClass){
     const node = document.createElement('div');
     node.className = 'pz-node' + (extraClass ? ' ' + extraClass : '');
+    node._pzRef = stateRef;
 
     const x = document.createElement('div');
     x.className = 'pz-remove-x';
     x.textContent = '×';
-    x.onclick = (e) => { e.stopPropagation(); node.remove(); pzUpdateStats(); };
+    x.onclick = (e) => {
+      e.stopPropagation();
+      const arr = node.parentElement._pzKidsArray;
+      if (arr) {
+        const idx = arr.indexOf(node._pzRef);
+        if (idx > -1) arr.splice(idx, 1);
+      }
+      node.remove();
+      pzScheduleSave();
+      pzUpdateStats();
+    };
     node.appendChild(x);
 
     const r = document.createElement('div');
     r.className = 'pz-role';
     r.contentEditable = true;
     r.spellcheck = false;
-    r.textContent = role;
+    r.textContent = stateRef.role;
     node.appendChild(r);
 
     const n = document.createElement('div');
     n.className = 'pz-name';
     n.contentEditable = true;
     n.spellcheck = false;
-    n.textContent = name;
+    n.textContent = stateRef.name;
     node.appendChild(n);
 
     function refreshVacant(){
       node.classList.toggle('pz-vacant', n.textContent.trim() === '');
       pzUpdateStats();
     }
-    n.addEventListener('input', refreshVacant);
-    r.addEventListener('input', pzUpdateStats);
+    n.addEventListener('input', () => { stateRef.name = n.textContent; refreshVacant(); pzScheduleSave(); });
+    r.addEventListener('input', () => { stateRef.role = r.textContent; pzUpdateStats(); pzScheduleSave(); });
     refreshVacant();
     return node;
   }
@@ -9126,47 +9178,55 @@ async function recallInvoice(facturaid, btnEl) {
     }
   }
 
-  function pzBuild(){
+  function pzRender(){
     const topCenter = document.getElementById('pzTopCenter');
-    if (!topCenter || topCenter.dataset.built) return;
-    topCenter.dataset.built = '1';
+    const denizWrap = document.getElementById('pzDeniz');
+    const dilfruzaWrap = document.getElementById('pzDilfruza');
+    const groupsEl = document.getElementById('pzGroups');
+    if (!topCenter || !denizWrap || !dilfruzaWrap || !groupsEl) return;
 
-    topCenter.appendChild(pzMakeNode('Главный бухгалтер', 'Севара Г.', 'pz-top'));
+    topCenter.innerHTML = '';
+    denizWrap.innerHTML = '';
+    dilfruzaWrap.innerHTML = '';
+    groupsEl.innerHTML = '';
+
+    topCenter.appendChild(pzMakeNode(pzState.sevara, 'pz-top'));
     const v1 = document.createElement('div'); v1.className = 'pz-vline'; topCenter.appendChild(v1);
-    topCenter.appendChild(pzMakeNode('Заместитель главного бухгалтера', 'Норбек', 'pz-top'));
+    topCenter.appendChild(pzMakeNode(pzState.norbek, 'pz-top'));
     const v2 = document.createElement('div'); v2.className = 'pz-vline'; topCenter.appendChild(v2);
 
-    const denizWrap = document.getElementById('pzDeniz');
-    denizWrap.appendChild(pzMakeNode(pzDeniz.role, pzDeniz.name, 'pz-top'));
+    denizWrap.appendChild(pzMakeNode(pzState.deniz, 'pz-top'));
     const denizNote = document.createElement('div');
     denizNote.className = 'pz-note';
     denizNote.textContent = 'отдельно, ни у кого в подчинении';
     denizWrap.appendChild(denizNote);
 
-    const dilfruzaWrap = document.getElementById('pzDilfruza');
-    dilfruzaWrap.appendChild(pzMakeNode(pzDilfruza.role, pzDilfruza.name, 'pz-top'));
+    dilfruzaWrap.appendChild(pzMakeNode(pzState.dilfruza, 'pz-top'));
     const dilfruzaNote = document.createElement('div');
     dilfruzaNote.className = 'pz-note';
     dilfruzaNote.textContent = 'куратор левой и средней групп, не подчиняется ГБ/Заму';
     dilfruzaWrap.appendChild(dilfruzaNote);
 
-    const groupsEl = document.getElementById('pzGroups');
-    pzGroupsData.forEach(g => {
+    pzState.groups.forEach(g => {
       const col = document.createElement('div');
       col.className = 'pz-group';
-      col.appendChild(pzMakeNode(g.senior.role, g.senior.name));
+      col.appendChild(pzMakeNode(g.senior));
 
       const kidsWrap = document.createElement('div');
       kidsWrap.className = 'pz-kids';
-      g.kids.forEach(k => kidsWrap.appendChild(pzMakeNode(k.role, k.name)));
+      kidsWrap._pzKidsArray = g.kids;
+      g.kids.forEach(k => kidsWrap.appendChild(pzMakeNode(k)));
 
       const addBtn = document.createElement('button');
       addBtn.className = 'pz-add-btn';
       addBtn.type = 'button';
       addBtn.textContent = '+ позиция';
       addBtn.onclick = () => {
-        const newNode = pzMakeNode('Новая позиция', '');
+        const newRef = {role:'Новая позиция', name:''};
+        g.kids.push(newRef);
+        const newNode = pzMakeNode(newRef);
         kidsWrap.insertBefore(newNode, addBtn);
+        pzScheduleSave();
         pzUpdateStats();
       };
       kidsWrap.appendChild(addBtn);
@@ -9175,14 +9235,56 @@ async function recallInvoice(facturaid, btnEl) {
       groupsEl.appendChild(col);
     });
 
-    document.getElementById('pzTargetInput').addEventListener('input', pzUpdateStats);
+    const targetInput = document.getElementById('pzTargetInput');
+    targetInput.value = pzState.target;
+    targetInput.oninput = () => {
+      pzState.target = parseInt(targetInput.value) || 0;
+      pzUpdateStats();
+      pzScheduleSave();
+    };
     pzUpdateStats();
   }
 
+  async function pzInit(){
+    const topCenter = document.getElementById('pzTopCenter');
+    if (!topCenter || topCenter.dataset.built) return;
+    topCenter.dataset.built = '1';
+
+    let loaded = null;
+    try {
+      const res = await apiCall('getPositions', {});
+      if (res && res.state) loaded = JSON.parse(res.state);
+    } catch(e) {
+      console.warn('Не удалось загрузить "Позиции" из Sheets, использованы значения по умолчанию:', e.message);
+    }
+    pzState = (loaded && loaded.groups && Array.isArray(loaded.groups)) ? loaded : pzDefaultState();
+    pzLastSavedJson = JSON.stringify(pzState);
+    pzRender();
+
+    // Если данных ещё не было на сервере вообще - сохраняем значения по
+    // умолчанию сразу, чтобы все админы видели одно и то же с первого раза.
+    if (!loaded) pzScheduleSave();
+
+    // Периодически подтягиваем изменения от других админов - но НЕ пока
+    // пользователь сам сейчас редактирует (иначе стёрли бы его набор текста).
+    if (pzPollTimer) clearInterval(pzPollTimer);
+    pzPollTimer = setInterval(async () => {
+      if (pzIsEditingNow() || pzSaving) return;
+      try {
+        const res = await apiCall('getPositions', {});
+        if (res && res.state && res.state !== pzLastSavedJson) {
+          pzState = JSON.parse(res.state);
+          pzLastSavedJson = res.state;
+          pzRender();
+        }
+      } catch(e) { /* тихо игнорируем - следующий раз получится */ }
+    }, PZ_POLL_MS);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', pzBuild);
+    document.addEventListener('DOMContentLoaded', () => { window.pzInit = pzInit; });
   } else {
-    pzBuild();
+    window.pzInit = pzInit;
   }
 })();
 </script>
