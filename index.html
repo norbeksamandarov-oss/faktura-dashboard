@@ -3681,9 +3681,13 @@
         #section-positions .pz-vacancy-item:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(156,28,58,0.15);}
         #section-positions .pz-vacancy-item span{color:#6b7385;font-size:10.5px;}
         #section-positions .pz-vacancy-empty{font-size:12px;color:#9c1c3a;font-style:italic;}
+        #section-positions .pz-loading{display:none;align-items:center;gap:10px;padding:40px 0;color:#6b7385;font-size:13px;}
+        #section-positions .pz-spinner{width:16px;height:16px;border-radius:50%;border:2px solid #d7dce8;border-top-color:#2563EB;animation:pzSpin .7s linear infinite;}
+        @keyframes pzSpin{to{transform:rotate(360deg);}}
       </style>
 
       <div class="pz-stage" id="pzChart">
+        <div class="pz-loading" id="pzLoading"><div class="pz-spinner"></div> Загрузка позиций...</div>
         <div class="pz-top-center" id="pzTopCenter"></div>
         <div class="pz-deniz-floater" id="pzDeniz"></div>
         <div class="pz-dilfruza-floater" id="pzDilfruza"></div>
@@ -9256,6 +9260,9 @@ async function recallInvoice(facturaid, btnEl) {
     if (!topCenter || topCenter.dataset.built) return;
     topCenter.dataset.built = '1';
 
+    const loadingEl = document.getElementById('pzLoading');
+    if (loadingEl) loadingEl.style.display = 'flex';
+
     let loaded = null;
     try {
       const res = await apiCall('getPositions', {});
@@ -9265,6 +9272,7 @@ async function recallInvoice(facturaid, btnEl) {
     }
     pzState = (loaded && loaded.groups && Array.isArray(loaded.groups)) ? loaded : pzDefaultState();
     pzLastSavedJson = JSON.stringify(pzState);
+    if (loadingEl) loadingEl.style.display = 'none';
     pzRender();
 
     // Если данных ещё не было на сервере вообще - сохраняем значения по
