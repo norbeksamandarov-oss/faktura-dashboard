@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Позиции — организационная схема</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B132B;
+    --navy-2:#141c3a;
+    --cobalt:#2563EB;
+    --cobalt-soft:#e8effe;
+    --line:#d7dce8;
+    --ink:#0B132B;
+    --muted:#6b7385;
+    --paper:#f6f7fb;
+    --white:#ffffff;
+    --vacant:#e11d48;
+    --vacant-soft:#fde8ec;
+    --ok:#0f9d58;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Manrope',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    padding:32px 20px 64px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .header{margin-bottom:28px;}
+  .header h1{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-0.01em;}
+  .header p{margin:0;color:var(--muted);font-size:14px;}
+
+  .chart{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
+    overflow-x:auto;
+    padding-bottom:8px;
+  }
+
+  .node{
+    background:var(--white);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:10px 16px;
+    min-width:150px;
+    text-align:center;
+    position:relative;
+    box-shadow:0 1px 2px rgba(11,19,43,0.04);
+  }
+  .node.top{border-color:var(--navy);}
+  .node .role{
+    font-weight:700;
+    font-size:13.5px;
+    outline:none;
+    border-radius:5px;
+    padding:1px 3px;
+  }
+  .node .role:focus{background:var(--cobalt-soft);}
+  .node .name{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:2px;
+    outline:none;
+    border-radius:5px;
+    padding:1px 3px;
+    min-height:15px;
+  }
+  .node .name:focus{background:var(--cobalt-soft);color:var(--ink);}
+  .node .name:empty:before{
+    content:'нет сотрудника';
+    color:#c6cbd8;
+    font-style:italic;
+  }
+  .node.vacant{border-color:var(--vacant);background:var(--vacant-soft);}
+  .node .badge{
+    position:absolute;
+    top:-8px;
+    right:-8px;
+    background:var(--vacant);
+    color:#fff;
+    font-size:9px;
+    font-weight:700;
+    padding:2px 6px;
+    border-radius:8px;
+    letter-spacing:.02em;
+  }
+
+  .vline{width:1.5px;height:22px;background:var(--line);}
+
+  .branch-row{
+    display:flex;
+    justify-content:center;
+    gap:56px;
+    position:relative;
+    width:100%;
+  }
+  .branch-row.connectors::before{
+    content:'';
+    position:absolute;
+    top:-22px;
+    left:calc(50% / 3 + 28px);
+    right:calc(50% / 3 + 28px);
+    height:1.5px;
+    background:var(--line);
+  }
+
+  .branch{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .kids{
+    display:flex;
+    gap:14px;
+    margin-top:22px;
+    position:relative;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .kids::before{
+    content:'';
+    position:absolute;
+    top:-22px;
+    left:0;right:0;
+    height:0;
+  }
+  .kid-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+  }
+  .kid-col::before{
+    content:'';
+    position:absolute;
+    top:-22px;
+    width:1.5px;
+    height:22px;
+    background:var(--line);
+  }
+  .node.small{min-width:130px;padding:8px 12px;}
+
+  .add-btn{
+    margin-top:8px;
+    background:none;
+    border:1px dashed var(--line);
+    color:var(--muted);
+    font-size:11px;
+    font-family:inherit;
+    padding:4px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .add-btn:hover{border-color:var(--cobalt);color:var(--cobalt);}
+
+  .remove-x{
+    position:absolute;
+    top:-7px;
+    left:-7px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--white);
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-size:10px;
+    line-height:14px;
+    text-align:center;
+    cursor:pointer;
+    display:none;
+  }
+  .node:hover .remove-x{display:block;}
+  .remove-x:hover{border-color:var(--vacant);color:var(--vacant);}
+
+  /* summary */
+  .summary{
+    margin-top:52px;
+    background:var(--navy);
+    border-radius:16px;
+    padding:26px 28px;
+    color:#fff;
+    display:flex;
+    gap:32px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .stat{min-width:130px;}
+  .stat .num{font-size:30px;font-weight:800;line-height:1;}
+  .stat .lbl{font-size:12px;color:#aab2cc;margin-top:4px;}
+  .stat.need .num{color:#7ea2ff;}
+  .stat.vac .num{color:#ff8fa3;}
+
+  .target-row{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:#aab2cc;
+  }
+  .target-row input{
+    width:52px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    color:#fff;
+    border-radius:6px;
+    padding:5px 6px;
+    font-family:inherit;
+    font-size:13px;
+    text-align:center;
+  }
+
+  .hint{margin-top:10px;font-size:11.5px;color:var(--muted);}
+  .legend{display:flex;gap:16px;margin-top:16px;font-size:11.5px;color:var(--muted);flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:50%;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>Позиции</h1>
+    <p>Организационная схема сотрудников с доступом к панели. Названия позиций и ФИО можно редактировать — просто нажмите на текст.</p>
+  </div>
+
+  <div class="chart" id="chart">
+
+    <div class="node top">
+      <div class="role" contenteditable="true">Севара Г. (ГБ)</div>
+    </div>
+    <div class="vline"></div>
+
+    <div class="node top">
+      <div class="role" contenteditable="true">Норбек (Зам)</div>
+    </div>
+    <div class="vline"></div>
+
+    <div class="branch-row connectors" id="branches"></div>
+
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#fff;border:1px solid var(--line)"></span> занято</span>
+    <span><span class="dot" style="background:var(--vacant)"></span> вакансия (нет сотрудника)</span>
+  </div>
+
+  <div class="summary">
+    <div class="stat">
+      <div class="num" id="statTotal">0</div>
+      <div class="lbl">Всего позиций</div>
+    </div>
+    <div class="stat">
+      <div class="num" id="statFilled">0</div>
+      <div class="lbl">Занято</div>
+    </div>
+    <div class="stat vac">
+      <div class="num" id="statVacant">0</div>
+      <div class="lbl">Вакансий</div>
+    </div>
+    <div class="stat need">
+      <div class="num" id="statNeeded">0</div>
+      <div class="lbl">Не хватает до цели</div>
+    </div>
+    <div class="target-row">
+      Целевое число позиций:
+      <input type="number" id="targetInput" value="6" min="0">
+    </div>
+  </div>
+  <div class="hint">Целевое число можно изменить — «Не хватает до цели» посчитается автоматически. Наведите на позицию, чтобы удалить её (×), или нажмите «+ позиция», чтобы добавить новую в группу.</div>
+
+</div>
+
+<script>
+const branchesData = [
+  {
+    lead: {role:'Дилфруза', name:'ГБ'},
+    senior: {role:'Старший 1', name:'Влад'},
+    kids: [
+      {role:'Роп', name:'Симха'},
+      {role:'Найм', name:'Нодир'},
+      {role:'Бухгалтер', name:'Вадим'},
+      {role:'Расчётный', name:''}
+    ]
+  },
+  {
+    lead: {role:'Позиция', name:''},
+    senior: {role:'Старший 2', name:''},
+    kids: [
+      {role:'Роп', name:'Мажус'},
+      {role:'Найм', name:'Караматов'},
+      {role:'Бухгалтер', name:'Бик'},
+      {role:'Расчётный', name:''}
+    ]
+  },
+  {
+    lead: {role:'Дениз', name:'Лид'},
+    senior: {role:'Старший 3', name:'Намико'},
+    kids: [
+      {role:'Роп', name:'Афрора'},
+      {role:'Найм', name:''},
+      {role:'Бухгалтер', name:'Шохрух'},
+      {role:'Расчётный', name:'Мохира'}
+    ]
+  }
+];
+
+const branchesEl = document.getElementById('branches');
+
+function makeNode(role, name, small){
+  const node = document.createElement('div');
+  node.className = 'node' + (small ? ' small' : '');
+
+  const x = document.createElement('div');
+  x.className = 'remove-x';
+  x.textContent = '×';
+  x.onclick = () => { node.remove(); updateStats(); };
+  node.appendChild(x);
+
+  const r = document.createElement('div');
+  r.className = 'role';
+  r.contentEditable = true;
+  r.textContent = role;
+  node.appendChild(r);
+
+  const n = document.createElement('div');
+  n.className = 'name';
+  n.contentEditable = true;
+  n.textContent = name;
+  node.appendChild(n);
+
+  function refreshVacant(){
+    if(n.textContent.trim() === ''){
+      node.classList.add('vacant');
+    } else {
+      node.classList.remove('vacant');
+    }
+    updateStats();
+  }
+  n.addEventListener('input', refreshVacant);
+  r.addEventListener('input', updateStats);
+  refreshVacant();
+
+  return node;
+}
+
+branchesData.forEach(b => {
+  const branch = document.createElement('div');
+  branch.className = 'branch';
+
+  branch.appendChild(makeNode(b.lead.role, b.lead.name));
+
+  const vline = document.createElement('div');
+  vline.className = 'vline';
+  branch.appendChild(vline);
+
+  branch.appendChild(makeNode(b.senior.role, b.senior.name));
+
+  const kidsWrap = document.createElement('div');
+  kidsWrap.className = 'kids';
+  b.kids.forEach(k => {
+    const col = document.createElement('div');
+    col.className = 'kid-col';
+    col.appendChild(makeNode(k.role, k.name, true));
+    kidsWrap.appendChild(col);
+  });
+
+  const addCol = document.createElement('div');
+  addCol.className = 'kid-col';
+  addCol.style.justifyContent = 'flex-end';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-btn';
+  addBtn.textContent = '+ позиция';
+  addBtn.onclick = () => {
+    const col = document.createElement('div');
+    col.className = 'kid-col';
+    col.appendChild(makeNode('Новая позиция', ''));
+    kidsWrap.insertBefore(col, addCol);
+    updateStats();
+  };
+  addCol.appendChild(addBtn);
+  kidsWrap.appendChild(addCol);
+
+  branch.appendChild(kidsWrap);
+  branchesEl.appendChild(branch);
+});
+
+function updateStats(){
+  const nodes = document.querySelectorAll('#chart .node');
+  let total = 0, filled = 0;
+  nodes.forEach(node => {
+    total++;
+    const nameEl = node.querySelector('.name');
+    if(nameEl && nameEl.textContent.trim() !== '') filled++;
+  });
+  const vacant = total - filled;
+  const target = parseInt(document.getElementById('targetInput').value) || 0;
+  const needed = Math.max(target - total, 0);
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statFilled').textContent = filled;
+  document.getElementById('statVacant').textContent = vacant;
+  document.getElementById('statNeeded').textContent = needed;
+}
+
+document.getElementById('targetInput').addEventListener('input', updateStats);
+updateStats();
+</script>
+</body>
+</html>
