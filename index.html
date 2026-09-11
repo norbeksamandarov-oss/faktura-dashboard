@@ -3627,50 +3627,58 @@
       <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст (сохраняются в браузере автоматически).</p>
 
       <style>
-        #section-positions .pz-stage{position:relative;padding-top:4px;font-family:'Manrope',sans-serif;}
+        #section-positions .pz-stage{position:relative;padding-top:4px;font-family:'Manrope',sans-serif;animation:pzFadeIn .5s ease both;}
+        @keyframes pzFadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes pzPulseRing{0%{box-shadow:0 0 0 0 rgba(225,29,72,0.35);}70%{box-shadow:0 0 0 7px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+        @keyframes pzPop{0%{transform:scale(.85);opacity:0;}100%{transform:scale(1);opacity:1;}}
         #section-positions .pz-top-center{display:flex;flex-direction:column;align-items:center;}
-        #section-positions .pz-vline{width:1.5px;height:18px;background:#d7dce8;}
-        #section-positions .pz-deniz-floater{position:absolute;top:0;right:0;}
-        #section-positions .pz-dilfruza-floater{position:absolute;top:0;left:0;display:flex;flex-direction:column;align-items:flex-start;width:fit-content;}
-        #section-positions .pz-note{font-size:10px;color:#9aa3b8;text-align:left;margin-top:3px;font-style:italic;max-width:170px;}
+        #section-positions .pz-vline{width:1.5px;height:18px;background:linear-gradient(#c7cfe6,#8fa0d6);}
+        #section-positions .pz-deniz-floater{position:absolute;top:0;right:0;animation:pzFadeIn .5s ease .15s both;}
+        #section-positions .pz-dilfruza-floater{position:absolute;top:0;left:0;display:flex;flex-direction:column;align-items:flex-start;width:fit-content;animation:pzFadeIn .5s ease .1s both;}
         #section-positions .pz-branch-row{display:flex;gap:16px;margin-top:18px;position:relative;}
-        #section-positions .pz-branch-row::before{content:'';position:absolute;top:-18px;left:calc(100%/6);right:calc(100%/6);height:1.5px;background:#d7dce8;}
+        #section-positions .pz-branch-row::before{content:'';position:absolute;top:-18px;left:calc(100%/6);right:calc(100%/6);height:1.5px;background:linear-gradient(90deg,#c7cfe6,#8fa0d6,#c7cfe6);}
         #section-positions .pz-groups{display:flex;gap:16px;margin-top:0;width:100%;}
         #section-positions .pz-group{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;position:relative;}
-        #section-positions .pz-group::before{content:'';position:absolute;top:-18px;width:1.5px;height:18px;background:#d7dce8;}
-        #section-positions .pz-node{background:#fff;border:1.5px solid #d7dce8;border-radius:10px;padding:8px 12px;width:100%;max-width:170px;text-align:center;position:relative;box-shadow:0 1px 2px rgba(11,19,43,0.04);}
-        #section-positions .pz-node.pz-top{border-color:#0B132B;max-width:200px;}
+        #section-positions .pz-group::before{content:'';position:absolute;top:-18px;width:1.5px;height:18px;background:linear-gradient(#c7cfe6,#8fa0d6);}
+        #section-positions .pz-node{background:#fff;border:1.5px solid #dfe4f0;border-radius:12px;padding:8px 12px;width:100%;max-width:170px;text-align:center;position:relative;box-shadow:0 1px 3px rgba(11,19,43,0.06);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;animation:pzPop .35s ease both;}
+        #section-positions .pz-node:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,99,235,0.14);border-color:#a9bdf5;}
+        #section-positions .pz-node.pz-top{border-color:#0B132B;max-width:200px;background:linear-gradient(180deg,#fff 0%,#f5f7ff 100%);}
+        #section-positions .pz-node.pz-top:hover{box-shadow:0 8px 20px rgba(11,19,43,0.18);}
         #section-positions .pz-node .pz-role{font-weight:700;font-size:12.5px;outline:none;border-radius:5px;padding:1px 3px;overflow-wrap:break-word;color:#0B132B;}
         #section-positions .pz-node .pz-role:focus{background:#e8effe;}
         #section-positions .pz-node .pz-name{font-size:13px;font-weight:600;color:#0B132B;margin-top:2px;outline:none;border-radius:5px;padding:1px 3px;min-height:16px;overflow-wrap:break-word;}
         #section-positions .pz-node .pz-name:focus{background:#e8effe;color:#0B132B;}
         #section-positions .pz-node .pz-name:empty:before{content:'нет сотрудника';color:#9aa3b8;font-style:italic;font-weight:400;}
-        #section-positions .pz-node.pz-vacant{border-color:#e11d48;background:#fde8ec;}
-        #section-positions .pz-remove-x{position:absolute;top:-7px;left:-7px;width:15px;height:15px;border-radius:50%;background:#fff;border:1px solid #d7dce8;color:#6b7385;font-size:9px;line-height:13px;text-align:center;cursor:pointer;display:none;}
+        #section-positions .pz-node.pz-vacant{border-color:#e11d48;background:linear-gradient(180deg,#fff 0%,#fdeef1 100%);animation:pzPulseRing 2.4s ease-in-out infinite, pzPop .35s ease both;}
+        #section-positions .pz-remove-x{position:absolute;top:-7px;left:-7px;width:15px;height:15px;border-radius:50%;background:#fff;border:1px solid #d7dce8;color:#6b7385;font-size:9px;line-height:13px;text-align:center;cursor:pointer;display:none;transition:transform .12s ease, border-color .12s ease, color .12s ease;}
         #section-positions .pz-node:hover .pz-remove-x{display:block;}
-        #section-positions .pz-remove-x:hover{border-color:#e11d48;color:#e11d48;}
+        #section-positions .pz-remove-x:hover{border-color:#e11d48;color:#e11d48;transform:scale(1.15);}
         #section-positions .pz-kids{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;width:100%;}
         #section-positions .pz-kids .pz-node{max-width:none;padding:7px 8px;}
         #section-positions .pz-kids .pz-node .pz-role{font-size:11px;}
         #section-positions .pz-kids .pz-node .pz-name{font-size:12px;}
-        #section-positions .pz-add-btn{grid-column:1 / -1;margin-top:2px;background:none;border:1px dashed #d7dce8;color:#6b7385;font-size:10px;font-family:inherit;padding:3px 8px;border-radius:6px;cursor:pointer;}
-        #section-positions .pz-add-btn:hover{border-color:#2563EB;color:#2563EB;}
+        #section-positions .pz-add-btn{grid-column:1 / -1;margin-top:2px;background:none;border:1px dashed #c7cfe6;color:#6b7385;font-size:10px;font-family:inherit;padding:3px 8px;border-radius:6px;cursor:pointer;transition:border-color .15s ease, color .15s ease, background .15s ease;}
+        #section-positions .pz-add-btn:hover{border-color:#2563EB;color:#2563EB;background:#eef3ff;}
         #section-positions .pz-legend{display:flex;gap:16px;margin-top:18px;font-size:11px;color:#6b7385;flex-wrap:wrap;}
         #section-positions .pz-legend span{display:inline-flex;align-items:center;gap:5px;}
         #section-positions .pz-dot{width:9px;height:9px;border-radius:50%;}
-        #section-positions .pz-summary{margin-top:28px;background:#0B132B;border-radius:16px;padding:22px 24px;color:#fff;display:flex;gap:28px;flex-wrap:wrap;align-items:center;}
-        #section-positions .pz-stat{min-width:110px;}
-        #section-positions .pz-stat .pz-num{font-size:26px;font-weight:800;line-height:1;}
+        #section-positions .pz-summary{margin-top:28px;background:linear-gradient(135deg,#0B132B 0%,#152249 55%,#1d3a8f 130%);border-radius:16px;padding:22px 24px;color:#fff;display:flex;gap:28px;flex-wrap:wrap;align-items:center;box-shadow:0 10px 30px rgba(11,19,43,0.25);}
+        #section-positions .pz-stat{min-width:110px;transition:transform .15s ease;}
+        #section-positions .pz-stat:hover{transform:translateY(-2px);}
+        #section-positions .pz-stat .pz-num{font-size:26px;font-weight:800;line-height:1;transition:color .2s ease;}
         #section-positions .pz-stat .pz-lbl{font-size:11px;color:#aab2cc;margin-top:4px;}
         #section-positions .pz-stat.pz-need .pz-num{color:#7ea2ff;}
         #section-positions .pz-stat.pz-vac .pz-num{color:#ff8fa3;}
+        #section-positions .pz-stat .pz-num.pz-bump{animation:pzPop .3s ease;}
         #section-positions .pz-target-row{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#aab2cc;}
-        #section-positions .pz-target-row input{width:48px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;border-radius:6px;padding:5px 6px;font-family:inherit;font-size:12px;text-align:center;}
+        #section-positions .pz-target-row input{width:48px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:#fff;border-radius:6px;padding:5px 6px;font-family:inherit;font-size:12px;text-align:center;transition:border-color .15s ease, background .15s ease;}
+        #section-positions .pz-target-row input:focus{outline:none;border-color:#7ea2ff;background:rgba(255,255,255,0.16);}
         #section-positions .pz-hint{margin-top:10px;font-size:11px;color:#6b7385;}
-        #section-positions .pz-vacancy-panel{margin-top:18px;background:#fde8ec;border:1px solid #f5c2cf;border-radius:14px;padding:16px 20px;}
+        #section-positions .pz-vacancy-panel{margin-top:18px;background:linear-gradient(135deg,#fff0f3 0%,#fde3e9 100%);border:1px solid #f5c2cf;border-radius:14px;padding:16px 20px;animation:pzFadeIn .5s ease .1s both;}
         #section-positions .pz-vacancy-title{font-weight:700;font-size:13px;color:#9c1c3a;margin-bottom:8px;}
         #section-positions .pz-vacancy-list{display:flex;flex-wrap:wrap;gap:8px;}
-        #section-positions .pz-vacancy-item{background:#fff;border:1px solid #f5c2cf;border-radius:8px;padding:5px 10px;font-size:11.5px;color:#0B132B;}
+        #section-positions .pz-vacancy-item{background:#fff;border:1px solid #f5c2cf;border-radius:8px;padding:5px 10px;font-size:11.5px;color:#0B132B;transition:transform .15s ease, box-shadow .15s ease;animation:pzPop .3s ease both;}
+        #section-positions .pz-vacancy-item:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(156,28,58,0.15);}
         #section-positions .pz-vacancy-item span{color:#6b7385;font-size:10.5px;}
         #section-positions .pz-vacancy-empty{font-size:12px;color:#9c1c3a;font-style:italic;}
       </style>
@@ -9158,6 +9166,12 @@ async function recallInvoice(facturaid, btnEl) {
     document.getElementById('pzStatFilled').textContent = filled;
     document.getElementById('pzStatVacant').textContent = vacant;
     document.getElementById('pzStatNeeded').textContent = needed;
+    ['pzStatTotal','pzStatFilled','pzStatVacant','pzStatNeeded'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('pz-bump');
+      void el.offsetWidth;
+      el.classList.add('pz-bump');
+    });
 
     const listEl = document.getElementById('pzVacancyList');
     listEl.innerHTML = '';
@@ -9196,16 +9210,8 @@ async function recallInvoice(facturaid, btnEl) {
     const v2 = document.createElement('div'); v2.className = 'pz-vline'; topCenter.appendChild(v2);
 
     denizWrap.appendChild(pzMakeNode(pzState.deniz, 'pz-top'));
-    const denizNote = document.createElement('div');
-    denizNote.className = 'pz-note';
-    denizNote.textContent = 'отдельно, ни у кого в подчинении';
-    denizWrap.appendChild(denizNote);
 
     dilfruzaWrap.appendChild(pzMakeNode(pzState.dilfruza, 'pz-top'));
-    const dilfruzaNote = document.createElement('div');
-    dilfruzaNote.className = 'pz-note';
-    dilfruzaNote.textContent = 'куратор левой и средней групп, не подчиняется ГБ/Заму';
-    dilfruzaWrap.appendChild(dilfruzaNote);
 
     pzState.groups.forEach(g => {
       const col = document.createElement('div');
