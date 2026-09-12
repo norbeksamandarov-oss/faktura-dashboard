@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royal Motors</title>
+<title>CRB</title>
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -2706,7 +2706,7 @@
       <button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button>
     </form>
     <div id="loginError"></div>
-    <div class="login-footer">Faktura · Внутренняя система</div>
+    <div class="login-footer">CRB · Внутренняя система</div>
   </div>
 </div>
 
@@ -2714,12 +2714,12 @@
 <div id="app">
   <header class="topbar">
     <div class="brand">
-      <div class="mark" id="brandMark">RM</div>
+      <div class="mark" id="brandMark">CRB</div>
       <div id="crbWordmark" style="display:none;background:#0B132B;border-radius:12px;padding:10px 20px;line-height:1;">
         <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:32px;letter-spacing:-0.02em;color:#fff;">CRB<span style="color:#2563EB;">.</span></span>
       </div>
       <div class="brand-text">
-        <div class="title" id="brandTitle">Royal Motors</div>
+        <div class="title" id="brandTitle">CRB</div>
         <div class="subtitle" id="brandSubtitle">Счета-фактуры · онлайн</div>
       </div>
     </div>
@@ -4371,7 +4371,7 @@ function applyBrandTheme() {
   if (markEl) markEl.style.display = isBrandUser ? "none" : "";
   if (titleEl) titleEl.style.display = isBrandUser ? "none" : "";
   if (wordmarkEl) wordmarkEl.style.display = isBrandUser ? "block" : "none";
-  if (titleEl && !isBrandUser) titleEl.textContent = "Royal Motors";
+  if (titleEl && !isBrandUser) titleEl.textContent = "CRB";
   if (subtitleEl) subtitleEl.textContent = isBrandUser ? "CONTROLLING SYSTEM" : "Счета-фактуры · онлайн";
   if (greetingEl) greetingEl.style.display = isBrandUser ? "block" : "none";
   if (greetingTitleEl && isBrandUser) {
