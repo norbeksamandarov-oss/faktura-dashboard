@@ -4830,7 +4830,107 @@ function showSection(name) {
   if (name === "numbering") {
     loadNumberingList();
   }
+  requestStickyHeaderUpdate();
 }
+
+/* ============================================================
+   JADVAL SARLAVHASINI "MUZLATISH" - CSS position:sticky ba'zi
+   ota-elementlarda (backdrop-filter, contain, transform va h.k.)
+   ishlamay qolishi mumkin bo'lgani uchun, buni JS orqali qo'lda
+   amalga oshiramiz: sahifa skroll qilinganda, jadval sarlavhasining
+   ANIQ nusxasini "position: fixed" holda ekran tepasiga qo'yamiz,
+   ustunlar kengligini asl jadvaldan nusxalab moslashtiramiz.
+   ============================================================ */
+const _stickyClones = new Map(); // <table> -> {wrap, table}
+
+function _stickyStripIds(el) {
+  el.removeAttribute("id");
+  Array.from(el.children || []).forEach(_stickyStripIds);
+}
+
+function _stickyGetActiveTables() {
+  const section = document.querySelector(".content-section.active");
+  if (!section) return [];
+  return Array.from(section.querySelectorAll(".table-wrap > table.invoices"))
+    .filter(t => t.querySelector("thead") && t.offsetParent !== null);
+}
+
+function _stickyEnsureClone(table) {
+  let entry = _stickyClones.get(table);
+  if (entry && document.body.contains(entry.wrap)) return entry;
+  const wrap = document.createElement("div");
+  wrap.className = "js-sticky-thead-wrap";
+  wrap.style.cssText = "position:fixed; top:0; left:0; overflow:hidden; z-index:60; display:none; pointer-events:none; border-radius:10px 10px 0 0; box-shadow:0 6px 14px -8px rgba(11,19,43,0.35);";
+  const cloneTable = document.createElement("table");
+  cloneTable.className = table.className;
+  cloneTable.style.cssText = "border-collapse:separate; border-spacing:0; margin:0; table-layout:fixed;";
+  const theadClone = table.querySelector("thead").cloneNode(true);
+  _stickyStripIds(theadClone);
+  cloneTable.appendChild(theadClone);
+  wrap.appendChild(cloneTable);
+  document.body.appendChild(wrap);
+  entry = { wrap, table: cloneTable };
+  _stickyClones.set(table, entry);
+  return entry;
+}
+
+function _stickySyncWidths(table, cloneTable) {
+  const liveThs = table.querySelectorAll("thead > tr > th");
+  const cloneThs = cloneTable.querySelectorAll("thead > tr > th");
+  liveThs.forEach((th, i) => {
+    if (cloneThs[i]) cloneThs[i].style.width = th.getBoundingClientRect().width + "px";
+  });
+}
+
+function _stickyUpdate() {
+  const tables = _stickyGetActiveTables();
+  _stickyClones.forEach((entry, table) => {
+    if (!tables.includes(table)) entry.wrap.style.display = "none";
+  });
+  tables.forEach(table => {
+    const wrapEl = table.closest(".table-wrap");
+    if (!wrapEl) return;
+    const thead = table.querySelector("thead");
+    const wrapRect = wrapEl.getBoundingClientRect();
+    const theadHeight = thead.getBoundingClientRect().height;
+    const entry = _stickyEnsureClone(table);
+    const shouldShow = wrapRect.top < 0 && wrapRect.bottom > theadHeight;
+    if (shouldShow) {
+      entry.wrap.style.display = "block";
+      entry.wrap.style.left = wrapRect.left + "px";
+      entry.wrap.style.width = wrapRect.width + "px";
+      entry.wrap.scrollLeft = wrapEl.scrollLeft;
+      _stickySyncWidths(table, entry.table);
+    } else {
+      entry.wrap.style.display = "none";
+    }
+  });
+}
+
+let _stickyTicking = false;
+function requestStickyHeaderUpdate() {
+  if (_stickyTicking) return;
+  _stickyTicking = true;
+  requestAnimationFrame(() => { _stickyUpdate(); _stickyTicking = false; });
+}
+
+function initStickyTableHeaders() {
+  window.addEventListener("scroll", requestStickyHeaderUpdate, { passive: true });
+  window.addEventListener("resize", requestStickyHeaderUpdate);
+  document.addEventListener("scroll", (e) => {
+    if (e.target && e.target.classList && e.target.classList.contains("table-wrap")) {
+      const table = e.target.querySelector("table.invoices");
+      const entry = table && _stickyClones.get(table);
+      if (entry) entry.wrap.scrollLeft = e.target.scrollLeft;
+    }
+  }, true);
+  const contentArea = document.querySelector(".content-area");
+  if (contentArea) {
+    new MutationObserver(() => requestStickyHeaderUpdate()).observe(contentArea, { childList: true, subtree: true });
+  }
+  requestStickyHeaderUpdate();
+}
+document.addEventListener("DOMContentLoaded", initStickyTableHeaders);
 
 /* ============================================================
    НУМЕРАЦИЯ - "Получить номер" bo'limi (barcha xodimlarga ochiq).
