@@ -5050,6 +5050,17 @@ async function onLoggedIn(forcePasswordChange) {
   applyBrandTheme();
   applyRolePermissions(currentRole);
 
+  // MUHIM: majburiy parol o'zgartirish oynasi ENG BIRINCHI, boshqa hamma
+  // narsadan OLDIN ko'rsatiladi - agar pastdagi ma'lumot yuklashlardan
+  // (loadAllData va h.k.) BIRORTASI xato bersa, funksiya shu yerda
+  // to'xtab qolishi mumkin va oyna HECH QACHON chiqmay qolardi (foydalanuvchi
+  // buni sezmasdan, standart boshlang'ich parol bilan qolib ketardi).
+  if (forcePasswordChange) {
+    const fpModal = document.getElementById("forcePasswordModal");
+    fpModal.style.display = "flex";
+    requestAnimationFrame(() => fpModal.classList.add("open"));
+  }
+
   // Расчётный бухгалтер (role: "salary") - boshqa hech qanday ma'lumot
   // (счета, договорlar va h.k.) yuklanmasin, faqat Зарплата.
   if (currentRole === "salary") {
@@ -5089,12 +5100,6 @@ async function onLoggedIn(forcePasswordChange) {
     await pollSuggestionsBackground();
     if (suggestionsBadgeTimer) clearInterval(suggestionsBadgeTimer);
     suggestionsBadgeTimer = setInterval(pollSuggestionsBackground, SALARY_BADGE_POLL_MS);
-  }
-
-  if (forcePasswordChange) {
-    const fpModal = document.getElementById("forcePasswordModal");
-    fpModal.style.display = "flex";
-    requestAnimationFrame(() => fpModal.classList.add("open"));
   }
 }
 
