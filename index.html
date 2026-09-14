@@ -5456,7 +5456,8 @@ async function sendWriteEmp() {
    audit-log bilan) - Google Sheets API'ga endi TO'G'RIDAN-TO'G'RI
    murojaat qilinmaydi, faqat shu backend orqali.
    ============================================================ */
-async function apiCall(action, params, skipToken) {
+async function apiCall(action, params, skipToken, _retryCount) {
+  _retryCount = _retryCount || 0;
   const body = Object.assign({ action }, params || {});
   if (!skipToken) body.token = authToken;
 
@@ -5491,18 +5492,22 @@ async function apiCall(action, params, skipToken) {
   const data = await res.json();
   if (data && data.error) {
     if (data.error === "AUTH_REQUIRED") {
-      // MUHIM: login qilingandan so'ng ILK bir necha soniyada kelgan
-      // "AUTH_REQUIRED" xatosiga DARHOL ishonmaymiz - server tomonida
-      // yangi token hali to'liq saqlanib ulgurmagan bo'lishi mumkin
-      // (real foydalanishda bir necha marta kuzatilgan: login
-      // muvaffaqiyatli bo'lib, DARHOL qayta login ekraniga otib
-      // yuborilardi). Shu qisqa "imtiyoz" oynasida - 1 marta qisqa
-      // kutib, SO'ROVNI QAYTA yuboramiz; faqat shundan keyin ham
-      // AUTH_REQUIRED qaytsa, chindan sessiya tugagan deb hisoblaymiz.
-      const graceMs = 4000;
-      if (!skipToken && justLoggedInAt && (Date.now() - justLoggedInAt) < graceMs) {
-        await new Promise(r => setTimeout(r, 800));
-        return apiCall(action, params, skipToken);
+      // MUHIM: bitta AUTH_REQUIRED javobiga DARHOL ishonmaymiz va
+      // foydalanuvchini shu zahoti login ekraniga otib yubormaymiz -
+      // Apps Script'ning token/sessiya keshi (CacheService) ba'zan
+      // bir necha yuz millisekund KECHIKISHI mumkin (login qilingandan
+      // DARHOL keyin - yangi token hali "yozilib ulgurmagan"), YOKI
+      // oddiy vaqtinchalik "kutilmagan" javob (masalan avto-yangilanish
+      // fonda ishlayotganda) bo'lishi mumkin - bular HAQIQIY sessiya
+      // tugashi emas. Shuning uchun: qisqa oraliqlar bilan 3 martagacha
+      // qayta so'raymiz, FAQAT shundan keyin ham AUTH_REQUIRED qaytsa -
+      // chindan sessiya tugagan deb hisoblab, login ekraniga chiqaramiz.
+      // Bu login qilingandan keyin ham, keyinchalik oddiy foydalanish
+      // paytida ham (avto-yangilanish fonida) bab-baravar ishlaydi.
+      const MAX_AUTH_RETRIES = 3;
+      if (!skipToken && _retryCount < MAX_AUTH_RETRIES) {
+        await new Promise(r => setTimeout(r, 600 * (_retryCount + 1)));
+        return apiCall(action, params, skipToken, _retryCount + 1);
       }
       clearSession();
       showLoginScreen();
