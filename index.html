@@ -4845,7 +4845,7 @@ function showSection(name) {
   if (name === "taxes" && currentRole === "admin") {
     initTaxesSection();
   }
-  if (name === "gtdimport" && currentRole === "admin") {
+  if (name === "gtdimport") {
     loadGtdItems();
   }
   if (name === "numbering") {
@@ -5300,14 +5300,18 @@ async function onLoggedIn(forcePasswordChange) {
     }, SALARY_BADGE_POLL_MS);
   }
 
-  // ГТД ma'lumotlari ham faqat admin ko'radi - shuning uchun UMUMIY
-  // avtomatik yangilanish tsikliga qo'shilmaydi, alohida fon jarayonida
-  // yuklanadi (Зарплата kabi) - bo'limga kirganda DARHOL tayyor turadi.
-  if (currentRole === "admin") {
+  // ГТД bo'limi endi HAMMA xodimlarga ochiq (avval faqat admin ko'rar
+  // edi) - shuning uchun UMUMIY avtomatik yangilanish tsikliga
+  // qo'shilmaydi (o'zining alohida fon jarayonida ishlaydi), lekin
+  // endi rol tekshiruvisiz (faqat maxsus "Расчётный бухгалтер" rolidan
+  // tashqari - u baribir boshqa hech qanday bo'limni ko'rmaydi).
+  if (currentRole !== "salary") {
     await pollGtdBackground();
     if (gtdBadgeTimer) clearInterval(gtdBadgeTimer);
     gtdBadgeTimer = setInterval(pollGtdBackground, SALARY_BADGE_POLL_MS);
+  }
 
+  if (currentRole === "admin") {
     await pollSuggestionsBackground();
     if (suggestionsBadgeTimer) clearInterval(suggestionsBadgeTimer);
     suggestionsBadgeTimer = setInterval(pollSuggestionsBackground, SALARY_BADGE_POLL_MS);
@@ -5416,7 +5420,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="gtdimport"], .nav-item[data-section="positions"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -5432,7 +5436,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features", "taxes", "gtdimport", "positions"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes", "positions"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
