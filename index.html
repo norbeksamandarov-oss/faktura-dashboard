@@ -1446,6 +1446,32 @@
   .filter-field input:focus, .filter-field select:focus {
     outline: none; border-color: var(--navy-text); box-shadow: 0 0 0 3px rgba(30,39,97,0.1);
   }
+  .filter-field button {
+    padding: 9px 16px;
+    border: 1px solid var(--navy-text);
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Satoshi';
+    background: var(--navy-text);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background .15s ease, opacity .15s ease, transform .1s ease;
+  }
+  .filter-field button:hover { opacity: 0.88; }
+  .filter-field button:active { transform: scale(0.97); }
+  /* "Сбросить фильтры" kabi ikkinchi darajali amallar uchun - agar
+     kelajakda shu klass qo'shilsa, asosiy (to'q) tugmadan farqlanadi. */
+  .filter-field button.secondary-btn {
+    background: var(--card);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .filter-field button.secondary-btn:hover { background: var(--ice-soft); opacity: 1; }
   #searchInput { min-width: 190px; }
   #buyerFilter { min-width: 170px; }
   #contragentFilter { min-width: 170px; }
