@@ -42,6 +42,7 @@
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -580,6 +581,23 @@
     position: relative;
     overflow: hidden;
   }
+  #loginGalleryCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 1.1s ease;
+  }
+  #loginGalleryCanvas.ready { opacity: 1; }
+  /* Galereya fon (3D) yoqilganda, eski aurora "blob" nurlari ustma-ust
+     tushib g'alizlashmasligi uchun ancha xiralashtiramiz - butunlay
+     o'chirmaymiz, chunki WebGL ishlamagan qurilmalarda ular yagona
+     fon bo'lib qoladi. */
+  #loginScreen:has(#loginGalleryCanvas.ready) .aurora-blob { opacity: 0.25; }
   #loginScreen .aurora-blob {
     position: absolute;
     border-radius: 50%;
@@ -2559,6 +2577,7 @@
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="loginScreen">
+  <canvas id="loginGalleryCanvas"></canvas>
   <div class="aurora-blob b1"></div>
   <div class="aurora-blob b2"></div>
   <div class="aurora-blob b3"></div>
@@ -4935,6 +4954,198 @@ function initStickyTableHeaders() {
 document.addEventListener("DOMContentLoaded", initStickyTableHeaders);
 
 /* ============================================================
+   LOGIN GALEREYASI (3D FON) - Three.js orqali. Sichqonchani
+   siljitish bilan atrofga qaraladi (parallax), sichqoncha
+   g'ildiragi bilan galereya bo'ylab "yuriladi". WebGL
+   qo'llab-quvvatlanmasa yoki kutubxona yuklanmasa (masalan CDN
+   bloklangan bo'lsa), jim tarzda o'tkazib yuboriladi - eski
+   oddiy fon (aurora nurlar) o'z holicha qoladi, hech narsa
+   buzilmaydi.
+   ============================================================ */
+function initLoginGallery() {
+  const canvas = document.getElementById("loginGalleryCanvas");
+  if (!canvas || typeof THREE === "undefined") return;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "low-power" });
+  } catch (e) {
+    return; // WebGL yo'q - jim o'tamiz
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05060c);
+  scene.fog = new THREE.Fog(0x05060c, 8, 34);
+
+  const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 100);
+  camera.position.set(0, 1.55, 6);
+
+  scene.add(new THREE.AmbientLight(0x24304f, 1.1));
+  const hemi = new THREE.HemisphereLight(0x33406a, 0x05050a, 0.6);
+  scene.add(hemi);
+
+  // ---- Yo'lak (pol, shift, devorlar) ----
+  const HALL_LEN = 64, HALL_W = 6.4, HALL_H = 5;
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x0e1220, roughness: 0.85, metalness: 0.1 });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_LEN), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(0, 0, -HALL_LEN / 2 + 6);
+  scene.add(floor);
+
+  const ceilMat = new THREE.MeshStandardMaterial({ color: 0x0a0d18, roughness: 1 });
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(HALL_W, HALL_LEN), ceilMat);
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.set(0, HALL_H, -HALL_LEN / 2 + 6);
+  scene.add(ceil);
+
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x141a2c, roughness: 0.95 });
+  [-1, 1].forEach(side => {
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(HALL_LEN, HALL_H), wallMat);
+    wall.position.set(side * HALL_W / 2, HALL_H / 2, -HALL_LEN / 2 + 6);
+    wall.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+    scene.add(wall);
+  });
+
+  // ---- Rasmlar uchun "tual" teksturasi (tayyor rasm fayli kerak
+  // emas - abstrakt gradient + siluet shakllar generatsiya qilinadi,
+  // shunda har bir "asar" boshqacha ko'rinadi) ----
+  const PALETTES = [
+    ["#1b2a5e", "#5673c7", "#e8c766"],
+    ["#4a1f3d", "#a13e63", "#f0a45c"],
+    ["#0f3d3a", "#2f8f7a", "#d9e5a0"],
+    ["#2a1b4a", "#7a4fb0", "#f2d9c0"],
+    ["#3a2210", "#b56a2e", "#f5d599"],
+    ["#0f2440", "#2f6fa8", "#cfe8ee"],
+  ];
+  function makePaintingTexture(seed) {
+    const c = document.createElement("canvas");
+    c.width = 256; c.height = 192;
+    const ctx = c.getContext("2d");
+    const pal = PALETTES[seed % PALETTES.length];
+    const grad = ctx.createLinearGradient(0, 0, 256, 192);
+    grad.addColorStop(0, pal[0]); grad.addColorStop(0.55, pal[1]); grad.addColorStop(1, pal[2]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 192);
+    // Mavhum "siluetlar" - har bir asar farqli bo'lishi uchun oddiy tasodifiy shakllar
+    let rnd = seed * 9301 + 49297;
+    const rand = () => { rnd = (rnd * 233280 + 12345) % 1000000; return rnd / 1000000; };
+    ctx.globalAlpha = 0.5;
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = pal[(i + 1) % 3];
+      ctx.beginPath();
+      const cx = rand() * 256, cy = rand() * 192, r = 22 + rand() * 60;
+      ctx.ellipse(cx, cy, r, r * (0.4 + rand() * 0.6), rand() * Math.PI, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a2118, roughness: 0.6, metalness: 0.35 });
+  const PAINTINGS_PER_SIDE = 7, SPACING = 8;
+  [-1, 1].forEach(side => {
+    for (let i = 0; i < PAINTINGS_PER_SIDE; i++) {
+      const z = 2 - i * SPACING;
+      const seed = i * 2 + (side > 0 ? 1 : 0);
+      const w = 1.9, h = 1.35;
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.18, h + 0.18, 0.08), frameMat);
+      const canvasMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshStandardMaterial({ map: makePaintingTexture(seed), roughness: 0.9 })
+      );
+      const x = side * (HALL_W / 2 - 0.06);
+      frame.position.set(x, 1.75, z);
+      frame.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+      canvasMesh.position.set(x - side * 0.05, 1.75, z);
+      canvasMesh.rotation.y = frame.rotation.y;
+      scene.add(frame, canvasMesh);
+
+      const spot = new THREE.PointLight(0xffdfb0, 5.5, 6.5, 2);
+      spot.position.set(x - side * 0.9, 3.1, z);
+      scene.add(spot);
+    }
+  });
+
+  // ---- Kamera boshqaruvi: sichqoncha bilan qarash + g'ildirak bilan yurish ----
+  let mouseX = 0, mouseY = 0, targetYaw = 0, targetPitch = 0, curYaw = 0, curPitch = 0;
+  let walkZ = 6, targetWalkZ = 6;
+  const totalDepth = HALL_LEN - 10;
+
+  function onMouseMove(e) {
+    const r = canvas.getBoundingClientRect();
+    mouseX = ((e.clientX - r.left) / r.width) * 2 - 1;
+    mouseY = ((e.clientY - r.top) / r.height) * 2 - 1;
+    targetYaw = -mouseX * 0.45;
+    targetPitch = -mouseY * 0.16;
+  }
+  function onWheel(e) {
+    e.preventDefault();
+    targetWalkZ -= e.deltaY * 0.012;
+    const minZ = 6 - totalDepth, maxZ = 6;
+    targetWalkZ = Math.max(minZ, Math.min(maxZ, targetWalkZ));
+  }
+  document.getElementById("loginScreen").addEventListener("mousemove", onMouseMove);
+  canvas.addEventListener("wheel", onWheel, { passive: false });
+
+  let raf = null, autoDrift = true, startTime = performance.now();
+  function animate(now) {
+    const t = (now - startTime) / 1000;
+    // Foydalanuvchi hali g'ildirakni ishlatmagan bo'lsa - kamera avtomatik,
+    // sekin ravishda galereya bo'ylab "yurib" turadi (videodagi kabi).
+    if (autoDrift) {
+      targetWalkZ = 6 - ((t * 0.55) % totalDepth);
+    }
+    walkZ += (targetWalkZ - walkZ) * 0.04;
+    curYaw += (targetYaw - curYaw) * 0.045;
+    curPitch += (targetPitch - curPitch) * 0.045;
+
+    camera.position.z = walkZ;
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = curYaw;
+    camera.rotation.x = curPitch;
+
+    renderer.render(scene, camera);
+    raf = requestAnimationFrame(animate);
+  }
+
+  function onWheelStopsAutoDrift() { autoDrift = false; }
+  canvas.addEventListener("wheel", onWheelStopsAutoDrift, { passive: true });
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  resize();
+  raf = requestAnimationFrame(animate);
+  canvas.classList.add("ready");
+
+  // Login ekrani yashirilganda (muvaffaqiyatli kirilganda) - render
+  // tsiklini to'xtatamiz, aks holda fonda foydasiz GPU sarflanaveradi.
+  const loginScreenEl = document.getElementById("loginScreen");
+  const stopObserver = new MutationObserver(() => {
+    if (loginScreenEl.style.display === "none") {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      stopObserver.disconnect();
+    }
+  });
+  stopObserver.observe(loginScreenEl, { attributes: true, attributeFilter: ["style"] });
+}
+document.addEventListener("DOMContentLoaded", () => {
+  // Juda tor ekranlarda (telefon) 3D sahna resurs talab qiladi va
+  // kichik ekranda barybir yaxshi ko'rinmaydi - shunday holatlarda
+  // jim o'tkazib yuboramiz, oddiy fon qoladi.
+  if (window.innerWidth >= 480) {
+    try { initLoginGallery(); } catch (e) { /* jim - fon avvalgidek qoladi */ }
+  }
+});
+
+/* ============================================================
    НУМЕРАЦИЯ - "Получить номер" bo'limi (barcha xodimlarga ochiq).
    ============================================================ */
 function onNumberingTypeChange() {
@@ -5561,17 +5772,17 @@ async function loadAllData(silent) {
     // tushmagan bo'lsa) - backend shunchaki bo'sh massiv qaytaradi, xato bermaydi.
     const [empRaw, invRaw, histRaw, regRaw, dogovorRaw, dogovorRealRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqPostRaw, otherreqRealRaw] = await sheetsGetBatch([
       `'${SHEET_EMPLOYEES}'!A2:E500`,
-      `'${SHEET_INVOICES}'!A2:U500`,
+      `'${SHEET_INVOICES}'!A2:U5000`,
       `'${SHEET_HISTORY}'!A2:L3000`,
       `'${SHEET_REGISTRATIONS}'!A2:F500`,
-      `'${SHEET_DOGOVOR}'!A2:L500`,
-      `'${SHEET_DOGOVOR_REAL}'!A2:K500`,
-      `'${SHEET_DOVERENNOST}'!A2:K500`,
-      `'${SHEET_BANK}'!A2:L500`,
-      `'${SHEET_REALSCHET}'!A2:L500`,
-      `'${SHEET_ZAKAZNARYAD}'!A2:L500`,
-      `'${SHEET_OTHERREQ_POST}'!A2:M500`,
-      `'${SHEET_OTHERREQ_REAL}'!A2:M500`,
+      `'${SHEET_DOGOVOR}'!A2:L3000`,
+      `'${SHEET_DOGOVOR_REAL}'!A2:K3000`,
+      `'${SHEET_DOVERENNOST}'!A2:K3000`,
+      `'${SHEET_BANK}'!A2:L3000`,
+      `'${SHEET_REALSCHET}'!A2:L3000`,
+      `'${SHEET_ZAKAZNARYAD}'!A2:L3000`,
+      `'${SHEET_OTHERREQ_POST}'!A2:M3000`,
+      `'${SHEET_OTHERREQ_REAL}'!A2:M3000`,
     ]);
 
     allEmployeesRaw = empRaw
