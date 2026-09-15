@@ -1200,16 +1200,27 @@
 
   /* ---------- "Поступления" guruh menyusi ---------- */
   .nav-group-toggle { width: 100%; }
-  .nav-group-chevron { margin-left: auto; flex-shrink: 0; transition: transform 0.2s; }
+  .nav-group-chevron { margin-left: auto; flex-shrink: 0; transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .nav-group-toggle.expanded .nav-group-chevron { transform: rotate(180deg); }
+  .nav-group-toggle.expanded:not(.active) { background: rgba(255,255,255,0.06); }
   .nav-group-toggle .nav-badge { margin-left: 6px; }
   .nav-subgroup {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.25s ease;
+    transition: max-height 0.32s cubic-bezier(0.34, 1.2, 0.64, 1);
   }
   .nav-subgroup.expanded { max-height: 400px; }
-  .nav-sub-item { padding-left: 44px; font-size: 12.5px; }
+  .nav-sub-item { padding-left: 44px; font-size: 12.5px; position: relative; }
+  .nav-sub-item::before {
+    content: "";
+    position: absolute;
+    left: 26px; top: 50%;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+    transform: translateY(-50%);
+  }
   .sidebar.collapsed .nav-subgroup { display: none; }
   .sidebar.collapsed .nav-group-chevron { display: none; }
   .sidebar.collapsed .nav-group-toggle .nav-badge { display: none !important; }
@@ -2079,13 +2090,32 @@
     stroke: #EAF0FF;
   }
   [data-brand="crb"] .nav-item:active { transform: translateX(2px) scale(0.98); }
-  [data-brand="crb"] .nav-item.active {
-    background: linear-gradient(135deg, #0B132B, #2563EB) !important;
-    color: #fff !important;
-    font-weight: 800;
+  /* Faol menyu punktini boshqa rangli quti bilan "birma-bir" almashtirish
+     o'rniga - BITTA umumiy pastki qatlam (pill) foydalanuvchi boshqa
+     bo'limga o'tganda ESKI joyidan YANGI joyiga SILLIQ "sirg'anib"
+     boradi (JS orqali pozitsiyasi hisoblanadi, pastda updateNavActivePill). */
+  [data-brand="crb"] .sidebar { position: relative; }
+  [data-brand="crb"] .nav-item { position: relative; z-index: 1; background: transparent !important; box-shadow: none !important; }
+  [data-brand="crb"] .nav-active-pill {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 46px;
+    top: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0B132B, #2563EB);
     box-shadow: 0 6px 16px -8px rgba(37,99,235,0.55);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
   }
+  [data-brand="crb"] .sidebar.collapsed .nav-active-pill { left: 0; right: 0; border-radius: 0; }
+  [data-brand="crb"] .nav-item.active { color: #fff !important; font-weight: 800; }
   [data-brand="crb"] .nav-item.active .nav-icon svg { stroke: #fff; }
+  [data-brand="crb"] .nav-sub-item.active {
+    background: rgba(37,99,235,0.35) !important;
+    border-radius: 8px;
+  }
   [data-brand="crb"] .nav-icon svg { transition: transform 0.25s var(--ease-snap); }
   [data-brand="crb"] .nav-item:hover .nav-icon svg { transform: scale(1.12); }
   [data-brand="crb"] .sidebar { padding-top: 20px; }
@@ -2790,6 +2820,7 @@
 
   <div class="app-body">
     <nav class="sidebar" id="sidebarNav">
+      <div class="nav-active-pill" id="navActivePill"></div>
       <button id="sidebarToggleBtn" title="Свернуть/развернуть меню" onclick="toggleSidebar()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -4370,6 +4401,13 @@ async function pollSalaryDataBackground() {
   }
 }
 let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
+// Xodimni faol/nofaol qilgandan keyin, Google Sheets'ga yozilgan
+// o'zgarish DARHOL o'qishda ko'rinmasligi mumkin (bir necha soniyalik
+// kechikish) - shu oraliqda fon avtomatik yangilanishi ESKI qiymatni
+// qayta o'qib, foydalanuvchining o'zgartirishini "qaytarib qo'yishi"
+// mumkin edi. Shuning uchun har bir yaqinda o'zgartirilgan xodim uchun
+// 15 soniyagacha MAHALLIY qiymatni ustun qo'yamiz.
+let recentEmployeeActiveOverrides = new Map(); // rowIndex -> {active, until}
 let isLoading = false;      // защита от наложения параллельных запросов
 
 // MUHIM: admin biror amalni (masalan "Одобрить") bosgan payt, fondagi
@@ -4597,6 +4635,26 @@ function toggleSidebar() {
   // menyu elementi) davomida blur vaqtincha o'chiriladi.
   sidebar.classList.add("sidebar-animating");
   setTimeout(() => sidebar.classList.remove("sidebar-animating"), 320);
+  requestAnimationFrame(updateNavActivePill);
+  setTimeout(updateNavActivePill, 300);
+}
+
+/* Faol menyu bandini ko'rsatuvchi "pill" - o'zi mustaqil element
+   bo'lgani uchun, foydalanuvchi bo'limni almashtirganda ESKI joyidan
+   YANGI joyiga sirg'anib boradi (CSS transition, yuqorida). Bu funksiya
+   faqat uning ANIQ koordinatalarini (top/height) hisoblab qo'yadi. */
+function updateNavActivePill() {
+  const pill = document.getElementById("navActivePill");
+  const sidebar = document.getElementById("sidebarNav");
+  if (!pill || !sidebar) return;
+  const active = sidebar.querySelector(":scope > .nav-item.active, :scope > .nav-group-toggle.active");
+  if (!active || active.offsetParent === null) {
+    pill.style.opacity = "0";
+    return;
+  }
+  pill.style.top = active.offsetTop + "px";
+  pill.style.height = active.offsetHeight + "px";
+  pill.style.opacity = "1";
 }
 
 function restoreSidebarState() {
@@ -4900,6 +4958,7 @@ function showSection(name) {
     loadNumberingList();
   }
   requestStickyHeaderUpdate();
+  updateNavActivePill();
 }
 
 /* ============================================================
@@ -5308,6 +5367,8 @@ async function onLoggedIn(forcePasswordChange) {
   document.getElementById("userInfo").innerHTML = `<span>${escapeHtml(currentUserName || currentUsername || "Пользователь")}</span>`;
   applyBrandTheme();
   applyRolePermissions(currentRole);
+  updateNavActivePill();
+  window.addEventListener("resize", updateNavActivePill);
 
   // MUHIM: majburiy parol o'zgartirish oynasi ENG BIRINCHI, boshqa hamma
   // narsadan OLDIN ko'rsatiladi - agar pastdagi ma'lumot yuklashlardan
@@ -5847,6 +5908,15 @@ async function loadAllData(silent) {
         registeredAt: r[3] || "",
         active: String(r[4] || "TRUE").trim().toUpperCase() !== "FALSE"
       }));
+    // Yaqinda (oxirgi 15 soniya ichida) faol/nofaol qilingan xodimlar
+    // uchun - agar Sheets hali eski qiymatni qaytarayotgan bo'lsa ham,
+    // foydalanuvchi ko'rgan o'zgarishni saqlab qolamiz.
+    const nowTs = Date.now();
+    recentEmployeeActiveOverrides.forEach((ov, rowIdx) => {
+      if (ov.until < nowTs) { recentEmployeeActiveOverrides.delete(rowIdx); return; }
+      const emp = allEmployeesRaw.find(e => e.rowIndex === rowIdx);
+      if (emp) emp.active = ov.active;
+    });
     // Faqat FAOL xodimlar - "Ответственный" tanlash/autocomplete uchun
     // (deaktiv qilingan xodim tanlab bo'lmasin, bot baribir rad etadi).
     employees = allEmployeesRaw.filter(e => e.active).map(e => ({ chatId: e.chatId, username: e.username, name: e.name }));
@@ -7414,6 +7484,7 @@ async function updateEmployeeActive(rowIndex, checked, checkboxEl) {
   checkboxEl.disabled = true;
   try {
     await sheetsUpdateCell(range, checked);
+    recentEmployeeActiveOverrides.set(rowIndex, { active: checked, until: Date.now() + 15000 });
     const emp = allEmployeesRaw.find(e => e.rowIndex === rowIndex);
     if (emp) emp.active = checked;
     renderEmployeesManage();
