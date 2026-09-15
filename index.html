@@ -3999,6 +3999,19 @@
           <label><i class='ti ti-search' aria-hidden='true'></i> Поиск (товар, импортёр)</label>
           <input type="text" id="gtdSearchFilter" placeholder="Поиск..." oninput="renderGtdTable()">
         </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
+          <button id="gtdExportBtn" onclick="exportGtdExcel()"><i class='ti ti-download' aria-hidden='true'></i> Экспорт в Excel</button>
+        </div>
+      </div>
+      <div class="toolbar" id="gtdSummaryBar" style="gap:24px; flex-wrap:wrap;">
+        <div class="filter-field"><label>Фактур. стоимость</label><div id="gtdSumInvoice" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>Таможен. стоимость</label><div id="gtdSumCustoms" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>Сборы</label><div id="gtdSumFee" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>Пошлина</label><div id="gtdSumDuty" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>НДС</label><div id="gtdSumVat" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>Акциз</label><div id="gtdSumExcise" style="font-weight:600;">0</div></div>
+        <div class="filter-field"><label>Спец.защ.пош.</label><div id="gtdSumSpecial" style="font-weight:600;">0</div></div>
       </div>
       <div class="table-wrap">
         <table class="invoices" id="gtdTable">
@@ -4788,6 +4801,15 @@ function exportBankExcel() {
   const headers = ["Организация", "Тип", "Детали", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
   const rows = lastFilteredBank.map(r => [r.org, r.type, r.details, r.employeeName, r.approverName, r.requestedAt, r.status, r.comment, r.doneAt]);
   exportTableToExcel(headers, rows, "bank");
+}
+
+function exportGtdExcel() {
+  const headers = ["№ декларации", "Организация", "Контрагент", "Товар", "Валюта", "Курс", "Фактур. стоимость", "Таможен. стоимость", "Сборы", "Пошлина", "НДС", "Акциз", "Спец.защ.пош."];
+  const rows = lastFilteredGtd.map(r => [
+    r["СправочныйНомер"], r["Импортер"], r["Экспортер"], r["ОписаниеТовара"], r["Валюта"], r["Курс"],
+    r["ФактурнаяСтоимость"], r["ТаможеннаяСтоимость"], r["Сборы_10"], r["Пошлина_20"], r["НДС_29"], r["Акциз_27"], r["СпецЗащПошлина_21"]
+  ]);
+  exportTableToExcel(headers, rows, "gtd");
 }
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
@@ -7839,6 +7861,7 @@ function renderTaxesSalary() {
 }
 
 let gtdDataCache = [];
+let lastFilteredGtd = [];
 
 let gtdBadgeTimer = null;
 let suggestionsBadgeTimer = null;
@@ -7931,6 +7954,20 @@ function renderGtdTable() {
     const filtered = searchVal || refVal || expVal || curVal;
     countEl.textContent = filtered ? `найдено ${rows.length} из ${gtdDataCache.length}` : `всего ${gtdDataCache.length}`;
   }
+
+  // Joriy filtrga mos qatorlar bo'yicha umumiy summalar - filtr
+  // o'zgarganda avtomatik yangilanadi (chunki shu funksiya har safar
+  // qayta chaqiriladi).
+  const gtdSum = (key) => rows.reduce((acc, r) => acc + (parseFloat(String(r[key] || "0").replace(",", ".")) || 0), 0);
+  const setSum = (id, key) => { const el = document.getElementById(id); if (el) el.textContent = fmtGtdNum(gtdSum(key)); };
+  setSum("gtdSumInvoice", "ФактурнаяСтоимость");
+  setSum("gtdSumCustoms", "ТаможеннаяСтоимость");
+  setSum("gtdSumFee", "Сборы_10");
+  setSum("gtdSumDuty", "Пошлина_20");
+  setSum("gtdSumVat", "НДС_29");
+  setSum("gtdSumExcise", "Акциз_27");
+  setSum("gtdSumSpecial", "СпецЗащПошлина_21");
+  lastFilteredGtd = rows;
 
   const tbody = document.querySelector("#gtdTable tbody");
   if (!tbody) return;
