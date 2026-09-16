@@ -1664,6 +1664,28 @@
   [data-theme="dark"] tr.row-overdue td { color: var(--text) !important; }
 
   .status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+  /* Admin - istalgan bo'limdagi so'rovni dashboard'dan yopish tugmasi.
+     Jadval ICHIDA, .filter-field'dan tashqarida joylashgani uchun
+     umumiy tugma uslubidan foydalana olmaydi - shuning uchun alohida,
+     lekin bir xil dizayn tilida (rounded, ranglar CSS o'zgaruvchilardan). */
+  .admin-close-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--red-fg);
+    background: transparent;
+    color: var(--red-fg);
+    font-size: 11.5px;
+    font-weight: 600;
+    font-family: 'Satoshi';
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background .15s ease, color .15s ease, transform .1s ease;
+  }
+  .admin-close-btn:hover { background: var(--red-fg); color: #fff; }
+  .admin-close-btn:active { transform: scale(0.96); }
   .status-new { background: linear-gradient(135deg,#B4B8D6,#8A90B8); color: #fff; }
   .status-sent { background: linear-gradient(135deg,#FFB800,#FF6EC7); color: #fff; }
   .status-accepted { background: linear-gradient(135deg,#00D48C,#00B4D8); color: #fff; }
@@ -4939,13 +4961,22 @@ function exportDoverennostExcel() {
 
 /* Admin - istalgan bo'limdagi so'rovni to'g'ridan-to'g'ri dashboard'dan
    yopish (botga borib javob yozmasdan). Xodimga Telegram orqali xabar
-   avtomatik ketadi (Code.gs tomonidan). */
-async function adminCloseRequestRow(reqType, rowIndex, reloadFn) {
+   avtomatik ketadi (Code.gs tomonidan). MUHIM: qatorni serverdan qayta
+   SO'RAMASDAN, mahalliy massivdagi (rowsArray) mos yozuvni to'g'ridan-
+   to'g'ri yangilaymiz - aks holda eski keshlangan holat bilan qayta
+   chizilganda qator "yo'qolib qolganday" ko'rinardi.*/
+async function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
   const comment = prompt("Комментарий для закрытия запроса (сотрудник получит его в Telegram):", "Закрыто администратором");
   if (comment === null) return;
   try {
     await apiCall("adminCloseRequest", { reqType, rowIndex, comment });
-    if (typeof reloadFn === "function") reloadFn(); else loadAllData(true);
+    const row = rowsArray.find(r => r.rowIndex === rowIndex);
+    if (row) {
+      row.status = "Закрыто администратором";
+      row.comment = comment;
+      row.doneAt = new Date().toISOString();
+    }
+    if (typeof renderFn === "function") renderFn();
   } catch (e) {
     alert("Не удалось закрыть запрос: " + e.message);
   }
@@ -6536,7 +6567,7 @@ function renderSummaryTable() {
    направлено) maydonlari bor - shu asosda o'rtacha bajarish vaqtini va
    "opozdaniya" (3 kundan ortiq) sonini hisoblaymiz. */
 function buildApproverSpeedStats() {
-  const DONE_STATUSES = ["Принято", "Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Принято", "Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const byApprover = {}; // name -> { durations: [hours...], lateCount: 0 }
 
   function add(rows, doneStatuses) {
@@ -8825,7 +8856,7 @@ function closeContragentModal() {
 
 function renderDogovorTable() {
   const sub = document.getElementById("dogovorCountSub");
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
@@ -8899,6 +8930,9 @@ function renderDogovorTable() {
     if (status === "Закрыто (см. комментарий)") {
       return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
     }
+    if (status === "Закрыто администратором") {
+      return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    }
     return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено</span>`;
   }
   function employeeStatusBadge(r) {
@@ -8913,6 +8947,9 @@ function renderDogovorTable() {
     }
     if (r.status === "Закрыто (см. комментарий)") {
       return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    }
+    if (r.status === "Закрыто администратором") {
+      return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `<span class="status-badge ${cls}">${escapeHtml(stripEmoji(r.status))}</span>`;
@@ -8932,13 +8969,13 @@ function renderDogovorTable() {
       <td>${employeeStatusBadge(r)}</td>
       <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('dogovor', ${r.rowIndex}, renderDogovorTable)" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovor', ${r.rowIndex}, dogovorRows, renderDogovorTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function renderDogovorRealTable() {
   const sub = document.getElementById("dogovorRealCountSub");
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = dogovorRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRealRows.length} · в ожидании: ${pendingCount}`;
 
@@ -8990,6 +9027,7 @@ function renderDogovorRealTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -9006,13 +9044,13 @@ function renderDogovorRealTable() {
       <td>${statusBadge(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, renderDogovorRealTable)" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, dogovorRealRows, renderDogovorRealTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function renderDoverennostTable() {
   const sub = document.getElementById("doverennostCountSub");
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = doverennostRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${doverennostRows.length} · в ожидании: ${pendingCount}`;
 
@@ -9064,6 +9102,7 @@ function renderDoverennostTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -9080,12 +9119,12 @@ function renderDoverennostTable() {
       <td>${statusBadge2(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('doverennost', ${r.rowIndex}, renderDoverennostTable)" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('doverennost', ${r.rowIndex}, doverennostRows, renderDoverennostTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function updateRealizatsiyaGroupBadge() {
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const total = realschetRows.filter(r => !DONE_STATUSES.includes(r.status)).length
     + zakaznaryadRows.filter(r => !DONE_STATUSES.includes(r.status)).length
     + dogovorRealRows.filter(r => !DONE_STATUSES.includes(r.status)).length
@@ -9103,7 +9142,7 @@ function updateRealizatsiyaGroupBadge() {
 
 function renderRealschetTable() {
   const sub = document.getElementById("realschetCountSub");
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = realschetRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${realschetRows.length} · в ожидании: ${pendingCount}`;
 
@@ -9157,6 +9196,7 @@ function renderRealschetTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -9174,7 +9214,7 @@ function renderRealschetTable() {
       <td>${statusBadgeRealschet(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, renderRealschetTable)" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -9186,7 +9226,7 @@ function exportRealschetExcel() {
 
 function renderZakaznaryadTable() {
   const sub = document.getElementById("zakaznaryadCountSub");
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = zakaznaryadRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${zakaznaryadRows.length} · в ожидании: ${pendingCount}`;
 
@@ -9240,6 +9280,7 @@ function renderZakaznaryadTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -9257,7 +9298,7 @@ function renderZakaznaryadTable() {
       <td>${statusBadgeZakaznaryad(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, renderZakaznaryadTable)" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, zakaznaryadRows, renderZakaznaryadTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -9269,7 +9310,7 @@ function exportZakaznaryadExcel() {
 
 function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType) {
   const sub = document.getElementById(`${prefix}CountSub`);
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = rows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${rows.length} · в ожидании: ${pendingCount}`;
 
@@ -9321,6 +9362,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -9337,7 +9379,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType
       <td>${statusBadgeOtherreq(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})" style="font-size:11.5px;padding:5px 10px;">Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "otherreqPostRows" : "otherreqRealRows"}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -9363,7 +9405,7 @@ function exportOtherreqRealExcel() {
 
 function renderBankTable() {
   const sub = document.getElementById("bankCountSub");
-  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)"];
+  const DONE_STATUSES = ["Выполнено", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = bankRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${bankRows.length} · в ожидании: ${pendingCount}`;
 
@@ -9417,6 +9459,7 @@ function renderBankTable() {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
     if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
   function bankTypeBadge(type) {
@@ -9439,7 +9482,8 @@ function renderBankTable() {
       <td>${bankStatusBadge(r.status)}</td>
       <td style="max-width:200px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-    </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+    </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 // Faqat sana (vaqtsiz) - счet sanasi kabi maydonlar uchun. Bu maydonlarda
