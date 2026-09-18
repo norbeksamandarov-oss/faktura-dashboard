@@ -9743,8 +9743,28 @@ async function recallInvoice(facturaid, btnEl) {
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B10`, facturaid);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B11`, new Date().toISOString());
-    btnEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
-    setTimeout(() => { loadAllData(true); }, 1500);
+    // MUHIM: yuqoridagi yozuv shunchaki botga BUYRUQ yuboradi - buni bot
+    // o'zining navbatida (bir necha soniyadan keyin) o'qib bajaradi, BU
+    // YERDA emas. Agar shu oraliqda xodim ALLAQACHON счётga javob berib
+    // ulgurgan bo'lsa (qabul/rad qilgan), bot buyruqni JIMGINA o'tkazib
+    // yuboradi - shuning uchun "✓" belgisini ko'rsatishdan OLDIN, счёt
+    // haqiqatan ham "Не отправлено"ga qaytganini TEKSHIRAMIZ, aks holda
+    // "muvaffaqiyatli" deb yolg'on ko'rsatib qo'yardik.
+    await new Promise(r => setTimeout(r, 2500));
+    await loadAllData(true);
+    const row = invoiceRows.find(r => r.id === facturaid);
+    const reverted = !row || !row.status || row.status.includes("Не отправлено");
+    if (reverted) {
+      btnEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
+      setTimeout(() => { renderInvoicesTable(); }, 1500);
+    } else {
+      alert(
+        "Отзыв не выполнен: пока команда доходила до бота, сотрудник уже " +
+        "ответил по этому счёту (статус изменился на «" + row.status + "»). " +
+        "Отозвать можно только счёт, который ещё ожидает ответа."
+      );
+      renderInvoicesTable();
+    }
   } catch (e) {
     alert("Не удалось отозвать счёт: " + e.message);
     btnEl.textContent = original;
