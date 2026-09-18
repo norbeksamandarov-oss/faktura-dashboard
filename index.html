@@ -4478,7 +4478,7 @@ async function pollSalaryDataBackground() {
     console.warn("Не удалось обновить данные зарплаты:", e.message);
   }
 }
-let isEditingRow = false;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё
+let isEditingRow = 0;   // приостанавливаем перерисовку строки, пока пользователь только что кликнул в неё (счётчик - см. ниже, почему не boolean)
 // Xodimni faol/nofaol qilgandan keyin, Google Sheets'ga yozilgan
 // o'zgarish DARHOL o'qishda ko'rinmasligi mumkin (bir necha soniyalik
 // kechikish) - shu oraliqda fon avtomatik yangilanishi ESKI qiymatni
@@ -6776,7 +6776,6 @@ function handleRespKeydown(event, inputEl) {
 }
 
 function handleRespBlur(inputEl) {
-  isEditingRow = false;
   hideRespSuggestions();
   resolveRespInput(inputEl);
   updateResp(parseInt(inputEl.dataset.rowIndex, 10), inputEl.value, inputEl);
@@ -9595,13 +9594,13 @@ async function suggestResponsibles() {
   const btn = document.getElementById("suggestRespBtn");
   btn.disabled = true;
   btn.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i> Применяю...";
-  isEditingRow = true;
+  isEditingRow++;
   let applied = 0;
   for (const s of suggestions) {
     const ok = await applyRespSilent(s.row.rowIndex, s.suggested);
     if (ok) applied++;
   }
-  isEditingRow = false;
+  isEditingRow = Math.max(0, isEditingRow - 1);
   btn.disabled = false;
   btn.innerHTML = "<i class='ti ti-target' aria-hidden='true'></i> Подсказать ответственных";
   renderInvoicesTable();
@@ -9616,7 +9615,6 @@ async function updateResp(rowIndex, value, selectEl) {
   // qilmaymiz, hatto "Отправлено" holatida ham. Faqat HAQIQIY o'zgarish
   // bo'lganda pastdagi tekshiruvlar ishga tushadi.
   if (r && (r.resp || "").trim() === (value || "").trim()) {
-    isEditingRow = false;
     return;
   }
 
@@ -9627,7 +9625,6 @@ async function updateResp(rowIndex, value, selectEl) {
   const decidedCls = r ? classifyStatus(r.status) : null;
   if (decidedCls === "accepted" || decidedCls === "rejected") {
     alert("Решение по этому счёту уже принято - ответственного изменить нельзя.");
-    isEditingRow = false;
     renderInvoicesTable();
     return;
   }
@@ -9644,7 +9641,6 @@ async function updateResp(rowIndex, value, selectEl) {
       "приписаться).\n\nСначала нажмите <i class='ti ti-trash' aria-hidden='true'></i> «Отозвать» в столбце «Статус», " +
       "затем назначьте нужного сотрудника и отправьте заново."
     );
-    isEditingRow = false;
     renderInvoicesTable();
     return;
   }
@@ -9654,7 +9650,7 @@ async function updateResp(rowIndex, value, selectEl) {
   // tugaguncha (finally'da) o'chirmaymiz. Aks holda auto-yangilanish
   // saqlash davom etayotganida jadvalni eski holatga qaytarib qo'yishi
   // mumkin edi (tanlagan qiymat "yo'qolgandek" ko'rinardi).
-  isEditingRow = true;
+  isEditingRow++;
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.RESP)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, value);
@@ -9663,14 +9659,14 @@ async function updateResp(rowIndex, value, selectEl) {
   } catch (e) {
     alert("Не удалось сохранить: " + e.message);
   } finally {
-    isEditingRow = false;
+    isEditingRow = Math.max(0, isEditingRow - 1);
   }
 }
 
 async function updateSend(rowIndex, checked, checkboxEl) {
   // Xuddi shu sabab bilan (yuqoridagi izohga qarang) - checkbox uchun ham
   // saqlash tugaguncha jadval qayta chizilmasin.
-  isEditingRow = true;
+  isEditingRow++;
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.SEND)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, checked);
@@ -9681,7 +9677,7 @@ async function updateSend(rowIndex, checked, checkboxEl) {
     alert("Не удалось сохранить: " + e.message);
     checkboxEl.checked = !checked;
   } finally {
-    isEditingRow = false;
+    isEditingRow = Math.max(0, isEditingRow - 1);
   }
 }
 
@@ -9689,7 +9685,7 @@ async function updateDidoxDone(rowIndex, checked, checkboxEl) {
   // "DIDOX" belgisi - счetning o'zi DIDOX tizimida (bizning botdan mustaqil,
   // alohida) qabul qilinganmi yo'qmi, buni FAQAT o'zimiz qo'lda belgilaymiz -
   // hamma foydalanuvchi (admin ham, oddiy xodim ham) belgilashi mumkin.
-  isEditingRow = true;
+  isEditingRow++;
   const range = `'${SHEET_INVOICES}'!${colLetter(COL.DIDOX)}${rowIndex}`;
   try {
     await sheetsUpdateCell(range, checked);
@@ -9700,7 +9696,7 @@ async function updateDidoxDone(rowIndex, checked, checkboxEl) {
     alert("Не удалось сохранить: " + e.message);
     checkboxEl.checked = !checked;
   } finally {
-    isEditingRow = false;
+    isEditingRow = Math.max(0, isEditingRow - 1);
   }
 }
 
