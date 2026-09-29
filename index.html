@@ -4287,9 +4287,10 @@
 /* ============================================================
    НАСТРОЙКИ
    ============================================================ */
-// Apps Script Web App URL - deploy qilingandan keyin shu yerga qo'yiladi
-// (Extensions > Apps Script > Deploy > New deployment > Web app).
-const API_URL = "https://script.google.com/macros/s/AKfycbzi9RqBAUtexFo4SW0ZVvCq6kjkmLKMCX8_1L6pS5eBYbqDrffaak2yqTveuMPqxadl/exec";
+// Yangi backend: FastAPI (main.py, C:\faktura-api\), Cloudflare Tunnel orqali.
+// MUHIM: bu vaqtinchalik trycloudflare.com manzili - xizmat qayta ishga
+// tushirilsa o'zgarishi mumkin (doimiy domen sozlangach shu yerga almashtiriladi).
+const API_URL = "https://expenses-minute-robust-drawings.trycloudflare.com/api";
 
 const SHEET_INVOICES = "Счета-фактуры";
 const SHEET_HISTORY = "История";
