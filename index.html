@@ -4475,9 +4475,13 @@ async function pollSalaryDataBackground() {
     const data = await apiCall("getSalaryData", {});
     salaryDataCache = data.items || [];
     salaryDataLastFetch = Date.now();
+    salaryDataCachedPeriods = data.periods || [];
     if (document.getElementById("section-salary")?.classList.contains("active")) {
       // Foydalanuvchi hozir shu bo'limda bo'lsa - filtrlarni bosib
-      // turmaslik uchun faqat jadvalning o'zini qayta chizamiz.
+      // turmaslik uchun faqat jadvalning o'zini qayta chizamiz (lekin
+      // filtr variantlari ro'yxatini ham yangilab qo'yamiz, chunki
+      // yangi import bo'lgan bo'lishi mumkin).
+      populateSalaryFilterOptions(salaryDataCachedPeriods);
       renderSalaryTable();
     }
   } catch (e) {
@@ -7902,11 +7906,44 @@ async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
 
 let salaryDataLastFetch = 0;
 
+function populateSalaryFilterOptions(periods) {
+  // MUHIM: bu funksiya HAR DOIM (ham keshdan, ham serverdan yangi
+  // ma'lumot kelganda) chaqirilishi SHART - aks holda (avvalgi xato
+  // aynan shu edi) fon jarayoni (pollSalaryDataBackground) keshni
+  // oldindan to'ldirib qo'ygan bo'lsa, loadSalary() "kesh yangi" deb
+  // filtr ro'yxatlarini umuman to'ldirmasdan chiqib ketardi va
+  // dropdown'larda "Все..." dan boshqa hech narsa chiqmasdi.
+  const periodSelect = document.getElementById("salaryPeriodFilter");
+  if (periodSelect) {
+    const list = periods || [];
+    const prevValue = periodSelect.value;
+    periodSelect.innerHTML = `<option value="">Все периоды</option>` + list.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    periodSelect.value = list.includes(prevValue) ? prevValue : (list[0] || "");
+  }
+  const orgSelect = document.getElementById("salaryOrgFilter");
+  if (orgSelect) {
+    const orgs = [...new Set(salaryDataCache.map(r => r["Организация"]).filter(Boolean))].sort();
+    const prevValue = orgSelect.value;
+    orgSelect.innerHTML = `<option value="">Все организации</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    orgSelect.value = orgs.includes(prevValue) ? prevValue : "";
+  }
+  const posSelect = document.getElementById("salaryPositionFilter");
+  if (posSelect) {
+    const positions = [...new Set(salaryDataCache.map(r => r["Профессия"]).filter(Boolean))].sort();
+    const prevValue = posSelect.value;
+    posSelect.innerHTML = `<option value="">Все должности</option>` + positions.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    posSelect.value = positions.includes(prevValue) ? prevValue : "";
+  }
+}
+
+let salaryDataCachedPeriods = [];
+
 async function loadSalary(force) {
   const note = document.getElementById("salaryLoadingNote");
   const table = document.getElementById("salaryTable");
   const now = Date.now();
   if (!force && salaryDataCache.length && (now - salaryDataLastFetch) < SALARY_CACHE_TTL_MS) {
+    populateSalaryFilterOptions(salaryDataCachedPeriods);
     renderSalaryTable();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
@@ -7918,27 +7955,8 @@ async function loadSalary(force) {
     const data = await apiCall("getSalaryData", {});
     salaryDataCache = data.items || [];
     salaryDataLastFetch = Date.now();
-    const periodSelect = document.getElementById("salaryPeriodFilter");
-    if (periodSelect) {
-      const periods = data.periods || [];
-      const prevValue = periodSelect.value;
-      periodSelect.innerHTML = `<option value="">Все периоды</option>` + periods.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-      periodSelect.value = periods.includes(prevValue) ? prevValue : (periods[0] || "");
-    }
-    const orgSelect = document.getElementById("salaryOrgFilter");
-    if (orgSelect) {
-      const orgs = [...new Set(salaryDataCache.map(r => r["Организация"]).filter(Boolean))].sort();
-      const prevValue = orgSelect.value;
-      orgSelect.innerHTML = `<option value="">Все организации</option>` + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
-      orgSelect.value = orgs.includes(prevValue) ? prevValue : "";
-    }
-    const posSelect = document.getElementById("salaryPositionFilter");
-    if (posSelect) {
-      const positions = [...new Set(salaryDataCache.map(r => r["Профессия"]).filter(Boolean))].sort();
-      const prevValue = posSelect.value;
-      posSelect.innerHTML = `<option value="">Все должности</option>` + positions.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-      posSelect.value = positions.includes(prevValue) ? prevValue : "";
-    }
+    salaryDataCachedPeriods = data.periods || [];
+    populateSalaryFilterOptions(salaryDataCachedPeriods);
     renderSalaryTable();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
