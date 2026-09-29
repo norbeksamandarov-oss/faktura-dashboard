@@ -4309,7 +4309,15 @@ const SHEET_OTHERREQ_POST = "ДругиеЗапросыПоступления";
 const SHEET_OTHERREQ_REAL = "ДругиеЗапросыРеализация";
 const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu yerga vaqt yozadi
 
-const AUTO_REFRESH_MS = 8000; // авто-обновление каждые 8 секунд (bot bilan bir xil - Google Sheets API limitiga tegmaslik uchun)
+// MUHIM: avval bu 8000 (8 soniya) edi - Google Sheets API'ning so'rov
+// chegarasiga (rate limit) tegib qolmaslik uchun махсус shunday tanlangan
+// edi. Endi backend Postgres (FastAPI) bo'lgani uchun bunday cheklov
+// UMUMAN yo'q - lekin har 8 soniyada BARCHA ma'lumotni (счета-фактуры,
+// история va h.k. - 12 ta "varaq") to'liq qayta yuklab, qayta chizish
+// katta hajmda sekinlik/"qotib qolish" hissini berardi. Shuning uchun
+// oraliqni ancha oshirdik - Cloudflare Tunnel orqali ishlayotgani uchun
+// ham har bir so'rov qimmatroq (tarmoq orqali uzoqroq yo'l bosadi).
+const AUTO_REFRESH_MS = 25000; // авто-обновление каждые 25 секунд
 const SALARY_BADGE_POLL_MS = 12000; // Зарплата so'rovlari SONI uchun - kamroq tez-tez, chunki alohida maxfiy so'rov
 
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
@@ -5168,6 +5176,21 @@ function showSection(name) {
   }
   if (name === "numbering") {
     loadNumberingList();
+  }
+  // MUHIM: fon rejimida (renderAll ichida) yuqoridagi og'ir jadvallar
+  // FAQAT shu bo'lim ekranda ko'rinib turgandagina qayta chiziladi -
+  // shuning uchun bo'limga endi o'tayotganda (u yashirin bo'lgan paytda
+  // ma'lumot eskirgan bo'lishi mumkin) DARHOL qayta chizib beramiz.
+  const RENDER_ON_SWITCH = {
+    invoices: renderInvoicesTable, history: renderHistoryTable, analytics: renderAnalytics,
+    employees: renderEmployeesManage, suppliers: renderContragentsList, dogovor: renderDogovorTable,
+    dogovorreal: renderDogovorRealTable, doverennost: renderDoverennostTable, bank: renderBankTable,
+    realschet: renderRealschetTable, zakaznaryad: renderZakaznaryadTable,
+    otherreqpost: renderOtherreqPostTable, otherreqreal: renderOtherreqRealTable,
+    summary: renderSummaryTable,
+  };
+  if (RENDER_ON_SWITCH[name] && typeof RENDER_ON_SWITCH[name] === "function") {
+    try { RENDER_ON_SWITCH[name](); } catch (e) { console.error("Qayta chizishda xato:", name, e); }
   }
   requestStickyHeaderUpdate();
   updateNavActivePill();
@@ -6383,23 +6406,37 @@ function renderAll(silent) {
   // chaqiruv ALOHIDA (renderInvoicesTable() to'g'ridan-to'g'ri) sodir
   // bo'ladi, shu yerga umuman kirmaydi - shuning uchun filtrlar HECH
   // QACHON "muzlab qolmaydi".
-  if (!(silent && isEditingRow)) renderInvoicesTable();
-  renderHistoryTable();
-  renderAnalytics();
-  renderRegistrations();
-  renderEmployeesManage();
-  renderContragentsList();
-  renderDogovorTable();
-  renderDogovorRealTable();
-  renderDoverennostTable();
-  renderBankTable();
-  renderRealschetTable();
-  renderZakaznaryadTable();
-  renderOtherreqPostTable();
-  renderOtherreqRealTable();
+  // MUHIM (tezlik uchun): "silent" (fon rejimidagi, har 25 soniyalik)
+  // yangilanishda - ekranda HOZIR ko'rinmayotgan bo'limlarning og'ir
+  // jadvallarini qayta chizmaymiz (foydalanuvchi baribir ko'rmayapti).
+  // Ma'lumotning o'zi (invoiceRows, dogovorRows va h.k.) baribir yuqorida
+  // yangilanib bo'lgan - shuning uchun foydalanuvchi o'sha bo'limga
+  // o'tganda showSection() uni darhol qayta chizadi (pastga qarang).
+  // Bu ilgari HAR safar HAMMA jadvalni (jami 800+ счета-фактуры va
+  // boshqa yuzlab qatorlarni) qayta qurar edi - aynan shu "qotib qolish"
+  // hissining asosiy sababi edi.
+  if (!(silent && isEditingRow) && (!silent || isSectionActive("section-invoices"))) renderInvoicesTable();
+  if (!silent || isSectionActive("section-history")) renderHistoryTable();
+  if (!silent || isSectionActive("section-analytics")) renderAnalytics();
+  renderRegistrations(); // badge'lar uchun kerak - yengil, doim ishlaydi
+  if (!silent || isSectionActive("section-employees")) renderEmployeesManage();
+  if (!silent || isSectionActive("section-suppliers")) renderContragentsList();
+  if (!silent || isSectionActive("section-dogovor")) renderDogovorTable();
+  if (!silent || isSectionActive("section-dogovorreal")) renderDogovorRealTable();
+  if (!silent || isSectionActive("section-doverennost")) renderDoverennostTable();
+  if (!silent || isSectionActive("section-bank")) renderBankTable();
+  if (!silent || isSectionActive("section-realschet")) renderRealschetTable();
+  if (!silent || isSectionActive("section-zakaznaryad")) renderZakaznaryadTable();
+  if (!silent || isSectionActive("section-otherreqpost")) renderOtherreqPostTable();
+  if (!silent || isSectionActive("section-otherreqreal")) renderOtherreqRealTable();
   updateRealizatsiyaGroupBadge();
   updatePostupleniyaBadge();
-  renderSummaryTable();
+  if (!silent || isSectionActive("section-summary")) renderSummaryTable();
+}
+
+function isSectionActive(sectionId) {
+  const el = document.getElementById(sectionId);
+  return !!el && el.classList.contains("active");
 }
 
 /* ============================================================
