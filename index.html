@@ -4269,9 +4269,12 @@
   <div class="modal-card">
     <h3><i class='ti ti-key' aria-hidden='true'></i> Смените пароль</h3>
     <p style="color:var(--muted);font-size:13px;margin:0 0 14px;">Это ваш первый вход (или пароль был сброшен администратором). Пожалуйста, задайте свой собственный пароль, прежде чем продолжить.</p>
-    <input type="password" id="forceOldPassword" class="login-input" placeholder="Текущий (временный) пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
-    <input type="password" id="forceNewPassword" class="login-input" placeholder="Новый пароль (минимум 4 символа)" style="color:var(--text);border:1px solid var(--border);background:var(--card);margin-top:10px;">
-    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Повторите новый пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);margin-top:10px;">
+    <label for="forceOldPassword" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:0 0 4px;">Текущий (временный) пароль</label>
+    <input type="password" id="forceOldPassword" class="login-input" placeholder="Введите текущий пароль" autocomplete="off" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <label for="forceNewPassword" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:12px 0 4px;">Новый пароль (минимум 4 символа)</label>
+    <input type="password" id="forceNewPassword" class="login-input" placeholder="Придумайте новый пароль" autocomplete="new-password" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <label for="forceNewPassword2" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:12px 0 4px;">Повторите новый пароль</label>
+    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Введите новый пароль ещё раз" autocomplete="new-password" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
     <div id="forcePasswordError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
     <div class="modal-actions">
       <button class="btn-primary" id="forcePasswordSubmitBtn" onclick="submitForcePasswordChange()">Сохранить и продолжить</button>
@@ -5582,6 +5585,16 @@ async function onLoggedIn(forcePasswordChange) {
   // buni sezmasdan, standart boshlang'ich parol bilan qolib ketardi).
   if (forcePasswordChange) {
     const fpModal = document.getElementById("forcePasswordModal");
+    // Brauzer avvalgi saqlangan parolni o'zi to'ldirib qo'yishi mumkin -
+    // bu esa foydalanuvchiga qaysi qatorga nima yozish kerakligini
+    // (placeholder matnini) ko'rinmas qilib qo'yadi. Shuning uchun oyna
+    // ochilganda barcha qatorlarni majburan tozalaymiz.
+    const fOld = document.getElementById("forceOldPassword");
+    const fNew = document.getElementById("forceNewPassword");
+    const fNew2 = document.getElementById("forceNewPassword2");
+    if (fOld) fOld.value = "";
+    if (fNew) fNew.value = "";
+    if (fNew2) fNew2.value = "";
     fpModal.style.display = "flex";
     requestAnimationFrame(() => fpModal.classList.add("open"));
   }
