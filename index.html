@@ -2681,6 +2681,24 @@
   [data-brand="crb"] .content-area {
     contain: style;
   }
+  .vz2-tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 4px;
+    margin-bottom: -1px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .vz2-tab-btn:hover {
+    color: var(--text);
+  }
+  .vz2-tab-btn.active {
+    color: var(--accent, #2563eb);
+    border-bottom-color: var(--accent, #2563eb);
+  }
 </style>
 </head>
 <body>
@@ -4286,9 +4304,16 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2postavshikiUpdated" style="margin:0;">Загрузка...</p>
+        <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
+          <button class="vz2-tab-btn active" id="vz2postavshikiTabBtn-list" onclick="vz2SwitchTab('postavshiki','list')">Список</button>
+          <button class="vz2-tab-btn" id="vz2postavshikiTabBtn-analytics" onclick="vz2SwitchTab('postavshiki','analytics')">Аналитика</button>
+        </div>
       </div>
-      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2postavshikiSummary"></div>
-      <div id="vz2postavshikiList"></div>
+      <div id="vz2postavshikiView-list"><div id="vz2postavshikiFlatList"></div></div>
+      <div id="vz2postavshikiView-analytics" style="display:none;">
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2postavshikiSummary"></div>
+        <div id="vz2postavshikiList"></div>
+      </div>
       <div class="panel" id="vz2postavshikiEmpty" style="display:none;">
         <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
       </div>
@@ -4298,9 +4323,16 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Покупатели <button id="vz2SendBtn-pokupateli" onclick="vz2SendDistribution('pokupateli')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2pokupateliUpdated" style="margin:0;">Загрузка...</p>
+        <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
+          <button class="vz2-tab-btn active" id="vz2pokupateliTabBtn-list" onclick="vz2SwitchTab('pokupateli','list')">Список</button>
+          <button class="vz2-tab-btn" id="vz2pokupateliTabBtn-analytics" onclick="vz2SwitchTab('pokupateli','analytics')">Аналитика</button>
+        </div>
       </div>
-      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2pokupateliSummary"></div>
-      <div id="vz2pokupateliList"></div>
+      <div id="vz2pokupateliView-list"><div id="vz2pokupateliFlatList"></div></div>
+      <div id="vz2pokupateliView-analytics" style="display:none;">
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2pokupateliSummary"></div>
+        <div id="vz2pokupateliList"></div>
+      </div>
       <div class="panel" id="vz2pokupateliEmpty" style="display:none;">
         <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
       </div>
@@ -4310,9 +4342,16 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Подотчётные лица <button id="vz2SendBtn-podotchetniki" onclick="vz2SendDistribution('podotchetniki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2podotchetnikiUpdated" style="margin:0;">Загрузка... (записи с видом договора «Зарплата» сюда не входят)</p>
+        <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
+          <button class="vz2-tab-btn active" id="vz2podotchetnikiTabBtn-list" onclick="vz2SwitchTab('podotchetniki','list')">Список</button>
+          <button class="vz2-tab-btn" id="vz2podotchetnikiTabBtn-analytics" onclick="vz2SwitchTab('podotchetniki','analytics')">Аналитика</button>
+        </div>
       </div>
-      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2podotchetnikiSummary"></div>
-      <div id="vz2podotchetnikiList"></div>
+      <div id="vz2podotchetnikiView-list"><div id="vz2podotchetnikiFlatList"></div></div>
+      <div id="vz2podotchetnikiView-analytics" style="display:none;">
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2podotchetnikiSummary"></div>
+        <div id="vz2podotchetnikiList"></div>
+      </div>
       <div class="panel" id="vz2podotchetnikiEmpty" style="display:none;">
         <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
       </div>
@@ -8664,22 +8703,76 @@ function vz2RenderCategory(prefix, category) {
   if (listEl) listEl.innerHTML = html;
 }
 
+function vz2SwitchTab(category, tab) {
+  const prefixMap = { postavshiki: "vz2postavshiki", pokupateli: "vz2pokupateli", podotchetniki: "vz2podotchetniki" };
+  const prefix = prefixMap[category] || ("vz2" + category);
+  const listView = document.getElementById(prefix + "View-list");
+  const analyticsView = document.getElementById(prefix + "View-analytics");
+  const listBtn = document.getElementById(prefix + "TabBtn-list");
+  const analyticsBtn = document.getElementById(prefix + "TabBtn-analytics");
+  if (listView) listView.style.display = tab === "list" ? "" : "none";
+  if (analyticsView) analyticsView.style.display = tab === "analytics" ? "" : "none";
+  if (listBtn) listBtn.classList.toggle("active", tab === "list");
+  if (analyticsBtn) analyticsBtn.classList.toggle("active", tab === "analytics");
+}
+
+function vz2RenderFlatList(prefix, category) {
+  const items = ((VZ2_DATA && VZ2_DATA.items) || []).filter(it => it.category === category);
+  const flatEl = document.getElementById(prefix + "FlatList");
+  if (!flatEl) return;
+  if (!items.length) {
+    flatEl.innerHTML = "";
+    return;
+  }
+  const trs = items.map(it => {
+    const side = it.side === "dt" ? "dt" : "kt";
+    const color = side === "kt" ? "#C0392B" : "#1E8449";
+    const amount = it.total !== undefined && it.total !== null ? it.total : it.last3weeks;
+    return `
+    <tr>
+      <td>${escapeHtml(it.name || "—")}</td>
+      <td>${escapeHtml(it.org || "—")}</td>
+      <td>${escapeHtml(it.dept || "—")}</td>
+      <td>${escapeHtml(it.contract || "—")}</td>
+      <td>${escapeHtml(it.contract_type || "—")}</td>
+      <td>${escapeHtml(it.currency || "—")}</td>
+      <td>${escapeHtml(it.inn || "—")}</td>
+      <td>${escapeHtml(it.otvetstvenny || "—")}</td>
+      <td class="num-cell" style="color:${color};font-weight:600;">${vzFormatNum(Math.abs(amount || 0))}</td>
+    </tr>`;
+  }).join("");
+  flatEl.innerHTML = `
+    <table class="invoices" style="margin-bottom:10px;">
+      <thead>
+        <tr>
+          <th>Контрагент</th><th>Организация</th><th>Подразделение</th><th>Договор</th>
+          <th>Вид договора</th><th>Валюта</th><th>ИНН</th><th>Ответственный</th><th class="num-cell">Сумма</th>
+        </tr>
+      </thead>
+      <tbody>${trs}</tbody>
+    </table>`;
+}
+
 async function loadVz2Category(category, prefix) {
   const listEl = document.getElementById(prefix + "List");
-  if (listEl && !VZ2_DATA) listEl.innerHTML = "<p style='color:var(--muted)'>Загрузка...</p>";
+  const flatEl = document.getElementById(prefix + "FlatList");
+  if (flatEl && !VZ2_DATA) flatEl.innerHTML = "<p style='color:var(--muted)'>Загрузка...</p>";
   try {
     await ensureVz2Data(false);
     if (!VZ2_DATA.hasData) {
       if (listEl) listEl.innerHTML = "";
+      if (flatEl) flatEl.innerHTML = "";
       const emptyEl = document.getElementById(prefix + "Empty");
       if (emptyEl) emptyEl.style.display = "";
       const updatedEl = document.getElementById(prefix + "Updated");
       if (updatedEl) updatedEl.style.display = "none";
       return;
     }
+    vz2RenderFlatList(prefix, category);
     vz2RenderCategory(prefix, category);
   } catch (e) {
-    if (listEl) listEl.innerHTML = `<p style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</p>`;
+    if (flatEl) flatEl.innerHTML = `<p style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</p>`;
+    if (listEl) listEl.innerHTML = "";
   }
 }
 
