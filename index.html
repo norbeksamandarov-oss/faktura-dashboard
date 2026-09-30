@@ -2681,6 +2681,96 @@
   [data-brand="crb"] .content-area {
     contain: style;
   }
+
+  /* ============================================================
+     MATN TINIQLIGI (2026-09-30) - dashboard "pixel"simon/xira
+     ko'rinishining asosiy sababi: deyarli har bir karta, panel,
+     topbar va sidebar'da backdrop-filter: blur(...) + yarim-shaffof
+     fon bor edi. Chrome/Edge bunday har bir elementni alohida GPU
+     qatlamiga (texture) chizadi va uning ichidagi matnni ClearType
+     (pastki-piksel) antialiasing'siz, kulrang-xira rasterlaydi;
+     kasr masshtabda (Windows 125%/150%) esa matn yana ham "yoyilib"
+     ketadi. Ustma-ust ikki qatlam blur (panel ichida karta) buni
+     kuchaytirar edi. Yechim: ilova ichida (#app) blur olib tashlanadi
+     va fonlar shaffof emas (to'liq rangli) bo'ladi - ko'rinish deyarli
+     bir xil, matn esa tiniq. Login ekrani va modal fon-pardasi
+     (overlay) tegilmaydi.
+     ============================================================ */
+  #app header.topbar,
+  #app .sidebar,
+  #app .panel,
+  #app .analytics-summary,
+  #app .analytics-summary > div,
+  #app .stat-card,
+  #app .stat-card:hover,
+  #app .org-card,
+  #app .org-card:hover,
+  #app .contragent-card,
+  #app .contragent-card:hover,
+  #app .analytics-box,
+  #app .analytics-box:hover,
+  #app .org-card-v2,
+  #app .stat-card-v2,
+  #app .pill,
+  #app .modal-card,
+  .modal-card {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  [data-brand="crb"] header.topbar,
+  [data-brand="crb"] .sidebar { background: #FFFFFF; }
+  [data-brand="crb"][data-theme="dark"] header.topbar,
+  [data-brand="crb"][data-theme="dark"] .sidebar { background: #0B0C11; }
+
+  [data-brand="crb"] .panel,
+  [data-brand="crb"] #section-analytics .panel,
+  [data-brand="crb"] .analytics-summary > div,
+  [data-brand="crb"] .stat-card,
+  [data-brand="crb"] .org-card:not(.org-card-total),
+  [data-brand="crb"] .contragent-card,
+  [data-brand="crb"] .analytics-box,
+  [data-brand="crb"] .modal-card,
+  [data-brand="crb"] #section-analytics .org-card:not(.org-card-total),
+  [data-brand="crb"] #section-analytics .stat-card,
+  [data-brand="crb"] #section-analytics .analytics-box,
+  [data-brand="crb"] #section-analytics .analytics-summary > div,
+  [data-brand="crb"] .org-card-v2:not(.org-card-v2-total),
+  [data-brand="crb"] .stat-card-v2 {
+    background-color: #FFFFFF !important;
+  }
+  [data-brand="crb"] .analytics-summary {
+    background-color: #FFFFFF !important;
+  }
+  [data-brand="crb"][data-theme="dark"] .panel,
+  [data-brand="crb"][data-theme="dark"] #section-analytics .panel,
+  [data-brand="crb"][data-theme="dark"] .analytics-summary {
+    background-color: var(--card) !important;
+  }
+  [data-brand="crb"][data-theme="dark"] .analytics-summary > div,
+  [data-brand="crb"][data-theme="dark"] .stat-card,
+  [data-brand="crb"][data-theme="dark"] .org-card:not(.org-card-total),
+  [data-brand="crb"][data-theme="dark"] .contragent-card,
+  [data-brand="crb"][data-theme="dark"] .analytics-box,
+  [data-brand="crb"][data-theme="dark"] .modal-card,
+  [data-brand="crb"][data-theme="dark"] #section-analytics .org-card:not(.org-card-total),
+  [data-brand="crb"][data-theme="dark"] #section-analytics .stat-card,
+  [data-brand="crb"][data-theme="dark"] #section-analytics .analytics-box,
+  [data-brand="crb"][data-theme="dark"] #section-analytics .analytics-summary > div,
+  [data-brand="crb"][data-theme="dark"] .org-card-v2:not(.org-card-v2-total),
+  [data-brand="crb"][data-theme="dark"] .stat-card-v2 {
+    background-color: #151826 !important;
+  }
+
+  /* Hover'dagi scale(1.012) matnni kasr masshtabga cho'zib xiralashtirardi -
+     faqat butun pikselli ko'tarilish qoladi. */
+  [data-brand="crb"] .stat-card:hover { transform: translateY(-4px); }
+  [data-brand="crb"] .stat-card:active,
+  [data-brand="crb"] .org-card:active,
+  [data-brand="crb"] .contragent-card:active { transform: translateY(-1px); }
+
+  /* Har bir tizim o'zining eng tiniq shrift renderlashini ishlatadi. */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { text-rendering: optimizeLegibility; font-synthesis: none; }
 </style>
 </head>
 <body>
@@ -5363,8 +5453,10 @@ function _stickyUpdate() {
     const shouldShow = wrapRect.top < 0 && wrapRect.bottom > theadHeight;
     if (shouldShow) {
       entry.wrap.style.display = "block";
-      entry.wrap.style.left = wrapRect.left + "px";
-      entry.wrap.style.width = wrapRect.width + "px";
+      // Butun pikselga yaxlitlanadi - kasr koordinatadagi "fixed" qatlam
+      // matnni xira (pikselsimon) chizib yuborardi.
+      entry.wrap.style.left = Math.round(wrapRect.left) + "px";
+      entry.wrap.style.width = Math.round(wrapRect.width) + "px";
       entry.wrap.scrollLeft = wrapEl.scrollLeft;
       _stickySyncWidths(table, entry.table);
     } else {
@@ -5416,7 +5508,7 @@ function initLoginGallery() {
   } catch (e) {
     return; // WebGL yo'q - jim o'tamiz
   }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060c);
