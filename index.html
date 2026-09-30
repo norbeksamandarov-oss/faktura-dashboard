@@ -2912,6 +2912,7 @@
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item" data-section="taxes" onclick="showSection('taxes')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h1"/><path d="M14 11h1"/></svg></span><span class="nav-label">Налоги</span></button>
+      <button class="nav-item" data-section="vzaimoraschety" onclick="showSection('vzaimoraschety')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><span class="nav-label">Взаиморасчёты</span></button>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span>
         <span class="nav-label">Зарплата</span>
@@ -4271,6 +4272,20 @@
     </div>
     </section>
 
+    <section id="section-vzaimoraschety" class="content-section">
+      <div class="panel" style="margin-bottom:16px;">
+        <h2>Взаиморасчёты с контрагентами <span class="sub" id="vzTaxPeriod"></span></h2>
+        <p class="analytics-note" id="vzUpdatedNote" style="margin:0;">Загрузка...</p>
+      </div>
+      <div id="vzCardsWrap" style="display:none;">
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vzSummaryCards"></div>
+        <div id="vzCategoryPanels"></div>
+      </div>
+      <div class="panel" id="vzEmptyNote" style="display:none;">
+        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
+      </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 8 секунд. Изменения здесь применяются почти мгновенно.</footer>
     </main>
   </div>
@@ -5198,6 +5213,9 @@ function showSection(name) {
   if (name === "taxes" && currentRole === "admin") {
     initTaxesSection();
   }
+  if (name === "vzaimoraschety" && currentRole === "admin") {
+    loadVzaimoraschety();
+  }
   if (name === "approvers" && currentRole === "admin") {
     loadApproverSheet();
   }
@@ -5804,7 +5822,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="vzaimoraschety"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -8391,6 +8409,113 @@ function renderGtdTable() {
 }
 
 let featuresDataCache = [];
+
+/* ============================================================
+   ВЗАИМОРАСЧЁТЫ С КОНТРАГЕНТАМИ - 1С'dan bot orqali kelgan hisobot
+   (faqat OXIRGI holat, tarix saqlanmaydi). Mas'ul shaxs botga Excel
+   faylni yuborganda, bot avtomatik tanib olib bazaga yozadi - shu yerda
+   faqat o'qib, ixcham kartochkalar + ochiladigan ro'yxatlar tarzida
+   ko'rsatamiz.
+   ============================================================ */
+const VZ_CATEGORY_ORDER = ["postavshiki", "pokupateli", "sotrudniki", "filial"];
+const VZ_CATEGORY_ICONS = {
+  postavshiki: "ti-truck-delivery",
+  pokupateli: "ti-shopping-cart",
+  sotrudniki: "ti-users",
+  filial: "ti-building-skyscraper",
+};
+
+function vzFormatNum(n) {
+  n = Number(n) || 0;
+  const rounded = Math.round(n);
+  return rounded.toLocaleString("ru-RU");
+}
+
+async function loadVzaimoraschety() {
+  const updatedNote = document.getElementById("vzUpdatedNote");
+  const cardsWrap = document.getElementById("vzCardsWrap");
+  const emptyNote = document.getElementById("vzEmptyNote");
+  if (updatedNote) { updatedNote.textContent = "Загрузка..."; updatedNote.style.color = ""; }
+  if (cardsWrap) cardsWrap.style.display = "none";
+  if (emptyNote) emptyNote.style.display = "none";
+  try {
+    const data = await apiCall("getVzaimoraschety", {});
+    if (!data.hasData) {
+      if (updatedNote) updatedNote.style.display = "none";
+      if (emptyNote) emptyNote.style.display = "";
+      return;
+    }
+    renderVzaimoraschety(data);
+    if (cardsWrap) cardsWrap.style.display = "";
+  } catch (e) {
+    if (updatedNote) { updatedNote.textContent = "Ошибка: " + e.message; updatedNote.style.color = "#C0392B"; }
+  }
+}
+
+function renderVzaimoraschety(data) {
+  const updatedNote = document.getElementById("vzUpdatedNote");
+  const periodEl = document.getElementById("vzTaxPeriod");
+  if (updatedNote) {
+    updatedNote.style.display = "";
+    updatedNote.textContent = `Обновлено: ${data.updatedAt || "—"}` + (data.uploadedBy ? ` · Загрузил: ${data.uploadedBy}` : "");
+  }
+  if (periodEl) {
+    periodEl.textContent = (data.periodStart || data.periodEnd) ? `период ${data.periodStart} — ${data.periodEnd}` : "";
+  }
+
+  const cats = data.categories || {};
+
+  const cardsHtml = VZ_CATEGORY_ORDER.map(key => {
+    const c = cats[key];
+    if (!c) return "";
+    const isNegative = Number(c.total) < 0;
+    return `
+      <div class="stat-card ${isNegative ? 'accent-rejected' : 'accent-accepted'}">
+        <div class="stat-icon"><i class='ti ${VZ_CATEGORY_ICONS[key] || 'ti-report-money'}' aria-hidden='true'></i></div>
+        <div><div class="num">${vzFormatNum(c.total)}</div><div class="label">${escapeHtml(c.label)} <span style="opacity:.6">(${(c.items||[]).length})</span></div></div>
+      </div>`;
+  }).join("");
+  const cardsRoot = document.getElementById("vzSummaryCards");
+  if (cardsRoot) cardsRoot.innerHTML = cardsHtml;
+
+  const panelsHtml = VZ_CATEGORY_ORDER.map(key => {
+    const c = cats[key];
+    if (!c) return "";
+    const items = c.items || [];
+    const rows = items.map(it => `
+      <tr>
+        <td>${escapeHtml(it.name)}</td>
+        <td>${escapeHtml(it.inn || "—")}</td>
+        <td>${escapeHtml(it.contract || "—")}</td>
+        <td>${escapeHtml(it.currency || "—")}</td>
+        <td class="num-cell">${vzFormatNum(it.total)}</td>
+      </tr>`).join("");
+    return `
+      <div class="panel" style="margin-bottom:16px;">
+        <h2 onclick="vzToggleCategory('${key}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span>${escapeHtml(c.label)} <span class="sub">${items.length} записей · итого ${vzFormatNum(c.total)}</span></span>
+          <i class="ti ti-chevron-down" id="vzChevron-${key}" aria-hidden="true"></i>
+        </h2>
+        <div class="table-wrap" id="vzTableWrap-${key}" style="display:none;margin-top:14px;">
+          <table class="invoices">
+            <thead><tr><th>Контрагент</th><th>ИНН</th><th>Договор</th><th>Валюта</th><th class="num-cell">Итого</th></tr></thead>
+            <tbody>${rows || `<tr><td colspan="5" style="color:var(--muted)">Нет записей</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join("");
+  const panelsRoot = document.getElementById("vzCategoryPanels");
+  if (panelsRoot) panelsRoot.innerHTML = panelsHtml;
+}
+
+function vzToggleCategory(key) {
+  const wrap = document.getElementById(`vzTableWrap-${key}`);
+  const chevron = document.getElementById(`vzChevron-${key}`);
+  if (!wrap) return;
+  const isOpen = wrap.style.display !== "none";
+  wrap.style.display = isOpen ? "none" : "";
+  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+}
 
 async function loadFeatures() {
   const note = document.getElementById("featuresLoadingNote");
