@@ -3572,7 +3572,7 @@
       <div class="table-wrap">
         <table class="invoices" id="realschetTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th><th></th></tr>
+            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th><th>Договор</th><th></th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -6274,6 +6274,7 @@ async function loadAllData(silent) {
       comment: String(r[8] || ""),
       approverName: String(r[9] || ""),
       innPnfl: String(r[11] || ""),
+      fileUrl: String(r[12] || ""),
     })).filter(r => r.kontragent).reverse();
 
     zakaznaryadRows = zakaznaryadRaw.map((r, idx) => ({
@@ -9284,8 +9285,14 @@ function renderRealschetTable() {
       <td>${statusBadgeRealschet(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
+      <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" style="white-space:nowrap;"><i class="ti ti-file-text" aria-hidden="true"></i> Открыть</a>` : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
-    </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+    </tr>`).join("") || `<tr><td colspan="12" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+}
+
+function realschetFileHref(fileName) {
+  const apiRoot = API_URL.replace(/\/api\/?$/, "");
+  return `${apiRoot}/realschet-docs/${encodeURIComponent(fileName)}`;
 }
 
 function exportRealschetExcel() {
