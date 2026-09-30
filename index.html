@@ -5088,18 +5088,73 @@ async function loadApproverSheet() {
   }
 }
 
+let approverEditingRow = null;
+
 function renderApproverTable() {
   const tbody = document.querySelector("#approversTable tbody");
-  tbody.innerHTML = approverRowsCache.map(r => `
+  tbody.innerHTML = approverRowsCache.map(r => {
+    if (approverEditingRow === r.rowIndex) {
+      const orgOptions = (typeof ORG_GROUPS !== "undefined" ? ORG_GROUPS : []).map(g =>
+        `<option value="${escapeHtml(g.canonical)}" ${g.canonical === r.org ? "selected" : ""}>${escapeHtml(g.canonical)}</option>`
+      ).join("");
+      const orgExtra = orgOptions.includes(`value="${escapeHtml(r.org)}"`) ? "" : `<option value="${escapeHtml(r.org)}" selected>${escapeHtml(r.org)}</option>`;
+      return `
+        <tr data-row="${r.rowIndex}" style="background:var(--chip-bg);">
+          <td><select id="approverEditOrg-${r.rowIndex}" style="width:100%;padding:5px 6px;">${orgExtra}${orgOptions}</select></td>
+          <td><input type="text" id="approverEditChatId-${r.rowIndex}" value="${escapeHtml(r.chatId)}" style="width:100%;padding:5px 6px;"></td>
+          <td><input type="text" id="approverEditName-${r.rowIndex}" value="${escapeHtml(r.name)}" style="width:100%;padding:5px 6px;"></td>
+          <td><label class="toggle-switch"><input type="checkbox" id="approverEditActive-${r.rowIndex}" ${r.active ? "checked" : ""}><span class="toggle-slider"></span></label></td>
+          <td><input type="text" id="approverEditComment-${r.rowIndex}" value="${escapeHtml(r.comment)}" style="width:100%;padding:5px 6px;"></td>
+          <td style="white-space:nowrap;">
+            <button onclick="saveApproverEdit(${r.rowIndex})" style="background:none;border:none;color:#2e7d32;cursor:pointer;" title="Сохранить"><i class="ti ti-check" aria-hidden="true"></i></button>
+            <button onclick="cancelApproverEdit()" style="background:none;border:none;color:var(--muted);cursor:pointer;" title="Отмена"><i class="ti ti-x" aria-hidden="true"></i></button>
+          </td>
+        </tr>`;
+    }
+    return `
     <tr data-row="${r.rowIndex}">
       <td>${escapeHtml(r.org)}</td>
       <td>${escapeHtml(r.chatId)}</td>
       <td>${escapeHtml(r.name)}</td>
       <td><label class="toggle-switch"><input type="checkbox" ${r.active ? "checked" : ""} onchange="toggleApproverActive(${r.rowIndex}, this.checked)"><span class="toggle-slider"></span></label></td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.comment)}</td>
-      <td><button onclick="deleteApproverRow(${r.rowIndex})" style="background:none;border:none;color:var(--red-fg);cursor:pointer;" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+      <td style="white-space:nowrap;">
+        <button onclick="startApproverEdit(${r.rowIndex})" style="background:none;border:none;color:var(--navy);cursor:pointer;" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button>
+        <button onclick="deleteApproverRow(${r.rowIndex})" style="background:none;border:none;color:var(--red-fg);cursor:pointer;" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </td>
     </tr>
-  `).join("") || `<tr><td colspan="6" style="color:var(--muted);">Пока нет записей для этого типа запроса</td></tr>`;
+  `;
+  }).join("") || `<tr><td colspan="6" style="color:var(--muted);">Пока нет записей для этого типа запроса</td></tr>`;
+}
+
+function startApproverEdit(rowIndex) {
+  approverEditingRow = rowIndex;
+  renderApproverTable();
+}
+
+function cancelApproverEdit() {
+  approverEditingRow = null;
+  renderApproverTable();
+}
+
+async function saveApproverEdit(rowIndex) {
+  const sheetKey = document.getElementById("approversTypeSelect").value;
+  const org = document.getElementById(`approverEditOrg-${rowIndex}`).value;
+  const chatId = document.getElementById(`approverEditChatId-${rowIndex}`).value.trim();
+  const name = document.getElementById(`approverEditName-${rowIndex}`).value.trim();
+  const active = document.getElementById(`approverEditActive-${rowIndex}`).checked;
+  const comment = document.getElementById(`approverEditComment-${rowIndex}`).value.trim();
+  if (!chatId || !name) {
+    alert("Укажите Telegram Chat ID и имя ответственного");
+    return;
+  }
+  try {
+    await apiCall("saveApproverSheetRow", { sheetKey, rowIndex, org, chatId, name, active, comment });
+    approverEditingRow = null;
+    loadApproverSheet();
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+  }
 }
 
 async function toggleApproverActive(rowIndex, checked) {
