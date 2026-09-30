@@ -2918,7 +2918,6 @@
         <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="nav-subgroup" id="vzaimoraschetySubgroup">
-        <button class="nav-item nav-sub-item" data-section="vzaimoraschety" onclick="showSection('vzaimoraschety')"><span class="nav-icon"><i class='ti ti-building-factory-2' aria-hidden='true'></i></span><span class="nav-label">TOSHTAN AUTO</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2postavshiki" onclick="showSection('vz2postavshiki')"><span class="nav-icon"><i class='ti ti-truck-delivery' aria-hidden='true'></i></span><span class="nav-label">Поставщики</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2pokupateli" onclick="showSection('vz2pokupateli')"><span class="nav-icon"><i class='ti ti-shopping-cart' aria-hidden='true'></i></span><span class="nav-label">Покупатели</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2podotchetniki" onclick="showSection('vz2podotchetniki')"><span class="nav-icon"><i class='ti ti-users' aria-hidden='true'></i></span><span class="nav-label">Подотчётные лица</span></button>
@@ -4283,20 +4282,6 @@
     </div>
     </section>
 
-    <section id="section-vzaimoraschety" class="content-section">
-      <div class="panel" style="margin-bottom:16px;">
-        <h2>Взаиморасчёты с контрагентами <span class="sub" id="vzTaxPeriod"></span></h2>
-        <p class="analytics-note" id="vzUpdatedNote" style="margin:0;">Загрузка...</p>
-      </div>
-      <div id="vzCardsWrap" style="display:none;">
-        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vzSummaryCards"></div>
-        <div id="vzCategoryPanels"></div>
-      </div>
-      <div class="panel" id="vzEmptyNote" style="display:none;">
-        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
-      </div>
-    </section>
-
     <section id="section-vz2postavshiki" class="content-section">
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
@@ -5301,7 +5286,7 @@ const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpo
 const PERSONAL_SECTIONS = ["requests", "employees", "positions", "users", "writeemp", "suggestions"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
-const VZAIMORASCHETY_SECTIONS = ["vzaimoraschety", "vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2otv"];
+const VZAIMORASCHETY_SECTIONS = ["vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2otv"];
 
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
@@ -5354,9 +5339,6 @@ function showSection(name) {
   }
   if (name === "taxes" && currentRole === "admin") {
     initTaxesSection();
-  }
-  if (name === "vzaimoraschety" && currentRole === "admin") {
-    loadVzaimoraschety();
   }
   if (name === "vz2postavshiki" && currentRole === "admin") {
     loadVz2Category("postavshiki", "vz2postavshiki");
@@ -5976,7 +5958,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="vzaimoraschety"], #vzaimoraschetyToggle, .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2otv"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], #vzaimoraschetyToggle, .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -8571,104 +8553,10 @@ let featuresDataCache = [];
    faqat o'qib, ixcham kartochkalar + ochiladigan ro'yxatlar tarzida
    ko'rsatamiz.
    ============================================================ */
-const VZ_CATEGORY_ORDER = ["postavshiki", "pokupateli", "sotrudniki", "filial"];
-const VZ_CATEGORY_ICONS = {
-  postavshiki: "ti-truck-delivery",
-  pokupateli: "ti-shopping-cart",
-  sotrudniki: "ti-users",
-  filial: "ti-building-skyscraper",
-};
-
 function vzFormatNum(n) {
   n = Number(n) || 0;
   const rounded = Math.round(n);
   return rounded.toLocaleString("ru-RU");
-}
-
-async function loadVzaimoraschety() {
-  const updatedNote = document.getElementById("vzUpdatedNote");
-  const cardsWrap = document.getElementById("vzCardsWrap");
-  const emptyNote = document.getElementById("vzEmptyNote");
-  if (updatedNote) { updatedNote.textContent = "Загрузка..."; updatedNote.style.color = ""; }
-  if (cardsWrap) cardsWrap.style.display = "none";
-  if (emptyNote) emptyNote.style.display = "none";
-  try {
-    const data = await apiCall("getVzaimoraschety", {});
-    if (!data.hasData) {
-      if (updatedNote) updatedNote.style.display = "none";
-      if (emptyNote) emptyNote.style.display = "";
-      return;
-    }
-    renderVzaimoraschety(data);
-    if (cardsWrap) cardsWrap.style.display = "";
-  } catch (e) {
-    if (updatedNote) { updatedNote.textContent = "Ошибка: " + e.message; updatedNote.style.color = "#C0392B"; }
-  }
-}
-
-function renderVzaimoraschety(data) {
-  const updatedNote = document.getElementById("vzUpdatedNote");
-  const periodEl = document.getElementById("vzTaxPeriod");
-  if (updatedNote) {
-    updatedNote.style.display = "";
-    updatedNote.textContent = `Обновлено: ${data.updatedAt || "—"}` + (data.uploadedBy ? ` · Загрузил: ${data.uploadedBy}` : "");
-  }
-  if (periodEl) {
-    periodEl.textContent = (data.periodStart || data.periodEnd) ? `период ${data.periodStart} — ${data.periodEnd}` : "";
-  }
-
-  const cats = data.categories || {};
-
-  const cardsHtml = VZ_CATEGORY_ORDER.map(key => {
-    const c = cats[key];
-    if (!c) return "";
-    const isNegative = Number(c.total) < 0;
-    return `
-      <div class="stat-card ${isNegative ? 'accent-rejected' : 'accent-accepted'}">
-        <div class="stat-icon"><i class='ti ${VZ_CATEGORY_ICONS[key] || 'ti-report-money'}' aria-hidden='true'></i></div>
-        <div><div class="num">${vzFormatNum(c.total)}</div><div class="label">${escapeHtml(c.label)} <span style="opacity:.6">(${(c.items||[]).length})</span></div></div>
-      </div>`;
-  }).join("");
-  const cardsRoot = document.getElementById("vzSummaryCards");
-  if (cardsRoot) cardsRoot.innerHTML = cardsHtml;
-
-  const panelsHtml = VZ_CATEGORY_ORDER.map(key => {
-    const c = cats[key];
-    if (!c) return "";
-    const items = c.items || [];
-    const rows = items.map(it => `
-      <tr>
-        <td>${escapeHtml(it.name)}</td>
-        <td>${escapeHtml(it.inn || "—")}</td>
-        <td>${escapeHtml(it.contract || "—")}</td>
-        <td>${escapeHtml(it.currency || "—")}</td>
-        <td class="num-cell">${vzFormatNum(it.total)}</td>
-      </tr>`).join("");
-    return `
-      <div class="panel" style="margin-bottom:16px;">
-        <h2 onclick="vzToggleCategory('${key}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span>${escapeHtml(c.label)} <span class="sub">${items.length} записей · итого ${vzFormatNum(c.total)}</span></span>
-          <i class="ti ti-chevron-down" id="vzChevron-${key}" aria-hidden="true"></i>
-        </h2>
-        <div class="table-wrap" id="vzTableWrap-${key}" style="display:none;margin-top:14px;">
-          <table class="invoices">
-            <thead><tr><th>Контрагент</th><th>ИНН</th><th>Договор</th><th>Валюта</th><th class="num-cell">Итого</th></tr></thead>
-            <tbody>${rows || `<tr><td colspan="5" style="color:var(--muted)">Нет записей</td></tr>`}</tbody>
-          </table>
-        </div>
-      </div>`;
-  }).join("");
-  const panelsRoot = document.getElementById("vzCategoryPanels");
-  if (panelsRoot) panelsRoot.innerHTML = panelsHtml;
-}
-
-function vzToggleCategory(key) {
-  const wrap = document.getElementById(`vzTableWrap-${key}`);
-  const chevron = document.getElementById(`vzChevron-${key}`);
-  if (!wrap) return;
-  const isOpen = wrap.style.display !== "none";
-  wrap.style.display = isOpen ? "none" : "";
-  if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
 }
 
 /* ============================================================
