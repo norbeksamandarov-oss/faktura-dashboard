@@ -549,7 +549,13 @@
     font-family: 'Satoshi', sans-serif;
     background: var(--bg);
     color: var(--text);
-    -webkit-font-smoothing: antialiased;
+    /* MUHIM: -webkit-font-smoothing: antialiased OLIB TASHLANDI (2026-09-30).
+       Bu xususiyat faqat macOS/Safari'da matnni tiniqlashtiradi, lekin
+       Windows'dagi Chrome'da ACSINCHA ishlaydi - brauzer Windowsning odatiy
+       ClearType (pastki-piksel) shrift renderlashini o'chirib, oddiy kulrang
+       antialiasing'ga o'tkazadi, natijada matn xira/"pixel"simon ko'rinadi.
+       Xususiyatni butunlay olib tashlash orqali har bir tizim (Windows,
+       macOS) o'zining tabiiy, eng tiniq renderlash usulini ishlatadi. */
     overflow-x: hidden;
     transition: background 0.25s ease, color 0.25s ease;
     position: relative;
