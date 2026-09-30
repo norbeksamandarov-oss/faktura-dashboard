@@ -2912,7 +2912,18 @@
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item" data-section="taxes" onclick="showSection('taxes')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h1"/><path d="M14 11h1"/></svg></span><span class="nav-label">Налоги</span></button>
-      <button class="nav-item" data-section="vzaimoraschety" onclick="showSection('vzaimoraschety')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span><span class="nav-label">Взаиморасчёты</span></button>
+      <button class="nav-item nav-group-toggle" id="vzaimoraschetyToggle" onclick="toggleNavGroup('vzaimoraschetyToggle','vzaimoraschetySubgroup')">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+        <span class="nav-label">Взаиморасчёты</span>
+        <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="nav-subgroup" id="vzaimoraschetySubgroup">
+        <button class="nav-item nav-sub-item" data-section="vzaimoraschety" onclick="showSection('vzaimoraschety')"><span class="nav-icon"><i class='ti ti-building-factory-2' aria-hidden='true'></i></span><span class="nav-label">TOSHTAN AUTO</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2postavshiki" onclick="showSection('vz2postavshiki')"><span class="nav-icon"><i class='ti ti-truck-delivery' aria-hidden='true'></i></span><span class="nav-label">Поставщики</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2pokupateli" onclick="showSection('vz2pokupateli')"><span class="nav-icon"><i class='ti ti-shopping-cart' aria-hidden='true'></i></span><span class="nav-label">Покупатели</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2podotchetniki" onclick="showSection('vz2podotchetniki')"><span class="nav-icon"><i class='ti ti-users' aria-hidden='true'></i></span><span class="nav-label">Подотчётные лица</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2otv" onclick="showSection('vz2otv')"><span class="nav-icon"><i class='ti ti-address-book' aria-hidden='true'></i></span><span class="nav-label">Ответственные</span></button>
+      </div>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span>
         <span class="nav-label">Зарплата</span>
@@ -4286,6 +4297,79 @@
       </div>
     </section>
 
+    <section id="section-vz2postavshiki" class="content-section">
+      <div class="panel" style="margin-bottom:16px;">
+        <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <p class="analytics-note" id="vz2postavshikiUpdated" style="margin:0;">Загрузка...</p>
+      </div>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2postavshikiSummary"></div>
+      <div id="vz2postavshikiList"></div>
+      <div class="panel" id="vz2postavshikiEmpty" style="display:none;">
+        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
+      </div>
+    </section>
+
+    <section id="section-vz2pokupateli" class="content-section">
+      <div class="panel" style="margin-bottom:16px;">
+        <h2>Взаиморасчёты — Покупатели <button id="vz2SendBtn-pokupateli" onclick="vz2SendDistribution('pokupateli')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <p class="analytics-note" id="vz2pokupateliUpdated" style="margin:0;">Загрузка...</p>
+      </div>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2pokupateliSummary"></div>
+      <div id="vz2pokupateliList"></div>
+      <div class="panel" id="vz2pokupateliEmpty" style="display:none;">
+        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
+      </div>
+    </section>
+
+    <section id="section-vz2podotchetniki" class="content-section">
+      <div class="panel" style="margin-bottom:16px;">
+        <h2>Взаиморасчёты — Подотчётные лица <button id="vz2SendBtn-podotchetniki" onclick="vz2SendDistribution('podotchetniki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <p class="analytics-note" id="vz2podotchetnikiUpdated" style="margin:0;">Загрузка... (записи с видом договора «Зарплата» сюда не входят)</p>
+      </div>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2podotchetnikiSummary"></div>
+      <div id="vz2podotchetnikiList"></div>
+      <div class="panel" id="vz2podotchetnikiEmpty" style="display:none;">
+        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
+      </div>
+    </section>
+
+    <section id="section-vz2otv" class="content-section">
+    <div class="panel">
+      <h2>Ответственные (Взаиморасчёты) <span class="sub">кто получает рассылку по Взаиморасчётам — видно только администраторам</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Имя-фамилия должно СОВПАДАТЬ с тем, как оно записано в столбце «Ответственный» в файле (регистр не важен). Одна запись для «Jakupbekov Deniz» обязательна — на него уходит всё, для чего ответственный не найден.</p>
+      <div id="vz2otvLoadingNote" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap" style="display:none;" id="vz2otvTableWrap">
+        <table class="invoices" id="vz2otvTable">
+          <thead>
+            <tr><th>Имя-фамилия (как в файле)</th><th>Telegram Chat ID</th><th>Комментарий</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);">
+        <h2 style="font-size:14px;margin-bottom:12px;">Добавить запись</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="filter-field" style="width:260px;">
+            <label>Имя-фамилия (как в файле)</label>
+            <input type="text" id="vz2otvNewName" placeholder="Например IBRAGIMOV RUSTAM KUATOVICH">
+          </div>
+          <div class="filter-field" style="width:180px;">
+            <label>Telegram Chat ID</label>
+            <input type="text" id="vz2otvNewChatId" placeholder="Например 1613809975">
+          </div>
+          <div class="filter-field" style="width:220px;">
+            <label>Комментарий (необязательно)</label>
+            <input type="text" id="vz2otvNewComment" placeholder="">
+          </div>
+          <div class="filter-field" style="width:auto;">
+            <label>&nbsp;</label>
+            <button onclick="addVz2OtvRow()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </section>
+
     <footer class="note">Данные обновляются напрямую из Google Sheets каждые 8 секунд. Изменения здесь применяются почти мгновенно.</footer>
     </main>
   </div>
@@ -5217,11 +5301,14 @@ const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpo
 const PERSONAL_SECTIONS = ["requests", "employees", "positions", "users", "writeemp", "suggestions"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
+const VZAIMORASCHETY_SECTIONS = ["vzaimoraschety", "vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2otv"];
+
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
   { toggleId: "personalToggle", subgroupId: "personalSubgroup", sections: PERSONAL_SECTIONS },
   { toggleId: "realizatsiyaToggle", subgroupId: "realizatsiyaSubgroup", sections: REALIZATSIYA_SECTIONS },
   { toggleId: "salaryToggle", subgroupId: "salarySubgroup", sections: SALARY_SECTIONS },
+  { toggleId: "vzaimoraschetyToggle", subgroupId: "vzaimoraschetySubgroup", sections: VZAIMORASCHETY_SECTIONS },
 ];
 
 function showSection(name) {
@@ -5270,6 +5357,18 @@ function showSection(name) {
   }
   if (name === "vzaimoraschety" && currentRole === "admin") {
     loadVzaimoraschety();
+  }
+  if (name === "vz2postavshiki" && currentRole === "admin") {
+    loadVz2Category("postavshiki", "vz2postavshiki");
+  }
+  if (name === "vz2pokupateli" && currentRole === "admin") {
+    loadVz2Category("pokupateli", "vz2pokupateli");
+  }
+  if (name === "vz2podotchetniki" && currentRole === "admin") {
+    loadVz2Category("podotchetniki", "vz2podotchetniki");
+  }
+  if (name === "vz2otv" && currentRole === "admin") {
+    loadVz2OtvSheet();
   }
   if (name === "approvers" && currentRole === "admin") {
     loadApproverSheet();
@@ -5877,7 +5976,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="vzaimoraschety"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="vzaimoraschety"], #vzaimoraschetyToggle, .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -8570,6 +8669,250 @@ function vzToggleCategory(key) {
   const isOpen = wrap.style.display !== "none";
   wrap.style.display = isOpen ? "none" : "";
   if (chevron) chevron.style.transform = isOpen ? "" : "rotate(180deg)";
+}
+
+/* ============================================================
+   "Взаиморасчёты" #2 - HYUNDAI RM/UZB (yassi "TDSheet") format.
+   Bitta so'rov (getVzaimoraschety2) bilan HAMMA (~1000+) qatorni olib,
+   VZ2_DATA'da keshlaymiz - 3 sahifa (Поставщики/Покупатели/Подотчётные)
+   shu keshdan kategoriyaga qarab filtrlab chizadi.
+   ============================================================ */
+let VZ2_DATA = null;
+
+async function ensureVz2Data(force) {
+  if (VZ2_DATA && !force) return VZ2_DATA;
+  VZ2_DATA = await apiCall("getVzaimoraschety2", {});
+  return VZ2_DATA;
+}
+
+function vz2GroupItems(items) {
+  const orgs = {};
+  for (const it of items) {
+    const org = it.org || "—";
+    const dept = it.dept || "—";
+    orgs[org] = orgs[org] || {};
+    orgs[org][dept] = orgs[org][dept] || { kt: [], dt: [] };
+    orgs[org][dept][it.side === "dt" ? "dt" : "kt"].push(it);
+  }
+  return orgs;
+}
+
+function vz2RenderSide(rows, side) {
+  if (!rows.length) return "";
+  const color = side === "kt" ? "#C0392B" : "#1E8449";
+  const label = side === "kt" ? "Кредиторская (Кт) — мы должны" : "Дебиторская (Дт) — нам должны";
+  const sum = rows.reduce((s, i) => s + Math.abs(Number(i.total || 0)), 0);
+  const trs = rows.map(it => `
+    <tr>
+      <td>${escapeHtml(it.name)}</td>
+      <td>${escapeHtml(it.contract || "—")}</td>
+      <td>${escapeHtml(it.inn || "—")}</td>
+      <td class="num-cell" style="color:${color};font-weight:600;">${vzFormatNum(Math.abs(it.total))}</td>
+      <td>${escapeHtml(it.resolvedName || "—")}${it.resolvedMatched ? "" : " <span style='opacity:.6'>(резерв)</span>"}</td>
+    </tr>`).join("");
+  return `
+    <table class="invoices" style="margin-bottom:10px;">
+      <thead>
+        <tr><th colspan="5" style="color:${color};">${label} · ${rows.length} · ${vzFormatNum(sum)}</th></tr>
+        <tr><th>Контрагент</th><th>Договор</th><th>ИНН</th><th class="num-cell">Сумма</th><th>Ответственный</th></tr>
+      </thead>
+      <tbody>${trs}</tbody>
+    </table>`;
+}
+
+function vz2RenderCategory(prefix, category) {
+  const items = ((VZ2_DATA && VZ2_DATA.items) || []).filter(it => it.category === category);
+
+  const updatedEl = document.getElementById(prefix + "Updated");
+  if (updatedEl) {
+    updatedEl.textContent = `Обновлено: ${(VZ2_DATA && VZ2_DATA.updatedAt) || "—"}` +
+      ((VZ2_DATA && VZ2_DATA.uploadedBy) ? ` · Загрузил: ${VZ2_DATA.uploadedBy}` : "");
+  }
+
+  const ktItems = items.filter(i => i.side !== "dt");
+  const dtItems = items.filter(i => i.side === "dt");
+  const ktTotal = ktItems.reduce((s, i) => s + Math.abs(Number(i.total || 0)), 0);
+  const dtTotal = dtItems.reduce((s, i) => s + Math.abs(Number(i.total || 0)), 0);
+
+  const summaryEl = document.getElementById(prefix + "Summary");
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <div class="stat-card accent-rejected">
+        <div class="stat-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i></div>
+        <div><div class="num">${vzFormatNum(ktTotal)}</div><div class="label">Кредиторская (мы должны) <span style="opacity:.6">(${ktItems.length})</span></div></div>
+      </div>
+      <div class="stat-card accent-accepted">
+        <div class="stat-icon"><i class='ti ti-cash' aria-hidden='true'></i></div>
+        <div><div class="num">${vzFormatNum(dtTotal)}</div><div class="label">Дебиторская (нам должны) <span style="opacity:.6">(${dtItems.length})</span></div></div>
+      </div>`;
+  }
+
+  const listEl = document.getElementById(prefix + "List");
+  const emptyEl = document.getElementById(prefix + "Empty");
+  if (!items.length) {
+    if (listEl) listEl.innerHTML = "";
+    if (emptyEl) emptyEl.style.display = "";
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = "none";
+
+  const grouped = vz2GroupItems(items);
+  const orgNames = Object.keys(grouped).sort();
+  let html = "";
+  for (const org of orgNames) {
+    const depts = grouped[org];
+    const deptNames = Object.keys(depts).sort();
+    html += `<div class="panel" style="margin-bottom:16px;"><h2 style="margin-bottom:10px;">${escapeHtml(org)}</h2>`;
+    for (const dept of deptNames) {
+      const bucket = depts[dept];
+      html += `<div style="margin:0 0 18px 0;">
+        <div class="sub" style="font-weight:600;margin-bottom:6px;">${escapeHtml(dept)}</div>
+        ${vz2RenderSide(bucket.kt, "kt")}
+        ${vz2RenderSide(bucket.dt, "dt")}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  if (listEl) listEl.innerHTML = html;
+}
+
+async function loadVz2Category(category, prefix) {
+  const listEl = document.getElementById(prefix + "List");
+  if (listEl && !VZ2_DATA) listEl.innerHTML = "<p style='color:var(--muted)'>Загрузка...</p>";
+  try {
+    await ensureVz2Data(false);
+    if (!VZ2_DATA.hasData) {
+      if (listEl) listEl.innerHTML = "";
+      const emptyEl = document.getElementById(prefix + "Empty");
+      if (emptyEl) emptyEl.style.display = "";
+      const updatedEl = document.getElementById(prefix + "Updated");
+      if (updatedEl) updatedEl.style.display = "none";
+      return;
+    }
+    vz2RenderCategory(prefix, category);
+  } catch (e) {
+    if (listEl) listEl.innerHTML = `<p style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</p>`;
+  }
+}
+
+async function vz2SendDistribution(fromCategory) {
+  if (!confirm(
+    "Отправить рассылку ВСЕМ ответственным лицам по Взаиморасчётам " +
+    "(Покупатели + Поставщики + Подотчётные лица, Кт и Дт)?\n\n" +
+    "Каждый получит одно Telegram-сообщение со своим Excel-файлом."
+  )) return;
+  const btn = document.getElementById("vz2SendBtn-" + fromCategory);
+  const oldText = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.innerHTML = "Отправка..."; }
+  try {
+    const res = await apiCall("sendVzaimoraschety2Distribution", {});
+    alert(
+      `Отправлено получателям: ${res.sent.length}\n` +
+      `Ошибок отправки: ${res.failed.length}\n` +
+      `Без ответственного (не отправлено никому): ${res.unresolvedCount}`
+    );
+  } catch (e) {
+    alert("Ошибка: " + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = oldText; }
+  }
+}
+
+/* ---------- "Ответственные (Взаиморасчёты)" - Ism -> chat_id ---------- */
+let vz2OtvRowsCache = [];
+let vz2OtvEditingRow = null;
+
+async function loadVz2OtvSheet() {
+  document.getElementById("vz2otvLoadingNote").style.display = "block";
+  document.getElementById("vz2otvLoadingNote").textContent = "Загрузка...";
+  document.getElementById("vz2otvTableWrap").style.display = "none";
+  try {
+    const data = await apiCall("getVz2OtvRows", {});
+    vz2OtvRowsCache = data.rows || [];
+    renderVz2OtvTable();
+    document.getElementById("vz2otvLoadingNote").style.display = "none";
+    document.getElementById("vz2otvTableWrap").style.display = "block";
+  } catch (e) {
+    document.getElementById("vz2otvLoadingNote").textContent = "Ошибка: " + e.message;
+  }
+}
+
+function renderVz2OtvTable() {
+  const tbody = document.querySelector("#vz2otvTable tbody");
+  tbody.innerHTML = vz2OtvRowsCache.map(r => {
+    if (vz2OtvEditingRow === r.rowIndex) {
+      return `
+        <tr data-row="${r.rowIndex}" style="background:var(--chip-bg);">
+          <td><input type="text" id="vz2otvEditName-${r.rowIndex}" value="${escapeHtml(r.name)}" style="width:100%;padding:5px 6px;"></td>
+          <td><input type="text" id="vz2otvEditChatId-${r.rowIndex}" value="${escapeHtml(r.chatId)}" style="width:100%;padding:5px 6px;"></td>
+          <td><input type="text" id="vz2otvEditComment-${r.rowIndex}" value="${escapeHtml(r.comment)}" style="width:100%;padding:5px 6px;"></td>
+          <td style="white-space:nowrap;">
+            <button onclick="saveVz2OtvEdit(${r.rowIndex})" style="background:none;border:none;color:#2e7d32;cursor:pointer;" title="Сохранить"><i class="ti ti-check" aria-hidden="true"></i></button>
+            <button onclick="cancelVz2OtvEdit()" style="background:none;border:none;color:var(--muted);cursor:pointer;" title="Отмена"><i class="ti ti-x" aria-hidden="true"></i></button>
+          </td>
+        </tr>`;
+    }
+    return `
+    <tr data-row="${r.rowIndex}">
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.chatId)}</td>
+      <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.comment)}</td>
+      <td style="white-space:nowrap;">
+        <button onclick="startVz2OtvEdit(${r.rowIndex})" style="background:none;border:none;color:var(--navy);cursor:pointer;" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button>
+        <button onclick="deleteVz2OtvRow(${r.rowIndex})" style="background:none;border:none;color:var(--red-fg);cursor:pointer;" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button>
+      </td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="4" style="color:var(--muted);">Пока нет записей</td></tr>`;
+}
+
+function startVz2OtvEdit(rowIndex) {
+  vz2OtvEditingRow = rowIndex;
+  renderVz2OtvTable();
+}
+
+function cancelVz2OtvEdit() {
+  vz2OtvEditingRow = null;
+  renderVz2OtvTable();
+}
+
+async function saveVz2OtvEdit(rowIndex) {
+  const name = document.getElementById(`vz2otvEditName-${rowIndex}`).value.trim();
+  const chatId = document.getElementById(`vz2otvEditChatId-${rowIndex}`).value.trim();
+  const comment = document.getElementById(`vz2otvEditComment-${rowIndex}`).value.trim();
+  if (!name) { alert("Укажите имя-фамилию"); return; }
+  try {
+    await apiCall("saveVz2OtvRow", { rowIndex, name, chatId, comment });
+    vz2OtvEditingRow = null;
+    loadVz2OtvSheet();
+  } catch (e) {
+    alert("Не удалось сохранить: " + e.message);
+  }
+}
+
+async function deleteVz2OtvRow(rowIndex) {
+  if (!confirm("Удалить эту запись?")) return;
+  try {
+    await apiCall("deleteVz2OtvRow", { rowIndex });
+    loadVz2OtvSheet();
+  } catch (e) {
+    alert("Не удалось удалить: " + e.message);
+  }
+}
+
+async function addVz2OtvRow() {
+  const name = document.getElementById("vz2otvNewName").value.trim();
+  const chatId = document.getElementById("vz2otvNewChatId").value.trim();
+  const comment = document.getElementById("vz2otvNewComment").value.trim();
+  if (!name) { alert("Укажите имя-фамилию"); return; }
+  try {
+    await apiCall("saveVz2OtvRow", { name, chatId, comment });
+    document.getElementById("vz2otvNewName").value = "";
+    document.getElementById("vz2otvNewChatId").value = "";
+    document.getElementById("vz2otvNewComment").value = "";
+    loadVz2OtvSheet();
+  } catch (e) {
+    alert("Не удалось добавить: " + e.message);
+  }
 }
 
 async function loadFeatures() {
