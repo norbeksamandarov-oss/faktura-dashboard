@@ -2741,6 +2741,133 @@
     border-bottom-color: var(--accent, #2563eb);
   }
 </style>
+<style id="skin-v2">
+/* ===== SKIN V2: Mini App uslubi (shisha, tungi/kunduzgi). Faqat ko'rinish, JS/struktura o'zgarmaydi ===== */
+html:root[data-theme="dark"], html:root[data-theme="dark"][data-brand="crb"] {
+  --navy:#2f6bff; --navy-light:#5b8dff; --ice:rgba(91,141,255,0.26); --ice-soft:rgba(255,255,255,0.06);
+  --bg:#07090f; --card:rgba(255,255,255,0.055); --text:#f3f5fb; --muted:#8d95ab; --border:rgba(255,255,255,0.10);
+  --green-bg:rgba(52,209,122,0.14); --green-fg:#34d17a; --red-bg:rgba(255,107,107,0.14); --red-fg:#ff6b6b;
+  --amber-bg:rgba(255,184,77,0.14); --amber-fg:#ffb84d; --gray-bg:rgba(255,255,255,0.07); --gray-fg:#aeb4d6;
+  --chip-bg:rgba(255,255,255,0.08); --navy-text:#9db8ff;
+  --navy-grad:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.05));
+  --stat-ring:rgba(255,255,255,0.14); --stat-ring2:rgba(255,255,255,0.06); --stat-glow:rgba(47,107,255,0.18);
+  --sk-glass:rgba(255,255,255,0.055); --sk-glass-hi:rgba(255,255,255,0.09); --sk-nav-on:rgba(47,107,255,0.20); --sk-nav-text:#ffffff;
+  --sk-orb:.30; color-scheme:dark;
+}
+html:root:not([data-theme="dark"]), html:root:not([data-theme="dark"])[data-brand="crb"] {
+  --navy:#1f3fa8; --navy-light:#2459e8; --ice:#2459e8; --ice-soft:rgba(36,89,232,0.07);
+  --bg:#f2f4fa; --card:rgba(255,255,255,0.82); --text:#141a2e; --muted:#667089; --border:rgba(20,26,46,0.10);
+  --green-fg:#14864a; --red-fg:#d23b3b; --amber-fg:#b26a00;
+  --navy-text:#1f3fa8; --navy-grad:linear-gradient(135deg,rgba(255,255,255,0.80),rgba(255,255,255,0.80));
+  --stat-ring:rgba(20,26,46,0.10); --stat-ring2:rgba(20,26,46,0.04); --stat-glow:rgba(36,89,232,0.12);
+  --sk-glass:rgba(255,255,255,0.80); --sk-glass-hi:#ffffff; --sk-nav-on:rgba(36,89,232,0.12); --sk-nav-text:#1b3fa8;
+  --sk-orb:.16;
+}
+html body{font-family:'Manrope','Satoshi',sans-serif;background:var(--bg);color:var(--text)}
+html body::before{width:460px;height:460px;top:-140px;left:-100px;right:auto;background:radial-gradient(circle,#2f6bff,transparent 70%);opacity:var(--sk-orb);filter:blur(40px)}
+html body::after{width:420px;height:420px;bottom:-150px;right:-80px;left:auto;background:radial-gradient(circle,#7a3cff,transparent 70%);opacity:var(--sk-orb);filter:blur(40px)}
+@keyframes skDrift{to{transform:translate(60px,40px) scale(1.15)}}
+/* tepa panel */
+html header.topbar{background:var(--sk-glass);border-bottom:1px solid var(--border);color:var(--text);backdrop-filter:none}
+html .brand-text .subtitle{color:var(--muted)}
+html .brand .mark{background:linear-gradient(135deg,#2f6bff,#7a3cff);color:#fff;box-shadow:0 6px 20px rgba(47,107,255,.4)}
+html #refreshBtn,html #logoutBtn,html #notifyBtn,html #changePasswordBtn,html #announcementBtn{background:var(--sk-glass)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:10px!important;transition:.25s}
+html #refreshBtn:hover,html #logoutBtn:hover,html #notifyBtn:hover,html #changePasswordBtn:hover,html #announcementBtn:hover{background:var(--sk-glass-hi)!important;transform:translateY(-1px)}
+html .theme-pill{background:var(--sk-glass)!important;border:1px solid var(--border)!important}
+html .theme-pill-opt{color:var(--muted)!important}
+html .topbar-right span,html #userInfo{color:var(--muted)!important}
+/* chap menyu */
+html .sidebar{background:var(--sk-glass);border-right:1px solid var(--border);backdrop-filter:none}
+html .nav-item{color:var(--muted);border-left:0;border-radius:11px;margin:0 10px;padding:11px 14px;transition:background .25s,color .25s,transform .25s cubic-bezier(.16,1,.3,1)}
+html .nav-item:hover{background:var(--sk-glass-hi);color:var(--text);transform:translateX(3px)}
+html .nav-item.active{background:var(--sk-nav-on);color:var(--sk-nav-text);box-shadow:inset 0 0 0 1px rgba(91,141,255,.40)}
+html .nav-group-toggle.expanded:not(.active){background:var(--ice-soft)}
+html .nav-subgroup{transition:max-height .45s cubic-bezier(.16,1,.3,1)}
+html .nav-subgroup .nav-sub-item{opacity:0;transform:translateY(-8px);transition:opacity .3s,transform .4s cubic-bezier(.16,1,.3,1),background .25s,color .25s}
+html .nav-subgroup.expanded .nav-sub-item{opacity:1;transform:none}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(1){transition-delay:.05s,.05s,0s,0s}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(2){transition-delay:.10s,.10s,0s,0s}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(3){transition-delay:.15s,.15s,0s,0s}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(4){transition-delay:.20s,.20s,0s,0s}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(5){transition-delay:.25s,.25s,0s,0s}
+html .nav-subgroup.expanded .nav-sub-item:nth-child(n+6){transition-delay:.30s,.30s,0s,0s}
+html .nav-subgroup.expanded{max-height:700px}
+html #sidebarToggleBtn{color:var(--muted)}
+/* kartalar va panellar */
+html .panel,html .modal-card{background:var(--sk-glass);border:1px solid var(--border);border-radius:18px;backdrop-filter:none;box-shadow:0 10px 30px -12px rgba(0,0,0,.35);color:var(--text)}
+html .stat-card{animation:none;background-image:none;background-color:var(--sk-glass);border:1px solid var(--border);border-radius:18px;backdrop-filter:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
+html .stat-card:hover{transform:translateY(-4px);background-color:var(--sk-glass-hi);box-shadow:0 14px 30px -14px rgba(47,107,255,.45)}
+html .content-section.active{animation:skRise .5s cubic-bezier(.16,1,.3,1)}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+
+/* jadvallar */
+html table.emp-table th,html table.invoices thead th{background:transparent;color:var(--muted);border-bottom:1px solid var(--border);letter-spacing:.07em}
+html table.emp-table td{border-bottom:1px solid var(--border)}
+html table.emp-table tbody tr:hover{background:var(--ice-soft)}
+/* tugmalar, maydonlar */
+html .btn-primary,html .modal-actions .btn-primary{background:var(--navy-light);color:#fff;border-radius:11px;border:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}
+html .btn-primary:hover{opacity:1;transform:translateY(-2px);box-shadow:0 10px 24px rgba(47,107,255,.45)}
+html input:not([type=checkbox]):not([type=radio]),html select,html textarea{background-color:var(--sk-glass);color:var(--text);border-color:var(--border)}
+html select option{background:#12162a;color:#f3f5fb}
+html:root:not([data-theme="dark"]) select option{background:#fff;color:#141a2e}
+html input:focus,html select:focus,html textarea:focus{border-color:var(--navy-light)!important;box-shadow:0 0 0 4px rgba(47,107,255,.2)!important;outline:none}
+/* kirish ekrani */
+html .login-card{background:var(--sk-glass);border:1px solid var(--border);backdrop-filter:none;animation:skRise .7s cubic-bezier(.16,1,.3,1) both}
+html .login-input{background:var(--sk-glass)!important;color:var(--text)!important;border:1px solid var(--border)!important}
+html .login-submit-btn{background:var(--navy-light)!important;color:#fff!important}
+html .nav-item.active{background:var(--sk-nav-on)!important}
+html[data-brand] .nav-item.active{background:transparent!important;color:var(--sk-nav-text)!important}
+html[data-brand] .nav-item.active .nav-icon svg{stroke:currentColor!important}
+html[data-brand] .nav-active-pill{background:var(--sk-nav-on)!important;box-shadow:inset 0 0 0 1px var(--accent-2)!important;border-radius:11px}
+html #crbGreetingTitle{color:var(--text)!important}
+html .nav-item.active{color:var(--sk-nav-text)!important}
+html .nav-item.active .nav-icon svg{stroke:currentColor!important}
+html table.invoices thead th,html[data-brand] table.invoices thead th{background:var(--sk-glass-hi)!important;color:var(--muted)!important;border-bottom:1px solid var(--border)}
+html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn,html[data-theme="dark"] .rank-toggle-btn,html[data-theme="dark"] .admin-open-btn{color:#9db8ff}
+html[data-theme="dark"] #userInfo,html[data-theme="dark"] .org-card-total .org-count-lbl,html[data-theme="dark"] .org-card-total .org-sum-lbl{color:#9db8ff}
+html[data-theme="dark"] .topbar-right span{color:var(--muted)!important}
+html:root:not([data-theme="dark"])[data-brand="crb"] .label{color:#5b6679}
+html[data-theme="dark"] .filter-field button,html[data-theme="dark"] .btn-primary,html[data-theme="dark"] #gtdExportBtn{background:#2f6bff;border-color:#2f6bff;color:#fff}
+html[data-theme="dark"] #clearFiltersBtn,html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn{color:#9db8ff!important;background:transparent}
+html .nav-badge{white-space:nowrap;flex-shrink:0;line-height:1.4;width:auto;height:auto;min-width:0;border-radius:99px}
+html .nav-badge.nav-badge-alert{padding:1px 8px}
+/* ===== Maket: namunadagidek suzuvchi kartalar (faqat keng ekran) ===== */
+@media(min-width:861px){
+  html #app{padding:16px 20px 24px}
+  html header.topbar{border-radius:18px;border:1px solid var(--border);padding:12px 22px;margin-bottom:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html .app-body{gap:16px;align-items:flex-start}
+  html .sidebar{margin:0;border:1px solid var(--border);border-radius:18px;padding:14px 4px 16px;min-height:0;top:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html .content-area{padding:0 0 40px}
+}
+html .nav-group-label{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted);padding:12px 22px 6px}
+html .sidebar.collapsed .nav-group-label{display:none}
+html .nav-item.active{font-weight:700}
+html .nav-item{font-size:14px}
+html .nav-sub-item{font-size:13px}
+/* ===== Namunaga aynan moslash: menyu, brend, sarlavha ===== */
+html .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 14px 14px;font-weight:800;font-size:15px;color:var(--text)}
+html .sb-brand .sb-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#2f6bff,#7a3cff);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;box-shadow:0 6px 20px rgba(47,107,255,.4);flex-shrink:0}
+html .sb-brand small{display:block;font-size:11px;font-weight:600;color:var(--muted)}
+html .sidebar.collapsed .sb-brand .sb-t{display:none}
+html .sidebar.collapsed .sb-brand{justify-content:center;padding-inline:0}
+html header.topbar .brand{display:none}
+html header.topbar{justify-content:flex-end}
+html .sidebar:not(.collapsed) .nav-icon{display:none}
+html .sidebar:not(.collapsed) .nav-item::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6;flex-shrink:0}
+html .sidebar:not(.collapsed) .nav-sub-item::before{display:none}
+html .nav-sub-item{padding-left:12px}
+html .nav-subgroup{margin-left:22px;border-left:1px solid var(--border)}
+html .nav-subgroup .nav-item{margin:0 6px}
+html .nav-group-toggle .nav-label{flex:1;text-align:left}
+html .nav-group-toggle svg.nav-group-chevron{display:none}
+html .sidebar:not(.collapsed) .nav-group-toggle::after{content:"▶";font-size:12px;opacity:.7;margin-left:6px;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+html .sidebar:not(.collapsed) .nav-group-toggle.expanded::after{transform:rotate(90deg)}
+html .content-section>h2.sec-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;font-size:24px;font-weight:800;color:var(--text)}
+html .content-section>h2.sec-title .sub{font-size:13px;font-weight:500;color:var(--muted)}
+html .content-section>.panel:first-of-type{margin-top:0}
+@media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
+</style>
 </head>
 <body>
 
@@ -10761,6 +10888,27 @@ async function recallInvoice(facturaid, btnEl) {
   } else {
     window.pzInit = pzInit;
   }
+})();
+</script>
+<script id="skin-v2-js">
+(function(){
+  function run(){
+    try{
+      var sb=document.getElementById('sidebarNav');
+      if(sb&&!sb.querySelector('.sb-brand')){
+        var b=document.createElement('div');b.className='sb-brand';
+        b.innerHTML='<div class="sb-logo">CRB</div><div class="sb-t">CRB<small>Счета-фактуры · онлайн</small></div>';
+        var first=sb.querySelector('#sidebarToggleBtn');
+        sb.insertBefore(b, first? first.nextSibling : sb.firstChild);
+      }
+      document.querySelectorAll('.content-section').forEach(function(sec){
+        var p=null; for(var i=0;i<sec.children.length;i++){ if(sec.children[i].classList.contains('panel')){p=sec.children[i];break;} }
+        if(!p) return; var h=p.firstElementChild;
+        if(h&&h.tagName==='H2'&&!h.classList.contains('sec-title')){h.classList.add('sec-title');sec.insertBefore(h,p);}
+      });
+    }catch(e){console.error('skin-v2',e)}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
 </script>
 </body>
