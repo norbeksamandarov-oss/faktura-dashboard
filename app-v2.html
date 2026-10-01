@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ru" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<title>Заявки — CRB</title>
+<meta name="theme-color" content="#07090f">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* CRB Mini App v2 - qora rejim. Bitta ekran - bitta g'oya, bo'limga qarab
+     rangi o'zgaradigan nur, katta sarlavha, "buloq"dek qaytadigan kartochkalar. */
+  :root {
+    --navy: #07090f; --bg: #07090f; --card: rgba(255,255,255,0.055);
+    --text: #f3f5fb; --muted: #8d95ab; --border: rgba(255,255,255,0.10);
+    --ice-soft: rgba(255,255,255,0.06); --accent: #2f6bff;
+    --danger: #ff6b6b; --danger-bg: rgba(255,107,107,0.14);
+    --ok: #34d17a; --ok-bg: rgba(52,209,122,0.14);
+    --surface: rgba(255,255,255,0.055); --surface-hi: rgba(255,255,255,0.09); --line: rgba(255,255,255,0.10);
+    --orb: #2f6bff;
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1); --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { position: relative; overflow-x: hidden; }
+  button, input, select, textarea { font-family: inherit; color: inherit; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 18px 18px 48px; position: relative; }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; pointer-events: none;
+         background-color: var(--orb); transition: background-color 0.9s ease; opacity: 0.5; will-change: transform; }
+  .orb.o1 { width: 300px; height: 300px; top: -110px; left: -90px; animation: drift1 16s ease-in-out infinite; }
+  .orb.o2 { width: 260px; height: 260px; top: 45%; right: -120px; opacity: 0.26; animation: drift2 20s ease-in-out infinite; }
+  @keyframes drift1 { 50% { transform: translate(40px, 30px) scale(1.12); } }
+  @keyframes drift2 { 50% { transform: translate(-30px, -40px) scale(0.92); } }
+
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; letter-spacing: 0.02em; font-size: 14px; }
+  .brand i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 11px;
+             background: linear-gradient(150deg, #5b8cff, #1c3fae); box-shadow: 0 6px 16px -6px rgba(47,107,255,0.9); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+          background: var(--surface); border: 1px solid var(--line); color: var(--muted); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .pill.back { color: var(--text); cursor: pointer; font-size: 13px; padding: 8px 14px; transition: transform 0.25s var(--spring), background 0.2s; }
+  .pill.back:active { transform: scale(0.94); background: var(--surface-hi); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); position: relative; flex-shrink: 0; }
+  .dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--ok); animation: ping 2s ease-out infinite; }
+  @keyframes ping { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(3.2); opacity: 0; } }
+
+  .hero { margin: 22px 0 18px; }
+  .hero h1 { margin: 0; font-size: 36px; line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; text-wrap: balance; }
+  .hero h1.long { font-size: 28px; }
+  .hero h1 em { font-style: normal; background: linear-gradient(100deg, #8fb0ff, #fff 75%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 32ch; }
+  .hero .pill { margin-bottom: 14px; }
+  .hero-in { animation: rise 0.6s var(--ease) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .screen-in { animation: scr-in 0.5s var(--ease) both; }
+  @keyframes scr-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .stat { padding: 12px 12px 11px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); animation: rise 0.6s var(--ease) both; }
+  .stat:nth-child(2) { animation-delay: 70ms; } .stat:nth-child(3) { animation-delay: 140ms; }
+  .stat b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat span { display: block; margin-top: 6px; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+  .stat.work b { color: #ffb84d; } .stat.done b { color: var(--ok); } .stat.rej b { color: #ff7b7b; }
+
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .menu-item { --c: #2f6bff; --mx: 50%; --my: 0%;
+    position: relative; overflow: hidden; text-align: left; cursor: pointer; font: inherit;
+    border-radius: 24px; padding: 16px; min-height: 128px; background: var(--surface); border: 1px solid var(--line);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
+    transition: transform 0.45s var(--spring), border-color 0.3s;
+    opacity: 0; animation: rise 0.6s var(--ease) forwards; }
+  .menu-item::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.35s;
+    background: radial-gradient(180px circle at var(--mx) var(--my), color-mix(in srgb, var(--c) 45%, transparent), transparent 70%); }
+  .menu-item:hover::before, .menu-item:active::before { opacity: 1; }
+  .menu-item:hover { border-color: color-mix(in srgb, var(--c) 55%, transparent); }
+  .menu-item:active { transform: scale(0.955); }
+  .menu-item > * { position: relative; }
+  .menu-item.wide { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; padding: 14px 16px; gap: 14px; }
+  .menu-item .icon { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; flex-shrink: 0; font-size: 22px;
+    background: color-mix(in srgb, var(--c) 22%, transparent); color: color-mix(in srgb, var(--c) 55%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent); transition: transform 0.5s var(--spring); }
+  .menu-item:hover .icon { transform: rotate(-6deg) scale(1.08); }
+  .menu-item .txt { min-width: 0; flex: 1; }
+  .menu-item .label { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; color: var(--text); }
+  .menu-item .sub { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+  .menu-item .badge { position: absolute !important; top: 14px; right: 14px; padding: 3px 9px; font-size: 11px; font-weight: 800; border-radius: 999px;
+    background: color-mix(in srgb, var(--c) 28%, transparent); color: color-mix(in srgb, var(--c) 40%, #fff); }
+  .menu-item .chevron { color: var(--muted); font-size: 18px; transition: transform 0.4s var(--spring); }
+  .menu-item:hover .chevron { transform: translateX(4px); }
+  .note { display: flex; align-items: center; gap: 9px; margin-top: 20px; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+
+  /* --- Formalar (JS o'zgarmagan: avvalgi sinflar qora uslubda) --- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 18px; margin-bottom: 14px;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: relative; opacity: 0; animation: rise 0.55s var(--ease) forwards; }
+  .field { margin-bottom: 16px; position: relative; opacity: 0; animation: rise 0.5s var(--ease) forwards; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.03em; }
+  .field input[type=text], .field textarea, .field select { width: 100%; padding: 13px 15px; border-radius: 16px; border: 1px solid var(--line);
+    font-size: 16px; background: var(--surface); color: var(--text); outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.25s; }
+  .field input::placeholder, .field textarea::placeholder { color: #5d657a; }
+  .field input[type=text]:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); background: var(--surface-hi);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .field textarea { resize: vertical; min-height: 96px; }
+  .step-label { font-size: 12px; color: var(--muted); margin-bottom: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .org-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+  .org-btn { padding: 12px 8px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); font-size: 12.5px; font-weight: 700;
+    cursor: pointer; text-align: center; color: var(--text); transition: transform 0.35s var(--spring), background 0.2s, border-color 0.2s; }
+  .org-btn:active { transform: scale(0.94); }
+  .org-btn.selected { background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: var(--accent); color: #fff; transform: scale(1.03); }
+  .type-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .type-row .org-btn { flex: 1; }
+  .file-drop { border: 1.5px dashed rgba(255,255,255,0.2); border-radius: 18px; padding: 18px; text-align: center; color: var(--muted);
+    font-size: 13.5px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.3s var(--spring); }
+  .file-drop:active { transform: scale(0.98); }
+  .file-drop i { margin-right: 6px; }
+  .file-drop.has-file { border-style: solid; border-color: var(--ok); color: var(--text); background: var(--ok-bg); }
+  .file-list { margin-top: 8px; font-size: 12px; color: var(--muted); } .file-list div { padding: 3px 0; overflow-wrap: anywhere; }
+  .submit-btn { width: 100%; padding: 17px; border: 0; border-radius: 20px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 8px; color: #fff;
+    background: linear-gradient(135deg, #3a76ff, #2352e0); box-shadow: 0 14px 30px -12px rgba(47,107,255,0.8), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: transform 0.4s var(--spring), opacity 0.2s; }
+  .submit-btn:active { transform: scale(0.965); }
+  .submit-btn:disabled { opacity: 0.6; box-shadow: none; }
+  .submit-btn i.ti-loader-2 { display: inline-block; animation: spin 0.7s linear infinite; margin-right: 8px; font-size: 18px; vertical-align: -3px; }
+  .submit-btn.sending { animation: btn-breathe 1.1s ease-in-out infinite; }
+  @keyframes btn-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.985); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-row { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; padding: 6px 0; }
+  .loading-row i { display: inline-block; animation: spin 0.7s linear infinite; font-size: 18px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.4; } .hint i { color: #ffb84d; margin-right: 2px; }
+
+  /* --- "Отправлено!" ekrani --- */
+  .success-screen { position: fixed; inset: 0; z-index: 999; background: radial-gradient(120% 70% at 50% 0%, rgba(52,209,122,0.28), transparent 60%), var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; color: var(--text);
+    animation: fade-in 0.25s ease forwards; overflow-y: auto; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  .success-check { width: 104px; height: 104px; border-radius: 50%; position: relative; background: var(--ok-bg); color: var(--ok);
+    display: flex; align-items: center; justify-content: center; font-size: 52px; line-height: 1; animation: pop 0.6s var(--spring) 0.05s both; }
+  .success-check::before, .success-check::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--ok); opacity: 0; animation: wave 2.2s ease-out 0.5s infinite; }
+  .success-check::after { animation-delay: 1.3s; }
+  @keyframes wave { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.7); opacity: 0; } }
+  @keyframes pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .success-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-top: 22px; }
+  .success-continue { margin-top: 26px; width: 100%; max-width: 320px; background: linear-gradient(135deg, #3a76ff, #2352e0); border: 0; color: #fff;
+    padding: 15px 30px; border-radius: 18px; font-weight: 800; font-size: 15px; cursor: pointer; transition: transform 0.4s var(--spring); }
+  .success-continue:active { transform: scale(0.95); }
+
+  .toast { position: fixed; bottom: 18px; left: 16px; right: 16px; z-index: 1000; background: #1b2033; border: 1px solid var(--line); color: #fff;
+    padding: 13px 16px; border-radius: 18px; font-size: 13.5px; text-align: center; font-weight: 700; opacity: 0; transform: translateY(14px);
+    transition: all 0.4s var(--spring); pointer-events: none; max-width: 520px; margin: 0 auto; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.err { background: #4a1f25; border-color: rgba(255,107,107,0.4); }
+  .toast.ok { background: #14382a; border-color: rgba(52,209,122,0.4); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<div class="wrap">
+  <div class="bar">
+    <button class="pill back" id="backBtn" style="display:none;"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад</button>
+    <div class="brand" id="brand"><i>CRB</i>Заявки</div>
+  </div>
+  <div class="hero hero-in">
+    <div class="pill" id="heroPill" style="display:none;"></div>
+    <h1 id="pageTitle"></h1>
+    <p id="pageSub"></p>
+  </div>
+  <div id="statsSlot"></div>
+  <div class="content" id="content"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor("#07090f"); tg.setBackgroundColor("#07090f"); } catch (e) {} }
+
+  var API_URL = "https://expenses-minute-robust-drawings.trycloudflare.com/api";
+
+  var ORGS = [
+    "TOSHTAN AUTO", "OLTIN TULPOR TRADE", "OLTIN TULPOR MOTORS", "OLTIN TULPOR MOTOR",
+    "BEDACHI", "HYUNDAI RM", "HYUNDAI UZBEKISTAN", "GEE MOTORS", "GEE KD",
+  ];
+
+  var content = document.getElementById("content");
+  var pageTitle = document.getElementById("pageTitle");
+  var pageSub = document.getElementById("pageSub");
+  var backBtn = document.getElementById("backBtn");
+  var toastEl = document.getElementById("toast");
+
+  function toast(msg, kind) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast show" + (kind ? " " + kind : "");
+    setTimeout(function () { toastEl.className = "toast"; }, 2600);
+  }
+
+  // So'rov muvaffaqiyatli yuborilgach chiqadigan to'liq ekran holati -
+  // pastki kichik toast o'rniga (real foydalanuvchi so'ragan
+  // yaxshilanish: aniq, "tugadi" degan hissi beradigan ekran).
+  // "Отправить ещё" bosilsa - berilgan renderAgain() qayta chaqiriladi
+  // (forma tozalangan holda qayta ko'rsatiladi), "Назад" bosilsa - menyuga.
+  function fmtNowMA() {
+    var d = new Date();
+    function p2(n) { return n < 10 ? "0" + n : "" + n; }
+    return p2(d.getDate()) + "." + p2(d.getMonth() + 1) + "." + d.getFullYear() +
+      ", " + p2(d.getHours()) + ":" + p2(d.getMinutes());
+  }
+
+  // details: { approverName, org, summary } - "summary" har bir forma
+  // o'zi bergan qisqa tavsif (masalan kontragent yoki so'rov matni).
+  // Real foydalanuvchi so'ragan: qaysi tashkilotga, nima haqida,
+  // qachon (soat/sana) yuborilgani aniq ko'rinsin.
+  function showSuccessScreen(details, renderAgain) {
+    details = details || {};
+    var rows = [];
+    if (details.org) rows.push(["Организация", details.org]);
+    if (details.approverName) rows.push(["Кому", details.approverName]);
+    if (details.summary) {
+      var sm = details.summary.length > 70 ? details.summary.slice(0, 70) + "…" : details.summary;
+      rows.push(["Что отправлено", sm]);
+    }
+    rows.push(["Когда", fmtNowMA()]);
+    var detailsHtml = rows.map(function (r) {
+      return "<div style='display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.18);font-size:13.5px;'>" +
+        "<span style='opacity:.85;'>" + esc(r[0]) + "</span>" +
+        "<span style='font-weight:700;text-align:right;'>" + esc(r[1]) + "</span></div>";
+    }).join("");
+    var el = document.createElement("div");
+    el.className = "success-screen";
+    el.innerHTML =
+      "<div class='success-check'><i class='ti ti-check' aria-hidden='true'></i></div>" +
+      "<div class='success-title'>Отправлено!</div>" +
+      "<div style='width:100%;max-width:320px;margin-top:18px;background:rgba(255,255,255,.14);border-radius:14px;padding:4px 16px;'>" +
+      detailsHtml +
+      "</div>" +
+      "<button class='success-continue' data-act='again'>Отправить ещё</button>" +
+      "<button class='success-continue' data-act='back' style='margin-top:12px;background:transparent;border-color:rgba(255,255,255,.35);'>← Назад в меню</button>";
+    document.body.appendChild(el);
+    el.querySelector("[data-act='again']").onclick = function () {
+      el.remove();
+      content.innerHTML = "";
+      renderAgain();
+    };
+    el.querySelector("[data-act='back']").onclick = function () {
+      el.remove();
+      if (backBtn.onclick) backBtn.onclick();
+    };
+  }
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s == null ? "" : String(s);
+    return d.innerHTML;
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = reader.result;
+        var base64 = result.split(",")[1] || "";
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // MUHIM: oddiy fetch() hech qachon o'zi "vaqti tugadi" deb to'xtamaydi -
+  // agar server (Apps Script) sekinlashib ketsa yoki internet uzilib
+  // qolsa, so'rov ABADIY kutib turadi va tugma "Отправка..." holatida
+  // qotib qoladi (real foydalanuvchi xabar bergan xato). Shu sabab har
+  // bir so'rovga aniq vaqt chegarasi qo'yamiz - shundan keyin so'rov
+  // avtomatik bekor qilinib, tushunarli xato ko'rsatiladi va tugma
+  // yana bosish mumkin bo'lgan holatga qaytadi.
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+    try {
+      return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+    } catch (e) {
+      if (e && e.name === "AbortError") {
+        throw new Error("Сервер не отвечает. Проверьте интернет и попробуйте ещё раз.");
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function uploadFile(file) {
+    var base64 = await fileToBase64(file);
+    var resp = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "uploadFile",
+        filename: file.name,
+        mimeType: file.type || "application/octet-stream",
+        base64: base64,
+      }),
+    }, 45000);
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data; // { ok, url, fileId, name }
+  }
+
+  // "Зарплата" bo'limi uchun - tg.sendData() ISHLATMAYDI, to'g'ridan-
+  // to'g'ri shu backend'ga so'rov yuboradi (Mini App OCHIQ qoladi).
+  function getChatId() {
+    return (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id)
+      ? String(tg.initDataUnsafe.user.id) : "";
+  }
+
+  function getEmployeeName() {
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      var u = tg.initDataUnsafe.user;
+      return [u.first_name, u.last_name].filter(Boolean).join(" ") || u.username || "";
+    }
+    return "";
+  }
+
+  async function callApi(action, params) {
+    var resp = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: JSON.stringify(Object.assign({ action: action }, params || {})),
+    }, 30000);
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  // Real foydalanuvchi so'ragan: sendData() chaqirilgach ba'zi Telegram
+  // mijozlarida (masalan Desktop) Mini App darhol vizual ravishda
+  // yopilmasligi mumkin - forma va pastki kichik toast ekranda
+  // "osilib qolganday" ko'rinardi. Shuning uchun endi shu o'rniga
+  // BUTUN ekranni aniq "Отправлено" holatiga almashtiramiz, tepasida
+  // ortga qaytish uchun aniq "← Назад" tugmasi bilan.
+  function showSentScreen() {
+    content.innerHTML = "";
+    var card = makeCard();
+    var back = document.createElement("div");
+    back.style.cssText = "display:flex;align-items:center;gap:6px;color:var(--accent);font-weight:700;font-size:14.5px;margin-bottom:18px;cursor:pointer;";
+    back.innerHTML = "<i class='ti ti-arrow-left' aria-hidden='true'></i> Назад";
+    back.onclick = function () { if (backBtn.onclick) backBtn.onclick(); };
+    card.appendChild(back);
+    var banner = document.createElement("div");
+    banner.style.cssText = "background:var(--ok-bg);color:var(--ok);border-radius:16px;padding:22px 16px;text-align:center;font-weight:800;font-size:16px;";
+    banner.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true' style='font-size:28px;display:block;margin-bottom:8px;'></i>Отправлено!";
+    card.appendChild(banner);
+  }
+
+  function sendToBot(payload) {
+    if (!tg || !tg.sendData) {
+      toast("Откройте это через кнопку в боте.", "err");
+      return;
+    }
+    tg.sendData(JSON.stringify(payload));
+    showSentScreen();
+  }
+
+  // ------------------------------------------------------------
+  // Umumiy komponentlar
+  // ------------------------------------------------------------
+  function renderOrgPicker(container, onSelect, selectedOrg) {
+    var wrap = document.createElement("div");
+    wrap.className = "org-grid";
+    ORGS.forEach(function (org) {
+      var btn = document.createElement("div");
+      btn.className = "org-btn" + (org === selectedOrg ? " selected" : "");
+      btn.textContent = org;
+      btn.onclick = function () {
+        Array.prototype.forEach.call(wrap.children, function (c) { c.classList.remove("selected"); });
+        btn.classList.add("selected");
+        onSelect(org);
+      };
+      wrap.appendChild(btn);
+    });
+    container.appendChild(wrap);
+    return wrap;
+  }
+
+  function makeCard() {
+    var c = document.createElement("div");
+    c.className = "card";
+    content.appendChild(c);
+    return c;
+  }
+
+  function makeField(card, labelText, tag, opts) {
+    opts = opts || {};
+    var f = document.createElement("div");
+    f.className = "field";
+    var label = document.createElement("label");
+    label.textContent = labelText;
+    f.appendChild(label);
+    var el = document.createElement(tag);
+    if (tag === "textarea") { el.rows = opts.rows || 3; }
+    if (opts.placeholder) el.placeholder = opts.placeholder;
+    f.appendChild(el);
+    if (opts.hint) {
+      var h = document.createElement("div");
+      h.className = "hint";
+      h.innerHTML = "<i class='ti ti-alert-circle' aria-hidden='true'></i> " + opts.hint;
+      f.appendChild(h);
+    }
+    card.appendChild(f);
+    return el;
+  }
+
+  function makeFileDrop(card, label, multiple) {
+    var wrap = document.createElement("div");
+    wrap.className = "field";
+    var l = document.createElement("label");
+    l.textContent = label;
+    wrap.appendChild(l);
+    var drop = document.createElement("div");
+    drop.className = "file-drop";
+    var emptyHtml = "<i class='ti ti-paperclip' aria-hidden='true'></i>Нажмите, чтобы выбрать файл" + (multiple ? "(-ы)" : "");
+    drop.innerHTML = emptyHtml;
+    var input = document.createElement("input");
+    input.type = "file";
+    input.style.display = "none";
+    if (multiple) input.multiple = true;
+    var list = document.createElement("div");
+    list.className = "file-list";
+    var files = [];
+    drop.onclick = function () { input.click(); };
+    input.onchange = function () {
+      files = Array.prototype.slice.call(input.files);
+      list.innerHTML = "";
+      if (files.length) {
+        drop.classList.add("has-file");
+        drop.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>Выбрано: " + files.length + " файл(ов) — нажмите, чтобы изменить";
+        files.forEach(function (f) {
+          var d = document.createElement("div");
+          d.textContent = "• " + f.name;
+          list.appendChild(d);
+        });
+      } else {
+        drop.classList.remove("has-file");
+        drop.innerHTML = emptyHtml;
+      }
+    };
+    wrap.appendChild(drop);
+    wrap.appendChild(input);
+    wrap.appendChild(list);
+    card.appendChild(wrap);
+    return { getFiles: function () { return files; } };
+  }
+
+  function makeSubmitBtn(card, label) {
+    var btn = document.createElement("button");
+    btn.className = "submit-btn";
+    btn.textContent = label;
+    card.appendChild(btn);
+    return btn;
+  }
+
+  async function withBusy(btn, fn) {
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.classList.add("sending");
+    btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i>Отправка...";
+    try {
+      await fn();
+    } catch (e) {
+      toast("Ошибка: " + (e && e.message ? e.message : e), "err");
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("sending");
+      btn.textContent = original;
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Har bir bo'lim uchun forma
+  // ------------------------------------------------------------
+  var SECTIONS = {
+    dogovor: {
+      icon: "ti-file-text", label: "Договор", title: "Запрос по договору",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var step1 = document.createElement("div");
+        step1.className = "step-label";
+        step1.textContent = "1. Организация";
+        card.appendChild(step1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+
+        var text = makeField(card, "2. Номер, дата договора и контрагент", "textarea", {
+          placeholder: "Договор №15 от 20.08.2026 с «Kadi Agency»",
+        });
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!text.value.trim()) { toast("Напишите текст договора", "err"); return; }
+          withBusy(btn, async function () {
+            var res = await callApi("miniAppSubmitDogovor", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, text: text.value.trim(),
+            });
+            showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: text.value.trim() }, function () { SECTIONS.dogovor.render(); });
+          });
+        };
+      },
+    },
+    doverennost: {
+      icon: "ti-certificate", label: "Доверенность", title: "Запрос по доверенности",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. Файл (PDF/Excel/Word) или скриншот");
+        var kontragent = makeField(card, "3. Для кого (поставщик/контрагент)", "input", { placeholder: "Например: ООО Kadi Agency" });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация (если есть, например VIN)", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите файл", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            var res = await callApi("miniAppSubmitDoverennost", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+            showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: kontragent.value.trim() }, function () { SECTIONS.doverennost.render(); });
+          });
+        };
+      },
+    },
+    bank: {
+      icon: "ti-building-bank", label: "Банк", title: "Банковский запрос",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null, selType = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+
+        var s2 = document.createElement("div"); s2.className = "step-label"; s2.style.marginTop = "14px"; s2.textContent = "2. Тип операции";
+        card.appendChild(s2);
+        var typeRow = document.createElement("div");
+        typeRow.className = "type-row";
+        ["Поступление", "Списание"].forEach(function (label) {
+          var b = document.createElement("div");
+          b.className = "org-btn";
+          b.textContent = label;
+          b.onclick = function () {
+            Array.prototype.forEach.call(typeRow.children, function (c) { c.classList.remove("selected"); });
+            b.classList.add("selected");
+            selType = label;
+          };
+          typeRow.appendChild(b);
+        });
+        card.appendChild(typeRow);
+
+        var details = makeField(card, "3. Банк, контрагент, договор, сумма, комментарий", "textarea", {
+          rows: 4, placeholder: "Банк: ...\nКонтрагент: ...\nДоговор: №.. от ..\nСумма: ...\nКомментарий: ...",
+        });
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!selType) { toast("Выберите тип операции", "err"); return; }
+          if (!details.value.trim()) { toast("Заполните детали", "err"); return; }
+          withBusy(btn, async function () {
+            var res = await callApi("miniAppSubmitBank", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, type: selType, details: details.value.trim(),
+            });
+            showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: selType }, function () { SECTIONS.bank.render(); });
+          });
+        };
+      },
+    },
+    realschet: {
+      icon: "ti-receipt", label: "Счёт-фактура", title: "Запрос на счёт-фактуру",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. PDF со сканами (договор, доп. соглашения, приложения)");
+        var kontragent = makeField(card, "3. Контрагент (покупатель)", "input", {
+          placeholder: "Название и ИНН/ПНФЛ", hint: "Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+        });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация (например VIN)", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите PDF", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            var res = await callApi("miniAppSubmitRealschet", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+            showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: kontragent.value.trim() }, function () { SECTIONS.realschet.render(); });
+          });
+        };
+      },
+    },
+    zakaznaryad: {
+      icon: "ti-tool", label: "Заказ-наряд", title: "Запрос на заказ-наряд",
+      render: function () {
+        var card = makeCard();
+        var selOrg = null;
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+        card.appendChild(s1);
+        renderOrgPicker(card, function (org) { selOrg = org; });
+        var fileCtl = makeFileDrop(card, "2. Файл (заказ-наряд, документы)");
+        var kontragent = makeField(card, "3. Контрагент (заказчик)", "input", {
+          placeholder: "Название и ИНН/ПНФЛ", hint: "Обязательно укажите ИНН или ПНФЛ контрагента в этом поле.",
+        });
+        kontragent.type = "text";
+        var note = makeField(card, "Доп. информация", "input", { placeholder: "Необязательно" });
+        note.type = "text";
+        var btn = makeSubmitBtn(card, "Отправить запрос");
+        btn.onclick = function () {
+          var files = fileCtl.getFiles();
+          if (!selOrg) { toast("Выберите организацию", "err"); return; }
+          if (!files.length) { toast("Приложите файл", "err"); return; }
+          if (!kontragent.value.trim()) { toast("Укажите контрагента с ИНН/ПНФЛ", "err"); return; }
+          withBusy(btn, async function () {
+            var up = await uploadFile(files[0]);
+            var res = await callApi("miniAppSubmitZakaznaryad", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              org: selOrg, kontragent: kontragent.value.trim(),
+              note: note.value.trim(), file_url: up.url, file_name: up.name,
+            });
+            showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: kontragent.value.trim() }, function () { SECTIONS.zakaznaryad.render(); });
+          });
+        };
+      },
+    },
+    otherreq_post: {
+      icon: "ti-help-circle", label: "Другой запрос", title: "Другой запрос — Поступления",
+      render: function () { renderOtherReq("Поступления"); },
+    },
+    otherreq_real: {
+      icon: "ti-help-circle", label: "Другой запрос", title: "Другой запрос — Реализация",
+      render: function () { renderOtherReq("Реализация"); },
+    },
+    salary: {
+      icon: "ti-wallet", label: "Зарплата", title: "Зарплата",
+      render: function () {
+        var card = makeCard();
+        var chatId = getChatId();
+        if (!chatId) {
+          var errInfo = document.createElement("p");
+          errInfo.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+          errInfo.textContent = "Не удалось определить ваш Telegram ID. Откройте это через кнопку в боте.";
+          card.appendChild(errInfo);
+          return;
+        }
+        var loading = document.createElement("div");
+        loading.className = "loading-row";
+        loading.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...";
+        card.appendChild(loading);
+
+        callApi("miniAppSalaryStatus", { chatId: chatId }).then(function (res) {
+          card.innerHTML = "";
+          if (res.status === "linked") {
+            renderSalaryView(card, chatId);
+          } else if (res.status === "pending") {
+            var p = document.createElement("p");
+            p.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+            p.innerHTML = "<i class='ti ti-clock' aria-hidden='true'></i> Ваш запрос на доступ к «Зарплате» отправлен и ожидает решения администратора. Как только вас одобрят, здесь появятся данные.";
+            card.appendChild(p);
+          } else {
+            renderSalaryRequestForm(card);
+          }
+        }).catch(function (e) {
+          card.innerHTML = "";
+          var p = document.createElement("p");
+          p.style.cssText = "color:var(--danger);font-size:14px;margin:0;";
+          p.textContent = "Ошибка: " + (e && e.message ? e.message : e);
+          card.appendChild(p);
+        });
+      },
+    },
+    suggestion: {
+      icon: "ti-bulb", label: "Предложение / Жалоба", title: "Предложение или жалоба",
+      render: function () {
+        var card = makeCard();
+        var selType = "Предложение";
+        var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "Тип обращения";
+        card.appendChild(s1);
+        var row = document.createElement("div");
+        row.className = "type-row";
+        ["Предложение", "Жалоба"].forEach(function (label, i) {
+          var b = document.createElement("div");
+          b.className = "org-btn" + (i === 0 ? " selected" : "");
+          b.textContent = label;
+          b.onclick = function () {
+            Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("selected"); });
+            b.classList.add("selected");
+            selType = label;
+          };
+          row.appendChild(b);
+        });
+        card.appendChild(row);
+        var text = makeField(card, "Текст обращения", "textarea", { rows: 4, placeholder: "Напишите текст..." });
+        var btn = makeSubmitBtn(card, "Отправить");
+        btn.onclick = function () {
+          if (!text.value.trim()) { toast("Напишите текст", "err"); return; }
+          withBusy(btn, async function () {
+            await callApi("miniAppSubmitSuggestion", {
+              chatId: getChatId(), employeeName: getEmployeeName(),
+              type: selType, text: text.value.trim(),
+            });
+            showSuccessScreen({ summary: selType + ": " + text.value.trim() }, function () { SECTIONS.suggestion.render(); });
+          });
+        };
+      },
+    },
+  };
+
+  function renderOtherReq(category) {
+    var card = makeCard();
+    var selOrg = null;
+    var s1 = document.createElement("div"); s1.className = "step-label"; s1.textContent = "1. Организация";
+    card.appendChild(s1);
+    renderOrgPicker(card, function (org) { selOrg = org; });
+    var text = makeField(card, "2. Текст запроса", "textarea", { rows: 4, placeholder: "Опишите запрос..." });
+    var fileCtl = makeFileDrop(card, "3. Файлы (можно несколько, необязательно)", true);
+    var btn = makeSubmitBtn(card, "Отправить запрос");
+    btn.onclick = function () {
+      var files = fileCtl.getFiles();
+      if (!selOrg) { toast("Выберите организацию", "err"); return; }
+      if (!text.value.trim() && !files.length) { toast("Напишите текст или приложите файл", "err"); return; }
+      withBusy(btn, async function () {
+        var uploaded = [];
+        for (var i = 0; i < files.length; i++) {
+          var up = await uploadFile(files[i]);
+          uploaded.push({ url: up.url, name: up.name });
+        }
+        var action = category === "Реализация" ? "miniAppSubmitOtherReqReal" : "miniAppSubmitOtherReqPost";
+        var res = await callApi(action, {
+          chatId: getChatId(), employeeName: getEmployeeName(),
+          org: selOrg, text: text.value.trim(), files: uploaded,
+        });
+        showSuccessScreen({ approverName: res.approverName, org: selOrg, summary: text.value.trim() }, function () { renderOtherReq(category); });
+      });
+    };
+  }
+
+  // ------------------------------------------------------------
+  // "Зарплата" - Mini App ichida to'liq (app yopilmasdan)
+  // ------------------------------------------------------------
+  function fmtMoneyMA(n) {
+    n = Number(n) || 0;
+    var parts = n.toFixed(2).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts[0] + (parts[1] !== "00" ? "," + parts[1] : "") + " сум";
+  }
+
+  function renderSalaryRequestForm(card) {
+    var info = document.createElement("p");
+    info.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 16px;";
+    info.textContent = "У вас пока нет доступа к разделу «Зарплата». Введите свой ПИНФЛ (14 цифр), чтобы отправить запрос администратору.";
+    card.appendChild(info);
+    var pnflInput = makeField(card, "ПИНФЛ", "input", { placeholder: "14 цифр" });
+    pnflInput.setAttribute("inputmode", "numeric");
+    pnflInput.setAttribute("maxlength", "14");
+    var btn = makeSubmitBtn(card, "Отправить запрос");
+    btn.onclick = function () {
+      var pnfl = pnflInput.value.trim();
+      if (!/^\d{14}$/.test(pnfl)) { toast("ПИНФЛ должен состоять из 14 цифр", "err"); return; }
+      withBusy(btn, async function () {
+        var fio = getEmployeeName();
+        await callApi("miniAppRequestSalaryAccess", { chatId: getChatId(), pnfl: pnfl, fio: fio });
+        card.innerHTML = "";
+        var ok = document.createElement("p");
+        ok.style.cssText = "color:var(--muted);font-size:14px;line-height:1.5;margin:0;";
+        ok.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Запрос отправлен! Как только администратор подтвердит, данные появятся здесь же.";
+        card.appendChild(ok);
+      });
+    };
+  }
+
+  var MONTH_NAMES_RU_MA = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+  function fmtPeriodMA(p) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(p || ""));
+    if (!m) return p;
+    var mi = parseInt(m[2], 10) - 1;
+    return (MONTH_NAMES_RU_MA[mi] || m[2]) + " " + m[1];
+  }
+
+  function renderSalaryOrgBlock(container, row, showOrg) {
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);";
+    var lines = [];
+    if (showOrg) {
+      lines.push('<div style="font-weight:800;margin-bottom:4px;">' + esc(row["Организация"] || "") + "</div>");
+      if (row["Профессия"]) lines.push('<div style="color:var(--muted);font-size:13px;margin-bottom:6px;">' + esc(row["Профессия"]) + "</div>");
+    }
+    var topFields = [
+      ["Оклад", "ОкладОбщий"], ["Удалённая работа", "УдаленнаяРабота"], ["KPI", "KPI"],
+      ["Премии/бонусы", "Премии"], ["Отпускные", "Отпускные"], ["Больничные", "Больничные"],
+      ["Депремирование", "Депремирование"],
+    ];
+    topFields.forEach(function (pair) {
+      var v = Number(row[pair[1]]) || 0;
+      if (v !== 0) lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+        "<span>" + pair[0] + "</span><span>" + fmtMoneyMA(v) + "</span></div>");
+    });
+    var gross = Number(row["НачислениеГросс"]) || 0;
+    var taxes = Number(row["НалогиУдержано"]) || 0;
+    var taxPct = gross ? (taxes / gross * 100) : 0;
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:6px 0 2px;color:var(--danger);">' +
+      "<span>Начислено (Гросс)</span><span>" + fmtMoneyMA(gross) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);padding:2px 0;">' +
+      "<span>Налог (" + taxPct.toFixed(1) + "%)</span><span>" + fmtMoneyMA(taxes) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;padding:2px 0;color:var(--ok);">' +
+      "<span>Начислено (Нетто)</span><span>" + fmtMoneyMA(Number(row["НачислениеНетто"]) || 0) + "</span></div>");
+    var other = Number(row["ПрочиеВыплаты"]) || 0;
+    if (other !== 0) lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+      "<span>Прочие выплаты</span><span>" + fmtMoneyMA(other) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0;">' +
+      "<span>Выплата аванса</span><span>" + fmtMoneyMA(Number(row["ВыплатаАванса"]) || 0) + "</span></div>");
+    lines.push('<div style="display:flex;justify-content:space-between;font-weight:800;font-size:15px;color:var(--ok);padding:6px 0 0;">' +
+      "<span>Зарплата</span><span>" + fmtMoneyMA(Number(row["ИтогоКВыдаче"]) || 0) + "</span></div>");
+    wrap.innerHTML = lines.join("");
+    container.appendChild(wrap);
+  }
+
+  function renderSalaryData(card, data) {
+    var breakdowns = data.org_breakdowns || [];
+    var showOrg = breakdowns.length > 1;
+    breakdowns.forEach(function (row) { renderSalaryOrgBlock(card, row, showOrg); });
+    if (showOrg) {
+      var totalWrap = document.createElement("div");
+      var h = document.createElement("div");
+      h.style.cssText = "font-weight:800;margin-bottom:4px;";
+      h.textContent = "Итого по всем организациям";
+      totalWrap.appendChild(h);
+      card.appendChild(totalWrap);
+      renderSalaryOrgBlock(card, data.total, false);
+    }
+  }
+
+  function renderSalaryView(card, chatId) {
+    var periodRow = document.createElement("div");
+    periodRow.className = "field";
+    var sel = document.createElement("select");
+    periodRow.appendChild(sel);
+    card.appendChild(periodRow);
+    var dataWrap = document.createElement("div");
+    card.appendChild(dataWrap);
+
+    function load(period) {
+      dataWrap.innerHTML = "<div class='loading-row'><i class='ti ti-loader-2' aria-hidden='true'></i> Загрузка...</div>";
+      callApi("miniAppGetSalary", { chatId: chatId, period: period }).then(function (res) {
+        if (sel.options.length === 0) {
+          (res.periods || []).forEach(function (p) {
+            var opt = document.createElement("option");
+            opt.value = p; opt.textContent = fmtPeriodMA(p);
+            sel.appendChild(opt);
+          });
+          sel.value = res.data.period;
+          sel.onchange = function () { load(sel.value); };
+        }
+        dataWrap.innerHTML = "";
+        renderSalaryData(dataWrap, res.data);
+      }).catch(function (e) {
+        dataWrap.innerHTML = "<p style='color:var(--danger);font-size:14px;'>Ошибка: " + esc(e.message || e) + "</p>";
+      });
+    }
+    load(null);
+  }
+
+  // ------------------------------------------------------------
+  // Navigatsiya: asosiy menyu -> kategoriya -> forma
+  // ------------------------------------------------------------
+  var CATEGORIES = {
+    postupleniya: {
+      icon: "ti-arrow-down-left", color: "#0A84FF", label: "Поступления", title: "Поступления",
+      items: ["dogovor", "doverennost", "otherreq_post"],
+    },
+    realizatsiya: {
+      icon: "ti-arrow-up-right", color: "#FF9F0A", label: "Реализация", title: "Реализация",
+      items: ["realschet", "zakaznaryad", "otherreq_real"],
+    },
+  };
+  var TOP_MENU = [
+    { type: "cat", key: "postupleniya" },
+    { type: "cat", key: "realizatsiya" },
+    { type: "sec", key: "bank" },
+    { type: "sec", key: "salary" },
+    { type: "sec", key: "suggestion" },
+  ];
+  var ICON_COLORS = {
+    dogovor: "#0A84FF",
+    doverennost: "#BF5AF2",
+    bank: "#5E5CE6",
+    realschet: "#00C7BE",
+    zakaznaryad: "#FF9F0A",
+    otherreq_post: "#8E8E93",
+    otherreq_real: "#8E8E93",
+    salary: "#30D158",
+    suggestion: "#FFB800",
+  };
+
+  // ------------------------------------------------------------
+  // v2: qora dizayn - menyu, statistika, ekranlar orasidagi o'tish
+  // (zayavka formalari va API chaqiruvlari yuqorida O'ZGARMAGAN)
+  // ------------------------------------------------------------
+  var brandEl = document.getElementById("brand");
+  var heroPill = document.getElementById("heroPill");
+  var statsSlot = document.getElementById("statsSlot");
+  var statsCache = null;
+
+  var SUBS = {
+    postupleniya: "Договор, доверенность", realizatsiya: "Счёт-фактура, заказ-наряд",
+    bank: "Платёжные вопросы", salary: "Расчётный лист", suggestion: "Напишите нам напрямую",
+    dogovor: "Запрос по договору", doverennost: "Оформить доверенность", realschet: "На автомобиль",
+    zakaznaryad: "По сервису и запчастям", otherreq_post: "Если ничего не подошло", otherreq_real: "Если ничего не подошло",
+  };
+
+  function setOrb(color) { document.documentElement.style.setProperty("--orb", color); }
+
+  function setHero(titleHtml, sub, pill) {
+    pageTitle.innerHTML = titleHtml;
+    pageTitle.className = (pageTitle.textContent.length > 20) ? "long" : "";
+    pageSub.textContent = sub || "";
+    pageSub.style.display = sub ? "" : "none";
+    heroPill.textContent = pill || "";
+    heroPill.style.display = pill ? "" : "none";
+    var hero = pageTitle.parentNode;
+    hero.classList.remove("hero-in"); void hero.offsetWidth; hero.classList.add("hero-in");
+  }
+
+  function chrome(isMenu) {
+    brandEl.style.display = isMenu ? "" : "none";
+    backBtn.style.display = isMenu ? "none" : "inline-flex";
+    if (isMenu) statsSlot.style.display = ""; else { statsSlot.style.display = "none"; }
+    if (isMenu && tg && tg.BackButton) tg.BackButton.hide();
+  }
+
+  function enter() {
+    content.classList.remove("screen-in"); void content.offsetWidth; content.classList.add("screen-in");
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  function countUp(el) {
+    var to = +el.dataset.to, t0 = performance.now(), dur = 900;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
+    (function f(now) {
+      var p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * e);
+      if (p < 1) requestAnimationFrame(f);
+    })(t0);
+  }
+
+  function renderStats(st) {
+    if (!st) { statsSlot.innerHTML = ""; return; }
+    var t = st.total || {};
+    statsSlot.innerHTML =
+      "<div class='stats'>" +
+      "<div class='stat work'><b data-to='" + (t.open || 0) + "'>0</b><span>в работе</span></div>" +
+      "<div class='stat done'><b data-to='" + (t.done || 0) + "'>0</b><span>готово</span></div>" +
+      "<div class='stat rej'><b data-to='" + (t.rejected || 0) + "'>0</b><span>отклонено</span></div></div>";
+    Array.prototype.forEach.call(statsSlot.querySelectorAll("b"), function (b) { setTimeout(function () { countUp(b); }, 300); });
+  }
+
+  function badgeFor(key) {
+    var map = { postupleniya: "postupleniya", realizatsiya: "realizatsiya", bank: "bank" };
+    var sec = map[key];
+    var n = statsCache && statsCache.sections && sec && statsCache.sections[sec] ? statsCache.sections[sec].open : 0;
+    return n > 0 ? n + " в работе" : "";
+  }
+
+  function loadStats() {
+    var chatId = getChatId();
+    if (!chatId) return;
+    callApi("miniAppMyStats", { chatId: chatId }).then(function (res) {
+      statsCache = res;
+      // faqat hozir menyu ko'rinib tursa chizamiz (foydalanuvchi boshqa ekranga o'tib ketgan bo'lishi mumkin)
+      if (statsSlot.style.display !== "none" && pageSub.dataset.screen === "menu") {
+        renderStats(res);
+        Array.prototype.forEach.call(content.querySelectorAll("[data-badge-for]"), function (el) {
+          var b = badgeFor(el.dataset.badgeFor);
+          var old = el.querySelector(".badge"); if (old) old.remove();
+          if (b) { var s = document.createElement("span"); s.className = "badge"; s.textContent = b; el.appendChild(s); }
+        });
+      }
+    }).catch(function () { /* statistika majburiy emas - jim */ });
+  }
+
+  function glow(root) {
+    Array.prototype.forEach.call(root.querySelectorAll(".menu-item"), function (c) {
+      function move(e) { var r = c.getBoundingClientRect(); c.style.setProperty("--mx", (e.clientX - r.left) + "px"); c.style.setProperty("--my", (e.clientY - r.top) + "px"); }
+      c.addEventListener("pointermove", move); c.addEventListener("pointerdown", move);
+    });
+  }
+
+  // entries: [{key, icon, color, label, sub, wide, chevron, badgeKey}]
+  function renderGrid(entries, onClick) {
+    content.innerHTML = "";
+    var grid = document.createElement("div");
+    grid.className = "menu-grid";
+    entries.forEach(function (m, idx) {
+      var item = document.createElement("button");
+      item.type = "button";
+      item.className = "menu-item" + (m.wide ? " wide" : "");
+      item.style.setProperty("--c", m.color);
+      item.style.animationDelay = (idx * 60 + 120) + "ms";
+      if (m.badgeKey) item.dataset.badgeFor = m.badgeKey;
+      var badge = m.badgeKey ? badgeFor(m.badgeKey) : "";
+      item.innerHTML =
+        '<span class="icon"><i class="ti ' + m.icon + '" aria-hidden="true"></i></span>' +
+        '<span class="txt"><div class="label">' + esc(m.label) + '</div><div class="sub">' + esc(m.sub || "") + '</div></span>' +
+        (m.wide ? '<i class="ti ti-chevron-right chevron" aria-hidden="true"></i>' : '') +
+        (badge ? '<span class="badge">' + esc(badge) + '</span>' : '');
+      item.onclick = function () { onClick(m); };
+      grid.appendChild(item);
+    });
+    content.appendChild(grid);
+    glow(grid);
+  }
+
+  function showMenu() {
+    chrome(true);
+    setOrb("#2f6bff");
+    pageSub.dataset.screen = "menu";
+    setHero("Что нужно<br><em>оформить?</em>", "Выберите раздел. Ответ придёт сюда, в этот чат.", "");
+    renderStats(statsCache);
+    renderGrid(TOP_MENU.map(function (entry) {
+      if (entry.type === "cat") {
+        var c = CATEGORIES[entry.key];
+        return { kind: "cat", key: entry.key, icon: c.icon, color: c.color, label: c.label, sub: SUBS[entry.key], badgeKey: entry.key };
+      }
+      var s = SECTIONS[entry.key];
+      var wide = entry.key === "suggestion";
+      return { kind: "sec", key: entry.key, icon: s.icon, color: ICON_COLORS[entry.key], label: s.label, sub: SUBS[entry.key], wide: wide, badgeKey: entry.key === "bank" ? "bank" : "" };
+    }), function (m) {
+      if (m.kind === "cat") showCategory(m.key); else showSection(m.key, showMenu);
+    });
+    var note = document.createElement("div");
+    note.className = "note";
+    note.innerHTML = "<span class='dot'></span>Бот ответит в этом чате, как только заявку возьмут в работу";
+    content.appendChild(note);
+    enter();
+    loadStats();
+  }
+
+  function showCategory(catKey) {
+    var cat = CATEGORIES[catKey];
+    chrome(false);
+    pageSub.dataset.screen = "cat";
+    setOrb(cat.color);
+    setHero(esc(cat.title), "Выберите тип заявки.", catKey === "postupleniya" ? "Что пришло к нам" : "Что уходит от нас");
+    backBtn.onclick = showMenu;
+    if (tg && tg.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(showMenu); }
+    renderGrid(cat.items.map(function (key) {
+      var s = SECTIONS[key];
+      return { key: key, icon: s.icon, color: cat.color, label: s.label, sub: SUBS[key], wide: true };
+    }), function (m) {
+      showSection(m.key, function () { showCategory(catKey); });
+    });
+    enter();
+  }
+
+  function showSection(key, onBack) {
+    var s = SECTIONS[key];
+    content.innerHTML = "";
+    chrome(false);
+    pageSub.dataset.screen = "form";
+    setOrb(ICON_COLORS[key] || "#2f6bff");
+    setHero(esc(s.title), "Заполните форму ниже", "");
+    backBtn.onclick = onBack;
+    if (tg && tg.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(onBack); }
+    s.render();
+    enter();
+  }
+
+  // MUHIM: agar Mini App admin javobidagi "🔁 Отправить ещё" tugmasi
+  // orqali ?section=... bilan ochilgan bo'lsa - to'g'ridan-to'g'ri O'SHA
+  // bo'limga o'tamiz (asosiy menyudan qayta navigatsiya qilishga hojat
+  // qolmaydi - real foydalanuvchi so'ragan yaxshilanish).
+  function tryDeepLink() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var section = params.get("section");
+      if (section && SECTIONS[section]) {
+        showSection(section, showMenu);
+        return true;
+      }
+    } catch (e) { /* eski brauzer yoki noto'g'ri parametr - jim menyuga o'tamiz */ }
+    return false;
+  }
+
+  if (!tryDeepLink()) showMenu();
+})();
+</script>
+</body>
+</html>
