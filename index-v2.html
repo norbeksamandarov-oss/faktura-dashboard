@@ -2378,6 +2378,33 @@ html #section-invoices input.send-check:checked,html #section-invoices input.did
 html #section-invoices input.send-check:checked::after,html #section-invoices input.didox-check:checked::after{transform:translateX(18px)}
 html #section-invoices input.send-check:focus-visible,html #section-invoices input.didox-check:focus-visible{outline:2px solid var(--navy-light);outline-offset:2px}
 
+/* Счета-фактуры: tuzatishlar (ixcham filtr, bir tusli sarlavha, qora fon) */
+html[data-brand="crb"] #section-invoices>.panel{background-color:rgba(255,255,255,.55)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html[data-brand="crb"][data-theme="dark"] #section-invoices>.panel{background-color:#0a0d15!important}
+html #section-invoices .vat2{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
+html #section-invoices .toolbar{display:flex!important;flex-wrap:wrap;gap:8px!important;align-items:stretch!important;padding:10px!important}
+html #section-invoices .toolbar>.filter-field{flex:0 0 auto;grid-column:auto!important;height:auto!important;padding:6px 12px;gap:1px;width:160px}
+html #section-invoices .toolbar>.filter-field:nth-child(1){width:230px}
+html #section-invoices .toolbar>.filter-field:nth-child(2){width:190px}
+html #section-invoices .toolbar>.filter-field:nth-child(3){width:150px}
+html #section-invoices .toolbar>.filter-field:nth-child(4){width:200px}
+html #section-invoices .toolbar>.filter-field:nth-child(5){width:140px}
+html #section-invoices .toolbar>.filter-field:nth-child(6){width:170px}
+html #section-invoices .toolbar>.filter-field:nth-child(7){width:290px}
+html #section-invoices .toolbar>.filter-field:nth-child(8){width:170px}
+html #section-invoices .toolbar>.filter-field:nth-child(9){width:140px}
+html #section-invoices .toolbar>.filter-field:nth-child(10){width:100px}
+html #section-invoices .toolbar>.filter-field:nth-child(n+11){width:auto;padding:0;border:0;background:transparent}
+html #section-invoices .toolbar>.filter-field:nth-child(11){margin-left:auto}
+html #section-invoices .toolbar .filter-field label{font-size:9.5px!important}
+html #section-invoices .toolbar .filter-field input,html #section-invoices .toolbar .filter-field select,html #section-invoices .toolbar .filter-field .qbtn{font-size:13px!important}
+html #section-invoices .toolbar .date-range{gap:8px}
+html #section-invoices .toolbar>.filter-field>button{width:auto;height:100%!important;min-height:40px!important;padding:0 16px!important;font-size:12.5px!important;white-space:nowrap}
+html #section-invoices table.invoices{min-width:0;font-size:12.5px}
+html #section-invoices table.invoices thead th{background:linear-gradient(rgba(91,141,255,.2),rgba(91,141,255,.2)),var(--sk-glass)!important;border-color:rgba(110,140,255,.35)!important;padding:11px 8px;font-size:10.5px}
+html #section-invoices table.invoices tbody td{padding:10px 6px}
+html #section-invoices table.invoices thead th{letter-spacing:.03em!important;padding:11px 6px!important;font-size:10px!important}
+html #section-invoices table.invoices .resp-input{min-width:0;width:100%}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -2949,11 +2976,9 @@ html #section-invoices input.send-check:focus-visible,html #section-invoices inp
               <th>Организация</th>
               <th>Подразделение</th>
               <th>№ / Дата</th>
-              <th>Контрагент</th>
-              <th>ИНН</th>
+              <th>Контрагент / ИНН</th>
               <th>Договор</th>
-              <th class="num-cell">Сумма</th>
-              <th class="num-cell">НДС</th>
+              <th class="num-cell">Сумма / НДС</th>
               <th>Ответственный</th>
               <th>Отправить</th>
               <th>Статус</th>
@@ -6985,11 +7010,9 @@ function renderInvoicesTable() {
         <div style="font-weight:600;">${escapeHtml(r.no)}</div>
         <div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div>
       </td>
-      <td><span class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</span></td>
-      <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.inn)}</td>
-      <td style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.contract)}</td>
-      <td class="num-cell">${escapeHtml(r.sum)}</td>
-      <td class="num-cell" style="font-size:11.5px;color:var(--muted)">${escapeHtml(r.vat)}</td>
+      <td><span class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</span><div class="vat2">${escapeHtml(r.inn)}</div></td>
+      <td style="font-size:11.5px;color:var(--muted);min-width:120px">${escapeHtml(r.contract)}</td>
+      <td class="num-cell"><div>${escapeHtml(r.sum)}</div><div class="vat2">${escapeHtml(r.vat)}</div></td>
       <td>${classifyStatus(r.status) === "accepted" || classifyStatus(r.status) === "rejected" ? `
         <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя">${respAvatarHtml(r.resp)}<i class='ti ti-lock' aria-hidden='true'></i> ${escapeHtml(r.resp)}</span>
       ` : `
