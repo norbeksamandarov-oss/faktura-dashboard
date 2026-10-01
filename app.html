@@ -163,6 +163,43 @@
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.err { background: #4a1f25; border-color: rgba(255,107,107,0.4); }
   .toast.ok { background: #14382a; border-color: rgba(52,209,122,0.4); }
+
+  /* --- v2.1: Круговое раскрытие + пошаговая форма --- */
+  .card { counter-reset: st; }
+  .prog { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
+  .prog .pbar { flex: 1; height: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .prog .pbar i { display: block; height: 100%; width: 0; border-radius: 5px; background: linear-gradient(90deg, #4f7dff, #9b6bff); transition: width 0.6s var(--ease); }
+  .prog .pt { font-size: 11.5px; color: var(--muted); font-weight: 700; white-space: nowrap; } .prog .pt b { color: var(--text); }
+  .step-label, .field > label { display: flex; align-items: center; gap: 9px; }
+  .step-label::before, .field > label::before { counter-increment: st; content: counter(st); flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0; background: rgba(255,255,255,0.1); color: var(--muted); transition: background 0.4s var(--spring), box-shadow 0.4s; }
+  .step-label.act::before, .field.act > label::before { background: linear-gradient(135deg, #4f7dff, #7a3cff); color: #fff; box-shadow: 0 0 0 4px rgba(111,152,255,0.18); }
+  .step-label.done::before, .field.done > label::before { content: "✓"; background: var(--ok); color: #04210f; font-size: 12px; }
+  .step-label.act, .field.act > label { color: var(--text); } .step-label.done, .field.done > label { color: #bfeed3; }
+  .org-btn .mono { flex: none; width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; background: var(--mc, #4f7dff); letter-spacing: 0; }
+  .org-grid { display: flex !important; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+  .org-grid .org-btn { position: relative; overflow: hidden; height: 42px; padding: 7px 12px 7px 9px; border-radius: 14px; font-size: 12.5px; text-align: left; transform: none; transition: transform 0.45s var(--spring), border-color 0.3s, opacity 0.3s; }
+  .org-grid .org-btn::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(79,125,255,0.55), rgba(122,60,255,0.25) 70%, transparent); transform: scaleX(0); transform-origin: left; transition: transform 0.55s var(--ease); }
+  .org-grid .org-btn > * { position: relative; }
+  .org-grid .org-btn .mono { width: 24px; height: 24px; border-radius: 8px; font-size: 9.5px; }
+  .org-grid .org-btn .rd { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); display: grid; place-items: center; transition: 0.35s var(--spring); }
+  .org-grid .org-btn .rd svg { width: 11px; height: 11px; fill: none; stroke: #04210f; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset 0.4s 0.15s; }
+  .org-grid .org-btn.selected { background: var(--surface); border-color: rgba(130,150,255,0.7); box-shadow: none; transform: translateX(6px); }
+  .org-grid .org-btn.selected::before { transform: none; }
+  .org-grid .org-btn.selected .rd { background: var(--ok); border-color: var(--ok); transform: scale(1.1); }
+  .org-grid .org-btn.selected .rd svg { stroke-dashoffset: 0; }
+  .org-grid.has .org-btn:not(.selected) { opacity: 0.55; }
+  .org-grid .org-btn { display: flex; align-items: center; gap: 8px; text-align: left; padding: 8px 10px; font-size: 12px; line-height: 1.15; }
+  /* (A) selected style below */
+  .org-grid .org-btn.selected .mono { background: rgba(255,255,255,0.25); }
+  .submit-btn.dis { opacity: 0.45; filter: saturate(0.3); box-shadow: none; }
+  .submit-btn { transition: transform 0.4s var(--spring), opacity 0.4s, filter 0.4s, width 0.4s var(--ease), border-radius 0.4s var(--ease); }
+  .submit-btn.sending { width: 54px; height: 54px; padding: 0; border-radius: 50%; display: grid; place-items: center; margin: 8px auto 0; font-size: 0; animation: none; opacity: 1; filter: none; }
+  .submit-btn.sending i.ti-loader-2 { font-size: 24px; margin: 0; vertical-align: 0; }
+  .rdy-hint { text-align: center; font-size: 11.5px; color: var(--muted); font-weight: 600; min-height: 15px; margin-top: 8px; transition: color 0.3s; }
+  .success-check svg { width: 62px; height: 62px; fill: none; stroke: var(--ok); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+  .success-check svg path { stroke-dasharray: 80; stroke-dashoffset: 80; animation: draw 0.6s var(--ease) 0.35s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -248,7 +285,7 @@
     var el = document.createElement("div");
     el.className = "success-screen";
     el.innerHTML =
-      "<div class='success-check'><i class='ti ti-check' aria-hidden='true'></i></div>" +
+      "<div class='success-check'><svg viewBox='0 0 64 64'><path d='M16 33l11 11 22-24'/></svg></div>" +
       "<div class='success-title'>Отправлено!</div>" +
       "<div style='width:100%;max-width:320px;margin-top:18px;background:rgba(255,255,255,.14);border-radius:14px;padding:4px 16px;'>" +
       detailsHtml +
@@ -387,10 +424,12 @@
     ORGS.forEach(function (org) {
       var btn = document.createElement("div");
       btn.className = "org-btn" + (org === selectedOrg ? " selected" : "");
-      btn.textContent = org;
+      var w = org.split(" ");
+      btn.style.setProperty("--mc", ["#4f7dff", "#7a5cff", "#1fa5b8", "#d9822b", "#3aa56b", "#c4508f"][ORGS.indexOf(org) % 6]);
+      btn.innerHTML = "<i class='mono'>" + esc((w[0][0] + (w[1] ? w[1][0] : w[0][1])).toUpperCase()) + "</i><span>" + esc(org) + "</span><span class='rd'><svg viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7'/></svg></span>";
       btn.onclick = function () {
         Array.prototype.forEach.call(wrap.children, function (c) { c.classList.remove("selected"); });
-        btn.classList.add("selected");
+        btn.classList.add("selected"); wrap.classList.add("has");
         onSelect(org);
       };
       wrap.appendChild(btn);
@@ -971,10 +1010,57 @@
     if (isMenu && tg && tg.BackButton) tg.BackButton.hide();
   }
 
+  var lastTap = null;
+  document.addEventListener("pointerdown", function (e) { lastTap = { x: e.clientX, y: e.clientY }; }, true);
   function enter() {
-    content.classList.remove("screen-in"); void content.offsetWidth; content.classList.add("screen-in");
     try { window.scrollTo(0, 0); } catch (e) {}
+    var wrapEl = document.querySelector(".wrap");
+    if (!wrapEl || !wrapEl.animate || !lastTap) { content.classList.remove("screen-in"); void content.offsetWidth; content.classList.add("screen-in"); return; }
+    var r = wrapEl.getBoundingClientRect(), x = lastTap.x - r.left, y = lastTap.y - r.top;
+    var R = Math.hypot(Math.max(wrapEl.offsetWidth, window.innerWidth), Math.max(wrapEl.offsetHeight, window.innerHeight)) + 40;
+    wrapEl.animate([{ clipPath: "circle(0px at " + x + "px " + y + "px)" }, { clipPath: "circle(" + R + "px at " + x + "px " + y + "px)" }],
+      { duration: 750, easing: "cubic-bezier(0.16,1,0.3,1)" });
+    lastTap = null;
   }
+
+  // Пошаговая форма: прогресс, номера шагов, готовность кнопки
+  function decorateCard(card) {
+    if (card.__dec) return; card.__dec = true;
+    var steps = [], kids = Array.prototype.slice.call(card.children);
+    kids.forEach(function (k, i) {
+      if (k.classList.contains("step-label")) {
+        k.textContent = k.textContent.replace(/^\d+\.\s*/, "");
+        steps.push({ lab: k, box: k, test: function () {
+          var n = k.nextElementSibling, ok = false;
+          while (n && !n.classList.contains("step-label") && !n.classList.contains("field") && !n.classList.contains("submit-btn")) { if (n.querySelector && n.querySelector(".selected") || n.classList.contains("selected")) ok = true; n = n.nextElementSibling; }
+          return ok; } });
+      } else if (k.classList.contains("field") && !k.querySelector(".file-drop") && k.querySelector("label") && k.querySelector("input,textarea,select")) {
+        var l = k.querySelector("label"); l.textContent = l.textContent.replace(/^\d+\.\s*/, "");
+        steps.push({ lab: l, box: k, test: function () { var e = k.querySelector("input,textarea,select"); return (e.value || "").trim().length > 0; } });
+      } else if (k.classList.contains("field") && k.querySelector("label")) {
+        var l2 = k.querySelector("label"); l2.textContent = l2.textContent.replace(/^\d+\.\s*/, "");
+      }
+    });
+    var btn = card.querySelector(".submit-btn");
+    if (steps.length < 1 || !btn) return;
+    var prog = document.createElement("div"); prog.className = "prog";
+    prog.innerHTML = "<div class='pbar'><i></i></div><span class='pt'></span>";
+    card.insertBefore(prog, card.firstChild);
+    var hint = document.createElement("div"); hint.className = "rdy-hint"; btn.after(hint);
+    function upd() {
+      var dn = 0, first = -1;
+      steps.forEach(function (s, i) { var ok = s.test(); s.lab.classList.toggle("done", ok); if (s.box !== s.lab) s.box.classList.toggle("done", ok); if (ok) dn++; else if (first < 0) first = i; });
+      steps.forEach(function (s, i) { s.lab.classList.toggle("act", i === first); if (s.box !== s.lab) s.box.classList.toggle("act", i === first); });
+      prog.querySelector("i").style.width = (dn / steps.length * 100) + "%";
+      prog.querySelector(".pt").innerHTML = "Шаг <b>" + Math.min(dn + 1, steps.length) + "</b> из " + steps.length;
+      var ready = dn === steps.length; btn.classList.toggle("dis", !ready);
+      hint.textContent = ready ? "Всё готово — можно отправлять" : "Заполните: " + steps[first].lab.textContent.toLowerCase();
+      hint.style.color = ready ? "#7ee2a8" : "";
+    }
+    ["click", "input", "change"].forEach(function (ev) { card.addEventListener(ev, function () { setTimeout(upd, 0); }); });
+    upd();
+  }
+  new MutationObserver(function (m) { Array.prototype.forEach.call(content.querySelectorAll(".card"), decorateCard); }).observe(content, { childList: true });
 
   function countUp(el) {
     var to = +el.dataset.to, t0 = performance.now(), dur = 900;
