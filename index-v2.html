@@ -1956,6 +1956,13 @@ html header.topbar #userInfo.has-av::before{cursor:zoom-in}
 #avLightbox.show .av-box{transform:none}
 #avLightbox img{width:min(360px,80vw);height:min(360px,80vw);object-fit:cover;border-radius:28px;box-shadow:0 24px 70px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);background:#fff}
 #avLightbox .av-cap{color:#fff;font:700 15px 'Manrope',sans-serif}
+/* CRB brend bloki kattaroq */
+html .sidebar:not(.collapsed) .sb-brand{gap:12px;padding:2px 8px 18px}
+html .sidebar:not(.collapsed) .sb-brand .sb-logo{width:48px;height:48px;border-radius:14px;font-size:17px;letter-spacing:-.01em}
+html .sidebar:not(.collapsed) .sb-brand .sb-t{font-size:24px!important;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+html .sidebar:not(.collapsed) .sb-brand small{font-size:10px!important;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-top:3px;white-space:nowrap}
+html .sidebar.collapsed .sb-brand .sb-logo{width:40px;height:40px;font-size:14px}
+@media(min-width:861px){html .sidebar:not(.collapsed) .sb-brand{padding-right:40px}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -9999,7 +10006,7 @@ async function recallInvoice(facturaid, btnEl) {
       var sb=document.getElementById('sidebarNav');
       if(sb&&!sb.querySelector('.sb-brand')){
         var b=document.createElement('div');b.className='sb-brand';
-        b.innerHTML='<div class="sb-logo">CRB</div><div class="sb-t">CRB<small>Счета-фактуры · онлайн</small></div>';
+        b.innerHTML='<div class="sb-logo">CRB</div><div class="sb-t">CRB<small>Controlling System</small></div>';
         var first=sb.querySelector('#sidebarToggleBtn');
         sb.insertBefore(b, first? first.nextSibling : sb.firstChild);
       }
