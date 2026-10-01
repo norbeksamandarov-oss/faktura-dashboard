@@ -1854,6 +1854,17 @@ html .nav-group-toggle.expanded:not(.active),html[data-brand] .nav-group-toggle.
 html .nav-group-toggle.expanded:not(.active):hover{background:var(--sk-glass-hi)!important;color:var(--text)!important}
 html .sidebar:not(.collapsed) #sidebarToggleBtn{background:transparent!important;border:1px solid var(--border)!important;color:var(--muted)!important;box-shadow:none!important;right:12px;top:18px;width:24px;height:24px}
 html .sidebar:not(.collapsed) #sidebarToggleBtn:hover{background:var(--sk-glass-hi)!important;color:var(--text)!important}
+/* ===== Yuqori panel: namunadagi yengil qator (karta emas), .tgl tugmalar, ko'k segment ===== */
+html header.topbar,html[data-brand="crb"] header.topbar{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin-bottom:16px!important;border-radius:0}
+html header.topbar .topbar-right{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px;width:100%}
+html header.topbar .topbar-right>button{background:var(--sk-glass)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:12px!important;padding:8px 16px!important;font-size:13px!important;font-weight:700!important;box-shadow:none!important;background-image:none!important;transition:transform .25s cubic-bezier(.16,1,.3,1),background .25s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+html header.topbar .topbar-right>button:hover{transform:translateY(-2px);background:var(--sk-glass-hi)!important}
+html header.topbar .theme-pill{display:flex;gap:4px;padding:4px!important;border-radius:12px!important;background:var(--sk-glass)!important;border:1px solid var(--border)!important;box-shadow:none!important}
+html header.topbar .theme-pill-opt{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--muted)!important;font-size:13px!important;font-weight:700!important;padding:8px 16px!important;border-radius:9px!important;transition:background .25s,color .25s}
+html header.topbar .theme-pill-opt.active{background:#2f6bff!important;color:#fff!important}
+html header.topbar .theme-pill-opt.active i{color:#fff!important;filter:none!important}
+html header.topbar #userInfo,html header.topbar .topbar-right>span{font-size:13px;font-weight:600}
+@media(min-width:861px){html .sidebar{position:sticky;top:16px;align-self:flex-start}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
