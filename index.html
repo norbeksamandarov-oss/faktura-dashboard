@@ -1205,6 +1205,22 @@
     background: #E8837E; color: white; font-size: 10.5px; font-weight: 700;
     border-radius: 10px; padding: 1px 7px; margin-left: auto;
   }
+  /* Взаиморасчёты: "Ошибки" bo'limida hal qilinmagan yozuv bor - belgi doimiy
+     ko'rinib turadi (yig'ilgan sidebar'da ham), xato bartaraf etilguncha. */
+  .nav-badge.nav-badge-alert {
+    background: #D92D20; box-shadow: 0 0 0 0 rgba(217,45,32,0.55);
+    animation: vz2AlertPulse 2s ease-out infinite;
+  }
+  .sidebar.collapsed .nav-item .nav-badge.nav-badge-alert { display: inline-block !important; position: absolute; top: 4px; right: 6px; padding: 0 5px; font-size: 9.5px; }
+  .sidebar.collapsed .nav-item { position: relative; }
+  @keyframes vz2AlertPulse { 70% { box-shadow: 0 0 0 7px rgba(217,45,32,0); } 100% { box-shadow: 0 0 0 0 rgba(217,45,32,0); } }
+  @media (prefers-reduced-motion: reduce) { .nav-badge.nav-badge-alert { animation: none; } }
+  .vz2-err-banner {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 12px 0 0; padding: 10px 14px; border-radius: 10px;
+    background: var(--red-bg); color: var(--red-fg); font-weight: 600; font-size: 13px;
+  }
+  .vz2-err-banner button { margin-left: auto; }
 
   /* ---------- "Поступления" guruh menyusi ---------- */
   .nav-group-toggle { width: 100%; }
@@ -2955,13 +2971,14 @@
       <button class="nav-item nav-group-toggle" id="vzaimoraschetyToggle" onclick="toggleNavGroup('vzaimoraschetyToggle','vzaimoraschetySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
         <span class="nav-label">Взаиморасчёты</span>
+        <span id="vz2ErrBadgeGroup" class="nav-badge nav-badge-alert" style="display:none;"></span>
         <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="nav-subgroup" id="vzaimoraschetySubgroup">
         <button class="nav-item nav-sub-item" data-section="vz2postavshiki" onclick="showSection('vz2postavshiki')"><span class="nav-icon"><i class='ti ti-truck-delivery' aria-hidden='true'></i></span><span class="nav-label">Поставщики</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2pokupateli" onclick="showSection('vz2pokupateli')"><span class="nav-icon"><i class='ti ti-shopping-cart' aria-hidden='true'></i></span><span class="nav-label">Покупатели</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2podotchetniki" onclick="showSection('vz2podotchetniki')"><span class="nav-icon"><i class='ti ti-users' aria-hidden='true'></i></span><span class="nav-label">Подотчётные лица</span></button>
-        <button class="nav-item nav-sub-item" data-section="vz2oshibki" onclick="showSection('vz2oshibki')"><span class="nav-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i></span><span class="nav-label">Ошибки</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2oshibki" onclick="showSection('vz2oshibki')"><span class="nav-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i></span><span class="nav-label">Ошибки</span> <span id="vz2ErrBadge" class="nav-badge nav-badge-alert" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="vz2otv" onclick="showSection('vz2otv')"><span class="nav-icon"><i class='ti ti-address-book' aria-hidden='true'></i></span><span class="nav-label">Ответственные</span></button>
       </div>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
@@ -4327,6 +4344,7 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2postavshikiUpdated" style="margin:0;">Загрузка...</p>
+        <div class="vz2-err-banner" data-vz2-err-banner style="display:none;"></div>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2postavshikiTabBtn-list" onclick="vz2SwitchTab('postavshiki','list')">Список</button>
           <button class="vz2-tab-btn" id="vz2postavshikiTabBtn-analytics" onclick="vz2SwitchTab('postavshiki','analytics')">Аналитика</button>
@@ -4346,6 +4364,7 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Покупатели <button id="vz2SendBtn-pokupateli" onclick="vz2SendDistribution('pokupateli')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2pokupateliUpdated" style="margin:0;">Загрузка...</p>
+        <div class="vz2-err-banner" data-vz2-err-banner style="display:none;"></div>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2pokupateliTabBtn-list" onclick="vz2SwitchTab('pokupateli','list')">Список</button>
           <button class="vz2-tab-btn" id="vz2pokupateliTabBtn-analytics" onclick="vz2SwitchTab('pokupateli','analytics')">Аналитика</button>
@@ -4365,6 +4384,7 @@
       <div class="panel" style="margin-bottom:16px;">
         <h2>Взаиморасчёты — Подотчётные лица <button id="vz2SendBtn-podotchetniki" onclick="vz2SendDistribution('podotchetniki')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2podotchetnikiUpdated" style="margin:0;">Загрузка... (записи с видом договора «Зарплата» сюда не входят)</p>
+        <div class="vz2-err-banner" data-vz2-err-banner style="display:none;"></div>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2podotchetnikiTabBtn-list" onclick="vz2SwitchTab('podotchetniki','list')">Список</button>
           <button class="vz2-tab-btn" id="vz2podotchetnikiTabBtn-analytics" onclick="vz2SwitchTab('podotchetniki','analytics')">Аналитика</button>
@@ -5936,6 +5956,9 @@ async function onLoggedIn(forcePasswordChange) {
   }
 
   if (currentRole === "admin") {
+    pollVz2ErrorsBackground();
+    if (vz2ErrTimer) clearInterval(vz2ErrTimer);
+    vz2ErrTimer = setInterval(pollVz2ErrorsBackground, 60000);
     await pollSuggestionsBackground();
     if (suggestionsBadgeTimer) clearInterval(suggestionsBadgeTimer);
     suggestionsBadgeTimer = setInterval(pollSuggestionsBackground, SALARY_BADGE_POLL_MS);
@@ -8808,12 +8831,45 @@ function vz2RenderFlatList(prefix, category) {
     </table>`;
 }
 
+// ---------- Взаиморасчёты: "Ошибки" belgisi (doimiy ogohlantirish) ----------
+// "Вид отношений" aniq bo'lmagan ("Покупатель / Поставщик") yozuvlar "Ошибки"
+// bo'limiga tushadi. Ular bartaraf etilmaguncha (yangi fayl yuborilib, ular
+// yo'qolmaguncha) sidebar'da va 3 ta asosiy bo'limda qizil belgi turadi.
+function vz2UpdateErrorIndicators() {
+  const n = (VZ2_DATA && VZ2_DATA.hasData)
+    ? (VZ2_DATA.items || []).filter(i => i.category === "oshibki").length : 0;
+  ["vz2ErrBadge", "vz2ErrBadgeGroup"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (n > 0) { el.textContent = "⚠ " + n; el.style.display = "inline-block"; el.title = "Взаиморасчёты: записей с неоднозначным «Видом отношений»: " + n; }
+    else el.style.display = "none";
+  });
+  document.querySelectorAll("[data-vz2-err-banner]").forEach(el => {
+    if (n > 0) {
+      el.style.display = "";
+      el.innerHTML = `<i class="ti ti-alert-triangle" aria-hidden="true"></i> Есть неисправленные ошибки: ${n} зап. с неоднозначным «Видом отношений» (например «Покупатель / Поставщик»). <button class="btn-primary" onclick="showSection('vz2oshibki')">Открыть «Ошибки»</button>`;
+    } else { el.style.display = "none"; el.innerHTML = ""; }
+  });
+}
+
+async function pollVz2ErrorsBackground() {
+  if (uiActionInFlight) return;
+  try {
+    await ensureVz2Data(true);
+    vz2UpdateErrorIndicators();
+  } catch (e) {
+    console.warn("Не удалось обновить индикатор ошибок Взаиморасчётов:", e.message);
+  }
+}
+let vz2ErrTimer = null;
+
 async function loadVz2Category(category, prefix) {
   const listEl = document.getElementById(prefix + "List");
   const flatEl = document.getElementById(prefix + "FlatList");
   if (flatEl && !VZ2_DATA) flatEl.innerHTML = "<p style='color:var(--muted)'>Загрузка...</p>";
   try {
     await ensureVz2Data(false);
+    vz2UpdateErrorIndicators();
     if (!VZ2_DATA.hasData) {
       if (listEl) listEl.innerHTML = "";
       if (flatEl) flatEl.innerHTML = "";
