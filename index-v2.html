@@ -2744,7 +2744,7 @@
 <style id="skin-v2">
 /* ===== SKIN V2: Mini App uslubi (shisha, tungi/kunduzgi). Faqat ko'rinish, JS/struktura o'zgarmaydi ===== */
 html:root[data-theme="dark"], html:root[data-theme="dark"][data-brand="crb"] {
-  --navy:#2f6bff; --navy-light:#5b8dff; --ice:#9db8ff; --ice-soft:rgba(255,255,255,0.06);
+  --navy:#2f6bff; --navy-light:#5b8dff; --ice:rgba(91,141,255,0.26); --ice-soft:rgba(255,255,255,0.06);
   --bg:#07090f; --card:rgba(255,255,255,0.055); --text:#f3f5fb; --muted:#8d95ab; --border:rgba(255,255,255,0.10);
   --green-bg:rgba(52,209,122,0.14); --green-fg:#34d17a; --red-bg:rgba(255,107,107,0.14); --red-fg:#ff6b6b;
   --amber-bg:rgba(255,184,77,0.14); --amber-fg:#ffb84d; --gray-bg:rgba(255,255,255,0.07); --gray-fg:#aeb4d6;
@@ -2822,6 +2822,12 @@ html #crbGreetingTitle{color:var(--text)!important}
 html .nav-item.active,html[data-brand] .nav-item.active{color:var(--sk-nav-text)!important}
 html .nav-item.active .nav-icon svg,html[data-brand] .nav-item.active .nav-icon svg{stroke:currentColor!important}
 html table.invoices thead th,html[data-brand] table.invoices thead th{background:var(--sk-glass-hi)!important;color:var(--muted)!important;border-bottom:1px solid var(--border)}
+html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn,html[data-theme="dark"] .rank-toggle-btn,html[data-theme="dark"] .admin-open-btn{color:#9db8ff}
+html[data-theme="dark"] #userInfo,html[data-theme="dark"] .org-card-total .org-count-lbl,html[data-theme="dark"] .org-card-total .org-sum-lbl{color:#9db8ff}
+html[data-theme="dark"] .topbar-right span{color:var(--muted)!important}
+html:root:not([data-theme="dark"])[data-brand="crb"] .label{color:#5b6679}
+html[data-theme="dark"] .filter-field button,html[data-theme="dark"] .btn-primary,html[data-theme="dark"] #gtdExportBtn{background:#2f6bff;border-color:#2f6bff;color:#fff}
+html[data-theme="dark"] #clearFiltersBtn,html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn{color:#9db8ff!important;background:transparent}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
