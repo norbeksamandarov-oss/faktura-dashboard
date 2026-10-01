@@ -1490,6 +1490,28 @@
     color: var(--text);
     border-color: var(--border);
   }
+  /* Umumiy "asosiy amal" tugmasi (panel sarlavhasi ichida va h.k.) -
+     .filter-field button bilan bir xil ko'rinish, lekin .filter-field
+     ichida bo'lishi shart emas - masalan panel h2'dagi "Отправить
+     рассылку" kabi tugmalar uchun. */
+  .btn-primary {
+    padding: 9px 16px;
+    border: 1px solid var(--navy-text);
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Satoshi';
+    background: var(--navy-text);
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background .15s ease, opacity .15s ease, transform .1s ease;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.97); }
   .filter-field button.secondary-btn:hover { background: var(--ice-soft); opacity: 1; }
   #searchInput { min-width: 190px; }
   #buyerFilter { min-width: 170px; }
@@ -4303,7 +4325,7 @@
 
     <section id="section-vz2postavshiki" class="content-section">
       <div class="panel" style="margin-bottom:16px;">
-        <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <h2>Взаиморасчёты — Поставщики <button id="vz2SendBtn-postavshiki" onclick="vz2SendDistribution('postavshiki')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2postavshikiUpdated" style="margin:0;">Загрузка...</p>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2postavshikiTabBtn-list" onclick="vz2SwitchTab('postavshiki','list')">Список</button>
@@ -4322,7 +4344,7 @@
 
     <section id="section-vz2pokupateli" class="content-section">
       <div class="panel" style="margin-bottom:16px;">
-        <h2>Взаиморасчёты — Покупатели <button id="vz2SendBtn-pokupateli" onclick="vz2SendDistribution('pokupateli')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <h2>Взаиморасчёты — Покупатели <button id="vz2SendBtn-pokupateli" onclick="vz2SendDistribution('pokupateli')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2pokupateliUpdated" style="margin:0;">Загрузка...</p>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2pokupateliTabBtn-list" onclick="vz2SwitchTab('pokupateli','list')">Список</button>
@@ -4341,7 +4363,7 @@
 
     <section id="section-vz2podotchetniki" class="content-section">
       <div class="panel" style="margin-bottom:16px;">
-        <h2>Взаиморасчёты — Подотчётные лица <button id="vz2SendBtn-podotchetniki" onclick="vz2SendDistribution('podotchetniki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <h2>Взаиморасчёты — Подотчётные лица <button id="vz2SendBtn-podotchetniki" onclick="vz2SendDistribution('podotchetniki')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2podotchetnikiUpdated" style="margin:0;">Загрузка... (записи с видом договора «Зарплата» сюда не входят)</p>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2podotchetnikiTabBtn-list" onclick="vz2SwitchTab('podotchetniki','list')">Список</button>
@@ -4360,7 +4382,7 @@
 
     <section id="section-vz2oshibki" class="content-section">
       <div class="panel" style="margin-bottom:16px;">
-        <h2>Взаиморасчёты — Ошибки <button id="vz2SendBtn-oshibki" onclick="vz2SendDistribution('oshibki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <h2>Взаиморасчёты — Ошибки <button id="vz2SendBtn-oshibki" onclick="vz2SendDistribution('oshibki')" class="btn-primary"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
         <p class="analytics-note" id="vz2oshibkiUpdated" style="margin:0;">Загрузка... (записи, где «Вид отношений» указан неоднозначно - например «Покупатель / Поставщик» - собираются здесь; ответственный всегда Jakupbekov Deniz)</p>
         <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
           <button class="vz2-tab-btn active" id="vz2oshibkiTabBtn-list" onclick="vz2SwitchTab('oshibki','list')">Список</button>
@@ -4385,7 +4407,7 @@
       <div class="table-wrap" style="display:none;" id="vz2otvTableWrap">
         <table class="invoices" id="vz2otvTable">
           <thead>
-            <tr><th>Имя-фамилия (как в файле)</th><th>Telegram Chat ID</th><th>Комментарий</th><th></th></tr>
+            <tr><th>№</th><th>Имя-фамилия (как в файле)</th><th>Telegram Chat ID</th><th>Комментарий</th><th></th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -8843,10 +8865,11 @@ async function loadVz2OtvSheet() {
 
 function renderVz2OtvTable() {
   const tbody = document.querySelector("#vz2otvTable tbody");
-  tbody.innerHTML = vz2OtvRowsCache.map(r => {
+  tbody.innerHTML = vz2OtvRowsCache.map((r, idx) => {
     if (vz2OtvEditingRow === r.rowIndex) {
       return `
         <tr data-row="${r.rowIndex}" style="background:var(--chip-bg);">
+          <td style="color:var(--muted);">${idx + 1}</td>
           <td><input type="text" id="vz2otvEditName-${r.rowIndex}" value="${escapeHtml(r.name)}" style="width:100%;padding:5px 6px;"></td>
           <td><input type="text" id="vz2otvEditChatId-${r.rowIndex}" value="${escapeHtml(r.chatId)}" style="width:100%;padding:5px 6px;"></td>
           <td><input type="text" id="vz2otvEditComment-${r.rowIndex}" value="${escapeHtml(r.comment)}" style="width:100%;padding:5px 6px;"></td>
@@ -8858,6 +8881,7 @@ function renderVz2OtvTable() {
     }
     return `
     <tr data-row="${r.rowIndex}">
+      <td style="color:var(--muted);">${idx + 1}</td>
       <td>${escapeHtml(r.name)}</td>
       <td>${escapeHtml(r.chatId)}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.comment)}</td>
@@ -8866,7 +8890,7 @@ function renderVz2OtvTable() {
         <button onclick="deleteVz2OtvRow(${r.rowIndex})" style="background:none;border:none;color:var(--red-fg);cursor:pointer;" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="4" style="color:var(--muted);">Пока нет записей</td></tr>`;
+  }).join("") || `<tr><td colspan="5" style="color:var(--muted);">Пока нет записей</td></tr>`;
 }
 
 function startVz2OtvEdit(rowIndex) {
