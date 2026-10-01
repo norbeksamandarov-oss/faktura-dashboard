@@ -2136,6 +2136,87 @@ html #section-analytics .period-filter-box .qdw .qdi:focus{box-shadow:0 2px 0 0 
 html #section-analytics .period-filter-box .qic{width:28px!important;height:28px!important;display:grid!important;place-items:center;border-radius:9px!important;padding:0!important}
 html #section-analytics .period-filter-box .qic:hover,html #section-analytics .period-filter-box .qic.open{background:rgba(91,141,255,.18)!important}
 @media(prefers-reduced-motion:reduce){.qpop,.qgd,.qli{animation:none!important}}
+/* ===== Analytics pastki qism: T dizayn (halqa + chiziq + yuguruvchi chiziqlar) ===== */
+html[data-brand] #statsRow{display:none}
+html #section-analytics #tGrid{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:16px;--line:var(--border);--track:rgba(20,26,46,.08);--ease:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+html:root[data-theme="dark"] #section-analytics #tGrid{--track:rgba(255,255,255,.08)}
+html #section-analytics #tGrid:empty{display:none}
+html #section-analytics .tcard{position:relative;border-radius:22px;border:1px solid var(--border);background:linear-gradient(160deg,rgba(91,141,255,.10),transparent 55%),var(--sk-glass);box-shadow:0 18px 50px -24px rgba(40,60,120,.35),inset 0 1px 0 rgba(255,255,255,.9);padding:20px 22px;min-width:0}
+html:root[data-theme="dark"] #section-analytics .tcard{box-shadow:0 24px 60px -26px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.12)}
+html #section-analytics .tct{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+html #section-analytics .tgrad{background:linear-gradient(180deg,var(--text) 30%,#6f9bff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+html:root[data-theme="dark"] #section-analytics .tgrad{background:linear-gradient(180deg,#fff 25%,#8fb0ff);-webkit-background-clip:text;background-clip:text}
+html #section-analytics .tdw{display:flex;flex-direction:column;align-items:center;gap:16px}
+html #section-analytics .tdn{position:relative;width:220px;height:220px}
+html #section-analytics .tdn svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+html #section-analytics .tdn circle{fill:none;stroke-width:24}
+html #section-analytics .tdn .bg{stroke:rgba(120,150,255,.14)}
+html #section-analytics .tdn .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:2px}
+html #section-analytics .tdn .mid b{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+html #section-analytics .tdn .mid>span{font-size:12px;color:var(--muted);font-weight:600}
+html #section-analytics .tleg{width:100%;display:grid;gap:7px}
+html #section-analytics .tleg div{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:var(--text)}
+html #section-analytics .tleg div.sub{padding-left:20px;font-size:11.5px;color:var(--muted)}
+html #section-analytics .tleg i{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+html #section-analytics .tleg span{flex:1}
+html #section-analytics .tleg b{font-variant-numeric:tabular-nums}
+html #section-analytics .tleg em{font-style:normal;color:var(--muted);font-weight:700;width:36px;text-align:right}
+html #section-analytics #analyticsSummary{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0;padding:0;background:none;border:0;box-shadow:none}
+html #section-analytics .tkt{position:relative;border-radius:22px;border:1px solid var(--border);background:linear-gradient(160deg,rgba(91,141,255,.10),transparent 55%),var(--sk-glass);box-shadow:0 18px 50px -24px rgba(40,60,120,.35),inset 0 1px 0 rgba(255,255,255,.9);padding:20px;display:flex;align-items:center;gap:14px;min-width:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),border-color .25s}
+html:root[data-theme="dark"] #section-analytics .tkt{box-shadow:0 24px 60px -26px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.12)}
+html #section-analytics .tkt:hover{transform:translateY(-4px);border-color:rgba(130,165,255,.6)}
+html #section-analytics .tico{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;color:#fff;background:linear-gradient(145deg,#6b95ff,#7a3cff);box-shadow:0 8px 20px -6px rgba(91,110,255,.7),inset 0 1px 0 rgba(255,255,255,.4)}
+html #section-analytics .tico i{font-size:19px;color:#fff}
+html #section-analytics .tkt .tv{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+html #section-analytics .tkt .tv small{font-size:15px;font-weight:700;margin-left:3px;-webkit-text-fill-color:var(--muted);color:var(--muted)}
+html #section-analytics .tkt .tl{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+html #section-analytics .tgau{position:relative;width:96px;height:56px;flex-shrink:0;margin-left:auto}
+html #section-analytics .tgau svg{width:100%;height:100%;overflow:visible}
+html #section-analytics .tgau path{fill:none;stroke-width:9;stroke-linecap:round}
+html #section-analytics .tgau .t{stroke:rgba(120,150,255,.16)}
+html #section-analytics .tgau .f{stroke:url(#tgg);filter:drop-shadow(0 0 5px rgba(110,130,255,.7));stroke-dasharray:var(--l) 200}
+html #section-analytics .tspin::after{content:"";position:absolute;left:50%;top:50%;width:2px;height:12px;margin-left:-1px;margin-top:-12px;background:#fff;border-radius:2px;transform-origin:bottom;animation:tHand 6s linear infinite}
+html #section-analytics .tspin{position:relative}
+@keyframes tHand{to{transform:rotate(360deg)}}
+html #section-analytics .tsvg{width:100%}
+html #section-analytics .tsvg svg{width:100%;display:block;overflow:visible}
+html #section-analytics .tax{font-size:10px;font-weight:700;fill:var(--muted);font-variant-numeric:tabular-nums}
+html #section-analytics .tgl{stroke:var(--border);stroke-width:1}
+html #section-analytics .tarea{fill:url(#tag)}
+html #section-analytics .tln{fill:none;stroke:url(#tgg2);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(110,130,255,.8))}
+html #section-analytics .tdot{fill:transparent;cursor:pointer}
+html #section-analytics .tdot:hover{fill:#7a8cff}
+html #section-analytics .twk{display:flex;flex-direction:column;gap:2px;padding-top:4px}
+html #section-analytics .thb{display:grid;grid-template-columns:30px 1fr 54px;gap:12px;align-items:center;padding:8px 0;font-weight:800;font-size:13px;color:var(--text)}
+html #section-analytics .thb .tr2{height:14px;border-radius:99px;background:var(--track);overflow:hidden}
+html #section-analytics .thb .tr2 i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#4f7dff,#9b5cff);box-shadow:0 0 12px rgba(110,130,255,.6);transform-origin:left}
+html #section-analytics .thb b{text-align:right;font-variant-numeric:tabular-nums}
+html #section-analytics .tempty{display:flex;align-items:center;gap:14px;padding:10px 0 4px;font-weight:800;color:var(--text)}
+html #section-analytics .tok{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#34d17a,#17b8a6);box-shadow:0 8px 22px -6px rgba(52,209,122,.8);flex-shrink:0}
+html #section-analytics .tok svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30}
+html #section-analytics .tempty small{display:block;color:var(--muted);font-weight:600;font-size:12px;margin-top:2px}
+#tTip{position:fixed;z-index:9999;pointer-events:none;background:var(--sk-glass);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;box-shadow:0 14px 34px -10px rgba(0,0,0,.5);opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s}
+#tTip.on{opacity:1;transform:none}#tTip b{display:block;margin-bottom:2px}#tTip span{display:flex;gap:10px;justify-content:space-between;color:var(--muted)}#tTip span em{font-style:normal;color:var(--text)}
+/* animatsiyalar (standart holat ko'rinadi, .go faqat kirish effekti) */
+html #section-analytics .go .tcard,html #section-analytics .go .tkt{animation:tIn .9s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i,0)*80ms + 150ms)}
+@keyframes tIn{from{opacity:0;transform:translateY(28px) scale(.96);filter:blur(8px)}}
+html #section-analytics .go .tdn{animation:tSpin 1.6s cubic-bezier(.16,1,.3,1) backwards}
+@keyframes tSpin{from{transform:rotate(-120deg) scale(.82);opacity:0}}
+html #section-analytics .go .tdn .sg{animation:tSg 1.2s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i)*120ms + 300ms)}
+@keyframes tSg{from{opacity:0;stroke-width:0}}
+html #section-analytics .go .tgau .f{animation:tGin 1.5s cubic-bezier(.16,1,.3,1) backwards .6s}
+@keyframes tGin{from{stroke-dasharray:0 200}}
+html #section-analytics .go .tln{animation:tDraw 2s cubic-bezier(.16,1,.3,1) backwards .3s;stroke-dasharray:3000}
+@keyframes tDraw{from{stroke-dashoffset:3000}}
+html #section-analytics .go .tarea{animation:tFade 1s ease backwards 1s}
+@keyframes tFade{from{opacity:0}}
+html #section-analytics .go .thb .tr2 i{animation:tBar 1.2s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--k)*90ms + 400ms)}
+@keyframes tBar{from{transform:scaleX(0)}}
+html #section-analytics .go .tok{animation:tPop .8s cubic-bezier(.34,1.56,.64,1) backwards .5s}.go .tok svg{animation:tDr .6s ease backwards .9s}
+@keyframes tPop{from{transform:scale(0)}}@keyframes tDr{from{stroke-dashoffset:30}}
+@media(max-width:1000px){html #section-analytics #tGrid{grid-template-columns:1fr}html #section-analytics #analyticsSummary{grid-template-columns:1fr 1fr}}
+html #section-analytics #errorsTable:has(.tempty) thead{display:none}
+@media(prefers-reduced-motion:reduce){html #section-analytics .tcard *,html #section-analytics .tkt *,html #section-analytics .tok{animation:none!important}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -2501,7 +2582,7 @@ html #section-analytics .period-filter-box .qic:hover,html #section-analytics .p
 
     <div class="panel" style="margin-bottom:24px;">
       <h2><i class='ti ti-trending-up' aria-hidden='true'></i> Общая аналитика <span class="sub" id="analyticsSub"></span></h2>
-      <div class="analytics-summary" id="analyticsSummary"></div>
+      <div id="tGrid"><div class="t-kpis-wrap" style="display:contents"><div id="analyticsSummary"></div></div></div>
 
       <div class="panels" style="margin-top:20px;grid-template-columns:1fr 1fr;">
         <div class="panel">
@@ -6607,6 +6688,7 @@ function renderStats() {
     { label: "Просрочено (8+ дн.)", val: overdue, pct: pct(overdue), cls: "accent-overdue", icon: "<i class='ti ti-alert-triangle' aria-hidden='true'></i>" },
   ];
   const isCrbStats = document.documentElement.getAttribute("data-brand") === "crb";
+  if (isCrbStats && window.TUI) { window.TUI.stats(total, pending, accepted, rejected, overdue); return; }
   if (isCrbStats) {
     document.getElementById("statsRow").innerHTML = cards.map(c => `
       <div class="stat-card-v2 ${c.cls}">
@@ -7173,12 +7255,16 @@ function renderAnalytics() {
   const withinSla = allDurationValues.filter(ms => ms <= DEADLINE_MS).length;
   const slaRate = allDurationValues.length ? (withinSla / allDurationValues.length) * 100 : null;
 
+  if (document.documentElement.getAttribute("data-brand") === "crb" && window.TUI) {
+    document.getElementById("analyticsSummary").innerHTML = window.TUI.kpis(totalDecided, allDurations != null ? formatDuration(allDurations) : "—", overallRejectRate, slaRate);
+  } else {
   document.getElementById("analyticsSummary").innerHTML = `
     <div><span class="sum-icon"><i class='ti ti-clipboard-list' aria-hidden='true'></i></span><div><div class="num">${totalDecided}</div><div class="lbl">Всего решений</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-stopwatch' aria-hidden='true'></i></span><div><div class="num">${allDurations != null ? formatDuration(allDurations) : "—"}</div><div class="lbl">Среднее время</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-trending-down' aria-hidden='true'></i></span><div><div class="num">${overallRejectRate.toFixed(0)}%</div><div class="lbl">Доля отказов</div></div></div>
     <div><span class="sum-icon"><i class='ti ti-target' aria-hidden='true'></i></span><div><div class="num">${slaRate != null ? slaRate.toFixed(0) + "%" : "—"}</div><div class="lbl">В срок (до 8 дней)</div></div></div>
   `;
+  }
 
   // ---------- Нагрузка по сотрудникам ----------
   // "Обработано" - davr bo'yicha filtrlanadi. "Ожидает сейчас" - bu HOZIRGI
@@ -7273,7 +7359,7 @@ function renderAnalytics() {
   const errorRows = Object.entries(errorCounts).sort((a, b) => b[1] - a[1]);
   document.querySelector("#errorsTable tbody").innerHTML = errorRows.map(([msg, count], idx) => `
     <tr><td style="color:var(--muted);">${idx + 1}</td><td>${escapeHtml(msg)}</td><td>${count}</td></tr>`).join("")
-    || `<tr><td colspan="3" style="color:var(--muted)">Ошибок нет <i class='ti ti-confetti' aria-hidden='true'></i></td></tr>`;
+    || `<tr><td colspan="3" style="padding:0;border:0"><div class="tempty"><div class="tok"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div><div>Ошибок нет<small>Все счета отправлены без технических сбоев</small></div></div></td></tr>`;
 
   renderWeekdayChart(periodInvoiceRows);
   renderTrendChart();
@@ -7297,6 +7383,7 @@ function renderWeekdayChart(rows) {
   const data = order.map(i => counts[i]);
 
   const isCrbWeekday = document.documentElement.getAttribute("data-brand") === "crb";
+  if (isCrbWeekday && window.TUI) { window.TUI.weekday(labels, data); return; }
   const barColor = isCrbWeekday ? "#2563EB" : "#241A5C";
   const ctx = document.getElementById("weekdayChart");
   if (weekdayChartInstance) weekdayChartInstance.destroy();
@@ -7334,6 +7421,7 @@ function renderTrendChart() {
   });
 
   const isCrb = document.documentElement.getAttribute("data-brand") === "crb";
+  if (isCrb && window.TUI) { window.TUI.trend(labels, dateKeys.map((_, i) => buckets.accepted[i] + buckets.rejected[i] + buckets.sent[i] + buckets.new[i])); return; }
   const trendColors = isCrb
     ? { accepted: "#16A34A", rejected: "#DC2626", sent: "#2563EB", new: "#94A3B8" }
     : { accepted: "#5FBE84", rejected: "#E8837E", sent: "#FFC876", new: "#D7DCE5" };
@@ -10379,7 +10467,7 @@ async function recallInvoice(facturaid, btnEl) {
   };
   function hookNav(){
     var o=window.showSection;if(typeof o!=='function'||o.__orgHooked)return;
-    var w=function(id){var r=o.apply(this,arguments);if(id==='analytics'){setTimeout(function(){window.__orgPlay(document.getElementById('orgBreakdownGrid'));},40);}return r;};
+    var w=function(id){var r=o.apply(this,arguments);if(id==='analytics'){setTimeout(function(){window.__orgPlay(document.getElementById('orgBreakdownGrid'));if(window.TUI)window.TUI.play();},40);}return r;};
     w.__orgHooked=true;window.showSection=w;
   }
   hookNav();document.addEventListener('DOMContentLoaded',hookNav);
@@ -10518,6 +10606,79 @@ async function recallInvoice(facturaid, btnEl) {
     }catch(err){console.error('pick',err)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script id="skin-t-js">
+(function(){
+  var tip=document.createElement('div');tip.id='tTip';document.body.appendChild(tip);
+  document.addEventListener('mousemove',function(e){
+    var t=e.target.closest&&e.target.closest('#section-analytics [data-tip]');
+    if(t){tip.innerHTML=t.getAttribute('data-tip');tip.classList.add('on');tip.style.left=Math.min(innerWidth-200,e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px'}else tip.classList.remove('on');
+  });
+  function esc(s){return String(s).replace(/"/g,'&quot;')}
+  var CL=['#5b8dff','#ff6b8a','#ffb84d','#ff8a5b','#8d95ab'];
+  var TUI=window.TUI={};
+  TUI.play=function(){
+    var g=document.getElementById('tGrid');if(!g||!window.__orgPlay)return;
+    var p=g.closest('.panel');if(p)window.__orgPlay(p);
+  };
+  TUI.stats=function(total,pending,accepted,rejected,overdue){
+    var host=document.getElementById('tGrid');if(!host)return;
+    var d=document.getElementById('tDonut');
+    if(!d){host.insertAdjacentHTML('afterbegin','<div id="tDonut"></div>');d=document.getElementById('tDonut')}
+    var other=Math.max(0,total-accepted-rejected-pending);
+    var vals=[accepted,rejected,Math.max(0,pending-overdue),overdue,other];
+    var C=2*Math.PI*88,off=0,seg='';
+    if(total)vals.forEach(function(v,i){if(!v)return;var len=C*v/total;seg+='<circle class="sg" style="--i:'+i+'" cx="125" cy="125" r="88" stroke="'+CL[i]+'" stroke-dasharray="'+Math.max(len-4,1)+' '+C+'" stroke-dashoffset="'+(-off)+'"/>';off+=len});
+    var pc=function(v){return total?Math.round(v/total*100)+'%':'—'};
+    var leg='<div><i style="background:'+CL[0]+'"></i><span>Принято</span><b>'+accepted+'</b><em>'+pc(accepted)+'</em></div>'+
+      '<div><i style="background:'+CL[1]+'"></i><span>Отклонено</span><b>'+rejected+'</b><em>'+pc(rejected)+'</em></div>'+
+      '<div><i style="background:'+CL[2]+'"></i><span>Ожидают ответа</span><b>'+pending+'</b><em>'+pc(pending)+'</em></div>'+
+      '<div class="sub"><i style="background:'+CL[3]+'"></i><span>в т.ч. просрочено (8+ дн.)</span><b>'+overdue+'</b><em>'+pc(overdue)+'</em></div>'+
+      (other?'<div><i style="background:'+CL[4]+'"></i><span>Остальные</span><b>'+other+'</b><em>'+pc(other)+'</em></div>':'');
+    d.innerHTML='<div class="tcard" style="--i:0;height:100%"><div class="tct">Статусы счетов</div><div class="tdw"><div class="tdn"><svg viewBox="0 0 250 250"><circle class="bg" cx="125" cy="125" r="88"/>'+seg+'</svg><div class="mid"><b class="tgrad"><span class="cu" data-n="'+total+'" data-delay="300" data-dur="1500">'+total+'</span></b><span>всего счетов</span></div></div><div class="tleg">'+leg+'</div></div></div>';
+    var sig=[total,accepted,rejected,pending,overdue].join('|');
+    if(TUI.__sig!==sig){TUI.__sig=sig;setTimeout(TUI.play,30)}
+  };
+  var IC={doc:"<i class='ti ti-clipboard-list' aria-hidden='true'></i>",clk:"<i class='ti ti-stopwatch' aria-hidden='true'></i>",dn:"<i class='ti ti-trending-down' aria-hidden='true'></i>",tg:"<i class='ti ti-target' aria-hidden='true'></i>"};
+  function gau(p){var L=Math.PI*40;return '<div class="tgau"><svg viewBox="0 0 100 56"><path class="t" d="M10 50 A40 40 0 0 1 90 50"/><path class="f" style="--l:'+(L*Math.max(0,Math.min(100,p))/100)+'" d="M10 50 A40 40 0 0 1 90 50"/></svg></div>'}
+  TUI.kpis=function(decided,durText,rejRate,sla){
+    var m=/^([\d.,]+)\s+(ч|мин|с)$/.exec(durText||''),dur=m?m[1]+'<small>'+m[2]+'</small>':(durText||'—');
+    var items=[
+      {i:IC.doc,v:'<span class="cu" data-n="'+decided+'" data-delay="400" data-dur="1500">'+decided+'</span>',l:'Всего решений'},
+      {i:IC.clk,v:dur,l:'Среднее время',spin:1},
+      {i:IC.dn,v:'<span class="cu" data-n="'+Math.round(rejRate)+'" data-delay="500" data-dur="1500">'+Math.round(rejRate)+'</span><small>%</small>',l:'Доля отказов',g:rejRate},
+      {i:IC.tg,v:sla!=null?'<span class="cu" data-n="'+Math.round(sla)+'" data-delay="600" data-dur="1500">'+Math.round(sla)+'</span><small>%</small>':'—',l:'В срок (до 8 дней)',g:sla}
+    ];
+    return items.map(function(k,n){return '<div class="tkt" style="--i:'+n+'"><div class="tico'+(k.spin?' tspin':'')+'">'+k.i+'</div><div><div class="tv tgrad">'+k.v+'</div><div class="tl">'+k.l+'</div></div>'+(k.g!=null?gau(k.g):'')+'</div>'}).join('');
+  };
+  function host(canvasId,cls){
+    var cv=document.getElementById(canvasId);if(!cv)return null;
+    var box=cv.parentNode;cv.style.display='none';box.style.height='auto';
+    var h=box.querySelector('.'+cls);if(!h){h=document.createElement('div');h.className=cls;box.appendChild(h)}
+    return h;
+  }
+  TUI.trend=function(labels,totals){
+    var h=host('trendChart','tsvg');if(!h)return;
+    var W=620,H=230,pl=34,pb=26,pt=12,iw=W-pl-10,ih=H-pb-pt,n=totals.length;
+    var mx=Math.max(4,Math.max.apply(0,totals)),st=[1,2,5,10,20,25,50,100,200,500,1000].find(function(s){return s*4>=mx})||1000,MAX=st*4;
+    var pts=totals.map(function(v,k){return [pl+k*iw/(n-1),pt+ih-v/MAX*ih]});
+    var d='M'+pts[0][0]+' '+pts[0][1];
+    for(var i=1;i<n;i++){var a=pts[i-1],b=pts[i],cx=(a[0]+b[0])/2;d+=' C'+cx+' '+a[1]+' '+cx+' '+b[1]+' '+b[0]+' '+b[1]}
+    var ar=d+' L'+pts[n-1][0]+' '+(pt+ih)+' L'+pts[0][0]+' '+(pt+ih)+' Z';
+    var g='';for(var t=0;t<=4;t++){var y=pt+ih-t*st/MAX*ih;g+='<line class="tgl" x1="'+pl+'" x2="'+W+'" y1="'+y+'" y2="'+y+'"/><text class="tax" x="'+(pl-8)+'" y="'+(y+3)+'" text-anchor="end">'+(t*st)+'</text>'}
+    var dots=pts.map(function(p,k){return '<circle class="tdot" cx="'+p[0]+'" cy="'+p[1]+'" r="7" data-tip="<b>'+esc(labels[k])+'</b><span>Счетов <em>'+totals[k]+'</em></span>"/>'}).join('');
+    var lb=pts.map(function(p,k){return k%3===0?'<text class="tax" x="'+p[0]+'" y="'+(H-8)+'" text-anchor="middle">'+esc(labels[k])+'</text>':''}).join('');
+    h.innerHTML='<svg viewBox="0 0 '+W+' '+H+'"><defs><linearGradient id="tgg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5b8dff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient><linearGradient id="tag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b8fff" stop-opacity=".45"/><stop offset="1" stop-color="#6b8fff" stop-opacity="0"/></linearGradient></defs>'+g+'<path class="tarea" d="'+ar+'"/><path class="tln" d="'+d+'"/>'+dots+lb+'</svg>';
+  };
+  TUI.weekday=function(labels,data){
+    var h=host('weekdayChart','twk');if(!h)return;
+    var mx=Math.max(1,Math.max.apply(0,data));
+    h.innerHTML=data.map(function(v,k){return '<div class="thb"><span>'+labels[k]+'</span><div class="tr2"><i style="--k:'+k+';width:'+(v/mx*100)+'%"></i></div><b>'+v+'</b></div>'}).join('');
+  };
+  var gd=document.createElementNS('http://www.w3.org/2000/svg','svg');gd.setAttribute('width','0');gd.setAttribute('height','0');gd.style.position='absolute';
+  gd.innerHTML='<defs><linearGradient id="tgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8dff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs>';
+  document.body.appendChild(gd);
 })();
 </script>
 </body>
