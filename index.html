@@ -5138,8 +5138,8 @@ window.onload = () => {
 };
 
 function exportInvoicesCsv() {
-  const headers = ["Организация", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий"];
-  const rows = lastFilteredInvoices.map(r => [r.buyer, r.department, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment]);
+  const headers = ["Организация", "Подразделение", "№ счёта", "Дата", "Контрагент", "ИНН", "Договор", "Сумма", "НДС", "Ответственный", "Статус", "Дней", "Комментарий", "DIDOX"];
+  const rows = lastFilteredInvoices.map(r => [r.buyer, r.department, r.no, r.date, r.seller, r.inn, r.contract, r.sum, r.vat, r.resp, r.status, r.days, r.comment, r.didoxDone ? "Да" : "Нет"]);
   exportTableToExcel(headers, rows, "scheta-faktury");
 }
 
