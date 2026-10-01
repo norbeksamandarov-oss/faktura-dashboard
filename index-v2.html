@@ -2764,8 +2764,8 @@ html:root:not([data-theme="dark"]), html:root:not([data-theme="dark"])[data-bran
   --sk-orb:.16;
 }
 html body{font-family:'Manrope','Satoshi',sans-serif;background:var(--bg);color:var(--text)}
-html body::before{width:460px;height:460px;top:-140px;left:-100px;right:auto;background:radial-gradient(circle,#2f6bff,transparent 70%);opacity:var(--sk-orb);filter:blur(40px)}
-html body::after{width:420px;height:420px;bottom:-150px;right:-80px;left:auto;background:radial-gradient(circle,#7a3cff,transparent 70%);opacity:var(--sk-orb);filter:blur(40px)}
+html body::before{width:460px;height:460px;top:-140px;left:-100px;right:auto;background:radial-gradient(circle,#2f6bff,transparent 70%);opacity:var(--sk-orb);filter:none}
+html body::after{width:420px;height:420px;bottom:-150px;right:-80px;left:auto;background:radial-gradient(circle,#7a3cff,transparent 70%);opacity:var(--sk-orb);filter:none}
 @keyframes skDrift{to{transform:translate(60px,40px) scale(1.15)}}
 /* tepa panel */
 html header.topbar{background:var(--sk-glass);border-bottom:1px solid var(--border);color:var(--text);backdrop-filter:none}
@@ -2871,6 +2871,9 @@ html .toolbar{background:var(--ice-soft);border:1px solid var(--border);border-r
 html [id$="ExportBtn"],html #exportCsvBtn{background:var(--navy-light)!important;border-color:var(--navy-light)!important;color:#fff!important;background-image:none!important;box-shadow:none!important}
 html[data-brand="crb"] #exportCsvBtn,html[data-brand="crb"] #dogovorExportBtn,html[data-brand="crb"] #dogovorRealExportBtn,html[data-brand="crb"] #doverennostExportBtn,html[data-brand="crb"] #bankExportBtn,html[data-brand="crb"] #realschetExportBtn,html[data-brand="crb"] #zakaznaryadExportBtn,html[data-brand="crb"] #otherreqPostExportBtn,html[data-brand="crb"] #otherreqRealExportBtn{background:var(--navy-light)!important;background-image:none!important;box-shadow:none!important;color:#fff!important}
 html[data-brand="crb"] #suggestRespBtn{background:var(--ice-soft)!important;color:var(--amber-fg)!important;border:1px solid var(--amber-fg)!important;box-shadow:none!important}
+html .sidebar,html header.topbar,html .panel,html .stat-card,html .modal-card,html .login-card,html .toolbar,html .glass{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html[data-brand="crb"] .sidebar{background:var(--sk-glass)!important}
+html[data-brand="crb"] header.topbar{background:var(--sk-glass)!important}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
