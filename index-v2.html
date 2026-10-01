@@ -2128,6 +2128,13 @@ html #section-analytics .qpop .qcf button{background:transparent!important;color
 html #section-analytics .qpop .qli{background:transparent!important;color:var(--text)!important;border:0!important}
 html #section-analytics .qpop .qli:hover{background:rgba(91,141,255,.16)!important}
 html #section-analytics .qpop .qli.sel{background:var(--sk-nav-on)!important}
+.qdw{display:inline-flex;align-items:center;gap:6px}
+html #section-analytics .period-filter-box .qdw .qdi{background:transparent!important;border:0!important;box-shadow:none!important;outline:0;width:92px!important;padding:2px 0!important;font:inherit;font-size:13.5px;font-weight:800;color:var(--text)!important;cursor:text;border-radius:6px;font-variant-numeric:tabular-nums}
+html #section-analytics .period-filter-box .qdw .qdi::placeholder{color:var(--muted);font-weight:700;opacity:1}
+html #section-analytics .period-filter-box .qdw .qdi.bad{color:#ff6b6b!important;text-decoration:underline wavy #ff6b6b}
+html #section-analytics .period-filter-box .qdw .qdi:focus{box-shadow:0 2px 0 0 var(--navy-light)!important;border-radius:0}
+html #section-analytics .period-filter-box .qic{width:28px!important;height:28px!important;display:grid!important;place-items:center;border-radius:9px!important;padding:0!important}
+html #section-analytics .period-filter-box .qic:hover,html #section-analytics .period-filter-box .qic.open{background:rgba(91,141,255,.18)!important}
 @media(prefers-reduced-motion:reduce){.qpop,.qgd,.qli{animation:none!important}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
@@ -10415,19 +10422,44 @@ async function recallInvoice(facturaid, btnEl) {
   /* ---- kalendar ---- */
   function dateField(inp){
     var field=inp.closest('.filter-field'),box=inp.closest('.period-filter-box')||inp.parentNode;
-    var btn=document.createElement('button');btn.type='button';btn.className='qbtn';
-    inp.classList.add('qhide');inp.tabIndex=-1;inp.parentNode.insertBefore(btn,inp.nextSibling);
-    function sync(){var t=fmt(inp.value);btn.className='qbtn'+(t?'':' ph')+(cur&&cur.btn===btn?' open':'');btn.innerHTML='<span>'+(t||'дд.мм.гггг')+'</span>'+CAL}
-    hookValue(inp,sync);inp.addEventListener('change',sync);sync();
+    var wrap=document.createElement('span');wrap.className='qdw';
+    var txt=document.createElement('input');txt.type='text';txt.className='qdi';txt.placeholder='дд.мм.гггг';txt.maxLength=10;txt.setAttribute('inputmode','numeric');txt.autocomplete='off';
+    var btn=document.createElement('button');btn.type='button';btn.className='qbtn qic';btn.title='Календарь';btn.innerHTML=CAL;
+    wrap.appendChild(txt);wrap.appendChild(btn);
+    inp.classList.add('qhide');inp.tabIndex=-1;inp.parentNode.insertBefore(wrap,inp.nextSibling);
+    function sync(force){
+      btn.classList.toggle('open',!!(cur&&cur.btn===btn));
+      if(force||document.activeElement!==txt){txt.value=fmt(inp.value);txt.classList.remove('bad')}
+    }
+    hookValue(inp,function(){sync(false)});inp.addEventListener('change',function(){sync(false)});sync(true);
+    function mask(v){var d=v.replace(/\D/g,'').slice(0,8);return d.slice(0,2)+(d.length>2?'.'+d.slice(2,4):'')+(d.length>4?'.'+d.slice(4):'')}
+    function toIso(t){
+      var m=/^(\d{2})\.(\d{2})\.(\d{4})$/.exec(t);if(!m)return null;
+      var dd=+m[1],mm=+m[2],yy=+m[3];if(yy<2000||yy>2100)return null;
+      var d=new Date(yy,mm-1,dd);if(d.getFullYear()!==yy||d.getMonth()!==mm-1||d.getDate()!==dd)return null;
+      return iso(d);
+    }
+    function apply(v){if(inp.value===v)return;inp.value=v;inp.dispatchEvent(new Event('change',{bubbles:true}))}
+    txt.addEventListener('input',function(){
+      var pos=txt.selectionStart,before=txt.value;txt.value=mask(txt.value);
+      if(pos>=before.length)txt.setSelectionRange(txt.value.length,txt.value.length);
+      txt.classList.remove('bad');
+      if(cur&&cur.btn===btn)close();
+      if(txt.value.length===10){var v=toIso(txt.value);if(v)apply(v);else txt.classList.add('bad')}
+      else if(txt.value===''){apply('')}
+    });
+    txt.addEventListener('keydown',function(e){if(e.key==='Enter'){txt.blur()}else if(e.key==='ArrowDown'){open(e)}});
+    txt.addEventListener('blur',function(){sync(true)});
+    txt.addEventListener('focus',function(){setTimeout(function(){txt.select()},0)});
     function open(e){
       if(e)e.stopPropagation();
       var base=parse(inp.value)||new Date(),y=base.getFullYear(),m=base.getMonth();
       var pop=document.createElement('div');pop.className='qpop qcal';
-      function other(){var o=inp.id==='analyticsPeriodFrom'?document.getElementById('analyticsPeriodTo'):inp.id==='analyticsPeriodTo'?document.getElementById('analyticsPeriodFrom'):null;return o}
+      function other(){return inp.id==='analyticsPeriodFrom'?document.getElementById('analyticsPeriodTo'):inp.id==='analyticsPeriodTo'?document.getElementById('analyticsPeriodFrom'):null}
       function draw(dir){
         var sel=parse(inp.value),oth=other(),od=oth?parse(oth.value):null,td=new Date();
         var from=null,to=null;if(inp.id==='analyticsPeriodFrom'){from=sel;to=od}else if(inp.id==='analyticsPeriodTo'){from=od;to=sel}
-        var first=new Date(y,m,1),off=(first.getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),cells='';
+        var first=new Date(y,m,1),off=(first.getDay()+6)%7,cells='';
         for(var i=0;i<42;i++){
           var d=new Date(y,m,1-off+i),cls=[];
           if(d.getMonth()!==m)cls.push('o');
@@ -10445,14 +10477,12 @@ async function recallInvoice(facturaid, btnEl) {
         var v=null;
         if(t.dataset.d)v=t.dataset.d;else if(t.dataset.a==='today')v=iso(new Date());else if(t.dataset.a==='clear')v='';
         if(v===null)return;
-        inp.value=v;inp.dispatchEvent(new Event('change',{bubbles:true}));close();
+        apply(v);close();sync(true);
       });
       openPop(btn,field,box,pop);
     }
     btn.addEventListener('click',open);
-    field.addEventListener('click',function(e){if(e.target.closest('.qpop'))return;if(e.target===btn||btn.contains(e.target))return;
-      /* pole ustiga bosilsa: bosilgan joydagi sana maydonini ochamiz */
-      var t=e.target.closest('.qbtn');if(!t)open(e)});
+    field.addEventListener('click',function(e){if(e.target.closest('.qpop')||wrap.contains(e.target))return;txt.focus()});
   }
   /* ---- tashkilot ro'yxati ---- */
   function selectField(sel){
