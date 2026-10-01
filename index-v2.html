@@ -2303,6 +2303,81 @@ html[data-theme="dark"] #loadingOverlay{background:rgba(7,9,15,.9)!important}
 @keyframes ldEq{0%,100%{height:14px;opacity:.55}50%{height:58px;opacity:1}}
 @keyframes ldPh{0%{opacity:0;transform:translateY(6px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0;transform:translateY(-6px)}}
 @media(prefers-reduced-motion:reduce){.ldcard::before,.ldeq i{animation:none}}
+html #section-invoices .toolbar .filter-field .qbtn{background:transparent!important;border:0!important;box-shadow:none!important;color:var(--text)!important;padding:2px 0!important;opacity:1!important;border-radius:6px!important;transform:none!important;height:auto!important;width:auto!important}
+html #section-invoices .toolbar .filter-field .qbtn.ph{color:var(--muted)!important}
+html #section-invoices .qpop button{opacity:1!important}
+html #section-invoices .qpop .qch button{background:transparent!important;border:1px solid var(--border)!important;color:var(--text)!important}
+html #section-invoices .qpop .qgd button{background:transparent;color:var(--text)!important;border:0!important}
+html #section-invoices .qpop .qgd button.o{color:var(--muted)!important}
+html #section-invoices .qpop .qgd button.rg{background:rgba(91,141,255,.16)!important}
+html #section-invoices .qpop .qgd button.sel{background:linear-gradient(135deg,#4f7dff,#8a52ff)!important;color:#fff!important}
+html #section-invoices .qpop .qgd button:hover:not(.sel){background:rgba(91,141,255,.22)!important}
+html #section-invoices .qpop .qcf button{background:transparent!important;color:var(--navy-text)!important;border:0!important}
+html #section-invoices .qpop .qli{background:transparent!important;color:var(--text)!important;border:0!important}
+html #section-invoices .qpop .qli:hover{background:rgba(91,141,255,.16)!important}
+html #section-invoices .qpop .qli.sel{background:var(--sk-nav-on)!important}
+html #section-invoices .toolbar .qdw .qdi{background:transparent!important;border:0!important;box-shadow:none!important;outline:0;width:92px!important;padding:2px 0!important;font:inherit;font-size:13.5px;font-weight:800;color:var(--text)!important;cursor:text;border-radius:6px;font-variant-numeric:tabular-nums}
+html #section-invoices .toolbar .qdw .qdi::placeholder{color:var(--muted);font-weight:700;opacity:1}
+html #section-invoices .toolbar .qdw .qdi.bad{color:#ff6b6b!important;text-decoration:underline wavy #ff6b6b}
+html #section-invoices .toolbar .qdw .qdi:focus{box-shadow:0 2px 0 0 var(--navy-light)!important;border-radius:0}
+html #section-invoices .toolbar .qic{width:28px!important;height:28px!important;display:grid!important;place-items:center;border-radius:9px!important;padding:0!important}
+html #section-invoices .toolbar .qic:hover,html #section-invoices .toolbar .qic.open{background:rgba(91,141,255,.18)!important}
+/* Счета-фактуры: filtr paneli (Q) + jadval (M) */
+html #section-invoices .panel:has(.toolbar){position:relative;z-index:30}
+html #section-invoices .toolbar{position:relative;z-index:30;overflow:visible!important;display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px!important;align-items:stretch!important;padding:12px!important;margin-bottom:16px!important;border-radius:20px!important;border:1px solid var(--border)!important;background:linear-gradient(160deg,rgba(91,141,255,.10),transparent 55%),var(--sk-glass)!important;box-shadow:0 18px 50px -24px rgba(40,60,120,.35),inset 0 1px 0 rgba(255,255,255,.5)!important}
+html:root[data-theme="dark"] #section-invoices .toolbar{box-shadow:0 24px 60px -26px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.12)!important}
+html #section-invoices .toolbar::before{display:none!important}
+html #section-invoices .toolbar>.filter-field{grid-column:span 2;gap:2px;padding:8px 14px;border-radius:14px;border:1px solid var(--border);background:rgba(91,141,255,.05);justify-content:center;min-width:0;transition:background .25s,border-color .25s}
+html #section-invoices .toolbar>.filter-field:hover{background:rgba(91,141,255,.12)}
+html #section-invoices .toolbar>.filter-field:focus-within{border-color:var(--navy-light);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
+html #section-invoices .toolbar>.filter-field:nth-child(1){grid-column:span 3}
+html #section-invoices .toolbar>.filter-field:nth-child(4){grid-column:span 3}
+html #section-invoices .toolbar>.filter-field:nth-child(6){grid-column:span 3}
+html #section-invoices .toolbar>.filter-field:nth-child(7){grid-column:span 4}
+html #section-invoices .toolbar>.filter-field:nth-child(8){grid-column:span 3}
+html #section-invoices .toolbar>.filter-field:nth-child(9){grid-column:span 2}
+html #section-invoices .toolbar>.filter-field:nth-child(10){grid-column:span 2}
+html #section-invoices .toolbar>.filter-field:nth-child(n+11){grid-column:span 3;padding:0;border:0;background:transparent}
+html #section-invoices .toolbar>.filter-field:nth-child(13){grid-column:span 4}
+html #section-invoices .toolbar>.filter-field:nth-child(n+11) label{display:none}
+html #section-invoices .toolbar>.filter-field:nth-child(n+11):hover{background:transparent}
+html #section-invoices .toolbar .filter-field label{font-size:10px!important;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)!important;margin:0}
+html #section-invoices .toolbar .filter-field input,html #section-invoices .toolbar .filter-field select{background:transparent!important;border:0!important;box-shadow:none!important;padding:2px 0!important;font-size:13.5px;font-weight:800;color:var(--text)!important;border-radius:6px;outline:0;font-family:inherit;width:100%;min-width:0}
+html #section-invoices .toolbar .filter-field input::placeholder{color:var(--muted);font-weight:700;opacity:1}
+html #section-invoices .toolbar .date-range{display:flex;align-items:center;gap:12px}
+html #section-invoices .toolbar .date-range .qdw{flex:1;min-width:0}
+html #section-invoices .toolbar .filter-field .qbtn.qo{min-width:0;width:100%!important;justify-content:space-between!important}
+html #section-invoices .toolbar .filter-field input,html #section-invoices .toolbar .filter-field .qbtn{height:auto!important;min-height:0!important;line-height:1.3}
+html #section-invoices .toolbar>.filter-field{min-height:0}
+html #section-invoices .toolbar>.filter-field:nth-child(-n+10){height:56px}
+html #section-invoices .toolbar>.filter-field>button{min-height:42px!important;height:42px!important}
+html #section-invoices .toolbar .filter-field .qbtn.qo span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html #section-invoices .toolbar .qdw .qdi{width:100%!important}
+html #section-invoices .toolbar>.filter-field>button{width:100%;height:100%;min-height:44px;border-radius:14px!important;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
+html #section-invoices .toolbar>.filter-field>button:hover{transform:translateY(-2px)}
+html #section-invoices .toolbar #clearFiltersBtn{background:transparent!important;border:1px solid var(--navy-light)!important;color:var(--navy-text)!important}
+html #section-invoices .toolbar #clearFiltersBtn:hover{background:var(--navy-light)!important;color:#fff!important}
+html #section-invoices .toolbar #exportCsvBtn{background:linear-gradient(135deg,#4f7dff,#7a3cff)!important;border:0!important;color:#fff!important;box-shadow:0 12px 26px -10px rgba(100,90,255,.8)}
+html #section-invoices .toolbar #suggestRespBtn{background:rgba(242,163,58,.08)!important;border:1px solid rgba(242,163,58,.6)!important;color:#b86f08!important}
+html:root[data-theme="dark"] #section-invoices .toolbar #suggestRespBtn{color:#ffc46b!important}
+@media(max-width:900px){html #section-invoices .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}html #section-invoices .toolbar>.filter-field,html #section-invoices .toolbar>.filter-field:nth-child(n){grid-column:span 1}html #section-invoices .toolbar>.filter-field:nth-child(7){grid-column:span 2}}
+/* jadval (M): sarlavha plashka + qator-kartochkalar + tumbler */
+html #section-invoices table.invoices{border-spacing:0 6px}
+html #section-invoices table.invoices thead th{background:linear-gradient(90deg,rgba(79,125,255,.30),rgba(122,60,255,.24)),var(--sk-glass)!important;color:var(--text)!important;border-top:1px solid rgba(110,120,255,.4)!important;border-bottom:1px solid rgba(110,120,255,.4)!important;font-weight:800;padding:13px 10px}
+html #section-invoices table.invoices thead th:first-child{border-left:1px solid rgba(110,120,255,.4)!important;border-radius:14px 0 0 14px}
+html #section-invoices table.invoices thead th:last-child{border-right:1px solid rgba(110,120,255,.4)!important;border-radius:0 14px 14px 0}
+html #section-invoices table.invoices tbody tr{background:transparent!important}
+html #section-invoices table.invoices tbody td{background:var(--sk-glass);border-top:1px solid var(--border);border-bottom:1px solid var(--border)!important;padding:12px 10px;transition:background .2s,border-color .2s}
+html #section-invoices table.invoices tbody td:first-child{border-left:1px solid var(--border);border-radius:14px 0 0 14px}
+html #section-invoices table.invoices tbody td:last-child{border-right:1px solid var(--border);border-radius:0 14px 14px 0}
+html #section-invoices table.invoices tbody tr:hover td{background:color-mix(in srgb,var(--sk-glass) 86%,#5b8dff 14%);border-top-color:rgba(110,120,255,.5);border-bottom-color:rgba(110,120,255,.5)!important}
+html #section-invoices table.invoices tbody tr.row-overdue td{background:var(--red-bg)}
+html #section-invoices input.send-check,html #section-invoices input.didox-check{-webkit-appearance:none;appearance:none;width:42px;height:24px;border-radius:99px;background:rgba(120,130,160,.35);position:relative;cursor:pointer;transition:background .3s,box-shadow .3s;margin:0;vertical-align:middle;border:0}
+html #section-invoices input.send-check::after,html #section-invoices input.didox-check::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+html #section-invoices input.send-check:checked,html #section-invoices input.didox-check:checked{background:linear-gradient(135deg,#4f7dff,#7a3cff);box-shadow:0 6px 14px -5px rgba(100,90,255,.7)}
+html #section-invoices input.send-check:checked::after,html #section-invoices input.didox-check:checked::after{transform:translateX(18px)}
+html #section-invoices input.send-check:focus-visible,html #section-invoices input.didox-check:focus-visible{outline:2px solid var(--navy-light);outline-offset:2px}
+
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -10619,6 +10694,7 @@ async function recallInvoice(facturaid, btnEl) {
   var BLD='<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01"/></svg>';
   var ALL='<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
   var CHK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+  var DOT='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/></svg>';
   var cur=null;
   function p2(n){return (n<10?'0':'')+n}
   function iso(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
@@ -10647,7 +10723,7 @@ async function recallInvoice(facturaid, btnEl) {
   }
   /* ---- kalendar ---- */
   function dateField(inp){
-    var field=inp.closest('.filter-field'),box=inp.closest('.period-filter-box')||inp.parentNode;
+    var field=inp.closest('.filter-field'),box=inp.closest('.period-filter-box,.toolbar')||inp.parentNode;
     var wrap=document.createElement('span');wrap.className='qdw';
     var txt=document.createElement('input');txt.type='text';txt.className='qdi';txt.placeholder='дд.мм.гггг';txt.maxLength=10;txt.setAttribute('inputmode','numeric');txt.autocomplete='off';
     var btn=document.createElement('button');btn.type='button';btn.className='qbtn qic';btn.title='Календарь';btn.innerHTML=CAL;
@@ -10681,10 +10757,11 @@ async function recallInvoice(facturaid, btnEl) {
       if(e)e.stopPropagation();
       var base=parse(inp.value)||new Date(),y=base.getFullYear(),m=base.getMonth();
       var pop=document.createElement('div');pop.className='qpop qcal';
-      function other(){return inp.id==='analyticsPeriodFrom'?document.getElementById('analyticsPeriodTo'):inp.id==='analyticsPeriodTo'?document.getElementById('analyticsPeriodFrom'):null}
+      var PAIR={analyticsPeriodFrom:'analyticsPeriodTo',analyticsPeriodTo:'analyticsPeriodFrom',dateFrom:'dateTo',dateTo:'dateFrom'},ISFROM={analyticsPeriodFrom:1,dateFrom:1};
+      function other(){return PAIR[inp.id]?document.getElementById(PAIR[inp.id]):null}
       function draw(dir){
         var sel=parse(inp.value),oth=other(),od=oth?parse(oth.value):null,td=new Date();
-        var from=null,to=null;if(inp.id==='analyticsPeriodFrom'){from=sel;to=od}else if(inp.id==='analyticsPeriodTo'){from=od;to=sel}
+        var from=null,to=null;if(ISFROM[inp.id]){from=sel;to=od}else if(PAIR[inp.id]){from=od;to=sel}
         var first=new Date(y,m,1),off=(first.getDay()+6)%7,cells='';
         for(var i=0;i<42;i++){
           var d=new Date(y,m,1-off+i),cls=[];
@@ -10712,7 +10789,7 @@ async function recallInvoice(facturaid, btnEl) {
   }
   /* ---- tashkilot ro'yxati ---- */
   function selectField(sel){
-    var field=sel.closest('.filter-field'),box=sel.closest('.period-filter-box')||sel.parentNode;
+    var field=sel.closest('.filter-field'),box=sel.closest('.period-filter-box,.toolbar')||sel.parentNode;
     var btn=document.createElement('button');btn.type='button';btn.className='qbtn qo';
     sel.classList.add('qhide');sel.tabIndex=-1;sel.parentNode.insertBefore(btn,sel.nextSibling);
     function sync(){var o=sel.options[sel.selectedIndex];btn.className='qbtn qo'+(cur&&cur.btn===btn?' open':'');btn.innerHTML='<span>'+(o?o.text:'Все организации')+'</span>'+CHEV}
@@ -10723,7 +10800,7 @@ async function recallInvoice(facturaid, btnEl) {
       var pop=document.createElement('div');pop.className='qpop qlist';
       var html='';
       Array.prototype.forEach.call(sel.options,function(o,k){
-        html+='<button type="button" class="qli'+(o.value===''?' all':'')+(o.value===sel.value?' sel':'')+'" data-v="'+o.value.replace(/"/g,'&quot;')+'" style="--k:'+k+'"><i>'+(o.value===''?ALL:BLD)+'</i><span>'+o.text+'</span><em>'+CHK+'</em></button>';
+        html+='<button type="button" class="qli'+(o.value===''?' all':'')+(o.value===sel.value?' sel':'')+'" data-v="'+o.value.replace(/"/g,'&quot;')+'" style="--k:'+k+'"><i>'+(o.value===''?ALL:(sel.id==='buyerFilter'||sel.id==='departmentFilter'||sel.id==='analyticsOrgFilter'?BLD:DOT))+'</i><span>'+o.text+'</span><em>'+CHK+'</em></button>';
       });
       pop.innerHTML=html;
       pop.addEventListener('click',function(ev){
@@ -10741,6 +10818,8 @@ async function recallInvoice(facturaid, btnEl) {
     try{
       ['analyticsPeriodFrom','analyticsPeriodTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
       var s=document.getElementById('analyticsOrgFilter');if(s&&!s.__q){s.__q=1;selectField(s)}
+      ['dateFrom','dateTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
+      ['buyerFilter','departmentFilter','statusFilter','daysFilter','didoxFilter'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;selectField(el)}});
     }catch(err){console.error('pick',err)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
