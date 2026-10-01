@@ -1611,18 +1611,21 @@
     display: flex; align-items: center; gap: 6px;
     font-size: 11.5px; color: var(--muted); margin: 8px 0 0;
   }
-  table.invoices { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; min-width: 900px; }
+  table.invoices { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; min-width: 900px; line-height: 1.4; }
   table.invoices thead th {
     background: linear-gradient(180deg, #090979, #00D4FF); color: white;
-    text-align: left; padding: 10px 10px; font-size: 10.5px;
+    text-align: left; padding: 11px 10px; font-size: 11px;
     position: sticky; top: 0; z-index: 3;
     text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600;
     position: sticky; top: 0;
   }
   table.invoices thead th:first-child { border-top-left-radius: 10px; }
   table.invoices thead th:last-child { border-top-right-radius: 10px; }
-  table.invoices tbody td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.invoices tbody td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
   table.invoices tbody tr { transition: background 0.15s ease; }
+  /* Uzun jadvalda qatorni ko'z bilan kuzatish oson bo'lishi uchun nozik zebra */
+  table.invoices tbody tr:nth-child(even) { background: color-mix(in srgb, var(--ice-soft) 40%, transparent); }
+  table.invoices td.vz-dim { color: var(--muted); opacity: 0.55; }
   table.invoices tbody tr:hover { background: var(--ice-soft); }
   table.invoices tbody tr:last-child td { border-bottom: none; }
   table.invoices td.num-cell, table.invoices th.num-cell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -8801,21 +8804,34 @@ function vz2RenderFlatList(prefix, category) {
     flatEl.innerHTML = "";
     return;
   }
+  // Faqat HAMMA qatorda bo'sh bo'lgan ustunlar yashiriladi (masalan,
+  // "Подразделение" yoki "Ответственный" butun faylda yo'q bo'lsa) - joy
+  // bo'shaydi, summa nomga yaqinlashadi. Muhim ustunlar doim ko'rinadi.
+  const cols = [
+    { h: "Контрагент", key: "name", always: true },
+    { h: "Организация", key: "org", always: true },
+    { h: "Подразделение", key: "dept" },
+    { h: "Договор", key: "contract", always: true },
+    { h: "Вид договора", key: "contract_type" },
+    { h: "Валюта", key: "currency", always: true },
+    { h: "ИНН", key: "inn" },
+    { h: "Ответственный", key: "otvetstvenny" },
+  ].filter(c => c.always || items.some(it => String(it[c.key] || "").trim()));
+
   const trs = items.map((it, idx) => {
     const side = it.side === "dt" ? "dt" : "kt";
     const color = side === "kt" ? "#C0392B" : "#1E8449";
     const amount = it.total !== undefined && it.total !== null ? it.total : it.last3weeks;
+    const cells = cols.map(c => {
+      const v = String(it[c.key] || "").trim();
+      return v
+        ? `<td${c.key === "name" ? ' style="font-weight:500;"' : ""}>${escapeHtml(v)}</td>`
+        : `<td class="vz-dim">—</td>`;
+    }).join("");
     return `
     <tr>
-      <td style="color:var(--muted);">${idx + 1}</td>
-      <td>${escapeHtml(it.name || "—")}</td>
-      <td>${escapeHtml(it.org || "—")}</td>
-      <td>${escapeHtml(it.dept || "—")}</td>
-      <td>${escapeHtml(it.contract || "—")}</td>
-      <td>${escapeHtml(it.contract_type || "—")}</td>
-      <td>${escapeHtml(it.currency || "—")}</td>
-      <td>${escapeHtml(it.inn || "—")}</td>
-      <td>${escapeHtml(it.otvetstvenny || "—")}</td>
+      <td class="vz-dim">${idx + 1}</td>
+      ${cells}
       <td class="num-cell" style="color:${color};font-weight:600;">${vzFormatNum(Math.abs(amount || 0))}</td>
     </tr>`;
   }).join("");
@@ -8823,8 +8839,7 @@ function vz2RenderFlatList(prefix, category) {
     <table class="invoices" style="margin-bottom:10px;">
       <thead>
         <tr>
-          <th>№</th><th>Контрагент</th><th>Организация</th><th>Подразделение</th><th>Договор</th>
-          <th>Вид договора</th><th>Валюта</th><th>ИНН</th><th>Ответственный</th><th class="num-cell">Сумма</th>
+          <th>№</th>${cols.map(c => `<th>${c.h}</th>`).join("")}<th class="num-cell">Сумма</th>
         </tr>
       </thead>
       <tbody>${trs}</tbody>
