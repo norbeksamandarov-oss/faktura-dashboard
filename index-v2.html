@@ -1920,6 +1920,26 @@ html #tbTheme.go-dark{animation:glowMoon .95s ease-out}
 html #notifyBtn,html #announcementBtn,html #changePasswordBtn,html #logoutBtn{background:transparent!important;border:1px solid transparent!important;box-shadow:none!important;padding:0!important}
 html #notifyBtn:hover,html #announcementBtn:hover,html #changePasswordBtn:hover,html #logoutBtn:hover,html #refreshBtn:hover{background:var(--sk-glass-hi)!important;transform:translateY(-2px)}
 html #refreshBtn{border:1px solid transparent!important;padding:0!important}
+/* dok soddalashtirildi: bildirish tugmasi kerak emas, parol/chiqish — foydalanuvchi menyusida, yangilash oddiy */
+html header.topbar .topbar-right>#notifyBtn,html header.topbar .topbar-right>#changePasswordBtn,html header.topbar .topbar-right>#logoutBtn{display:none!important}
+html .topbar-right:has(#announcementBtn[style*="none"]) .tb-sep.s1{display:none!important}
+html .rdot{display:none!important}
+html #refreshBtn,html header.topbar .topbar-right>#refreshBtn{background:transparent!important;color:var(--muted)!important}
+html #refreshBtn:hover{background:var(--sk-glass-hi)!important;color:var(--text)!important}
+html header.topbar #userInfo{cursor:pointer;transition:background .25s}
+html header.topbar #userInfo:hover{background:var(--sk-glass-hi)}
+html header.topbar #userInfo::after{content:"";width:14px;height:14px;background:var(--muted);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+html header.topbar #userInfo.open::after{transform:rotate(180deg)}
+html #userMenu{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;background:var(--sk-glass);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 32px -8px rgba(0,0,0,.4);padding:6px;opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;transition:opacity .2s,transform .3s cubic-bezier(.16,1,.3,1);z-index:60}
+html #userMenu.open{opacity:1;transform:none;pointer-events:auto}
+html #userMenu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;text-align:left;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer}
+html #userMenu button:hover{background:var(--sk-glass-hi)}
+html #userMenu button.dg{color:#ff6b6b}
+html #userMenu svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+html #userMenu hr{border:0;border-top:1px solid var(--border);margin:6px 4px}
+@media(min-width:1100px){html .content-section>h2.sec-title{padding-right:360px!important}}
+html header.topbar .topbar-right>#announcementBtn,html #announcementBtn{color:var(--muted)!important}
+html #announcementBtn:hover{color:var(--text)!important}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -9974,7 +9994,7 @@ async function recallInvoice(facturaid, btnEl) {
       });
       var tr=document.querySelector('header.topbar .topbar-right');
       if(tr&&!document.getElementById('tbTheme')){
-        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Пароль',refreshBtn:'Обновить',logoutBtn:'Выйти'};
+        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Пароль',refreshBtn:'Обновить данные',logoutBtn:'Выйти'};
         Object.keys(tips).forEach(function(id){var e=document.getElementById(id);if(e){e.setAttribute('data-tip',tips[id]);e.removeAttribute('title');}});
         var lo=document.getElementById('logoutBtn');
         if(lo)lo.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
@@ -9991,7 +10011,18 @@ async function recallInvoice(facturaid, btnEl) {
           th.classList.remove('go-light','go-dark');void th.offsetWidth;th.classList.add(now?'go-dark':'go-light');
           clearTimeout(th._t);th._t=setTimeout(function(){th.classList.remove('go-light','go-dark')},1300);}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
         var ui=document.getElementById('userInfo');
-        if(ui){var ini=function(){var t=(ui.textContent||'').trim().split(/\s+/);ui.setAttribute('data-ini',((t[0]||'?')[0]+((t[1]||'')[0]||'')).toUpperCase());ui.setAttribute('title',(ui.textContent||'').trim());};ini();new MutationObserver(ini).observe(ui,{childList:true,characterData:true,subtree:true});}
+        if(ui){var ini=function(){var t=(ui.textContent||'').trim().split(/\s+/);ui.setAttribute('data-ini',((t[0]||'?')[0]+((t[1]||'')[0]||'')).toUpperCase());};ini();new MutationObserver(ini).observe(ui,{childList:true,characterData:true,subtree:true});}
+        if(ui&&!document.getElementById('userMenu')){
+          var hd=document.querySelector('header.topbar');
+          var um=document.createElement('div');um.id='userMenu';
+          um.innerHTML='<button type="button" data-a="pw"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Сменить пароль</button><hr><button type="button" class="dg" data-a="out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Выйти</button>';
+          hd.appendChild(um);
+          var close=function(){um.classList.remove('open');ui.classList.remove('open');};
+          ui.addEventListener('click',function(e){e.stopPropagation();var o=um.classList.contains('open');if(o)close();else{um.classList.add('open');ui.classList.add('open');}});
+          um.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;close();var t=document.getElementById(b.getAttribute('data-a')==='pw'?'changePasswordBtn':'logoutBtn');if(t)t.click();});
+          document.addEventListener('click',function(e){if(!um.contains(e.target))close();});
+          document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+        }
       }
     }catch(e){console.error('skin-v2',e)}
   }
