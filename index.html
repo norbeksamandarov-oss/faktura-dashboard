@@ -8916,7 +8916,10 @@ async function vz2SendDistribution(fromCategory) {
     alert(
       `Отправлено получателям: ${res.sent.length}\n` +
       `Ошибок отправки: ${res.failed.length}\n` +
-      `Без ответственного (не отправлено никому): ${res.unresolvedCount}`
+      `Без ответственного (не отправлено никому): ${res.unresolvedCount}` +
+      (res.adminCopy ? (res.adminCopy.error
+        ? `\nКопия админу НЕ отправлена: ${res.adminCopy.error}`
+        : `\nКопия админу (без ответственного / Ошибки): ${res.adminCopy.count} зап.`) : "")
     );
   } catch (e) {
     alert("Ошибка: " + e.message);
