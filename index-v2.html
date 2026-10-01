@@ -5513,6 +5513,16 @@ async function loadAllData(silent) {
       `'${SHEET_OTHERREQ_REAL}'!A2:M3000`,
     ]);
 
+    // TEZLIK: fon rejimida (silent) ma'lumot O'ZGARMAGAN bo'lsa - qayta qurib
+    // chizmaymiz (har 25 soniyada brauzer qotib qolmasligi uchun). Har 5 daqiqada
+    // baribir to'liq yangilanadi (vaqtga bog'liq ko'rsatkichlar eskirmasin).
+    const _dataSig = JSON.stringify([empRaw, invRaw, histRaw, regRaw, dogovorRaw, dogovorRealRaw, doverennostRaw, bankRaw, realschetRaw, zakaznaryadRaw, otherreqPostRaw, otherreqRealRaw]);
+    if (silent && _dataSig === window.__lastDataSig && (Date.now() - (window.__lastFullRenderAt || 0)) < 300000) {
+      return;
+    }
+    window.__lastDataSig = _dataSig;
+    window.__lastFullRenderAt = Date.now();
+
     allEmployeesRaw = empRaw
       .filter(r => r[2] && r[2].trim())
       .map((r, idx) => ({
@@ -6422,12 +6432,14 @@ function renderInvoicesTable() {
     </tr>`;
   }).join("");
 
-  filtered.forEach(r => {
-    const tr = document.querySelector(`tr[data-row="${r.rowIndex}"]`);
-    if (tr) {
-      const sel = tr.querySelector(".resp-select");
-      if (sel) sel.value = r.resp || "";
-    }
+  // TEZLIK: avval har bir qator uchun butun hujjatdan qayta qidirilardi (n*n).
+  const respByRow = new Map();
+  filtered.forEach(r => respByRow.set(String(r.rowIndex), r.resp || ""));
+  document.querySelectorAll("#invoicesBody tr[data-row]").forEach(tr => {
+    const v = respByRow.get(tr.getAttribute("data-row"));
+    if (v === undefined) return;
+    const sel = tr.querySelector(".resp-select");
+    if (sel) sel.value = v;
   });
 }
 
