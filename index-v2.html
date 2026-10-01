@@ -2285,6 +2285,24 @@ html .go .rcv .rpt{animation:rPop .6s cubic-bezier(.2,1.4,.4,1) backwards;animat
 @keyframes rFade{from{opacity:0}}
 @keyframes rPop{from{opacity:0;transform:scale(.4)}}
 @media(prefers-reduced-motion:reduce){html .rcv *{animation:none!important}}
+/* Экран загрузки (I) */
+#loadingOverlay{background:rgba(238,241,249,.92)!important}
+html[data-theme="dark"] #loadingOverlay{background:rgba(7,9,15,.9)!important}
+.ldcard{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 38px 22px;border-radius:26px;background:var(--sk-glass,#fff);border:1px solid var(--border);box-shadow:0 30px 70px -24px rgba(40,60,160,.45);overflow:hidden;text-align:center}
+.ldcard::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent,rgba(110,100,255,.4),transparent 30%);animation:ldSp 5s linear infinite}
+.ldcard::after{content:"";position:absolute;inset:1.5px;border-radius:24px;background:var(--sk-glass,#fff)}
+.ldcard>*{position:relative;z-index:1}
+.ldlogo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#6b95ff,#7a3cff);display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;box-shadow:0 12px 28px -8px rgba(110,100,255,.75),inset 0 1px 0 rgba(255,255,255,.4)}
+.ldeq{display:flex;gap:7px;align-items:center;height:62px}
+.ldeq i{width:9px;height:14px;border-radius:99px;background:linear-gradient(180deg,#5b8dff,#b052ff);animation:ldEq 1.1s ease-in-out infinite}
+.ldeq i:nth-child(2){animation-delay:.12s}.ldeq i:nth-child(3){animation-delay:.24s}.ldeq i:nth-child(4){animation-delay:.36s}.ldeq i:nth-child(5){animation-delay:.48s}.ldeq i:nth-child(6){animation-delay:.6s}.ldeq i:nth-child(7){animation-delay:.72s}
+.ldt{font-weight:800;font-size:15px;color:var(--text)}
+.lds{position:relative;width:230px;height:16px;font-size:12px;font-weight:600;color:var(--muted)}
+.lds span{position:absolute;inset:0;opacity:0;animation:ldPh 9s infinite}.lds span:nth-child(2){animation-delay:3s}.lds span:nth-child(3){animation-delay:6s}
+@keyframes ldSp{to{transform:rotate(360deg)}}
+@keyframes ldEq{0%,100%{height:14px;opacity:.55}50%{height:58px;opacity:1}}
+@keyframes ldPh{0%{opacity:0;transform:translateY(6px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0;transform:translateY(-6px)}}
+@media(prefers-reduced-motion:reduce){.ldcard::before,.ldeq i{animation:none}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -4049,7 +4067,7 @@ html .go .rcv .rpt{animation:rPop .6s cubic-bezier(.2,1.4,.4,1) backwards;animat
 </div>
 
 <div id="loadingOverlay" style="display:none;">
-  <div class="spinner"></div> Загрузка данных...
+  <div class="ldcard"><div class="ldlogo">CRB</div><div class="ldeq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="ldt">Загрузка данных</div><div class="lds"><span>Подключаемся к серверу</span><span>Загружаем счета и историю</span><span>Считаем аналитику</span></div></div>
 </div>
 
 <script>
