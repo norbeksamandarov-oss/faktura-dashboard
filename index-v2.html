@@ -2408,6 +2408,20 @@ html #section-invoices table.invoices .resp-input{min-width:0;width:100%}
 html .js-sticky-thead-wrap{border-radius:14px!important;border:1px solid rgba(110,140,255,.35);box-shadow:0 14px 30px -14px rgba(20,30,80,.5)!important}
 html .js-sticky-thead-wrap table.invoices thead th{background:linear-gradient(rgba(91,141,255,.2),rgba(91,141,255,.2)),var(--sk-glass)!important;color:var(--text)!important;border:0!important;letter-spacing:.03em!important;padding:11px 6px!important;font-size:10px!important;font-weight:800;text-transform:uppercase;border-radius:0!important}
 @media(max-width:700px){html #section-invoices .toolbar>.filter-field,html #section-invoices .toolbar>.filter-field:nth-child(n){width:100%!important;margin-left:0!important}html #section-invoices .toolbar>.filter-field:nth-child(n+11){flex:1 1 100%}html #section-invoices .toolbar>.filter-field>button{width:100%;justify-content:center}html #section-invoices .toolbar .date-range{flex-wrap:wrap}}
+/* Счета-фактуры: X (holat tabletkasi + Срок/действия) */
+html #section-invoices .status-badge{border-radius:8px!important;padding:5px 10px!important;font-size:12px!important;border:0!important;white-space:nowrap}
+html #section-invoices .status-badge i{display:none}
+html #section-invoices table.invoices tbody td{vertical-align:middle}
+html #section-invoices .dwrap{display:flex;align-items:center;gap:8px;white-space:nowrap}
+html #section-invoices .dact{display:inline-flex;gap:4px}
+html #section-invoices .days-badge{background:none!important;border:0!important;padding:0!important;font-size:13.5px!important;font-weight:800!important;gap:4px!important;min-width:44px}
+html #section-invoices .days-badge::after{content:"дн.";font-weight:700;font-size:12px;opacity:.85}
+html #section-invoices .days-badge.days-red{background:var(--red-bg)!important;padding:3px 9px!important;border-radius:8px!important}
+html #section-invoices .remind-btn{margin:0!important;width:28px;height:28px;border-radius:10px;border:1px solid rgba(91,141,255,.45)!important;background:rgba(91,141,255,.14)!important;color:var(--navy-text)!important;opacity:1!important;display:inline-grid;place-items:center;font-size:15px;transition:transform .2s,background .2s,box-shadow .2s}
+html #section-invoices .remind-btn:hover{transform:translateY(-2px)!important;background:rgba(91,141,255,.28)!important;box-shadow:0 8px 16px -8px rgba(91,141,255,.8)}
+html #section-invoices .remind-btn.recall-btn{border-color:rgba(232,100,95,.5)!important;background:rgba(232,100,95,.13)!important;color:var(--red-fg)!important}
+html #section-invoices .remind-btn.recall-btn:hover{background:rgba(232,100,95,.26)!important;box-shadow:0 8px 16px -8px rgba(232,100,95,.8);filter:none}
+html #section-invoices .remind-btn:disabled{opacity:.4!important}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -2985,7 +2999,7 @@ html .js-sticky-thead-wrap table.invoices thead th{background:linear-gradient(rg
               <th>Ответственный</th>
               <th>Отправить</th>
               <th>Статус</th>
-              <th>Дней</th>
+              <th>Срок</th>
               <th title="Отмечено ли в самом DIDOX (отдельно от этого бота)">DIDOX</th>
               <th>Комментарий</th>
             </tr>
@@ -7014,7 +7028,7 @@ function renderInvoicesTable() {
         <div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div>
       </td>
       <td><span class="clamp-cell" title="${escapeHtml(r.seller)}">${escapeHtml(r.seller)}</span><div class="vat2">${escapeHtml(r.inn)}</div></td>
-      <td style="font-size:11.5px;color:var(--muted);min-width:120px">${escapeHtml(r.contract)}</td>
+      <td style="font-size:11.5px;color:var(--muted);min-width:104px">${escapeHtml(r.contract)}</td>
       <td class="num-cell"><div>${escapeHtml(r.sum)}</div><div class="vat2">${escapeHtml(r.vat)}</div></td>
       <td>${classifyStatus(r.status) === "accepted" || classifyStatus(r.status) === "rejected" ? `
         <span style="font-size:12.5px;" title="Решение уже принято - ответственного изменить нельзя">${respAvatarHtml(r.resp)}<i class='ti ti-lock' aria-hidden='true'></i> ${escapeHtml(r.resp)}</span>
@@ -7032,16 +7046,13 @@ function renderInvoicesTable() {
         <input type="checkbox" class="send-check" ${r.send ? "checked" : ""} onchange="updateSend(${r.rowIndex}, this.checked, this)">
         <span class="save-flash"><i class='ti ti-check' aria-hidden='true'></i></span>
       </td>
-      <td>
-        ${statusBadge(r.status)}
-        ${classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss" ? `
+      <td>${statusBadge(r.status)}</td>
+      <td class="dcell"><span class="dwrap">${daysBadge(r.days)}<span class="dact">${classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss" ? `
           <button class="remind-btn" title="Напомнить сейчас (не дожидаясь автоматического напоминания)" onclick="sendManualReminder('${r.id}', this)"><i class='ti ti-bell' aria-hidden='true'></i></button>
         ` : ""}
         ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
           <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i></button>
-        ` : ""}
-      </td>
-      <td>${daysBadge(r.days)}</td>
+        ` : ""}</span></span></td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="didox-check" ${r.didoxDone ? "checked" : ""} onchange="updateDidoxDone(${r.rowIndex}, this.checked, this)">
         <span class="save-flash"><i class='ti ti-check' aria-hidden='true'></i></span>
