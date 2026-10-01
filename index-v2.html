@@ -2217,6 +2217,46 @@ html #section-analytics .go .tok{animation:tPop .8s cubic-bezier(.34,1.56,.64,1)
 @media(max-width:1000px){html #section-analytics #tGrid{grid-template-columns:1fr}html #section-analytics .tdw{flex-direction:column}html #section-analytics #analyticsSummary{grid-template-columns:1fr 1fr}}
 html #section-analytics #errorsTable:has(.tempty) thead{display:none}
 @media(prefers-reduced-motion:reduce){html #section-analytics .tcard *,html #section-analytics .tkt *,html #section-analytics .tok{animation:none!important}}
+/* ===== Xodimlar: reyting (A) + login issiqlik xaritasi (B) ===== */
+html[data-brand] #loginStatsTable{display:none}
+html #section-analytics{--ease:cubic-bezier(.16,1,.3,1)}
+html .rk2{display:grid;grid-template-columns:26px 32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 8px;border-radius:14px;transition:background .2s;animation:rk2In .7s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--k,0)*70ms + 120ms)}
+@keyframes rk2In{from{opacity:0;transform:translateX(-18px);filter:blur(5px)}}
+html .rk2+.rk2{border-top:1px solid var(--border)}
+html .rk2:hover{background:rgba(91,141,255,.10)}
+html .rk2.first{background:linear-gradient(90deg,rgba(91,141,255,.16),transparent);border-top-color:transparent}
+html .rkm{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;background:rgba(91,141,255,.16);color:var(--navy-text)}
+html .rkm.m1{background:linear-gradient(145deg,#ffd76a,#ffb020);color:#5a3b00}
+html .rkm.m2{background:linear-gradient(145deg,#e6ebf5,#aab4cc);color:#2c3550}
+html .rkm.m3{background:linear-gradient(145deg,#f3b58a,#d9803f);color:#4a2200}
+html .rkav,html .hav{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:800;flex-shrink:0;background:linear-gradient(var(--a,135deg),#4f7dff,#9b5cff);background-size:cover;box-shadow:0 6px 16px -6px rgba(91,110,255,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+html .rkav{width:32px;height:32px;font-size:11.5px}
+html .hav{width:32px;height:32px;font-size:11.5px}
+html .hav.has{background:var(--av) center/cover no-repeat;font-size:0}
+html .rkb{min-width:0}
+html .rkn{font-weight:700;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html .rkbar{height:5px;border-radius:99px;background:rgba(120,150,255,.16);overflow:hidden;margin-top:5px}
+html .rkbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#4f7dff,#9b5cff);transform-origin:left;animation:rk2Bar 1.1s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--k,0)*80ms + 400ms)}
+@keyframes rk2Bar{from{transform:scaleX(0)}}
+html .rkv{text-align:right;font-weight:800;font-size:13.5px;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--text)}
+html .rkv small{display:block;font-weight:600;font-size:10.5px;color:var(--muted)}
+html[data-brand] .rank-toggle-btn{margin-top:10px;width:100%;border:1px dashed var(--border)!important;background:rgba(91,141,255,.06)!important;color:var(--navy-text)!important;border-radius:12px;padding:9px;font-weight:800;font-size:12.5px;transition:background .2s}
+html[data-brand] .rank-toggle-btn:hover{background:rgba(91,141,255,.16)!important}
+/* login issiqlik xaritasi */
+html #loginHeat{overflow-x:auto;padding:2px 0 6px}
+html .hm{display:grid;grid-template-columns:minmax(210px,1.5fr) repeat(7,minmax(74px,1fr));gap:4px;min-width:900px}
+html .hm .hh{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:6px 8px;text-align:center}
+html .hm .hh:first-child{text-align:left}
+html .hm .who{display:flex;gap:10px;align-items:center;padding:6px 8px;min-width:0}
+html .hm .who b{display:block;font-size:13px;font-weight:800;color:var(--text)}
+html .hm .who>div{min-width:0}
+html .hm .who i{display:block;font-style:normal;font-size:11px;color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html .hm .cell{border-radius:10px;padding:10px 6px;text-align:center;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;background:rgba(91,141,255,var(--t,0));color:var(--text);transition:transform .2s}
+html .hm .cell:hover{transform:scale(1.06)}
+html .hm .cell.z{color:var(--muted);font-weight:600;background:rgba(91,141,255,.05)}
+html .hm.anim .cell,html .hm.anim .who{animation:hmIn .6s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--k,0)*50ms + 200ms)}
+@keyframes hmIn{from{opacity:0;transform:scale(.7)}}
+@media(prefers-reduced-motion:reduce){html .rk2,html .rkbar i,html .hm .cell,html .hm .who{animation:none!important}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -6729,6 +6769,30 @@ async function renderLoginStatsPanel() {
     const data = await apiCall("adminListUsers", { from, to });
     if (myToken !== loginStatsFetchToken) return; // bu javob eskirgan, e'tiborsiz qoldiramiz
     const rows = (data.users || []).slice().sort((a, b) => b.invoiceCount - a.invoiceCount);
+    if (document.documentElement.getAttribute("data-brand") === "crb") {
+      let host = document.getElementById("loginHeat");
+      if (!host) { host = document.createElement("div"); host.id = "loginHeat"; document.getElementById("loginStatsTable").insertAdjacentElement("afterend", host); }
+      const keys = ["invoiceCount", "invoiceSum", "dogovorCount", "doverennostCount", "realschetCount", "zakaznaryadCount", "otherreqCount"];
+      const heads = ["Счетов", "Сумма", "Договоров", "Доверенностей", "Счёт-фактур", "Заказ-нарядов", "Других запросов"];
+      const mx = keys.map(k => Math.max(0, ...rows.map(u => u[k] || 0)));
+      const ini2 = (n) => { const p = String(n || "?").replace(/[^A-Za-zА-Яа-я0-9 ]/g, " ").trim().split(/\s+/); return ((p[0] || "?")[0] + (p[1] ? p[1][0] : (p[0] || "")[1] || "")).toUpperCase(); };
+      const hh = (n) => { let h = 0; for (let c = 0; c < n.length; c++) h = (h * 31 + n.charCodeAt(c)) | 0; return Math.abs(h); };
+      const cells = rows.map((u, i) => {
+        const url = (window.AV && AV.map && AV.map[u.username]) || "";
+        const av2 = `<span class="hav${url ? " has" : ""}" data-u="${escapeHtml(u.username)}" style="--a:${120 + hh(u.username) % 90}deg;${url ? `--av:url('${url}')` : ""}">${escapeHtml(ini2(u.name || u.username))}</span>`;
+        return `<div class="who" style="--k:${Math.min(i, 14)}">${av2}<div><b>${escapeHtml(u.username)}</b><i>${escapeHtml(u.name || "")}</i></div></div>` + keys.map((k, j) => {
+          const v = u[k] || 0, t = v && mx[j] ? (0.12 + v / mx[j] * 0.55).toFixed(2) : 0;
+          return `<div class="cell${v ? "" : " z"}" style="--k:${Math.min(i, 14) + j * 0.3};--t:${t}">${k === "invoiceSum" ? v.toLocaleString("ru-RU", { maximumFractionDigits: 0 }) : v}</div>`;
+        }).join("");
+      }).join("") || `<div class="hh" style="grid-column:1/-1;text-align:left">Нет данных</div>`;
+      const sig = JSON.stringify(rows.map(u => [u.username, ...keys.map(k => u[k] || 0)]));
+      const changed = host.__sig !== sig; host.__sig = sig;
+      if (changed) {
+        host.innerHTML = `<div class="hm anim"><div class="hh">Логин</div>${heads.map(h => `<div class="hh">${h}</div>`).join("")}${cells}</div>`;
+        if (window.AV && !AV.loaded) setTimeout(() => { host.querySelectorAll(".hav[data-u]").forEach(el => { const u = AV.map && AV.map[el.getAttribute("data-u")]; if (u) { el.classList.add("has"); el.style.setProperty("--av", `url('${u}')`); } }); }, 2000);
+      }
+      return;
+    }
     document.querySelector("#loginStatsTable tbody").innerHTML = rows.map((u, idx) => `
       <tr>
         <td style="color:var(--muted);">${idx + 1}</td>
@@ -7067,7 +7131,15 @@ function renderRankList(containerId, rows, opts) {
   }
   const initialCount = opts.initialCount || 5;
 
+  const isCrbRk = document.documentElement.getAttribute("data-brand") === "crb";
+  const rkIni = (n) => { const p = String(n).replace(/[^A-Za-zА-Яа-я0-9 ]/g, " ").trim().split(/\s+/); return ((p[0] || "?")[0] + (p[1] ? p[1][0] : (p[0] || "")[1] || "")).toUpperCase(); };
+  const rkHash = (n) => { let h = 0; for (let c = 0; c < n.length; c++) h = (h * 31 + n.charCodeAt(c)) | 0; return Math.abs(h); };
   const renderRow = (r, i) => {
+    if (isCrbRk) {
+      const nm = opts.name(r);
+      const bar2 = opts.barPercent != null ? `<div class="rkbar"><i style="--k:${i};width:${Math.min(100, opts.barPercent(r))}%"></i></div>` : "";
+      return `<div class="rk2${i === 0 ? " first" : ""}" style="--k:${Math.min(i, 8)}"><span class="rkm${i < 3 ? " m" + (i + 1) : ""}">${i + 1}</span><span class="rkav" style="--a:${120 + rkHash(nm) % 90}deg">${escapeHtml(rkIni(nm))}</span><div class="rkb"><div class="rkn" title="${escapeHtml(nm)}">${escapeHtml(nm)}</div>${bar2}</div><div class="rkv">${opts.value(r)}${opts.meta ? `<small>${opts.meta(r)}</small>` : ""}</div></div>`;
+    }
     const rankCls = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "rank-n";
     const nameText = opts.name(r);
     const bar = opts.barPercent != null
