@@ -2939,6 +2939,7 @@
         <button class="nav-item nav-sub-item" data-section="vz2postavshiki" onclick="showSection('vz2postavshiki')"><span class="nav-icon"><i class='ti ti-truck-delivery' aria-hidden='true'></i></span><span class="nav-label">Поставщики</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2pokupateli" onclick="showSection('vz2pokupateli')"><span class="nav-icon"><i class='ti ti-shopping-cart' aria-hidden='true'></i></span><span class="nav-label">Покупатели</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2podotchetniki" onclick="showSection('vz2podotchetniki')"><span class="nav-icon"><i class='ti ti-users' aria-hidden='true'></i></span><span class="nav-label">Подотчётные лица</span></button>
+        <button class="nav-item nav-sub-item" data-section="vz2oshibki" onclick="showSection('vz2oshibki')"><span class="nav-icon"><i class='ti ti-alert-triangle' aria-hidden='true'></i></span><span class="nav-label">Ошибки</span></button>
         <button class="nav-item nav-sub-item" data-section="vz2otv" onclick="showSection('vz2otv')"><span class="nav-icon"><i class='ti ti-address-book' aria-hidden='true'></i></span><span class="nav-label">Ответственные</span></button>
       </div>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
@@ -4357,6 +4358,25 @@
       </div>
     </section>
 
+    <section id="section-vz2oshibki" class="content-section">
+      <div class="panel" style="margin-bottom:16px;">
+        <h2>Взаиморасчёты — Ошибки <button id="vz2SendBtn-oshibki" onclick="vz2SendDistribution('oshibki')" class="btn-primary" style="float:right;"><i class='ti ti-send' aria-hidden='true'></i> Отправить рассылку</button></h2>
+        <p class="analytics-note" id="vz2oshibkiUpdated" style="margin:0;">Загрузка... (записи, где «Вид отношений» указан неоднозначно - например «Покупатель / Поставщик» - собираются здесь; ответственный всегда Jakupbekov Deniz)</p>
+        <div style="margin-top:14px;display:flex;gap:8px;border-bottom:1px solid var(--border);">
+          <button class="vz2-tab-btn active" id="vz2oshibkiTabBtn-list" onclick="vz2SwitchTab('oshibki','list')">Список</button>
+          <button class="vz2-tab-btn" id="vz2oshibkiTabBtn-analytics" onclick="vz2SwitchTab('oshibki','analytics')">Аналитика</button>
+        </div>
+      </div>
+      <div id="vz2oshibkiView-list"><div id="vz2oshibkiFlatList"></div></div>
+      <div id="vz2oshibkiView-analytics" style="display:none;">
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px;" id="vz2oshibkiSummary"></div>
+        <div id="vz2oshibkiList"></div>
+      </div>
+      <div class="panel" id="vz2oshibkiEmpty" style="display:none;">
+        <p style="color:var(--muted);margin:0;">Данные пока не загружены. Ответственный сотрудник должен отправить файл боту.</p>
+      </div>
+    </section>
+
     <section id="section-vz2otv" class="content-section">
     <div class="panel">
       <h2>Ответственные (Взаиморасчёты) <span class="sub">кто получает рассылку по Взаиморасчётам — видно только администраторам</span></h2>
@@ -5325,7 +5345,7 @@ const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpo
 const PERSONAL_SECTIONS = ["requests", "employees", "positions", "users", "writeemp", "suggestions"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
-const VZAIMORASCHETY_SECTIONS = ["vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2otv"];
+const VZAIMORASCHETY_SECTIONS = ["vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2oshibki", "vz2otv"];
 
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
@@ -5387,6 +5407,9 @@ function showSection(name) {
   }
   if (name === "vz2podotchetniki" && currentRole === "admin") {
     loadVz2Category("podotchetniki", "vz2podotchetniki");
+  }
+  if (name === "vz2oshibki" && currentRole === "admin") {
+    loadVz2Category("oshibki", "vz2oshibki");
   }
   if (name === "vz2otv" && currentRole === "admin") {
     loadVz2OtvSheet();
@@ -5997,7 +6020,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], #vzaimoraschetyToggle, .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2otv"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], #vzaimoraschetyToggle, .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -8704,7 +8727,7 @@ function vz2RenderCategory(prefix, category) {
 }
 
 function vz2SwitchTab(category, tab) {
-  const prefixMap = { postavshiki: "vz2postavshiki", pokupateli: "vz2pokupateli", podotchetniki: "vz2podotchetniki" };
+  const prefixMap = { postavshiki: "vz2postavshiki", pokupateli: "vz2pokupateli", podotchetniki: "vz2podotchetniki", oshibki: "vz2oshibki" };
   const prefix = prefixMap[category] || ("vz2" + category);
   const listView = document.getElementById(prefix + "View-list");
   const analyticsView = document.getElementById(prefix + "View-analytics");
