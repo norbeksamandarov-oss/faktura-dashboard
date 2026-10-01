@@ -2833,6 +2833,19 @@ html[data-theme="dark"] .filter-field button,html[data-theme="dark"] .btn-primar
 html[data-theme="dark"] #clearFiltersBtn,html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn{color:#9db8ff!important;background:transparent}
 html .nav-badge{white-space:nowrap;flex-shrink:0;line-height:1.4;width:auto;height:auto;min-width:0;border-radius:99px}
 html .nav-badge.nav-badge-alert{padding:1px 8px}
+/* ===== Maket: namunadagidek suzuvchi kartalar (faqat keng ekran) ===== */
+@media(min-width:861px){
+  html #app{padding:16px 20px 24px}
+  html header.topbar{border-radius:18px;border:1px solid var(--border);padding:12px 22px;margin-bottom:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html .app-body{gap:16px;align-items:flex-start}
+  html .sidebar{margin:0;border:1px solid var(--border);border-radius:18px;padding:14px 4px 16px;min-height:0;top:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html .content-area{padding:0 0 40px}
+}
+html .nav-group-label{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted);padding:12px 22px 6px}
+html .sidebar.collapsed .nav-group-label{display:none}
+html .nav-item.active{font-weight:700}
+html .nav-item{font-size:14px}
+html .nav-sub-item{font-size:13px}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
