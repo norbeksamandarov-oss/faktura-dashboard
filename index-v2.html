@@ -2817,10 +2817,13 @@ html input:focus,html select:focus,html textarea:focus{border-color:var(--navy-l
 html .login-card{background:var(--sk-glass);border:1px solid var(--border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);animation:skRise .7s cubic-bezier(.16,1,.3,1) both}
 html .login-input{background:var(--sk-glass)!important;color:var(--text)!important;border:1px solid var(--border)!important}
 html .login-submit-btn{background:var(--navy-light)!important;color:#fff!important}
-html .nav-item.active,html[data-brand] .nav-item.active{background:var(--sk-nav-on)!important}
+html .nav-item.active{background:var(--sk-nav-on)!important}
+html[data-brand] .nav-item.active{background:transparent!important;color:#fff!important}
+html[data-brand] .nav-item.active .nav-icon svg{stroke:#fff!important}
+html[data-brand] .nav-active-pill{background:linear-gradient(135deg,#2459e8,#5b3df0)!important;box-shadow:0 8px 22px -8px rgba(47,107,255,.6)}
 html #crbGreetingTitle{color:var(--text)!important}
-html .nav-item.active,html[data-brand] .nav-item.active{color:var(--sk-nav-text)!important}
-html .nav-item.active .nav-icon svg,html[data-brand] .nav-item.active .nav-icon svg{stroke:currentColor!important}
+html .nav-item.active{color:var(--sk-nav-text)!important}
+html .nav-item.active .nav-icon svg{stroke:currentColor!important}
 html table.invoices thead th,html[data-brand] table.invoices thead th{background:var(--sk-glass-hi)!important;color:var(--muted)!important;border-bottom:1px solid var(--border)}
 html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn,html[data-theme="dark"] .rank-toggle-btn,html[data-theme="dark"] .admin-open-btn{color:#9db8ff}
 html[data-theme="dark"] #userInfo,html[data-theme="dark"] .org-card-total .org-count-lbl,html[data-theme="dark"] .org-card-total .org-sum-lbl{color:#9db8ff}
@@ -2828,6 +2831,8 @@ html[data-theme="dark"] .topbar-right span{color:var(--muted)!important}
 html:root:not([data-theme="dark"])[data-brand="crb"] .label{color:#5b6679}
 html[data-theme="dark"] .filter-field button,html[data-theme="dark"] .btn-primary,html[data-theme="dark"] #gtdExportBtn{background:#2f6bff;border-color:#2f6bff;color:#fff}
 html[data-theme="dark"] #clearFiltersBtn,html[data-theme="dark"] [id$="ClearFiltersBtn"],html[data-theme="dark"] #clearAnalyticsPeriodBtn{color:#9db8ff!important;background:transparent}
+html .nav-badge{white-space:nowrap;flex-shrink:0;line-height:1.4;width:auto;height:auto;min-width:0;border-radius:99px}
+html .nav-badge.nav-badge-alert{padding:1px 8px}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
