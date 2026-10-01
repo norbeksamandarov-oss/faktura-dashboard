@@ -1886,7 +1886,7 @@ html #refreshBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 html header.topbar .topbar-right>button i.ti{display:none}
 html #notifyBtn:has(i.ti-hourglass,i.ti-circle-check)::before{display:none}
 html #notifyBtn:has(i.ti-hourglass,i.ti-circle-check) i.ti{display:block}
-html #notifyBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E")}html #announcementBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 11 18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6'/%3E%3C/svg%3E")}html #changePasswordBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4'/%3E%3C/svg%3E")}
+html #notifyBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E")}html #announcementBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 11 18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6'/%3E%3C/svg%3E")}html #changePasswordBtn{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E")}
 html #logoutBtn{color:#ff6b6b!important}
 html #logoutBtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 html .rdot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#34d17a;box-shadow:0 0 0 2px var(--sk-glass);animation:rdotp 2.2s infinite}
@@ -1921,8 +1921,7 @@ html #notifyBtn,html #announcementBtn,html #changePasswordBtn,html #logoutBtn{ba
 html #notifyBtn:hover,html #announcementBtn:hover,html #changePasswordBtn:hover,html #logoutBtn:hover,html #refreshBtn:hover{background:var(--sk-glass-hi)!important;transform:translateY(-2px)}
 html #refreshBtn{border:1px solid transparent!important;padding:0!important}
 /* dok soddalashtirildi: bildirish tugmasi kerak emas, parol/chiqish — foydalanuvchi menyusida, yangilash oddiy */
-html header.topbar .topbar-right>#notifyBtn,html header.topbar .topbar-right>#changePasswordBtn,html header.topbar .topbar-right>#logoutBtn{display:none!important}
-html .topbar-right:has(#announcementBtn[style*="none"]) .tb-sep.s1{display:none!important}
+html header.topbar .topbar-right>#notifyBtn,html header.topbar .topbar-right>#logoutBtn{display:none!important}
 html .rdot{display:none!important}
 html #refreshBtn,html header.topbar .topbar-right>#refreshBtn{background:transparent!important;color:var(--muted)!important}
 html #refreshBtn:hover{background:var(--sk-glass-hi)!important;color:var(--text)!important}
@@ -1940,6 +1939,15 @@ html #userMenu hr{border:0;border-top:1px solid var(--border);margin:6px 4px}
 @media(min-width:1100px){html .content-section>h2.sec-title{padding-right:360px!important}}
 html header.topbar .topbar-right>#announcementBtn,html #announcementBtn{color:var(--muted)!important}
 html #announcementBtn:hover{color:var(--text)!important}
+html header.topbar #userInfo.has-av::before{content:"";background:var(--av) center/cover no-repeat;font-size:0}
+html header.topbar #userInfo::before{background-size:cover}
+html #changePasswordBtn{color:var(--muted)!important}
+html #changePasswordBtn:hover{color:var(--text)!important}
+html .u-av-cell{display:flex;align-items:center;gap:10px}
+html .u-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2f6bff,#7a3cff);color:#fff;display:inline-grid;place-items:center;font-size:10px;font-weight:800;flex-shrink:0}
+html .u-av::before{content:attr(data-ini)}
+html .u-av.has{background:var(--av) center/cover no-repeat}
+html .u-av.has::before{content:none}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -9994,7 +10002,7 @@ async function recallInvoice(facturaid, btnEl) {
       });
       var tr=document.querySelector('header.topbar .topbar-right');
       if(tr&&!document.getElementById('tbTheme')){
-        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Пароль',refreshBtn:'Обновить данные',logoutBtn:'Выйти'};
+        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Сменить пароль',refreshBtn:'Обновить данные',logoutBtn:'Выйти'};
         Object.keys(tips).forEach(function(id){var e=document.getElementById(id);if(e){e.setAttribute('data-tip',tips[id]);e.removeAttribute('title');}});
         var lo=document.getElementById('logoutBtn');
         if(lo)lo.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
@@ -10015,13 +10023,73 @@ async function recallInvoice(facturaid, btnEl) {
         if(ui&&!document.getElementById('userMenu')){
           var hd=document.querySelector('header.topbar');
           var um=document.createElement('div');um.id='userMenu';
-          um.innerHTML='<button type="button" data-a="pw"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Сменить пароль</button><hr><button type="button" class="dg" data-a="out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Выйти</button>';
+          um.innerHTML='<button type="button" data-a="photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Сменить фото</button><button type="button" data-a="nophoto" id="umNoPhoto"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Убрать фото</button><hr><button type="button" class="dg" data-a="out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Выйти</button><input type="file" id="avatarFile" accept="image/*" style="display:none">';
           hd.appendChild(um);
           var close=function(){um.classList.remove('open');ui.classList.remove('open');};
           ui.addEventListener('click',function(e){e.stopPropagation();var o=um.classList.contains('open');if(o)close();else{um.classList.add('open');ui.classList.add('open');}});
-          um.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;close();var t=document.getElementById(b.getAttribute('data-a')==='pw'?'changePasswordBtn':'logoutBtn');if(t)t.click();});
           document.addEventListener('click',function(e){if(!um.contains(e.target))close();});
           document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+          var fi=document.getElementById('avatarFile');
+          um.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var a=b.getAttribute('data-a');close();
+            if(a==='out'){var t=document.getElementById('logoutBtn');if(t)t.click();}
+            else if(a==='photo'){fi.value='';fi.click();}
+            else if(a==='nophoto'){AV.save('');}
+          });
+          fi.addEventListener('change',function(){var f=fi.files&&fi.files[0];if(f)AV.fromFile(f);});
+        }
+        /* ===== Avatar ===== */
+        if(!window.AV){
+          var AV=window.AV={map:{},loaded:false,warned:false};
+          var uname=function(){try{return (typeof currentUsername!=='undefined'&&currentUsername)||''}catch(e){return ''}};
+          var lsKey=function(){return 'rm_avatar_'+uname()};
+          AV.mine=function(){var u=uname();if(!u)return '';return AV.map[u]||(function(){try{return localStorage.getItem(lsKey())||''}catch(e){return ''}})();};
+          AV.apply=function(){
+            var ui=document.getElementById('userInfo');if(!ui)return;var u=AV.mine();
+            if(u){ui.classList.add('has-av');ui.style.setProperty('--av','url("'+u+'")');}else{ui.classList.remove('has-av');ui.style.removeProperty('--av');}
+            var np=document.getElementById('umNoPhoto');if(np)np.style.display=u?'':'none';
+            AV.decorate();
+          };
+          AV.decorate=function(){
+            document.querySelectorAll('#usersManageTable tbody tr').forEach(function(tr){
+              var td=tr.children[1];if(!td||td.children.length===0&&!td.textContent.trim())return;
+              var name=(td.getAttribute('data-uname')||td.textContent).trim();td.setAttribute('data-uname',name);
+              var sp=td.querySelector('.u-av');if(!sp){sp=document.createElement('span');sp.className='u-av';td.insertBefore(sp,td.firstChild);td.classList.add('u-av-cell');}
+              var nm=(tr.children[2]&&tr.children[2].textContent||name).trim().split(/\s+/);
+              sp.setAttribute('data-ini',((nm[0]||'?')[0]+((nm[1]||'')[0]||'')).toUpperCase());
+              var url=AV.map[name]||(name===uname()?AV.mine():'');
+              if(url){sp.classList.add('has');sp.style.setProperty('--av','url("'+url+'")');}else{sp.classList.remove('has');sp.style.removeProperty('--av');}
+            });
+          };
+          AV.load=function(){
+            if(typeof apiCall!=='function'||typeof authToken==='undefined'||!authToken)return Promise.resolve();
+            return apiCall('getAvatars',{}).then(function(r){AV.map=(r&&r.avatars)||{};AV.loaded=true;AV.apply();}).catch(function(e){AV.loaded=true;AV.apply();});
+          };
+          AV.save=function(dataUrl){
+            var u=uname();if(!u)return;
+            try{if(dataUrl)localStorage.setItem(lsKey(),dataUrl);else localStorage.removeItem(lsKey());}catch(e){}
+            if(dataUrl)AV.map[u]=dataUrl;else delete AV.map[u];
+            AV.apply();
+            if(typeof apiCall!=='function')return;
+            apiCall('setMyAvatar',{avatar:dataUrl}).catch(function(e){
+              var m=String(e&&e.message||e);
+              if(!AV.warned){AV.warned=true;alert(/Noma.lum amal|Unknown/i.test(m)?'Фото сохранено только на этом компьютере: сервер ещё не обновлён (нужно обновить API).':'Не удалось сохранить фото на сервере: '+m);}
+            });
+          };
+          AV.fromFile=function(f){
+            if(!/^image\//.test(f.type)){alert('Выберите файл изображения');return;}
+            var r=new FileReader();
+            r.onload=function(){var img=new Image();img.onload=function(){
+              var S=128,c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');
+              var m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;
+              x.fillStyle='#fff';x.fillRect(0,0,S,S);x.drawImage(img,sx,sy,m,m,0,0,S,S);
+              AV.save(c.toDataURL('image/jpeg',0.85));
+            };img.onerror=function(){alert('Не удалось прочитать изображение');};img.src=r.result;};
+            r.readAsDataURL(f);
+          };
+          var tb=document.querySelector('#usersManageTable tbody');
+          if(tb)new MutationObserver(function(){AV.load();AV.decorate();}).observe(tb,{childList:true});
+          setInterval(function(){try{if(!AV.loaded&&typeof authToken!=='undefined'&&authToken)AV.load();AV.apply();}catch(e){}},2000);
+          setInterval(function(){try{AV.load();}catch(e){}},300000);
         }
       }
     }catch(e){console.error('skin-v2',e)}
