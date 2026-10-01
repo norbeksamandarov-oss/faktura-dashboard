@@ -2262,6 +2262,29 @@ html[data-brand="crb"] #section-analytics>.panel{background-color:rgba(255,255,2
 html[data-brand="crb"][data-theme="dark"] #section-analytics>.panel{background-color:#0a0d15!important}
 html[data-brand="crb"] #section-analytics .panel .panel,html[data-brand="crb"] #section-analytics .analytics-box{background-color:var(--sk-glass)!important;background-image:linear-gradient(160deg,rgba(91,141,255,.10),transparent 55%)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html[data-brand="crb"][data-theme="dark"] #section-analytics .panel .panel,html[data-brand="crb"][data-theme="dark"] #section-analytics .analytics-box{background-color:#0e121b!important}
+/* Время ответа (D) + Нагрузка: reyting */
+html[data-brand] .chart-box:has(#responseDistChart),html[data-brand] #workloadTable,html[data-brand] #workloadToggleBtn{display:none!important}
+html:not([data-brand]) #workloadList,html:not([data-brand]) #respCurve{display:none}
+html .rkpl{display:inline-block;margin-left:7px;border-radius:99px;font-size:10px;font-weight:800;padding:2px 8px;background:rgba(232,100,95,.16);color:#d0453f;vertical-align:1px}
+html[data-theme="dark"] .rkpl{color:#ff8f8a}
+html .rkp{display:flex;gap:10px;margin-bottom:10px}
+html .rkp>div{flex:1;min-width:0;border:1px solid var(--border);border-radius:14px;padding:9px 12px}
+html .rkp small{display:block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+html .rkp b{font-size:21px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--text)}
+html .rcv{width:100%;display:block}
+html .rcv .rgr line{stroke:rgba(120,130,160,.2);stroke-dasharray:3 5}
+html .rcv .rar{fill:url(#rga)}
+html .rcv .rln{fill:none;stroke:url(#rgl);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1}
+html .rcv .rpt circle{fill:var(--sk-glass);stroke:#7a6bff;stroke-width:3}
+html .rcv .rv{font-size:13px;font-weight:800;fill:var(--text)}
+html .rcv .rx{font-size:11px;font-weight:700;fill:var(--muted)}
+html .go .rcv .rln{animation:rDraw 1.6s cubic-bezier(.4,0,.2,1) .3s backwards}
+html .go .rcv .rar{animation:rFade 1s ease .9s backwards}
+html .go .rcv .rpt{animation:rPop .6s cubic-bezier(.2,1.4,.4,1) backwards;animation-delay:calc(var(--i)*120ms + 800ms)}
+@keyframes rDraw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes rFade{from{opacity:0}}
+@keyframes rPop{from{opacity:0;transform:scale(.4)}}
+@media(prefers-reduced-motion:reduce){html .rcv *{animation:none!important}}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -2691,9 +2714,11 @@ html[data-brand="crb"][data-theme="dark"] #section-analytics .panel .panel,html[
         <div class="panel">
           <h2><i class='ti ti-stopwatch' aria-hidden='true'></i> Время ответа <span class="sub">распределение по сотрудникам</span></h2>
           <div class="chart-box chart-box-tall"><canvas id="responseDistChart"></canvas></div>
+          <div id="respCurve"></div>
         </div>
         <div class="panel">
           <h2><i class='ti ti-package' aria-hidden='true'></i> Нагрузка по сотрудникам</h2>
+          <div class="rank-list" id="workloadList"></div>
           <table class="emp-table" id="workloadTable">
             <thead><tr><th>№</th><th>Сотрудник</th><th>Обработано всего</th><th>Ожидает сейчас</th><th>Просрочено</th></tr></thead>
             <tbody></tbody>
@@ -7143,7 +7168,7 @@ function renderRankList(containerId, rows, opts) {
     if (isCrbRk) {
       const nm = opts.name(r);
       const bar2 = opts.barPercent != null ? `<div class="rkbar"><i style="--k:${i};width:${Math.min(100, opts.barPercent(r))}%"></i></div>` : "";
-      return `<div class="rk2${i === 0 ? " first" : ""}" style="--k:${Math.min(i, 8)}"><span class="rkm${i < 3 ? " m" + (i + 1) : ""}">${i + 1}</span><span class="rkav" style="--a:${120 + rkHash(nm) % 90}deg">${escapeHtml(rkIni(nm))}</span><div class="rkb"><div class="rkn" title="${escapeHtml(nm)}">${escapeHtml(nm)}</div>${bar2}</div><div class="rkv">${opts.value(r)}${opts.meta ? `<small>${opts.meta(r)}</small>` : ""}</div></div>`;
+      return `<div class="rk2${i === 0 ? " first" : ""}" style="--k:${Math.min(i, 8)}"><span class="rkm${i < 3 ? " m" + (i + 1) : ""}">${i + 1}</span><span class="rkav" style="--a:${120 + rkHash(nm) % 90}deg">${escapeHtml(rkIni(nm))}</span><div class="rkb"><div class="rkn" title="${escapeHtml(nm)}">${escapeHtml(nm)}${opts.tag ? opts.tag(r) : ""}</div>${bar2}</div><div class="rkv">${opts.value(r)}${opts.meta ? `<small>${opts.meta(r)}</small>` : ""}</div></div>`;
     }
     const rankCls = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "rank-n";
     const nameText = opts.name(r);
@@ -7303,6 +7328,7 @@ function renderAnalytics() {
     name: r => r.name,
     value: r => r.count + " сч.",
     meta: r => r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 }),
+    barPercent: r => (r.count / Math.max(1, topSuppliers[0] ? topSuppliers[0].count : 1)) * 100,
   });
 
   // ---------- Топ по отказам (качество) ----------
@@ -7369,6 +7395,14 @@ function renderAnalytics() {
       <td>${w.pending}</td>
       <td>${w.overdue > 0 ? `<span class="pill overdue">${w.overdue}</span>` : `<span class="pill ok">0</span>`}</td>
     </tr>`;
+  const wlMax = Math.max(1, ...workload.map(w => w.processed));
+  renderRankList("workloadList", workload, {
+    name: w => w.name,
+    value: w => w.processed,
+    meta: w => `ожидает ${w.pending}`,
+    barPercent: w => (w.processed / wlMax) * 100,
+    tag: w => w.overdue > 0 ? `<span class="rkpl">${w.overdue} просроч.</span>` : "",
+  });
   const workloadInitial = 5;
   const workloadHasMore = workload.length > workloadInitial;
   document.querySelector("#workloadTable tbody").innerHTML =
@@ -7423,6 +7457,7 @@ function renderAnalytics() {
     name: r => r.name,
     value: r => r.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 }),
     meta: r => `${r.count} счёт(ов)`,
+    barPercent: r => (r.sum / Math.max(1, topLargest[0] ? topLargest[0].sum : 1)) * 100,
     initialCount: 10,
   });
 
@@ -7538,6 +7573,14 @@ function renderResponseDistChart(durationsByEmp) {
     { key: "b5", label: "3+ дня", max: Infinity },
   ];
   const colors = ["#5FBE84", "#8FCB9E", "#FFC876", "#F5A75B", "#E8837E"];
+  if (document.documentElement.getAttribute("data-brand") === "crb" && window.TUI) {
+    const all = Object.values(durationsByEmp).flat();
+    const cnt = [0, 0, 0, 0, 0];
+    all.forEach(ms => { const k = bucketDefs.findIndex(b => ms <= b.max); cnt[k < 0 ? 4 : k]++; });
+    const avgMs = all.length ? all.reduce((a, b) => a + b, 0) / all.length : null;
+    window.TUI.resp(cnt, all.length, avgMs != null ? formatDuration(avgMs) : "—", bucketDefs.map(b => b.label));
+    return;
+  }
 
   const employeesList = Object.entries(durationsByEmp)
     .map(([name, arr]) => ({ name, count: arr.length }))
@@ -10698,6 +10741,25 @@ async function recallInvoice(facturaid, btnEl) {
   TUI.play=function(){
     var g=document.getElementById('tGrid');if(!g||!window.__orgPlay)return;
     var p=g.closest('.panel');if(p)window.__orgPlay(p);
+    var rc=document.getElementById('respCurve');if(rc){var rp=rc.closest('.panel');if(rp)window.__orgPlay(rp);}
+  };
+  TUI.resp=function(cnt,total,avgText,labels){
+    var host=document.getElementById('respCurve');if(!host)return;
+    if(!total){host.innerHTML='<div class="rank-empty">Пока нет данных</div>';return}
+    var pct=cnt.map(function(v){return Math.round(v/total*100)});
+    var W=520,H=190,px=36,py=26,n=cnt.length;
+    var xs=pct.map(function(v,i){return px+i*(W-2*px)/(n-1)});
+    var mx=Math.max.apply(null,pct,1)*1.25||1;
+    var ys=pct.map(function(v){return H-py-(v/mx)*(H-2*py)});
+    var d='M'+xs[0]+','+ys[0];
+    for(var i=1;i<n;i++){var cx=(xs[i-1]+xs[i])/2;d+=' C'+cx+','+ys[i-1]+' '+cx+','+ys[i]+' '+xs[i]+','+ys[i]}
+    var area=d+' L'+xs[n-1]+','+(H-py)+' L'+xs[0]+','+(H-py)+'Z';
+    var grid='';for(var g=0;g<4;g++){var y=py+g*(H-2*py)/3;grid+='<line x1="'+px+'" x2="'+(W-px)+'" y1="'+y+'" y2="'+y+'"/>'}
+    var pts=xs.map(function(x,i){return '<g class="rpt" style="--i:'+i+';transform-origin:'+x+'px '+ys[i]+'px"><circle cx="'+x+'" cy="'+ys[i]+'" r="6"/><text class="rv" x="'+x+'" y="'+(ys[i]-14)+'" text-anchor="middle">'+pct[i]+'%</text></g><text class="rx" x="'+x+'" y="'+(H-4)+'" text-anchor="middle">'+labels[i]+'</text>'}).join('');
+    host.innerHTML='<div class="rkp"><div><small>Всего решений</small><b>'+total+'</b></div><div><small>Среднее</small><b>'+avgText+'</b></div><div><small>До 4 часов</small><b>'+(pct[0]+pct[1])+'%</b></div></div>'+
+      '<svg class="rcv" viewBox="0 0 '+W+' '+H+'"><defs><linearGradient id="rga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b8dff" stop-opacity=".45"/><stop offset="1" stop-color="#6b8dff" stop-opacity="0"/></linearGradient><linearGradient id="rgl" x1="0" x2="1"><stop offset="0" stop-color="#5b8dff"/><stop offset="1" stop-color="#b052ff"/></linearGradient></defs><g class="rgr">'+grid+'</g><path class="rar" d="'+area+'"/><path class="rln" pathLength="1" d="'+d+'"/>'+pts+'</svg>';
+    var sig=cnt.join('|');
+    if(TUI.__rsig!==sig){TUI.__rsig=sig;setTimeout(TUI.play,30)}
   };
   TUI.stats=function(total,pending,accepted,rejected,overdue){
     var host=document.getElementById('tGrid');if(!host)return;
