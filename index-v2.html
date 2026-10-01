@@ -1658,22 +1658,22 @@ footer.note {
 /* ===== SKIN V2: Mini App uslubi (shisha, tungi/kunduzgi). Faqat ko'rinish, JS/struktura o'zgarmaydi ===== */
 html:root[data-theme="dark"], html:root[data-theme="dark"][data-brand="crb"] {
   --navy:#2f6bff; --navy-light:#5b8dff; --ice:rgba(91,141,255,0.26); --ice-soft:rgba(255,255,255,0.06);
-  --bg:#07090f; --card:rgba(255,255,255,0.055); --text:#f3f5fb; --muted:#8d95ab; --border:rgba(255,255,255,0.10);
+  --bg:#07090f; --card:#0e121b; --text:#f3f5fb; --muted:#8d95ab; --border:rgba(255,255,255,0.10);
   --green-bg:rgba(52,209,122,0.14); --green-fg:#34d17a; --red-bg:rgba(255,107,107,0.14); --red-fg:#ff6b6b;
   --amber-bg:rgba(255,184,77,0.14); --amber-fg:#ffb84d; --gray-bg:rgba(255,255,255,0.07); --gray-fg:#aeb4d6;
   --chip-bg:rgba(255,255,255,0.08); --navy-text:#9db8ff;
   --navy-grad:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.05));
   --stat-ring:rgba(255,255,255,0.14); --stat-ring2:rgba(255,255,255,0.06); --stat-glow:rgba(47,107,255,0.18);
-  --sk-glass:rgba(255,255,255,0.055); --sk-glass-hi:rgba(255,255,255,0.09); --sk-nav-on:rgba(47,107,255,0.20); --sk-nav-text:#ffffff;
+  --sk-glass:#0e121b; --sk-glass-hi:#161b28; --sk-nav-on:rgba(47,107,255,0.20); --sk-nav-text:#ffffff;
   --sk-orb:.30; color-scheme:dark;
 }
 html:root:not([data-theme="dark"]), html:root:not([data-theme="dark"])[data-brand="crb"] {
   --navy:#1f3fa8; --navy-light:#2459e8; --ice:#2459e8; --ice-soft:rgba(36,89,232,0.07);
-  --bg:#f2f4fa; --card:rgba(255,255,255,0.82); --text:#141a2e; --muted:#667089; --border:rgba(20,26,46,0.10);
+  --bg:#f2f4fa; --card:#ffffff; --text:#141a2e; --muted:#667089; --border:rgba(20,26,46,0.10);
   --green-fg:#14864a; --red-fg:#d23b3b; --amber-fg:#b26a00;
   --navy-text:#1f3fa8; --navy-grad:linear-gradient(135deg,rgba(255,255,255,0.80),rgba(255,255,255,0.80));
   --stat-ring:rgba(20,26,46,0.10); --stat-ring2:rgba(20,26,46,0.04); --stat-glow:rgba(36,89,232,0.12);
-  --sk-glass:rgba(255,255,255,0.80); --sk-glass-hi:#ffffff; --sk-nav-on:rgba(36,89,232,0.12); --sk-nav-text:#1b3fa8;
+  --sk-glass:#ffffff; --sk-glass-hi:#f4f6fc; --sk-nav-on:rgba(36,89,232,0.12); --sk-nav-text:#1b3fa8;
   --sk-orb:.16;
 }
 html body{font-family:'Manrope','Satoshi',sans-serif;background:var(--bg);color:var(--text)}
@@ -1707,7 +1707,7 @@ html .nav-subgroup.expanded .nav-sub-item:nth-child(n+6){transition-delay:.30s,.
 html .nav-subgroup.expanded{max-height:700px}
 html #sidebarToggleBtn{color:var(--muted)}
 /* kartalar va panellar */
-html .panel,html .modal-card{background:var(--sk-glass);border:1px solid var(--border);border-radius:18px;backdrop-filter:none;box-shadow:0 10px 30px -12px rgba(0,0,0,.35);color:var(--text)}
+html .panel,html .modal-card{background:var(--sk-glass);border:1px solid var(--border);border-radius:18px;backdrop-filter:none;box-shadow:0 2px 10px -4px rgba(0,0,0,.28);color:var(--text)}
 html .stat-card{animation:none;background-image:none;background-color:var(--sk-glass);border:1px solid var(--border);border-radius:18px;backdrop-filter:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
 html .stat-card:hover{transform:translateY(-4px);background-color:var(--sk-glass-hi);box-shadow:0 14px 30px -14px rgba(47,107,255,.45)}
 html .content-section.active{animation:skRise .5s cubic-bezier(.16,1,.3,1)}
@@ -1745,9 +1745,9 @@ html .nav-badge.nav-badge-alert{padding:1px 8px}
 /* ===== Maket: namunadagidek suzuvchi kartalar (faqat keng ekran) ===== */
 @media(min-width:861px){
   html #app{padding:16px 20px 24px}
-  html header.topbar{border-radius:18px;border:1px solid var(--border);padding:12px 22px;margin-bottom:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html header.topbar{border-radius:18px;border:1px solid var(--border);padding:12px 22px;margin-bottom:16px;box-shadow:0 2px 10px -4px rgba(0,0,0,.28)}
   html .app-body{gap:16px;align-items:flex-start}
-  html .sidebar{margin:0;border:1px solid var(--border);border-radius:18px;padding:14px 4px 16px;min-height:0;top:16px;box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}
+  html .sidebar{margin:0;border:1px solid var(--border);border-radius:18px;padding:14px 4px 16px;min-height:0;top:16px;box-shadow:0 2px 10px -4px rgba(0,0,0,.28)}
   html .content-area{padding:0 0 40px}
 }
 html .nav-group-label{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted);padding:12px 22px 6px}
@@ -1803,7 +1803,7 @@ html .status-accepted{background:var(--green-bg);color:var(--green-fg)}
 html .status-rejected,html .status-error{background:var(--red-bg);color:var(--red-fg)}
 html .status-pendingboss{background:var(--sk-nav-on);color:var(--navy-text)}
 /* Аналитика kartalari: namuna uslubida */
-html[data-brand] .org-card-v2,html[data-brand] .stat-card-v2{background:var(--sk-glass)!important;border:1px solid var(--border)!important;border-radius:18px!important;color:var(--text);box-shadow:0 10px 30px -14px rgba(0,0,0,.35)!important;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
+html[data-brand] .org-card-v2,html[data-brand] .stat-card-v2{background:var(--sk-glass)!important;border:1px solid var(--border)!important;border-radius:18px!important;color:var(--text);box-shadow:0 2px 10px -4px rgba(0,0,0,.28)!important;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
 html[data-brand] .org-card-v2:hover,html[data-brand] .stat-card-v2:hover{transform:translateY(-4px);background:var(--sk-glass-hi)!important;border-color:var(--accent-2)!important}
 html[data-brand] .org-card-v2-total{background:linear-gradient(135deg,rgba(47,107,255,.24),rgba(122,60,255,.16))!important;border-color:rgba(91,141,255,.35)!important}
 html[data-brand] .org-card-v2 .ocv2-name,html[data-brand] .org-card-v2-total .ocv2-name{color:var(--text)!important;opacity:1}
@@ -1827,6 +1827,11 @@ html #navActivePill,html[data-brand] #navActivePill{display:none!important}
 html .nav-item.active,html[data-brand] .nav-item.active,html[data-brand] .nav-subgroup .nav-item.active,html .nav-subgroup .nav-item.active{background:var(--sk-nav-on)!important;box-shadow:inset 0 0 0 1px var(--accent-2)!important;color:var(--sk-nav-text)!important}
 html .sidebar .nav-item{width:auto;box-sizing:border-box}
 html .sidebar>.nav-item,html .sidebar>.nav-group-toggle{margin:2px 10px;width:calc(100% - 20px)}
+/* Kattalik: namunadagidek biroz yirikroq */
+@media(min-width:861px){
+  html #app{zoom:1.1}
+  html .sidebar:not(.collapsed){max-height:calc((100vh - 32px)/1.1)}
+}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
