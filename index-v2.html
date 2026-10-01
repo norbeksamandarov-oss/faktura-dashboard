@@ -1948,6 +1948,14 @@ html .u-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(1
 html .u-av::before{content:attr(data-ini)}
 html .u-av.has{background:var(--av) center/cover no-repeat}
 html .u-av.has::before{content:none}
+html .u-av.has{cursor:zoom-in}
+html header.topbar #userInfo.has-av::before{cursor:zoom-in}
+#avLightbox{position:fixed;inset:0;z-index:100000;background:rgba(5,8,16,.72);display:grid;place-items:center;opacity:0;transition:opacity .25s;cursor:zoom-out;padding:24px}
+#avLightbox.show{opacity:1}
+#avLightbox .av-box{display:flex;flex-direction:column;align-items:center;gap:14px;transform:scale(.8);transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+#avLightbox.show .av-box{transform:none}
+#avLightbox img{width:min(360px,80vw);height:min(360px,80vw);object-fit:cover;border-radius:28px;box-shadow:0 24px 70px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);background:#fff}
+#avLightbox .av-cap{color:#fff;font:700 15px 'Manrope',sans-serif}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
@@ -10023,10 +10031,10 @@ async function recallInvoice(facturaid, btnEl) {
         if(ui&&!document.getElementById('userMenu')){
           var hd=document.querySelector('header.topbar');
           var um=document.createElement('div');um.id='userMenu';
-          um.innerHTML='<button type="button" data-a="photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Сменить фото</button><button type="button" data-a="nophoto" id="umNoPhoto"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Убрать фото</button><hr><button type="button" class="dg" data-a="out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Выйти</button><input type="file" id="avatarFile" accept="image/*" style="display:none">';
+          um.innerHTML='<button type="button" data-a="view" id="umView"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Открыть фото</button><button type="button" data-a="photo"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Сменить фото</button><button type="button" data-a="nophoto" id="umNoPhoto"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Убрать фото</button><hr><button type="button" class="dg" data-a="out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Выйти</button><input type="file" id="avatarFile" accept="image/*" style="display:none">';
           hd.appendChild(um);
           var close=function(){um.classList.remove('open');ui.classList.remove('open');};
-          ui.addEventListener('click',function(e){e.stopPropagation();var o=um.classList.contains('open');if(o)close();else{um.classList.add('open');ui.classList.add('open');}});
+          ui.addEventListener('click',function(e){e.stopPropagation();var rc=ui.getBoundingClientRect();var z=parseFloat(getComputedStyle(document.getElementById('app')).zoom)||1;if(ui.classList.contains('has-av')&&(e.clientX-rc.left)<40*z){close();AV.view(AV.mine(),(ui.textContent||'').trim());return;}var o=um.classList.contains('open');if(o)close();else{um.classList.add('open');ui.classList.add('open');}});
           document.addEventListener('click',function(e){if(!um.contains(e.target))close();});
           document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
           var fi=document.getElementById('avatarFile');
@@ -10034,6 +10042,7 @@ async function recallInvoice(facturaid, btnEl) {
             if(a==='out'){var t=document.getElementById('logoutBtn');if(t)t.click();}
             else if(a==='photo'){fi.value='';fi.click();}
             else if(a==='nophoto'){AV.save('');}
+            else if(a==='view'){AV.view(AV.mine(),(ui.textContent||'').trim());}
           });
           fi.addEventListener('change',function(){var f=fi.files&&fi.files[0];if(f)AV.fromFile(f);});
         }
@@ -10046,7 +10055,7 @@ async function recallInvoice(facturaid, btnEl) {
           AV.apply=function(){
             var ui=document.getElementById('userInfo');if(!ui)return;var u=AV.mine();
             if(u){ui.classList.add('has-av');ui.style.setProperty('--av','url("'+u+'")');}else{ui.classList.remove('has-av');ui.style.removeProperty('--av');}
-            var np=document.getElementById('umNoPhoto');if(np)np.style.display=u?'':'none';
+            var np=document.getElementById('umNoPhoto');if(np)np.style.display=u?'':'none';var vw=document.getElementById('umView');if(vw)vw.style.display=u?'':'none';
             AV.decorate();
           };
           AV.decorate=function(){
@@ -10060,6 +10069,17 @@ async function recallInvoice(facturaid, btnEl) {
               if(url){sp.classList.add('has');sp.style.setProperty('--av','url("'+url+'")');}else{sp.classList.remove('has');sp.style.removeProperty('--av');}
             });
           };
+          AV.view=function(url,name){
+            if(!url)return;var o=document.getElementById('avLightbox');if(o)o.remove();
+            o=document.createElement('div');o.id='avLightbox';
+            o.innerHTML='<div class="av-box"><img alt=""><div class="av-cap"></div></div>';
+            o.querySelector('img').src=url;o.querySelector('.av-cap').textContent=name||'';
+            var done=function(){o.classList.remove('show');setTimeout(function(){o.remove()},250);document.removeEventListener('keydown',esc);};
+            var esc=function(e){if(e.key==='Escape')done();};
+            o.addEventListener('click',done);document.addEventListener('keydown',esc);
+            document.body.appendChild(o);requestAnimationFrame(function(){o.classList.add('show')});
+          };
+          document.addEventListener('click',function(e){var s=e.target.closest&&e.target.closest('.u-av.has');if(s){var td=s.closest('td');AV.view(getComputedStyle(s).getPropertyValue('--av').trim().replace(/^url\(["']?|["']?\)$/g,''),td?td.getAttribute('data-uname'):'');}});
           AV.load=function(){
             if(typeof apiCall!=='function'||typeof authToken==='undefined'||!authToken)return Promise.resolve();
             return apiCall('getAvatars',{}).then(function(r){AV.map=(r&&r.avatars)||{};AV.loaded=true;AV.apply();}).catch(function(e){AV.loaded=true;AV.apply();});
@@ -10079,7 +10099,7 @@ async function recallInvoice(facturaid, btnEl) {
             if(!/^image\//.test(f.type)){alert('Выберите файл изображения');return;}
             var r=new FileReader();
             r.onload=function(){var img=new Image();img.onload=function(){
-              var S=128,c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');
+              var S=256,c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');
               var m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;
               x.fillStyle='#fff';x.fillRect(0,0,S,S);x.drawImage(img,sx,sy,m,m,0,0,S,S);
               AV.save(c.toDataURL('image/jpeg',0.85));
