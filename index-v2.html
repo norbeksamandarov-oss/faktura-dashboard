@@ -1813,6 +1813,14 @@ html[data-brand] .ocv2-row b{color:var(--text)!important}
 html[data-brand] .ocv2-icon,html[data-brand] .scv2-icon{background:linear-gradient(135deg,#2f6bff,#7a3cff)!important;color:#fff!important;box-shadow:0 6px 18px rgba(47,107,255,.35)}
 html[data-brand] .ocv2-share,html[data-brand] .scv2-pct{background:var(--sk-nav-on)!important;color:var(--navy-text)!important;border-radius:99px}
 html[data-brand] .ocv2-divider{background:var(--border)!important}
+/* Menyu ochilganda sahifa balandligi o'zgarmasin: sahifa skrolli paydo bo'lib butun jadval qayta hisoblanishi qotishga sabab edi */
+@media(min-width:861px){
+  html{scrollbar-gutter:stable}
+  html .sidebar:not(.collapsed){max-height:calc(100vh - 32px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;overscroll-behavior:contain}
+  html .sidebar:not(.collapsed) #sidebarToggleBtn{right:10px;top:14px;width:26px;height:26px}
+  html .sidebar:not(.collapsed) .sb-brand{padding-right:46px}
+}
+html .sidebar>*{flex-shrink:0}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
