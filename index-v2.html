@@ -1802,6 +1802,17 @@ html .status-sent,html .status-notmine{background:var(--amber-bg);color:var(--am
 html .status-accepted{background:var(--green-bg);color:var(--green-fg)}
 html .status-rejected,html .status-error{background:var(--red-bg);color:var(--red-fg)}
 html .status-pendingboss{background:var(--sk-nav-on);color:var(--navy-text)}
+/* Аналитика kartalari: namuna uslubida */
+html[data-brand] .org-card-v2,html[data-brand] .stat-card-v2{background:var(--sk-glass)!important;border:1px solid var(--border)!important;border-radius:18px!important;color:var(--text);box-shadow:0 10px 30px -14px rgba(0,0,0,.35)!important;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
+html[data-brand] .org-card-v2:hover,html[data-brand] .stat-card-v2:hover{transform:translateY(-4px);background:var(--sk-glass-hi)!important;border-color:var(--accent-2)!important}
+html[data-brand] .org-card-v2-total{background:linear-gradient(135deg,rgba(47,107,255,.24),rgba(122,60,255,.16))!important;border-color:rgba(91,141,255,.35)!important}
+html[data-brand] .org-card-v2 .ocv2-name,html[data-brand] .org-card-v2-total .ocv2-name{color:var(--text)!important;opacity:1}
+html[data-brand] .org-card-v2 .ocv2-count,html[data-brand] .ocv2t-num,html[data-brand] .scv2-num{color:var(--text)!important}
+html[data-brand] .ocv2-count-lbl,html[data-brand] .ocv2t-lbl,html[data-brand] .scv2-label,html[data-brand] .ocv2-row span{color:var(--muted)!important}
+html[data-brand] .ocv2-row b{color:var(--text)!important}
+html[data-brand] .ocv2-icon,html[data-brand] .scv2-icon{background:linear-gradient(135deg,#2f6bff,#7a3cff)!important;color:#fff!important;box-shadow:0 6px 18px rgba(47,107,255,.35)}
+html[data-brand] .ocv2-share,html[data-brand] .scv2-pct{background:var(--sk-nav-on)!important;color:var(--navy-text)!important;border-radius:99px}
+html[data-brand] .ocv2-divider{background:var(--border)!important}
 @media(prefers-reduced-motion:reduce){html body::before,html body::after{animation:none}html .content-section.active,html .stats-row .stat-card{animation:none}}
 </style>
 </head>
