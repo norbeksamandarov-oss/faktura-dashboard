@@ -8674,8 +8674,9 @@ function vz2RenderSide(rows, side) {
   const color = side === "kt" ? "#C0392B" : "#1E8449";
   const label = side === "kt" ? "Кредиторская (Кт) — мы должны" : "Дебиторская (Дт) — нам должны";
   const sum = rows.reduce((s, i) => s + Math.abs(Number(i.total || 0)), 0);
-  const trs = rows.map(it => `
+  const trs = rows.map((it, idx) => `
     <tr>
+      <td style="color:var(--muted);">${idx + 1}</td>
       <td>${escapeHtml(it.name)}</td>
       <td>${escapeHtml(it.contract || "—")}</td>
       <td>${escapeHtml(it.inn || "—")}</td>
@@ -8685,8 +8686,8 @@ function vz2RenderSide(rows, side) {
   return `
     <table class="invoices" style="margin-bottom:10px;">
       <thead>
-        <tr><th colspan="5" style="color:${color};">${label} · ${rows.length} · ${vzFormatNum(sum)}</th></tr>
-        <tr><th>Контрагент</th><th>Договор</th><th>ИНН</th><th class="num-cell">Сумма</th><th>Ответственный</th></tr>
+        <tr><th colspan="6" style="color:${color};">${label} · ${rows.length} · ${vzFormatNum(sum)}</th></tr>
+        <tr><th>№</th><th>Контрагент</th><th>Договор</th><th>ИНН</th><th class="num-cell">Сумма</th><th>Ответственный</th></tr>
       </thead>
       <tbody>${trs}</tbody>
     </table>`;
@@ -8769,12 +8770,13 @@ function vz2RenderFlatList(prefix, category) {
     flatEl.innerHTML = "";
     return;
   }
-  const trs = items.map(it => {
+  const trs = items.map((it, idx) => {
     const side = it.side === "dt" ? "dt" : "kt";
     const color = side === "kt" ? "#C0392B" : "#1E8449";
     const amount = it.total !== undefined && it.total !== null ? it.total : it.last3weeks;
     return `
     <tr>
+      <td style="color:var(--muted);">${idx + 1}</td>
       <td>${escapeHtml(it.name || "—")}</td>
       <td>${escapeHtml(it.org || "—")}</td>
       <td>${escapeHtml(it.dept || "—")}</td>
@@ -8790,7 +8792,7 @@ function vz2RenderFlatList(prefix, category) {
     <table class="invoices" style="margin-bottom:10px;">
       <thead>
         <tr>
-          <th>Контрагент</th><th>Организация</th><th>Подразделение</th><th>Договор</th>
+          <th>№</th><th>Контрагент</th><th>Организация</th><th>Подразделение</th><th>Договор</th>
           <th>Вид договора</th><th>Валюта</th><th>ИНН</th><th>Ответственный</th><th class="num-cell">Сумма</th>
         </tr>
       </thead>
