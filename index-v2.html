@@ -2402,7 +2402,8 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 /* ===== Экран загрузки: на весь экран, живые фразы ===== */
 html #loadingOverlay{background:#f3f4f9!important;overflow:hidden;z-index:600;text-align:center;
   --ld-acc:#4a52ff;--ld-acc2:#9a6bff;--ld-glow:rgba(110,100,255,.28);--ld-mut:#6a7190;--ld-bd:rgba(30,40,100,.16)}
-html[data-theme="dark"] #loadingOverlay{background:#05060b!important;--ld-acc:#7f86ff;--ld-acc2:#b690ff;--ld-glow:rgba(110,90,255,.36);--ld-mut:#8a91b8;--ld-bd:rgba(160,170,255,.2)}
+html[data-theme="dark"] html #loadingOverlay,html[data-theme="dark"] body #loadingOverlay,html[data-theme="dark"] #loadingOverlay#loadingOverlay{background:#05060b!important}
+html[data-theme="dark"] #loadingOverlay#loadingOverlay{--ld-acc:#7f86ff;--ld-acc2:#b690ff;--ld-glow:rgba(110,90,255,.36);--ld-mut:#8a91b8;--ld-bd:rgba(160,170,255,.2)}
 html #loadingOverlay{animation:ldIn .3s ease}
 @keyframes ldIn{from{opacity:0}to{opacity:1}}
 .ld2-glow{position:absolute;left:50%;top:50%;width:640px;height:640px;max-width:120vw;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,var(--ld-glow),transparent 72%);animation:ld2br 5s ease-in-out infinite alternate;pointer-events:none}
