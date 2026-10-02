@@ -2305,6 +2305,33 @@ html[data-theme=dark] #closeReqModal .modal-actions .btn-primary.ok{color:#04261
 #closeReqModal .crm-card.done{padding-bottom:26px}
 @media (prefers-reduced-motion:reduce){#closeReqModal *,#closeReqModal{animation:none!important;transition:none!important}}
 #closeReqModal .crm-err{margin-top:8px;font-size:12px;color:var(--red-fg);min-height:0}
+
+/* Диалоги вместо alert/confirm/prompt (стиль «карточка по центру») */
+#uiDlg{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(20,24,45,.6);opacity:0;transition:opacity .22s ease}
+#uiDlg.open{opacity:1}
+#uiDlg .ud-card{width:92%;max-width:380px;background:var(--sk-glass);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:24px 22px 20px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.55);transform:translateY(16px) scale(.95);opacity:0;transition:transform .36s cubic-bezier(.34,1.45,.64,1),opacity .22s ease;position:relative;overflow:hidden}
+#uiDlg.open .ud-card{transform:none;opacity:1}
+#uiDlg .ud-ic{width:48px;height:48px;border-radius:15px;margin:0 auto 10px;display:grid;place-items:center;font-size:24px;animation:udPop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes udPop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.14);opacity:1}100%{transform:scale(1)}}
+#uiDlg .ud-ic.red{background:var(--red-bg);color:var(--red-fg)}
+#uiDlg .ud-ic.grn{background:var(--green-bg);color:var(--green-fg)}
+#uiDlg .ud-ic.blu{background:rgba(91,141,255,.16);color:var(--navy-text)}
+#uiDlg .ud-t{margin:0;font-size:17px;font-weight:800;color:var(--text);overflow-wrap:anywhere}
+#uiDlg .ud-p{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;max-height:40vh;overflow:auto;text-align:left}
+#uiDlg .ud-t+.ud-p{text-align:center}
+#uiDlg .ud-in{width:100%;margin-top:12px;border:1px solid var(--border);background:var(--sk-glass);color:var(--text);border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;box-sizing:border-box}
+#uiDlg .ud-in:focus{outline:none;border-color:var(--navy-light);box-shadow:0 0 0 4px rgba(47,107,255,.2)}
+#uiDlg .ud-row{display:flex;gap:10px;margin-top:18px}
+#uiDlg .ud-b{flex:1;border:1px solid var(--border);border-radius:12px;padding:11px 14px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer;background:transparent;color:var(--text);transition:transform .15s ease,filter .15s ease}
+#uiDlg .ud-b:focus{outline:none}#uiDlg .ud-b:focus-visible{box-shadow:0 0 0 3px rgba(47,107,255,.35)}
+#uiDlg .ud-b:hover{filter:brightness(1.06)}#uiDlg .ud-b:active{transform:scale(.97)}
+#uiDlg .ud-b.go{background:var(--navy-light);border-color:transparent;color:#fff}
+#uiDlg .ud-b.go.red{background:var(--red-fg);color:#fff}
+html[data-theme=dark] #uiDlg .ud-b.go.red{color:#2a0a0a}
+#uiDlg .ud-b.go.grn{background:var(--green-fg);color:#fff}
+html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
+#uiDlg .ud-card.shake{animation:crmShake .42s ease}
+@media (prefers-reduced-motion:reduce){#uiDlg,#uiDlg *{animation:none!important;transition:none!important}}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -5134,6 +5161,69 @@ function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
   openCloseReqModal(reqType, rowIndex, rowsArray, renderFn);
 }
 
+
+/* ===== Диалоги вместо системных alert/confirm/prompt ===== */
+const UD = { q: [], cur: null };
+function udEl() {
+  let el = document.getElementById("uiDlg");
+  if (el) return el;
+  el = document.createElement("div"); el.id = "uiDlg";
+  el.innerHTML = `<div class="ud-card" role="dialog" aria-modal="true" aria-labelledby="udT"><div class="ud-ic" id="udIc"></div><p class="ud-t" id="udT"></p><p class="ud-p" id="udP"></p><input class="ud-in" id="udIn" autocomplete="off" style="display:none"><div class="ud-row" id="udRow"></div></div>`;
+  document.body.appendChild(el);
+  el.addEventListener("click", e => { if (e.target === el && UD.cur && UD.cur.dismiss) UD.cur.dismiss(); });
+  document.addEventListener("keydown", e => {
+    if (!UD.cur) return;
+    if (e.key === "Escape" && UD.cur.dismiss) { e.preventDefault(); UD.cur.dismiss(); }
+    else if (e.key === "Enter" && !e.shiftKey && UD.cur.accept) { e.preventDefault(); UD.cur.accept(); }
+  });
+  return el;
+}
+function udStrip(t) { return String(t == null ? "" : t).replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim(); }
+function udRun(cfg) {
+  return new Promise(resolve => { UD.q.push({ cfg, resolve }); if (!UD.cur) udNext(); });
+}
+function udNext() {
+  const item = UD.q.shift();
+  if (!item) { UD.cur = null; return; }
+  const { cfg, resolve } = item, el = udEl(), card = el.querySelector(".ud-card"), inp = el.querySelector("#udIn");
+  const parts = udStrip(cfg.text).split(/\n\s*\n/);
+  const title = cfg.title || parts[0], body = cfg.title ? parts.join("\n\n") : parts.slice(1).join("\n\n");
+  const ic = el.querySelector("#udIc"); ic.className = "ud-ic " + cfg.tone; ic.innerHTML = `<i class="ti ${cfg.icon}" aria-hidden="true"></i>`;
+  el.querySelector("#udT").textContent = title;
+  const pEl = el.querySelector("#udP"); pEl.textContent = body; pEl.style.display = body ? "" : "none";
+  inp.style.display = cfg.input ? "" : "none"; inp.type = cfg.password ? "password" : "text"; inp.value = cfg.value || "";
+  const row = el.querySelector("#udRow");
+  row.innerHTML = (cfg.cancel ? `<button type="button" class="ud-b" data-a="no">Отмена</button>` : "") + `<button type="button" class="ud-b go ${cfg.tone === "blu" ? "" : cfg.tone}" data-a="yes">${cfg.ok}</button>`;
+  const done = val => {
+    el.classList.remove("open"); UD.cur = null;
+    setTimeout(() => { if (!UD.cur) el.style.display = "none"; resolve(val); udNext(); }, 200);
+  };
+  UD.cur = {
+    dismiss: cfg.cancel || cfg.kind === "alert" ? () => done(cfg.kind === "prompt" ? null : cfg.kind === "confirm" ? false : undefined) : null,
+    accept: () => {
+      if (cfg.input && cfg.required && !inp.value.trim()) { card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); inp.focus(); return; }
+      done(cfg.kind === "prompt" ? inp.value : cfg.kind === "confirm" ? true : undefined);
+    }
+  };
+  row.onclick = e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.a === "yes") UD.cur.accept(); else UD.cur.dismiss(); };
+  el.style.display = "flex"; card.classList.remove("shake");
+  requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add("open"); (cfg.input ? inp : row.querySelector(".go")).focus(); if (cfg.input) inp.select(); }));
+}
+function uiConfirm(text) {
+  const danger = /удалить|отозвать|безвозвратно|нельзя отменить/i.test(text);
+  return udRun({ kind: "confirm", text, cancel: true, tone: danger ? "red" : "blu", icon: danger ? "ti-alert-triangle" : "ti-help-circle", ok: danger ? "Да, продолжить" : "Да" });
+}
+function uiPrompt(text, def) {
+  return udRun({ kind: "prompt", text, input: true, value: def || "", password: /парол/i.test(text), required: !/chat_id/i.test(text), cancel: true, tone: "blu", icon: /парол/i.test(text) ? "ti-key" : "ti-pencil", ok: "Сохранить" });
+}
+function uiAlert(text) {
+  const t = udStrip(text);
+  const bad = /ошибк|не удалось|не могу|не совпад|слишком|неверн|нельзя|не найден|не хватает|недоступ|отказ/i.test(t);
+  const good = !bad && /успешно|готов|отправлен|сохранён|сохранен|изменён|изменен|удалён|удален|добавлен|принят|выполнен|закрыт/i.test(t);
+  return udRun({ kind: "alert", text, cancel: false, tone: bad ? "red" : good ? "grn" : "blu", icon: bad ? "ti-alert-circle" : good ? "ti-circle-check" : "ti-info-circle", ok: "Понятно" });
+}
+window.alert = function (t) { uiAlert(t); };
+
 /* ===== Окно «Закрыть заявку»: файл → «Выполнено», только текст → «Закрыто (см. комментарий)» ===== */
 const CRM = { ctx: null, files: [], busy: false };
 function crmRender() {
@@ -5383,7 +5473,7 @@ async function toggleApproverActive(rowIndex, checked) {
 }
 
 async function deleteApproverRow(rowIndex) {
-  if (!confirm("Удалить эту запись?")) return;
+  if (!await uiConfirm("Удалить эту запись?")) return;
   const sheetKey = document.getElementById("approversTypeSelect").value;
   try {
     await apiCall("deleteApproverSheetRow", { sheetKey, rowIndex });
@@ -6183,7 +6273,7 @@ async function sendAnnouncement() {
     alert("Введите текст объявления.");
     return;
   }
-  if (!confirm("Отправить это сообщение ВСЕМ активным сотрудникам в Telegram?\n\nЭто действие нельзя отменить.")) {
+  if (!await uiConfirm("Отправить это сообщение ВСЕМ активным сотрудникам в Telegram?\n\nЭто действие нельзя отменить.")) {
     return;
   }
   try {
@@ -8223,7 +8313,7 @@ async function updateEmployeeActive(rowIndex, checked, checkboxEl) {
 }
 
 async function deleteEmployeeRow(rowIndex, name, btnEl) {
-  if (!confirm(`Удалить сотрудника «${name}» безвозвратно?\n\nЕго прошлые решения останутся в «Истории», но он будет полностью удалён из списка сотрудников.`)) {
+  if (!await uiConfirm(`Удалить сотрудника «${name}» безвозвратно?\n\nЕго прошлые решения останутся в «Истории», но он будет полностью удалён из списка сотрудников.`)) {
     return;
   }
   btnEl.disabled = true;
@@ -9297,7 +9387,7 @@ async function loadVz2Analytics() {
 }
 
 async function vz2SendDistribution(fromCategory) {
-  if (!confirm(
+  if (!await uiConfirm(
     "Отправить рассылку ВСЕМ ответственным лицам по Взаиморасчётам " +
     "(Покупатели + Поставщики + Подотчётные лица, Кт и Дт)?\n\n" +
     "Каждый получит одно Telegram-сообщение со своим Excel-файлом."
@@ -9396,7 +9486,7 @@ async function saveVz2OtvEdit(rowIndex) {
 }
 
 async function deleteVz2OtvRow(rowIndex) {
-  if (!confirm("Удалить эту запись?")) return;
+  if (!await uiConfirm("Удалить эту запись?")) return;
   try {
     await apiCall("deleteVz2OtvRow", { rowIndex });
     loadVz2OtvSheet();
@@ -9501,7 +9591,7 @@ function renderUsersTable() {
 }
 
 async function handleSetUserChatId(rowIndex, username, currentChatId) {
-  const chatId = prompt(`Telegram chat_id для «${username}» (сотрудник узнаёт его командой /whoami в боте):`, currentChatId || "");
+  const chatId = await uiPrompt(`Telegram chat_id для «${username}» (сотрудник узнаёт его командой /whoami в боте):`, currentChatId || "");
   if (chatId === null) return;
   try {
     await apiCall("adminSetUserChatId", { rowIndex, chatId: chatId.trim() });
@@ -9554,7 +9644,7 @@ async function handleSetUserActive(rowIndex, checked, checkboxEl) {
 }
 
 async function handleResetPassword(rowIndex, username) {
-  const newPassword = prompt(`Новый пароль для «${username}» (минимум 4 символа):`);
+  const newPassword = await uiPrompt(`Новый пароль для «${username}» (минимум 4 символа):`);
   if (!newPassword) return;
   try {
     await apiCall("adminSetPassword", { rowIndex, newPassword });
@@ -9569,15 +9659,15 @@ async function handleResetPassword(rowIndex, username) {
    shuning uchun boshqa birov (kompyuterga vaqtincha kirgan odam) parolni
    o'zgartirib qo'ya olmaydi. */
 async function handleChangeOwnPassword() {
-  const oldPassword = prompt("Введите ТЕКУЩИЙ пароль:");
+  const oldPassword = await uiPrompt("Введите ТЕКУЩИЙ пароль:");
   if (!oldPassword) return;
-  const newPassword = prompt("Введите НОВЫЙ пароль (минимум 4 символа):");
+  const newPassword = await uiPrompt("Введите НОВЫЙ пароль (минимум 4 символа):");
   if (!newPassword) return;
   if (newPassword.length < 4) {
     alert("Пароль слишком короткий (минимум 4 символа).");
     return;
   }
-  const confirmPassword = prompt("Повторите новый пароль ещё раз:");
+  const confirmPassword = await uiPrompt("Повторите новый пароль ещё раз:");
   if (newPassword !== confirmPassword) {
     alert("Пароли не совпадают. Попробуйте снова.");
     return;
@@ -9591,7 +9681,7 @@ async function handleChangeOwnPassword() {
 }
 
 async function handleDeleteUser(rowIndex, username, btnEl) {
-  if (!confirm(`Удалить пользователя «${username}»? Он больше не сможет войти в dashboard.`)) return;
+  if (!await uiConfirm(`Удалить пользователя «${username}»? Он больше не сможет войти в dashboard.`)) return;
   btnEl.disabled = true;
   try {
     await apiCall("adminDeleteUser", { rowIndex });
@@ -10726,7 +10816,7 @@ async function suggestResponsibles() {
 
   const preview = suggestions.slice(0, 8).map(s => `№${s.row.no} (${s.row.seller}) → ${s.suggested}`).join("\n");
   const more = suggestions.length > 8 ? `\n...и ещё ${suggestions.length - 8}` : "";
-  const confirmed = confirm(
+  const confirmed = await uiConfirm(
     `Подобрано ${suggestions.length} совпадений по истории (кто чаще всего обрабатывал счета этого контрагента/договора). Заполнить поле «Ответственный» автоматически?\n\n${preview}${more}`
   );
   if (!confirmed) return;
@@ -10864,7 +10954,7 @@ async function sendManualReminder(facturaid, btnEl) {
 }
 
 async function recallInvoice(facturaid, btnEl) {
-  const confirmed = confirm(
+  const confirmed = await uiConfirm(
     "Отозвать этот счёт?\n\n" +
     "Сообщение будет удалено (у сотрудника или у руководителя - смотря на " +
     "каком этапе счёт), он вернётся в статус «Не отправлено», поле " +
