@@ -2355,6 +2355,51 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .modal-card.shake{animation:crmShake .45s}
 .mc-ok{display:inline-block;animation:crmPop .4s cubic-bezier(.34,1.8,.64,1)}
 @keyframes crmPop{from{transform:scale(0)}to{transform:scale(1)}}
+/* ===== Экран входа: Controlling System (редакционный стиль) ===== */
+#loginScreen{--l-bg:#05060b;--l-bg2:#0b0d19;--l-fg:#f2f3fb;--l-mut:#8a91b8;--l-bd:rgba(160,170,255,.2);--l-acc:#7f86ff;--l-acc2:#b690ff;--l-glow:rgba(110,90,255,.34);--l-red:#ff9a90;--l-ink:#f2f3fb;--l-onink:#07080f;background:var(--l-bg2)!important;align-items:stretch!important;justify-content:stretch!important}
+:root:not([data-theme="dark"]) #loginScreen{--l-bg:#f3f4f9;--l-bg2:#eceef8;--l-fg:#10142b;--l-mut:#6a7190;--l-bd:rgba(30,40,100,.16);--l-acc:#4a52ff;--l-acc2:#9a6bff;--l-glow:rgba(110,100,255,.26);--l-red:#c0392b;--l-ink:#10142b;--l-onink:#fff}
+#loginScreen::after,#loginScreen>#loginGalleryCanvas,#loginScreen>.aurora-blob,#loginScreen>#confettiContainer,#loginScreen>div[style*="absolute"],#loginScreen>svg,#loginScreen .flag-wave-wrap{display:none!important}
+#loginScreen .login-theme-toggle{top:18px;right:22px}
+#loginScreen .login-card.lg2{max-width:none;width:100%;padding:0;display:flex;text-align:left;color:var(--l-fg);font-family:'Satoshi',-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+.lg2 .lg2-l{flex:0 0 min(520px,100%);padding:44px 52px;display:flex;flex-direction:column;justify-content:space-between;position:relative;z-index:2;background:var(--l-bg)}
+.lg2 .lg2-logo{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:19px;background:linear-gradient(135deg,var(--l-acc),var(--l-acc2));color:#fff;font-weight:800;font-size:19px;letter-spacing:.5px;box-shadow:0 14px 34px -10px var(--l-acc)}
+.lg2 .lg2-pill{display:inline-flex;gap:8px;align-items:center;font-size:11px;font-weight:700;letter-spacing:.6px;padding:6px 13px;border-radius:99px;border:1px solid var(--l-bd);color:var(--l-mut)}
+.lg2 .lg2-pill i{width:6px;height:6px;border-radius:50%;background:#4fd6a1;box-shadow:0 0 8px #4fd6a1}
+.lg2 .lg2-h{font-size:52px;line-height:1;letter-spacing:-2px;margin:20px 0 10px;font-weight:700;color:var(--l-fg)}
+.lg2 .lg2-h span{background:linear-gradient(90deg,var(--l-acc),var(--l-acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lg2 .lg2-ln{position:relative;margin-top:24px;opacity:1}
+.lg2 .lg2-ln label{position:absolute;left:0;top:15px;color:var(--l-mut);font-size:15px;pointer-events:none;transition:all .2s}
+.lg2 .lg2-ln input.login-input{width:100%;height:auto;padding:15px 0 10px;border:0;border-bottom:1px solid var(--l-bd);border-radius:0;background:transparent!important;color:var(--l-fg);font-size:16px;outline:none;box-shadow:none!important;transition:border-color .2s}
+.lg2 .lg2-ln input.login-input:-webkit-autofill{-webkit-text-fill-color:var(--l-fg);transition:background-color 9999s}
+.lg2 .lg2-ln i{position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--l-acc),var(--l-acc2));transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.3,.7,.2,1);box-shadow:0 0 14px var(--l-acc)}
+.lg2 .lg2-ln input:focus+i{transform:scaleX(1)}
+.lg2 .lg2-ln input:focus~label,.lg2 .lg2-ln input:not(:placeholder-shown)~label{top:-6px;font-size:11px;letter-spacing:.6px;text-transform:uppercase}
+.lg2 .lg2-go{margin-top:32px}
+.lg2 .login-submit-btn{width:auto;margin:0;height:52px;padding:0 30px;border:0;border-radius:99px;background:var(--l-ink);color:var(--l-onink);font:inherit;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden;opacity:1;box-shadow:none;transition:transform .1s,box-shadow .3s}
+.lg2 .login-submit-btn:hover{background:var(--l-ink);opacity:1;box-shadow:0 12px 40px -10px var(--l-acc)}
+.lg2 .login-submit-btn:not(:disabled):not(.success)::after{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .25s}
+.lg2 .login-submit-btn:hover::after{transform:translateX(4px)}
+.lg2 .login-submit-btn:disabled:not(.success)::before{content:"";width:15px;height:15px;border:2.5px solid color-mix(in srgb,var(--l-onink) 35%,transparent);border-top-color:var(--l-onink);border-radius:50%;animation:crmSpin .7s linear infinite}
+.lg2 .login-submit-btn:disabled{opacity:1;cursor:progress}
+.lg2 .login-submit-btn.success{background:#1fb37a;color:#fff;animation:crmPop .4s cubic-bezier(.34,1.8,.64,1)}
+.lg2 #loginError{margin-top:16px;color:var(--l-red);font-size:13px}
+.lg2 form{opacity:1}
+.lg2 form.shake{animation:crmShake .45s}
+.lg2 .lg2-main>*{animation:lgIn .6s cubic-bezier(.3,.7,.2,1) both}.lg2 .lg2-h{animation-delay:.08s}.lg2 form{animation:lgIn .6s .16s cubic-bezier(.3,.7,.2,1) both}
+@keyframes lgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.lg2 .lg2-foot{color:var(--l-mut);font-size:12px;letter-spacing:.4px}
+.lg2 .lg2-r{flex:1;position:relative;overflow:hidden;border-left:1px solid var(--l-bd);background:var(--l-bg2)}
+.lg2 .lg2-glow{position:absolute;border-radius:50%;background:radial-gradient(closest-side,var(--l-glow),transparent 72%);animation:lg2br 7s ease-in-out infinite alternate}
+.lg2 .g1{width:680px;height:680px;left:8%;top:6%}.lg2 .g2{width:400px;height:400px;right:4%;bottom:0;animation-delay:-3s}
+@keyframes lg2br{from{opacity:.55;transform:scale(.92)}to{opacity:1;transform:scale(1.08)}}
+.lg2 .lg2-r svg{position:absolute;inset:0;width:100%;height:100%}
+.lg2 .lg2-r path{fill:none;stroke:var(--l-acc);stroke-width:1.2;stroke-dasharray:1200;stroke-dashoffset:1200;animation:lg2draw 6s ease-out infinite alternate;opacity:.55}
+.lg2 .lg2-r path:nth-child(2){stroke:var(--l-acc2);animation-delay:-2s;opacity:.4}.lg2 .lg2-r path:nth-child(3){stroke:var(--l-mut);opacity:.25;animation-delay:-4s}
+@keyframes lg2draw{to{stroke-dashoffset:0}}
+.lg2 .lg2-clock{position:absolute;right:40px;bottom:36px;text-align:right}
+.lg2 .lg2-clock b{display:block;font-size:68px;font-weight:300;letter-spacing:-2px;font-variant-numeric:tabular-nums;line-height:1;color:var(--l-fg)}
+.lg2 .lg2-clock span{color:var(--l-mut);font-size:12px;letter-spacing:.5px}
+@media (max-width:820px){.lg2 .lg2-r{display:none}.lg2 .lg2-l{flex-basis:100%;padding:30px 24px}.lg2 .lg2-h{font-size:40px}}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -2773,71 +2818,26 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </svg>
   </div>
 
-  <div class="login-card">
-    <svg class="ornament-corner tl" viewBox="0 0 220 220" fill="#2DD4A7">
-      <path d="M117.6,107.5 Q135.3,99.0 156.0,110.0 Q135.3,121.0 117.6,112.5 Z"/>
-      <path d="M117.1,113.6 Q135.7,120.2 142.5,142.5 Q120.2,135.7 113.6,117.1 Z"/>
-      <path d="M112.5,117.6 Q121.0,135.3 110.0,156.0 Q99.0,135.3 107.5,117.6 Z"/>
-      <path d="M106.4,117.1 Q99.8,135.7 77.5,142.5 Q84.3,120.2 102.9,113.6 Z"/>
-      <path d="M102.4,112.5 Q84.7,121.0 64.0,110.0 Q84.7,99.0 102.4,107.5 Z"/>
-      <path d="M102.9,106.4 Q84.3,99.8 77.5,77.5 Q99.8,84.3 106.4,102.9 Z"/>
-      <path d="M107.5,102.4 Q99.0,84.7 110.0,64.0 Q121.0,84.7 112.5,102.4 Z"/>
-      <path d="M113.6,102.9 Q120.2,84.3 142.5,77.5 Q135.7,99.8 117.1,106.4 Z"/>
-      <path d="M159.8,114.4 Q156.8,111.6 185.3,130.2 Q151.3,132.0 155.3,131.1 Z"/>
-      <path d="M151.0,138.7 Q149.7,134.8 165.2,165.2 Q134.8,149.7 138.7,151.0 Z"/>
-      <path d="M131.1,155.3 Q132.0,151.3 130.2,185.3 Q111.6,156.8 114.4,159.8 Z"/>
-      <path d="M105.6,159.8 Q108.4,156.8 89.8,185.3 Q88.0,151.3 88.9,155.3 Z"/>
-      <path d="M81.3,151.0 Q85.2,149.7 54.8,165.2 Q70.3,134.8 69.0,138.7 Z"/>
-      <path d="M64.7,131.1 Q68.7,132.0 34.7,130.2 Q63.2,111.6 60.2,114.4 Z"/>
-      <path d="M60.2,105.6 Q63.2,108.4 34.7,89.8 Q68.7,88.0 64.7,88.9 Z"/>
-      <path d="M69.0,81.3 Q70.3,85.2 54.8,54.8 Q85.2,70.3 81.3,69.0 Z"/>
-      <path d="M88.9,64.7 Q88.0,68.7 89.8,34.7 Q108.4,63.2 105.6,60.2 Z"/>
-      <path d="M114.4,60.2 Q111.6,63.2 130.2,34.7 Q132.0,68.7 131.1,64.7 Z"/>
-      <path d="M138.7,69.0 Q134.8,70.3 165.2,54.8 Q149.7,85.2 151.0,81.3 Z"/>
-      <path d="M155.3,88.9 Q151.3,88.0 185.3,89.8 Q156.8,108.4 159.8,105.6 Z"/>
-      <circle cx="110" cy="110" r="9"/>
-    </svg>
-    <svg class="ornament-corner br" viewBox="0 0 220 220" fill="#2DD4A7">
-      <path d="M117.6,107.5 Q135.3,99.0 156.0,110.0 Q135.3,121.0 117.6,112.5 Z"/>
-      <path d="M117.1,113.6 Q135.7,120.2 142.5,142.5 Q120.2,135.7 113.6,117.1 Z"/>
-      <path d="M112.5,117.6 Q121.0,135.3 110.0,156.0 Q99.0,135.3 107.5,117.6 Z"/>
-      <path d="M106.4,117.1 Q99.8,135.7 77.5,142.5 Q84.3,120.2 102.9,113.6 Z"/>
-      <path d="M102.4,112.5 Q84.7,121.0 64.0,110.0 Q84.7,99.0 102.4,107.5 Z"/>
-      <path d="M102.9,106.4 Q84.3,99.8 77.5,77.5 Q99.8,84.3 106.4,102.9 Z"/>
-      <path d="M107.5,102.4 Q99.0,84.7 110.0,64.0 Q121.0,84.7 112.5,102.4 Z"/>
-      <path d="M113.6,102.9 Q120.2,84.3 142.5,77.5 Q135.7,99.8 117.1,106.4 Z"/>
-      <path d="M159.8,114.4 Q156.8,111.6 185.3,130.2 Q151.3,132.0 155.3,131.1 Z"/>
-      <path d="M151.0,138.7 Q149.7,134.8 165.2,165.2 Q134.8,149.7 138.7,151.0 Z"/>
-      <path d="M131.1,155.3 Q132.0,151.3 130.2,185.3 Q111.6,156.8 114.4,159.8 Z"/>
-      <path d="M105.6,159.8 Q108.4,156.8 89.8,185.3 Q88.0,151.3 88.9,155.3 Z"/>
-      <path d="M81.3,151.0 Q85.2,149.7 54.8,165.2 Q70.3,134.8 69.0,138.7 Z"/>
-      <path d="M64.7,131.1 Q68.7,132.0 34.7,130.2 Q63.2,111.6 60.2,114.4 Z"/>
-      <path d="M60.2,105.6 Q63.2,108.4 34.7,89.8 Q68.7,88.0 64.7,88.9 Z"/>
-      <path d="M69.0,81.3 Q70.3,85.2 54.8,54.8 Q85.2,70.3 81.3,69.0 Z"/>
-      <path d="M88.9,64.7 Q88.0,68.7 89.8,34.7 Q108.4,63.2 105.6,60.2 Z"/>
-      <path d="M114.4,60.2 Q111.6,63.2 130.2,34.7 Q132.0,68.7 131.1,64.7 Z"/>
-      <path d="M138.7,69.0 Q134.8,70.3 165.2,54.8 Q149.7,85.2 151.0,81.3 Z"/>
-      <path d="M155.3,88.9 Q151.3,88.0 185.3,89.8 Q156.8,108.4 159.8,105.6 Z"/>
-      <circle cx="110" cy="110" r="9"/>
-    </svg>
-    <div class="anniversary-badge"><span class="num">35</span><span class="txt">йил</span></div>
-
-    <div class="holiday-banner"><i class='ti ti-confetti' aria-hidden='true'></i> С Днём Независимости Узбекистана! <i class='ti ti-confetti' aria-hidden='true'></i></div>
-    <div class="holiday-quote">Мустақиллик байрамингиз муборак бўлсин!</div>
-    <p>Введите логин и пароль, выданные администратором.</p>
-    <form id="loginForm" onsubmit="return false;">
-      <div class="login-input-wrap">
-        <span class="icon"><i class='ti ti-user' aria-hidden='true'></i></span>
-        <input type="text" id="loginUsername" placeholder="Логин" autocomplete="username" class="login-input">
+  <div class="login-card lg2">
+    <div class="lg2-l">
+      <div class="lg2-brand"><span class="lg2-logo">CRB</span></div>
+      <div class="lg2-main">
+        <span class="lg2-pill"><i></i> ВНУТРЕННЯЯ СИСТЕМА</span>
+        <h2 class="lg2-h">Controlling<br><span>System</span></h2>
+        <form id="loginForm" onsubmit="return false;">
+          <div class="lg2-ln"><input type="text" id="loginUsername" placeholder=" " autocomplete="username" class="login-input"><i></i><label for="loginUsername">Логин</label></div>
+          <div class="lg2-ln"><input type="password" id="loginPassword" placeholder=" " autocomplete="current-password" class="login-input"><i></i><label for="loginPassword">Пароль</label></div>
+          <div class="lg2-go"><button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button></div>
+          <div id="loginError"></div>
+        </form>
       </div>
-      <div class="login-input-wrap">
-        <span class="icon"><i class='ti ti-lock' aria-hidden='true'></i></span>
-        <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password" class="login-input">
-      </div>
-      <button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button>
-    </form>
-    <div id="loginError"></div>
-    <div class="login-footer">CRB · Внутренняя система</div>
+      <div class="lg2-foot">CRB · 2026</div>
+    </div>
+    <div class="lg2-r" aria-hidden="true">
+      <div class="lg2-glow g1"></div><div class="lg2-glow g2"></div>
+      <svg viewBox="0 0 600 620" preserveAspectRatio="none"><path d="M0 520 C120 500 160 420 260 430 S420 300 600 200"/><path d="M0 560 C140 520 200 500 300 470 S460 380 600 330"/><path d="M0 590 C160 580 240 540 340 520 S500 470 600 440"/></svg>
+      <div class="lg2-clock"><b id="lg2Clk">00:00</b><span>ТАШКЕНТ</span></div>
+    </div>
   </div>
 </div>
 
@@ -6039,7 +6039,19 @@ function showLoginError(msg) {
   const el = document.getElementById("loginError");
   el.textContent = msg;
   el.style.display = "block";
+  const f = document.getElementById("loginForm");
+  if (f) { f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); }
 }
+(function lg2Clock() {
+  const el = document.getElementById("lg2Clk");
+  if (!el) return;
+  const tick = () => {
+    try {
+      el.textContent = new Date().toLocaleTimeString("ru-RU", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit" });
+    } catch (e) {}
+  };
+  tick(); setInterval(tick, 20000);
+})();
 
 async function onLoggedIn(forcePasswordChange) {
   document.getElementById("loginScreen").style.display = "none";
