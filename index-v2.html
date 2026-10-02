@@ -5129,21 +5129,9 @@ function exportDoverennostExcel() {
    SO'RAMASDAN, mahalliy massivdagi (rowsArray) mos yozuvni to'g'ridan-
    to'g'ri yangilaymiz - aks holda eski keshlangan holat bilan qayta
    chizilganda qator "yo'qolib qolganday" ko'rinardi.*/
-async function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
-  const comment = prompt("Комментарий для закрытия запроса (сотрудник получит его в Telegram):", "Закрыто администратором");
-  if (comment === null) return;
-  try {
-    await apiCall("adminCloseRequest", { reqType, rowIndex, comment });
-    const row = rowsArray.find(r => r.rowIndex === rowIndex);
-    if (row) {
-      row.status = "Закрыто администратором";
-      row.comment = comment;
-      row.doneAt = new Date().toISOString();
-    }
-    if (typeof renderFn === "function") renderFn();
-  } catch (e) {
-    alert("Не удалось закрыть запрос: " + e.message);
-  }
+function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
+  // Все разделы используют одно окно «Закрыть заявку» (файл → Выполнено, текст → Закрыто (см. комментарий))
+  openCloseReqModal(reqType, rowIndex, rowsArray, renderFn);
 }
 
 /* ===== Окно «Закрыть заявку»: файл → «Выполнено», только текст → «Закрыто (см. комментарий)» ===== */
@@ -5178,8 +5166,8 @@ function openCloseReqModal(reqType, rowIndex, rowsArray, renderFn) {
   document.getElementById("crmText").value = "";
   document.getElementById("crmFile").value = "";
   document.getElementById("crmErr").textContent = "";
-  const title = [row.type, row.details].filter(Boolean).join(" · ") || "Заявка";
-  document.getElementById("crmWho").innerHTML = `<b>${escapeHtml(title)}</b>${escapeHtml([row.employeeName, row.org].filter(Boolean).join(" · "))}`;
+  const title = [row.type, row.details || row.description || row.kontragent || row.requestText].filter(Boolean).join(" · ").slice(0, 140) || "Заявка";
+  document.getElementById("crmWho").innerHTML = `<b>${escapeHtml(title)}</b>${escapeHtml([row.employeeName, row.innPnfl, row.org].filter(Boolean).join(" · "))}`;
   const m = document.getElementById("closeReqModal");
   const card = m.querySelector(".crm-card"); card.classList.remove("busy", "done", "shake");
   document.getElementById("crmTitle").textContent = "Закрыть заявку?";
@@ -10633,7 +10621,7 @@ function renderBankTable() {
       <td>${bankStatusBadge(r.status)}</td>
       <td style="max-width:200px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="openCloseReqModal('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
