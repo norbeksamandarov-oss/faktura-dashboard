@@ -8880,12 +8880,21 @@ async function loadVz2Category(category, prefix) {
     }
     vz2RenderFlatList(prefix, category);
     vz2RenderCategory(prefix, category);
+    if (category === "podotchetniki") vzaRenderPodot();
   } catch (e) {
     if (flatEl) flatEl.innerHTML = `<p style="color:#C0392B">Ошибка: ${escapeHtml(e.message)}</p>`;
     if (listEl) listEl.innerHTML = "";
   }
 }
 
+/* Подотчётные лица → вкладка «Аналитика» показывает тот же блок, что и общая Аналитика */
+function vzaRenderPodot() {
+  const box = document.getElementById("vz2podotchetnikiList"), sum = document.getElementById("vz2podotchetnikiSummary");
+  if (!box) return;
+  if (sum) sum.style.display = "none";
+  const a = ((VZ2_DATA && VZ2_DATA.items) || []).filter(i => i.category === "podotchetniki");
+  box.innerHTML = vzaBlock(VZA_CATS.find(c => c.key === "podotchetniki"), a);
+}
 /* ===== Взаиморасчёты — общая Аналитика (одна страница) ===== */
 const VZA_CATS = [
   { key: "postavshiki", name: "Поставщики" },
@@ -9071,7 +9080,7 @@ function vzaBlock(cat, a) {
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Подразделение</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 (function () {
-  const rerender = () => vz2RenderAnalytics();
+  const rerender = () => { vz2RenderAnalytics(); vzaRenderPodot(); };
   document.addEventListener("change", e => {
     if (e.target.id === "vzaOrg") { vzaState.org = e.target.value; rerender(); }
     else if (e.target.id === "vzaDept") { vzaState.dept = e.target.value; rerender(); }
