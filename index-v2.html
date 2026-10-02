@@ -2470,6 +2470,21 @@ html .content-area{padding-top:6px!important}
 .lg2 .lg2-eye:hover{color:var(--l-fg)}
 .lg2 .lg2-eye .lg2-slash{opacity:1;transition:opacity .2s}.lg2 .lg2-eye.on .lg2-slash{opacity:0}
 .lg2 .lg2-ln input#loginPassword{padding-right:42px}
+/* ===== Строки таблиц: переключатель, «Удалить», принять/отклонить — единый стиль ===== */
+html .toggle-switch{width:42px;height:24px}
+html .toggle-slider{background:var(--sk-glass);border:1px solid var(--border);border-radius:99px;transition:background .25s,border-color .25s}
+html .toggle-slider::before{background:var(--muted);box-shadow:none;transition:transform .25s cubic-bezier(.3,.7,.2,1),background .25s}
+html .toggle-switch input:checked+.toggle-slider{background:linear-gradient(135deg,#4f7dff,#7a3cff);border-color:transparent}
+html .toggle-switch input:checked+.toggle-slider::before{background:#fff;transform:translateX(20px)}
+html .toggle-switch input:focus-visible+.toggle-slider{box-shadow:0 0 0 3px rgba(91,141,255,.3)}
+html .emp-delete-btn{border:0!important;background:var(--red-bg);color:var(--red-fg);border-radius:10px!important;padding:7px 13px!important;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:background .15s,color .15s,transform .1s}
+html .emp-delete-btn:hover{background:var(--red-fg);color:#fff}
+html .emp-delete-btn:active{transform:scale(.96)}
+html .reg-btn{border-radius:10px;padding:8px 14px;font-weight:700;transition:background .15s,color .15s,transform .1s,box-shadow .2s}
+html .reg-approve-btn{background:linear-gradient(135deg,#4f7dff,#7a3cff);color:#fff}
+html .reg-approve-btn:hover{background:linear-gradient(135deg,#4f7dff,#7a3cff);box-shadow:0 10px 22px -10px rgba(100,90,255,.8)}
+html .reg-reject-btn:hover{background:var(--red-fg);color:#fff}
+html .reg-btn:active{transform:scale(.96)}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -2951,7 +2966,6 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       </button>
       <div class="nav-group-label">ОСНОВНОЕ</div>
       <!-- Сводка: olib tashlangan (foydalanuvchi talabi). Bo'lim kodi saqlangan, menyuda yo'q. -->
-      <span id="pendingSummaryBadge" style="display:none"></span>
       <button class="nav-item active" data-section="analytics" onclick="showSection('analytics')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span><span class="nav-label">Аналитика</span></button>
       <button class="nav-item" data-section="bank" onclick="showSection('bank')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1"/><path d="M12 3 3 8h18Z"/><line x1="6" y1="14" x2="6" y2="16"/><line x1="12" y1="14" x2="12" y2="16"/><line x1="18" y1="14" x2="18" y2="16"/></svg></span><span class="nav-label">Банк</span> <span id="pendingBankBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item nav-group-toggle" id="postupleniyaToggle" onclick="togglePostupleniyaGroup()">
