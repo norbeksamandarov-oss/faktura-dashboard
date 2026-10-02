@@ -8940,7 +8940,7 @@ function vz2RenderAnalytics() {
   body.innerHTML = VZA_SHOWN.map(key => vzaBlock(VZA_CATS.find(c => c.key === key), a.filter(i => i.category === key))).join("");
 }
 // Блоки добавляем по одному: Поставщики, Покупатели; дальше Подотчётные лица.
-const VZA_SHOWN = ["postavshiki", "pokupateli"];
+const VZA_SHOWN = ["postavshiki", "pokupateli", "podotchetniki"];
 function vzaCurOrder(items) {
   const c = {};
   items.forEach(i => { const k = vzaCur(i); c[k] = (c[k] || 0) + 1; });
