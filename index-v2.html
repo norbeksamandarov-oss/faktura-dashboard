@@ -2453,6 +2453,19 @@ html #writeempMessageText{background:rgba(91,141,255,.05)!important;color:var(--
 html #writeempMessageText:focus{border-color:var(--navy-light)!important;box-shadow:0 0 0 3px rgba(91,141,255,.2)!important;outline:0}
 html #writeempSendBtn{background:linear-gradient(135deg,#4f7dff,#7a3cff)!important;border:0!important;color:#fff!important;border-radius:14px!important;box-shadow:0 12px 26px -10px rgba(100,90,255,.8)!important;font-weight:800}
 html #writeempError{color:var(--red-fg)!important}html #writeempSuccess{color:var(--green-fg)!important}
+/* ===== Телефон / узкий экран: меню-шторка вместо горизонтальной полосы ===== */
+#mNavBtn,#mNavScrim{display:none}
+@media(max-width:900px){
+html #mNavBtn{display:grid;place-items:center;position:fixed;left:12px;top:14px;z-index:650;width:46px;height:46px;border-radius:15px;border:1px solid var(--border);background:var(--sk-glass);color:var(--text);font-size:22px;cursor:pointer;box-shadow:0 8px 24px -12px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+html #mNavScrim{display:block;position:fixed;inset:0;z-index:690;background:rgba(8,10,24,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+html #mNavScrim.on{opacity:1;pointer-events:auto}
+html .app-body{display:block!important}
+html #sidebarNav{position:fixed!important;left:0!important;top:0!important;bottom:0!important;width:min(310px,86vw)!important;max-width:none!important;height:100dvh!important;z-index:700;margin:0!important;border-radius:0 24px 24px 0!important;overflow-y:auto!important;overflow-x:hidden!important;flex-direction:column!important;flex-wrap:nowrap!important;transform:translateX(-106%);transition:transform .32s cubic-bezier(.3,.7,.2,1);box-shadow:none}
+html #sidebarNav.m-open{transform:none;box-shadow:0 0 80px rgba(0,0,0,.45)}
+html #sidebarNav>*{flex-shrink:0}
+html header.topbar{padding-left:70px!important}
+html .content-area{padding-top:6px!important}
+}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -2922,6 +2935,8 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </div>
   </header>
 
+  <button id="mNavBtn" type="button" aria-label="Меню" onclick="mNavToggle()"><i class="ti ti-menu-2" aria-hidden="true"></i></button>
+  <div id="mNavScrim" onclick="mNavToggle(false)"></div>
   <div class="app-body">
     <nav class="sidebar" id="sidebarNav">
       <div class="nav-active-pill" id="navActivePill"></div>
@@ -6633,6 +6648,20 @@ function ldStart() {
   clearInterval(ldTimer); set(); ldTimer = setInterval(set, 1500);
 }
 function ldStop() { clearInterval(ldTimer); ldTimer = null; }
+
+
+function mNavToggle(force) {
+  const nav = document.getElementById("sidebarNav"), sc = document.getElementById("mNavScrim");
+  if (!nav) return;
+  const on = typeof force === "boolean" ? force : !nav.classList.contains("m-open");
+  nav.classList.toggle("m-open", on);
+  if (sc) sc.classList.toggle("on", on);
+}
+document.addEventListener("click", (e) => {
+  if (window.innerWidth > 900) return;
+  const it = e.target.closest && e.target.closest("#sidebarNav .nav-item[data-section]");
+  if (it && !it.classList.contains("nav-parent")) mNavToggle(false);
+});
 
 async function loadAllData(silent) {
   if (isLoading) return; // не накладываем параллельные запросы друг на друга
