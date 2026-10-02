@@ -2271,6 +2271,14 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 #closeReqModal .modal-actions .btn-primary:disabled{opacity:.45;cursor:not-allowed}
 #closeReqModal .modal-actions .btn-primary.ok{background:var(--green-fg)!important;color:#fff!important}
 html[data-theme=dark] #closeReqModal .modal-actions .btn-primary.ok{color:#04261b!important}
+#closeReqModal.drag .crm-card{outline:3px dashed var(--navy-light);outline-offset:-8px}
+#closeReqModal .crm-fl{display:grid;gap:6px;margin-top:8px;max-height:150px;overflow:auto}
+#closeReqModal .crm-f{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--border);border-radius:11px;padding:6px 8px;background:var(--sk-glass);font-size:11.5px;color:var(--muted)}
+#closeReqModal .crm-f img{width:34px;height:34px;object-fit:cover;border-radius:7px;flex:none}
+#closeReqModal .crm-f>i{font-size:22px;flex:none;color:var(--navy-text)}
+#closeReqModal .crm-f>span{flex:1;min-width:0}#closeReqModal .crm-f b{display:block;color:var(--text);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#closeReqModal .crm-x{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
+#closeReqModal .crm-x:hover{background:var(--red-bg);color:var(--red-fg)}
 #closeReqModal .crm-err{margin-top:8px;font-size:12px;color:var(--red-fg);min-height:0}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -4360,7 +4368,8 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <p class="crm-sub">Сотрудник получит ответ в Telegram.</p>
     <div class="crm-who" id="crmWho"></div>
     <button type="button" class="crm-dz" id="crmDz"></button>
-    <input type="file" id="crmFile" hidden accept="image/*,.pdf,.xls,.xlsx,.doc,.docx,.zip,.csv,.txt">
+    <div class="crm-fl" id="crmFiles"></div>
+    <input type="file" id="crmFile" multiple hidden accept="image/*,.pdf,.xls,.xlsx,.doc,.docx,.zip,.csv,.txt">
     <textarea id="crmText" placeholder="Напишите ответ сотруднику" aria-label="Комментарий"></textarea>
     <div class="crm-st" id="crmSt"></div>
     <div class="crm-err" id="crmErr"></div>
@@ -5113,25 +5122,34 @@ async function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
 }
 
 /* ===== Окно «Закрыть заявку»: файл → «Выполнено», только текст → «Закрыто (см. комментарий)» ===== */
-const CRM = { ctx: null, file: null, busy: false };
+const CRM = { ctx: null, files: [], busy: false };
 function crmRender() {
   const txt = document.getElementById("crmText").value.trim();
-  const mode = CRM.file ? "ok" : (txt ? "nt" : "em");
-  const ic = document.getElementById("crmIc"), st = document.getElementById("crmSt"), go = document.getElementById("crmGo"), dz = document.getElementById("crmDz");
+  const has = CRM.files.length > 0;
+  const mode = has ? "ok" : (txt ? "nt" : "em");
+  const ic = document.getElementById("crmIc"), st = document.getElementById("crmSt"), go = document.getElementById("crmGo"), dz = document.getElementById("crmDz"), ls = document.getElementById("crmFiles");
   ic.className = "crm-ic" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
   ic.innerHTML = mode === "ok" ? "<i class='ti ti-circle-check' aria-hidden='true'></i>" : mode === "nt" ? "<i class='ti ti-message-2' aria-hidden='true'></i>" : "<i class='ti ti-alert-circle' aria-hidden='true'></i>";
   st.className = "crm-st" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
   st.textContent = mode === "ok" ? "Станет: Выполнено" : mode === "nt" ? "Станет: Закрыто (см. комментарий)" : "Добавьте файл или текст";
   go.textContent = mode === "ok" ? "Выполнено" : mode === "nt" ? "Закрыть с ответом" : "Закрыть";
   go.disabled = mode === "em" || CRM.busy; go.classList.toggle("ok", mode === "ok");
-  dz.className = "crm-dz" + (CRM.file ? " has" : "");
-  dz.innerHTML = CRM.file
-    ? `<i class="ti ti-circle-check" aria-hidden="true"></i><span><b>${escapeHtml(CRM.file.name)}</b>${(CRM.file.size / 1024).toFixed(0)} КБ · нажмите, чтобы убрать</span>`
-    : `<i class="ti ti-paperclip" aria-hidden="true"></i><span><b>Прикрепить файл или скриншот</b>PDF, JPG, PNG, Excel, до 8 МБ</span>`;
+  dz.className = "crm-dz" + (has ? " has" : "");
+  dz.innerHTML = `<i class="ti ti-cloud-upload" aria-hidden="true"></i><span><b>${has ? "Добавить ещё" : "Перетащите файлы сюда"}</b>или нажмите Ctrl+V, чтобы вставить скриншот</span>`;
+  ls.innerHTML = CRM.files.map((f, i) => `<div class="crm-f">${f.type && f.type.startsWith("image/") ? `<img alt="" src="${f._url || (f._url = URL.createObjectURL(f))}">` : `<i class="ti ti-file" aria-hidden="true"></i>`}<span><b>${escapeHtml(f.name)}</b>${(f.size / 1024).toFixed(0)} КБ</span><button type="button" class="crm-x" data-i="${i}" aria-label="Убрать файл">×</button></div>`).join("");
+}
+function crmAddFiles(list) {
+  const err = document.getElementById("crmErr"); err.textContent = "";
+  for (const f of Array.from(list || [])) {
+    if (f.size > 8 * 1024 * 1024) { err.textContent = "Файл «" + f.name + "» больше 8 МБ"; continue; }
+    if (CRM.files.length >= 10) { err.textContent = "Можно не больше 10 файлов"; break; }
+    CRM.files.push(f);
+  }
+  crmRender();
 }
 function openCloseReqModal(reqType, rowIndex, rowsArray, renderFn) {
   const row = rowsArray.find(r => r.rowIndex === rowIndex) || {};
-  CRM.ctx = { reqType, rowIndex, rowsArray, renderFn }; CRM.file = null; CRM.busy = false;
+  CRM.ctx = { reqType, rowIndex, rowsArray, renderFn }; CRM.files = []; CRM.busy = false;
   document.getElementById("crmText").value = "";
   document.getElementById("crmFile").value = "";
   document.getElementById("crmErr").textContent = "";
@@ -5157,10 +5175,10 @@ async function crmSubmit() {
   const go = document.getElementById("crmGo"); go.textContent = "Отправка...";
   try {
     const params = { reqType, rowIndex, comment, v2: true };
-    if (CRM.file) { params.fileName = CRM.file.name; params.fileBase64 = await crmReadB64(CRM.file); }
+    if (CRM.files.length) params.files = await Promise.all(CRM.files.map(async f => ({ name: f.name, b64: await crmReadB64(f) })));
     const res = await apiCall("adminCloseRequest", params);
     const row = rowsArray.find(r => r.rowIndex === rowIndex);
-    if (row) { row.status = res.status || (CRM.file ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    if (row) { row.status = res.status || (CRM.files.length ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
     closeCloseReqModal();
     if (typeof renderFn === "function") renderFn();
     if (res.telegramError) alert("Заявка закрыта, но Telegram не доставил сообщение сотруднику: " + res.telegramError);
@@ -5171,18 +5189,39 @@ async function crmSubmit() {
 (function () {
   document.addEventListener("click", e => {
     if (!CRM.ctx) return;
-    if (e.target.closest && e.target.closest("#crmDz")) { if (CRM.file) { CRM.file = null; document.getElementById("crmFile").value = ""; crmRender(); } else document.getElementById("crmFile").click(); return; }
+    const rm = e.target.closest && e.target.closest(".crm-x");
+    if (rm) { CRM.files.splice(Number(rm.dataset.i), 1); crmRender(); return; }
+    if (e.target.closest && e.target.closest("#crmDz")) { document.getElementById("crmFile").click(); return; }
     if (e.target.closest && e.target.closest("#crmCancel")) { closeCloseReqModal(); return; }
     if (e.target.closest && e.target.closest("#crmGo")) { crmSubmit(); return; }
     if (e.target.id === "closeReqModal") closeCloseReqModal();
   });
   document.addEventListener("change", e => {
     if (e.target.id !== "crmFile") return;
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) { document.getElementById("crmErr").textContent = "Файл больше 8 МБ"; e.target.value = ""; return; }
-    document.getElementById("crmErr").textContent = ""; CRM.file = f; crmRender();
+    crmAddFiles(e.target.files); e.target.value = "";
   });
+  // Ctrl+V: скриншот из буфера обмена (и скопированные файлы)
+  document.addEventListener("paste", e => {
+    if (!CRM.ctx) return;
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    const got = [];
+    for (const it of items) {
+      if (it.kind !== "file") continue;
+      let f = it.getAsFile(); if (!f) continue;
+      if (!f.name || /^image\.(png|jpe?g)$/i.test(f.name)) {
+        const d = new Date(), p2 = n => String(n).padStart(2, "0");
+        const ext = (f.type.split("/")[1] || "png").replace("jpeg", "jpg");
+        f = new File([f], `screenshot-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}-${CRM.files.length + got.length + 1}.${ext}`, { type: f.type });
+      }
+      got.push(f);
+    }
+    if (got.length) { e.preventDefault(); crmAddFiles(got); }
+  });
+  // Перетаскивание файлов мышкой на окно
+  const crmOv = () => document.getElementById("closeReqModal");
+  document.addEventListener("dragover", e => { if (CRM.ctx && e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) { e.preventDefault(); crmOv().classList.add("drag"); } });
+  document.addEventListener("dragleave", e => { if (CRM.ctx && (e.target === crmOv() || !e.relatedTarget)) crmOv().classList.remove("drag"); });
+  document.addEventListener("drop", e => { if (!CRM.ctx) return; e.preventDefault(); crmOv().classList.remove("drag"); crmAddFiles(e.dataTransfer && e.dataTransfer.files); });
   document.addEventListener("input", e => { if (e.target.id === "crmText") crmRender(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && CRM.ctx) closeCloseReqModal(); });
 })();
