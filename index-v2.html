@@ -8996,6 +8996,51 @@ function vzaPeopleTable(items, cur) {
     <small class="vza-sub" style="display:block;margin-top:2px">${(() => { const si = VZ2_DATA && VZ2_DATA.salaryInfo; return !si ? "⚠ сервер ещё не обновлён (нет данных о зарплате)" : si.error ? "⚠ ошибка зарплаты: " + escapeHtml(si.error) : `В базе зарплат: ${si.people} чел.`; })()}</small></p>
     <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Не отчитался</th><th class="num-cell">Мы должны ему</th><th class="num-cell">Последняя зарплата (к выдаче)</th><th class="num-cell">Долг / зарплата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
+function vzaDeductList(a) {
+  const m = {}, cards = [];
+  a.forEach(i => {
+    if (/карт[аы]|корп/i.test(i.name || "")) { if (!cards.includes(i.name)) cards.push(i.name); return; }
+    if (i.side === "dt") return;
+    const k = (i.inn || "").trim() || i.name || "—";
+    const r = m[k] = m[k] || { name: i.name || "—", orgs: new Set(), cur: {}, sal: null };
+    r.orgs.add(i.org || "—"); const c = vzaCur(i); r.cur[c] = (r.cur[c] || 0) + Math.abs(Number(i.total || 0));
+    if (i.salary) r.sal = i.salary;
+  });
+  const rows = Object.values(m).filter(r => Object.values(r.cur).some(v => v > 0))
+    .sort((x, y) => (y.cur.UZS || 0) - (x.cur.UZS || 0));
+  return { rows, cards };
+}
+function vzaDeductTable(a) {
+  const { rows, cards } = vzaDeductList(a);
+  if (!rows.length) return "";
+  const body = rows.map((r, n) => {
+    const uzs = r.cur.UZS || 0, net = r.sal ? r.sal.net : null;
+    const others = Object.entries(r.cur).filter(([c]) => c !== "UZS").map(([c, v]) => `${vzFormatNum(v)} ${escapeHtml(c)}`).join(" · ");
+    let after = "—";
+    if (uzs > 0) after = net === null ? '<span style="color:var(--muted)">нет зарплаты</span>' : (net - uzs >= 0 ? `<b>${vzFormatNum(net - uzs)}</b>` : `<b class="k">не хватает ${vzFormatNum(uzs - net)}</b>`);
+    return `<tr><td class="vza-n">${n + 1}</td><td><b>${escapeHtml(r.name)}</b><small style="display:block;color:var(--muted)">${escapeHtml([...r.orgs].join(", "))}</small></td>
+      <td class="num-cell k">${uzs ? vzFormatNum(uzs) : "—"}</td>
+      <td class="num-cell">${net === null ? '<span style="color:var(--muted)">нет</span>' : vzFormatNum(net) + `<small style="display:block;color:var(--muted)">${escapeHtml(r.sal.period)}</small>`}</td>
+      <td class="num-cell">${after}</td><td class="num-cell">${others || "—"}</td></tr>`;
+  }).join("");
+  return `<div class="panel vza-pn" style="margin-top:12px"><div class="vza-ch"><p class="vza-q1">К удержанию из зарплаты <small class="vza-sub">(только сумы; другие валюты не пересчитываются и показаны отдельно${cards.length ? `; корп. карты не включены: ${cards.length}` : ""})</small></p>
+    <button class="vza-cb on" id="vzaDedCsv" type="button">Скачать Excel (CSV)</button></div>
+    <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Долг, UZS</th><th class="num-cell">Последняя зарплата</th><th class="num-cell">Останется после удержания</th><th class="num-cell">Долг в др. валюте</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+}
+function vzaDeductCsv() {
+  const a = ((VZ2_DATA && VZ2_DATA.items) || []).filter(i => i.category === "podotchetniki" && (!vzaState.org || (i.org || "—") === vzaState.org) && (!vzaState.dept || (i.dept || "—") === vzaState.dept));
+  const { rows } = vzaDeductList(a);
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const lines = [["Сотрудник", "Организация", "Долг UZS", "Последняя зарплата (к выдаче)", "Период", "Останется после удержания", "Долг в других валютах"].map(q).join(";")];
+  rows.forEach(r => {
+    const uzs = r.cur.UZS || 0, net = r.sal ? r.sal.net : "";
+    const others = Object.entries(r.cur).filter(([c]) => c !== "UZS").map(([c, v]) => v + " " + c).join(", ");
+    lines.push([r.name, [...r.orgs].join(", "), uzs, net, r.sal ? r.sal.period : "", net === "" ? "" : net - uzs, others].map(q).join(";"));
+  });
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const u = URL.createObjectURL(blob), el = document.createElement("a");
+  el.href = u; el.download = "uderzhaniya-podotchet.csv"; document.body.appendChild(el); el.click(); el.remove(); setTimeout(() => URL.revokeObjectURL(u), 1000);
+}
 const vzaL = cat => cat === "podotchetniki" ? { kt: "Не отчитались", dt: "Мы должны сотруднику" } : { kt: "Мы должны", dt: "Нам должны" };
 function vzaBlock(cat, a) {
   const L = vzaL(cat.key);
@@ -9021,7 +9066,7 @@ function vzaBlock(cat, a) {
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — ${L.kt.toLowerCase()}, <span class="d">зелёный</span> — ${L.dt.toLowerCase()})</small></p><div class="vza-seg">${seg}</div></div>
       <div class="vza-3"><div>${vzaDonut(dg, "kt", L.kt + " — доли по подразделениям", "k")}</div><div>${vzaDonut(dg, "dt", L.dt + " — доли по подразделениям", "d")}</div>
       </div><p class="vza-sub" style="margin:12px 0 2px"><b>По подразделениям</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
-    ${cat.key === "podotchetniki" ? vzaPeopleTable(inCur, cur) : vzaOrgTable(inCur, cur, cat.key)}
+    ${cat.key === "podotchetniki" ? vzaPeopleTable(inCur, cur) + vzaDeductTable(a) : vzaOrgTable(inCur, cur, cat.key)}
     <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: подразделения и валюты <small class="vza-sub">(<span class="k">${L.kt.toLowerCase()}</span> / <span class="d">${L.dt.toLowerCase()}</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Подразделение</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
@@ -9034,7 +9079,8 @@ function vzaBlock(cat, a) {
   document.addEventListener("click", e => {
     const ch = e.target.closest && e.target.closest(".vza-chip");
     if (ch) { const k = ch.dataset.open; vzaState.open[k] = !vzaState.open[k]; rerender(); return; }
-    const cb = e.target.closest && e.target.closest(".vza-cb");
+    if (e.target.closest && e.target.closest("#vzaDedCsv")) { vzaDeductCsv(); return; }
+    const cb = e.target.closest && e.target.closest(".vza-cb:not(#vzaDedCsv)");
     if (cb) { vzaState.cur[cb.dataset.cat] = cb.dataset.cur; rerender(); return; }
     if (e.target.closest && e.target.closest("#vzaClear")) {
       vzaState.org = ""; vzaState.dept = ""; vzaState.min = 0; vzaState.cur = {};
