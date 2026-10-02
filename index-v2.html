@@ -8978,6 +8978,23 @@ function vzaOrgTable(items, cur, catKey) {
   return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По организациям <small class="vza-sub">(валюта: ${escapeHtml(cur)} — переключается сверху в диаграммах)</small></p>
     <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Организация</th><th class="num-cell">Записей</th><th>Доля</th><th class="num-cell">Мы должны</th><th class="num-cell">Нам должны</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
+function vzaPeopleTable(items, cur) {
+  const m = {};
+  items.forEach(i => { const k = (i.inn || "").trim() || i.name || "—"; (m[k] = m[k] || []).push(i); });
+  const ppl = Object.values(m).map(v => { const q = vzaSums(v), f = v[0], sal = v.find(x => x.salary); return { f, v, q, sal: sal && sal.salary }; })
+    .sort((a, b) => b.q.dt - a.q.dt || b.q.kt - a.q.kt);
+  const owe = ppl.filter(p => p.q.dt > 0), noSal = owe.filter(p => !p.sal).length;
+  const rows = ppl.map((p, n) => {
+    const sal = p.sal, pct = sal && sal.net > 0 && cur === "UZS" && p.q.dt > 0 ? Math.round(p.q.dt / sal.net * 100) : null;
+    return `<tr><td class="vza-n">${n + 1}</td>
+      <td><b>${escapeHtml(p.f.name || "—")}</b><small style="display:block;color:var(--muted)">${escapeHtml(p.f.org || "—")} · ${escapeHtml(p.f.dept || "—")}</small></td>
+      <td class="num-cell k">${p.q.kt ? vzFormatNum(p.q.kt) : "—"}</td><td class="num-cell d">${p.q.dt ? vzFormatNum(p.q.dt) : "—"}</td>
+      <td class="num-cell">${sal ? `${vzFormatNum(sal.net)}<small style="display:block;color:var(--muted)">${escapeHtml(sal.period)}${sal.by === "fio" ? " · по ФИО" : ""}</small>` : '<span style="color:var(--muted)">нет</span>'}</td>
+      <td class="num-cell">${pct === null ? "—" : `<b${pct > 100 ? ' class="k"' : ""}>${pct}%</b>`}</td></tr>`;
+  }).join("");
+  return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По сотрудникам <small class="vza-sub">(валюта: ${escapeHtml(cur)} · должны компании: ${owe.length} чел.${noSal ? ` · без зарплаты в базе: ${noSal}` : ""})</small></p>
+    <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Мы должны</th><th class="num-cell">Нам должны</th><th class="num-cell">Последняя зарплата (к выдаче)</th><th class="num-cell">Долг / зарплата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
 function vzaBlock(cat, a) {
   if (!a.length) return `<div class="vza-hd">${cat.name}</div><div class="panel"><p class="vza-sub" style="margin:0">По выбранным фильтрам данных нет.</p></div>`;
   const curs = vzaCurOrder(a);
@@ -9001,7 +9018,7 @@ function vzaBlock(cat, a) {
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — мы должны, <span class="d">зелёный</span> — нам должны)</small></p><div class="vza-seg">${seg}</div></div>
       <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по подразделениям", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по подразделениям", "d")}</div>
       </div><p class="vza-sub" style="margin:12px 0 2px"><b>По подразделениям</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
-    ${vzaOrgTable(inCur, cur, cat.key)}
+    ${cat.key === "podotchetniki" ? vzaPeopleTable(inCur, cur) : vzaOrgTable(inCur, cur, cat.key)}
     <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: подразделения и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Подразделение</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
