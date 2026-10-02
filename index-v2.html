@@ -2421,6 +2421,38 @@ html #loadingOverlay{animation:ldIn .3s ease}
 .ld2-dots i.on{background:var(--ld-acc);transform:scale(1.4)}
 @media(prefers-reduced-motion:reduce){.ld2-eq i,.ld2-glow{animation:none}}
 @media(max-width:520px){.ld2-ph{font-size:20px}}
+/* заголовок раздела не должен залезать под панель справа сверху */
+@media(min-width:1100px){html .content-section>h2.sec-title{padding-right:470px!important;flex-wrap:wrap!important;height:auto!important;min-height:46px}
+html .content-section>h2.sec-title .sub{flex:1 1 200px;min-width:0}}
+/* ===== Позиции + Написать сотруднику: единый стиль, обе темы ===== */
+html #section-positions .pz-stage{font-family:inherit}
+html #section-positions .pz-vline,html #section-positions .pz-group::before{background:var(--border)!important}
+html #section-positions .pz-branch-row::before{background:var(--border)!important}
+html #section-positions .pz-node{background:var(--sk-glass)!important;border:1px solid var(--border)!important;border-radius:14px!important;box-shadow:none!important}
+html #section-positions .pz-node:hover{border-color:var(--navy-light)!important;box-shadow:0 10px 24px -12px rgba(100,90,255,.55)!important}
+html #section-positions .pz-node.pz-top{border-color:var(--navy-light)!important;background:var(--sk-nav-on)!important}
+html #section-positions .pz-node .pz-role,html #section-positions .pz-node .pz-name{color:var(--text)!important}
+html #section-positions .pz-node .pz-role:focus,html #section-positions .pz-node .pz-name:focus{background:var(--sk-nav-on)!important;color:var(--text)!important}
+html #section-positions .pz-node .pz-name:empty:before{color:var(--muted)!important}
+html #section-positions .pz-node.pz-vacant{border-color:var(--red-fg)!important;background:var(--red-bg)!important}
+html #section-positions .pz-remove-x{background:var(--sk-glass)!important;border-color:var(--border)!important;color:var(--muted)!important}
+html #section-positions .pz-add-btn{border-color:var(--border)!important;color:var(--muted)!important}
+html #section-positions .pz-add-btn:hover{border-color:var(--navy-light)!important;color:var(--navy-text)!important;background:var(--sk-nav-on)!important}
+html #section-positions .pz-legend,html #section-positions .pz-hint,html #section-positions .pz-loading{color:var(--muted)!important}
+html #section-positions .pz-summary{background:var(--sk-glass)!important;border:1px solid var(--border);box-shadow:none!important;color:var(--text)!important;border-radius:18px!important}
+html #section-positions .pz-stat .pz-num{color:var(--text)}
+html #section-positions .pz-stat .pz-lbl,html #section-positions .pz-target-row{color:var(--muted)!important}
+html #section-positions .pz-stat.pz-need .pz-num{color:var(--navy-text)!important}
+html #section-positions .pz-stat.pz-vac .pz-num{color:var(--red-fg)!important}
+html #section-positions .pz-target-row input{background:rgba(91,141,255,.07)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:10px!important}
+html #section-positions .pz-vacancy-panel{background:var(--red-bg)!important;border:1px solid transparent!important;border-radius:18px!important}
+html #section-positions .pz-vacancy-title,html #section-positions .pz-vacancy-empty{color:var(--red-fg)!important}
+html #section-positions .pz-vacancy-item{background:var(--sk-glass)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:10px!important}
+html #section-positions .pz-vacancy-item span{color:var(--muted)!important}
+html #writeempMessageText{background:rgba(91,141,255,.05)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:14px!important;padding:12px 14px!important;box-shadow:none!important;height:auto!important}
+html #writeempMessageText:focus{border-color:var(--navy-light)!important;box-shadow:0 0 0 3px rgba(91,141,255,.2)!important;outline:0}
+html #writeempSendBtn{background:linear-gradient(135deg,#4f7dff,#7a3cff)!important;border:0!important;color:#fff!important;border-radius:14px!important;box-shadow:0 12px 26px -10px rgba(100,90,255,.8)!important;font-weight:800}
+html #writeempError{color:var(--red-fg)!important}html #writeempSuccess{color:var(--green-fg)!important}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
