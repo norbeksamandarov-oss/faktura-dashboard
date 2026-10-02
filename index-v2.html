@@ -2336,6 +2336,25 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 #uiDlg .ud-card.shake{animation:crmShake .42s ease}
 @media (prefers-reduced-motion:reduce){#uiDlg,#uiDlg *{animation:none!important;transition:none!important}}
 #section-realschet .close-docs,#section-dogovorreal .close-docs,#section-zakaznaryad .close-docs,#section-otherreqreal .close-docs{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+/* ===== Окна: объявление, контрагент, смена пароля — новый стиль + анимации ===== */
+:is(#announcementModal,#contragentModal,#forcePasswordModal){opacity:0;transition:opacity .25s ease;background:rgba(12,16,34,.55)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+:is(#announcementModal,#contragentModal,#forcePasswordModal).open{opacity:1}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-card{position:relative;overflow:hidden;border-radius:22px!important;transform:translateY(16px) scale(.95);opacity:0;transition:transform .38s cubic-bezier(.34,1.45,.64,1),opacity .25s ease}
+#contragentModal .modal-card.wide{overflow-y:auto}
+:is(#announcementModal,#contragentModal,#forcePasswordModal).open .modal-card{transform:none;opacity:1}
+:is(#announcementModal,#forcePasswordModal) .modal-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,transparent,var(--navy-light),#7a3cff,transparent);background-size:50% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .2s}
+:is(#announcementModal,#forcePasswordModal) .modal-card.busy::before{opacity:1;animation:crmBar 1.05s linear infinite}
+:is(#announcementModal,#forcePasswordModal) .modal-card.busy :is(textarea,input){pointer-events:none;opacity:.6}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-card h3{font-size:17px;display:flex;align-items:center;gap:8px}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions button{border-radius:12px;padding:10px 18px;font-weight:700;border:1px solid var(--border);background:var(--sk-glass);color:var(--text);transition:transform .1s,box-shadow .15s,background .15s}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions button:active{transform:scale(.96)}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions .btn-primary{border-color:transparent;background:linear-gradient(135deg,#4F6BFF,#8F6EFF);color:#fff}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions .btn-primary:hover{box-shadow:0 8px 20px rgba(79,107,255,.32)}
+:is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions .btn-primary:disabled{opacity:.9;cursor:progress}
+#announcementModal textarea,#forcePasswordModal input{border-radius:12px!important}
+.modal-card.shake{animation:crmShake .45s}
+.mc-ok{display:inline-block;animation:crmPop .4s cubic-bezier(.34,1.8,.64,1)}
+@keyframes crmPop{from{transform:scale(0)}to{transform:scale(1)}}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -6122,21 +6141,28 @@ async function submitForcePasswordChange() {
   }
 
   const btn = document.getElementById("forcePasswordSubmitBtn");
+  const fpCard = document.querySelector("#forcePasswordModal .modal-card");
   btn.disabled = true;
-  btn.textContent = "Сохранение...";
+  fpCard.classList.add("busy");
+  btn.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>Сохранение…`;
   try {
     await apiCall("changeOwnPassword", { oldPassword, newPassword });
     // Sessiyadagi "majburiy o'zgartirish" belgisini ham olib tashlaymiz -
     // aks holda keyingi sahifa yangilanganda modal yana chiqib qoladi.
     const session = loadSession();
     if (session) saveSession({ ...session, mustChangePassword: false });
-    document.getElementById("forcePasswordModal").classList.remove("open");
-    document.getElementById("forcePasswordModal").style.display = "none";
+    fpCard.classList.remove("busy");
+    btn.innerHTML = `<i class="ti ti-circle-check mc-ok" aria-hidden="true"></i> Готово`;
+    await new Promise(r => setTimeout(r, 800));
+    const fpm = document.getElementById("forcePasswordModal");
+    fpm.classList.remove("open");
+    setTimeout(() => { if (!fpm.classList.contains("open")) fpm.style.display = "none"; }, 280);
     document.getElementById("forceOldPassword").value = "";
     document.getElementById("forceNewPassword").value = "";
     document.getElementById("forceNewPassword2").value = "";
   } catch (e) {
     errEl.textContent = e.message || "Не удалось изменить пароль";
+    fpCard.classList.remove("busy", "shake"); void fpCard.offsetWidth; fpCard.classList.add("shake");
   } finally {
     btn.disabled = false;
     btn.textContent = "Сохранить и продолжить";
@@ -6269,8 +6295,9 @@ function openAnnouncementModal() {
   requestAnimationFrame(() => annModal.classList.add("open"));
 }
 function closeAnnouncementModal() {
-  document.getElementById("announcementModal").classList.remove("open");
-  document.getElementById("announcementModal").style.display = "none";
+  const m = document.getElementById("announcementModal");
+  m.classList.remove("open");
+  setTimeout(() => { if (!m.classList.contains("open")) m.style.display = "none"; }, 280);
 }
 async function sendAnnouncement() {
   const text = document.getElementById("announcementText").value.trim();
@@ -6281,13 +6308,24 @@ async function sendAnnouncement() {
   if (!await uiConfirm("Отправить это сообщение ВСЕМ активным сотрудникам в Telegram?\n\nЭто действие нельзя отменить.")) {
     return;
   }
+  const annCard = document.querySelector("#announcementModal .modal-card");
+  const annBtn = document.querySelector("#announcementModal .btn-primary");
+  const annLabel = annBtn.innerHTML;
+  annCard.classList.add("busy"); annBtn.disabled = true;
+  annBtn.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>Отправляю…`;
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B5`, text);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B4`, new Date().toISOString());
+    annCard.classList.remove("busy");
+    annBtn.innerHTML = `<i class="ti ti-circle-check mc-ok" aria-hidden="true"></i> Отправлено`;
+    await new Promise(r => setTimeout(r, 900));
     closeAnnouncementModal();
     alert("<i class='ti ti-circle-check' aria-hidden='true'></i> Объявление поставлено в очередь. Бот отправит его всем активным сотрудникам в течение ~8 секунд.");
   } catch (e) {
+    annCard.classList.remove("busy"); annCard.classList.remove("shake"); void annCard.offsetWidth; annCard.classList.add("shake");
     alert("Не удалось отправить объявление: " + e.message);
+  } finally {
+    annBtn.disabled = false; annBtn.innerHTML = annLabel;
   }
 }
 
@@ -10096,8 +10134,9 @@ function openContragentCard(encodedName) {
 }
 
 function closeContragentModal() {
-  document.getElementById("contragentModal").classList.remove("open");
-  document.getElementById("contragentModal").style.display = "none";
+  const m = document.getElementById("contragentModal");
+  m.classList.remove("open");
+  setTimeout(() => { if (!m.classList.contains("open")) m.style.display = "none"; }, 280);
 }
 
 function renderDogovorTable() {
