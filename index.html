@@ -2513,6 +2513,68 @@ html[data-theme="dark"] #contragentModal .modal-card.wide{background:#0e1122!imp
 .cm-empty{padding:18px;color:var(--muted)}
 #contragentModal .modal-actions{display:none}
 @media(max-width:700px){html #contragentModal .modal-card.wide{padding:24px 18px!important}.cm-row{grid-template-columns:1fr 1fr;gap:16px 0}.cm-row>div:nth-child(3){padding-left:0;border:0}.cm-li{grid-template-columns:1fr auto}.cm-li.cm-h{display:none}.cm-li>span:nth-child(2),.cm-li>span:nth-child(4){grid-column:1/-1}}
+/* ===== План контроля ===== */
+.plan-top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:6px 0 18px}
+.plan-status{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted);min-height:24px}
+.plan-status .sp,.plan-status .ck{display:none;width:14px;height:14px}
+.plan-status.saving .sp{display:block;border:2px solid var(--border);border-top-color:#7a8cff;border-radius:50%;animation:planSpin .7s linear infinite}
+.plan-status.ok{color:var(--green-fg)}
+.plan-status.ok .ck{display:block;border-radius:50%;background:var(--green-fg);position:relative;animation:planPop .35s cubic-bezier(.3,1.6,.5,1)}
+.plan-status.ok .ck::after{content:"";position:absolute;left:4px;top:2px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.plan-status.err{color:var(--red-fg);cursor:pointer;text-decoration:underline dotted}
+.plan-status.shake{animation:planShake .4s}
+@keyframes planSpin{to{transform:rotate(360deg)}}
+@keyframes planPop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes planShake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.plan-addarea{display:flex;gap:8px}
+.plan-addarea input,.plan-add input{height:40px;border-radius:12px;border:1px solid var(--border);background:var(--sk-glass);color:var(--text);padding:0 14px;font:inherit;font-weight:600;min-width:0}
+.plan-addarea input:focus,.plan-add input:focus,.plan-notes:focus,.plan-ti:focus{outline:0;border-color:var(--navy-light);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
+.plan-addarea button,.plan-add button{height:40px;padding:0 16px;border:0;border-radius:12px;background:linear-gradient(135deg,#4f7dff,#7a3cff);color:#fff;font:inherit;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .15s}
+.plan-addarea button:hover,.plan-add button:hover{box-shadow:0 8px 20px rgba(79,107,255,.32)}
+.plan-addarea button:active,.plan-add button:active{transform:scale(.96)}
+.plan-list{border-top:1px solid var(--border)}
+.plan-row{border-bottom:1px solid var(--border);transition:opacity .22s,transform .22s}
+.plan-row.out{opacity:0;transform:translateX(16px)}
+.plan-head{display:grid;grid-template-columns:44px 1fr 120px 56px 22px;gap:14px;align-items:center;padding:18px 4px;cursor:pointer;color:var(--text)}
+.plan-head:hover .plan-name{color:var(--navy-text)}
+.plan-head:focus-visible{outline:2px solid var(--navy-light);outline-offset:2px;border-radius:8px}
+.plan-n{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.plan-name{font-size:19px;font-weight:800;letter-spacing:-.01em;transition:color .15s}
+.plan-prog{height:4px;border-radius:99px;background:var(--border);overflow:hidden}
+.plan-prog i{display:block;height:100%;background:linear-gradient(90deg,#4f7dff,#7a3cff);border-radius:99px;transition:width .4s cubic-bezier(.3,.7,.2,1)}
+.plan-cnt{font-size:12.5px;font-weight:700;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.plan-chev{width:9px;height:9px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .25s;justify-self:center;margin-top:-4px}
+.plan-row.open .plan-chev{transform:rotate(225deg);margin-top:4px}
+.plan-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.plan-row.open .plan-body{grid-template-rows:1fr}
+.plan-inner{overflow:hidden;min-height:0;padding:0 4px 0 58px}
+.plan-row.open .plan-inner{padding-bottom:22px}
+.plan-task{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);transition:opacity .22s}
+.plan-task.in{animation:planIn .3s ease}
+.plan-task.out{opacity:0}
+@keyframes planIn{from{opacity:0;transform:translateY(-6px)}}
+.plan-ck{flex:none;width:22px;height:22px;border-radius:7px;border:1.5px solid var(--muted);background:transparent;cursor:pointer;padding:0;display:grid;place-items:center;transition:background .2s,border-color .2s,transform .1s}
+.plan-ck:active{transform:scale(.9)}
+.plan-ck svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .25s .05s}
+.plan-task.done .plan-ck{background:linear-gradient(135deg,#4f7dff,#7a3cff);border-color:transparent}
+.plan-task.done .plan-ck svg{stroke-dashoffset:0}
+.plan-ti{flex:1;min-width:0;border:0;border-radius:8px;background:transparent;color:var(--text);font:inherit;font-weight:600;padding:6px 8px;transition:color .2s}
+.plan-task.done .plan-ti{color:var(--muted);text-decoration:line-through}
+.plan-x{flex:none;border:0;background:transparent;color:var(--muted);cursor:pointer;width:28px;height:28px;border-radius:8px;opacity:0;transition:opacity .15s,background .15s,color .15s}
+.plan-task:hover .plan-x,.plan-x:focus-visible{opacity:1}
+.plan-x:hover{background:var(--red-bg);color:var(--red-fg)}
+.plan-add{display:flex;gap:8px;margin:14px 0 18px}
+.plan-add input{flex:1}
+.plan-l{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+.plan-notes{width:100%;resize:vertical;border:1px solid var(--border);border-radius:12px;background:var(--sk-glass);color:var(--text);font:inherit;padding:12px 14px;line-height:1.5;min-height:92px}
+.plan-tools{display:flex;gap:10px;margin-top:12px}
+.plan-tools button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:6px 10px;border-radius:8px;transition:background .15s,color .15s}
+.plan-tools button:hover{background:var(--sk-glass);color:var(--text)}
+.plan-tools button.d:hover{background:var(--red-bg);color:var(--red-fg)}
+.plan-empty{padding:30px 4px;color:var(--muted)}
+@media(max-width:700px){.plan-head{grid-template-columns:30px 1fr 48px 18px}.plan-prog{display:none}.plan-name{font-size:16px}.plan-inner{padding-left:4px}.plan-x{opacity:1}}
+html .plan-ti{background:transparent!important;border:0!important;box-shadow:none;height:auto!important}
+html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rgba(91,141,255,.2)}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -3066,6 +3128,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <button class="nav-item" data-section="numbering" onclick="showSection('numbering')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span><span class="nav-label">Журнал регистрации</span></button>
       <button class="nav-item" data-section="features" onclick="showSection('features')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg></span><span class="nav-label">Функции</span></button>
       <button class="nav-item" data-section="approvers" onclick="showSection('approvers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 11 2 2 4-4"/></svg></span><span class="nav-label">Ответственные</span></button>
+      <button class="nav-item" data-section="plan" onclick="showSection('plan')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">План контроля</span></button>
       <button class="nav-item" data-section="auditlog" onclick="showSection('auditlog')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg></span><span class="nav-label">Журнал действий</span></button>
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
     </nav>
@@ -4159,6 +4222,16 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </div>
     </section>
 
+    <section id="section-plan" class="content-section">
+    <div class="panel">
+      <h2>План контроля <span class="sub">личный план — виден только вам</span></h2>
+      <div class="plan-top">
+        <div id="planStatus" class="plan-status saving" role="status"><span class="sp"></span><span class="ck"></span><span class="t">Загрузка…</span></div>
+        <div class="plan-addarea"><input type="text" id="planNewArea" placeholder="Новое направление" maxlength="120"><button id="planAddAreaBtn">Добавить</button></div>
+      </div>
+      <div id="planList" class="plan-list"></div>
+    </div>
+    </section>
     <section id="section-auditlog" class="content-section">
     <div class="panel">
       <h2>Журнал действий <span class="sub">кто, когда и что изменил в системе</span></h2>
@@ -5616,6 +5689,138 @@ const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "other
 const SALARY_SECTIONS = ["salaryrequests", "salary"];
 const VZAIMORASCHETY_SECTIONS = ["vz2analitika", "vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2oshibki", "vz2otv"];
 
+/* ===== План контроля (личный, только админ) ===== */
+const PLAN_DEFAULT = ["Поступления", "Реализация", "Банк", "Зарплата", "Аренда", "Проценты по займам", "Налоги", "Сверка с контрагентами", "Основные средства", "Остатки товаров (инвентаризация)", "Реестр документов"];
+let PLAN = null, planOpen = {}, planSaveT = null, planSaving = false, planAgain = false, planLoaded = false;
+function planId() { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3); }
+function planStatus(state, msg) {
+  const el = document.getElementById("planStatus"); if (!el) return;
+  el.className = "plan-status " + state;
+  el.querySelector(".t").textContent = msg;
+  if (state === "err") { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+}
+function planFind(id) { return PLAN && PLAN.areas.find(a => a.id === id); }
+function planTaskHtml(t) {
+  return `<div class="plan-task${t.done ? " done" : ""}" data-tid="${t.id}"><button class="plan-ck" data-act="tick" aria-label="Готово"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7"/></svg></button><input type="text" class="plan-ti" value="${escapeHtml(t.text)}" maxlength="300"><button class="plan-x" data-act="deltask" aria-label="Удалить">&#10005;</button></div>`;
+}
+function planRender() {
+  const box = document.getElementById("planList"); if (!box || !PLAN) return;
+  box.innerHTML = PLAN.areas.map((a, i) => {
+    const total = a.tasks.length, done = a.tasks.filter(t => t.done).length, open = !!planOpen[a.id];
+    return `<div class="plan-row${open ? " open" : ""}" data-id="${a.id}">
+      <div class="plan-head" data-act="toggle" tabindex="0">
+        <span class="plan-n">${String(i + 1).padStart(2, "0")}</span>
+        <span class="plan-name">${escapeHtml(a.name)}</span>
+        <span class="plan-prog"><i style="width:${total ? Math.round(done / total * 100) : 0}%"></i></span>
+        <span class="plan-cnt">${total ? done + " / " + total : "—"}</span>
+        <span class="plan-chev"></span>
+      </div>
+      <div class="plan-body"><div class="plan-inner">
+        <div class="plan-tasks">${a.tasks.map(planTaskHtml).join("")}</div>
+        <div class="plan-add"><input type="text" class="plan-new" placeholder="Что нужно сделать — Enter, чтобы добавить" maxlength="300"><button data-act="addtask">Добавить</button></div>
+        <label class="plan-l">Заметки</label>
+        <textarea class="plan-notes" rows="4" placeholder="Что проверять, откуда брать данные, на что обратить внимание…" maxlength="5000">${escapeHtml(a.notes || "")}</textarea>
+        <div class="plan-tools"><button data-act="rename">Переименовать</button><button data-act="del" class="d">Удалить направление</button></div>
+      </div></div></div>`;
+  }).join("") || `<div class="plan-empty">Пока пусто — добавьте первое направление.</div>`;
+}
+function planRowStats(row, a) {
+  const total = a.tasks.length, done = a.tasks.filter(t => t.done).length;
+  row.querySelector(".plan-cnt").textContent = total ? done + " / " + total : "—";
+  row.querySelector(".plan-prog i").style.width = (total ? Math.round(done / total * 100) : 0) + "%";
+}
+async function planLoad() {
+  planStatus("saving", "Загрузка…");
+  try {
+    const r = await apiCall("getPlan", {});
+    const fresh = !(r && r.data && Array.isArray(r.data.areas));
+    PLAN = fresh ? { areas: PLAN_DEFAULT.map(n => ({ id: planId(), name: n, notes: "", tasks: [] })) } : r.data;
+    planLoaded = true;
+    planRender();
+    if (fresh) planQueueSave(); else planStatus("ok", "Сохранено");
+  } catch (e) { planStatus("err", "Не удалось загрузить — нажмите, чтобы повторить"); }
+}
+function planQueueSave() {
+  if (!planLoaded) return;
+  planStatus("saving", "Сохранение…");
+  clearTimeout(planSaveT);
+  planSaveT = setTimeout(planSave, 700);
+}
+async function planSave() {
+  if (planSaving) { planAgain = true; return; }
+  planSaving = true; planAgain = false;
+  try {
+    await apiCall("savePlan", { data: PLAN });
+    if (!planAgain) planStatus("ok", "Сохранено");
+  } catch (e) { planStatus("err", "Не сохранилось — нажмите, чтобы повторить"); }
+  planSaving = false;
+  if (planAgain) planSave();
+}
+function planAddArea() {
+  const inp = document.getElementById("planNewArea");
+  const name = (inp.value || "").trim(); if (!name || !PLAN) return;
+  const a = { id: planId(), name, notes: "", tasks: [] };
+  PLAN.areas.push(a); planOpen[a.id] = true; inp.value = "";
+  planRender(); planQueueSave();
+  const r = document.querySelector(`.plan-row[data-id="${a.id}"]`); if (r) r.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+function planAddTask(row) {
+  const a = planFind(row.dataset.id); const inp = row.querySelector(".plan-new");
+  const text = (inp.value || "").trim(); if (!a || !text) return;
+  const t = { id: planId(), text, done: false };
+  a.tasks.push(t); inp.value = "";
+  row.querySelector(".plan-tasks").insertAdjacentHTML("beforeend", planTaskHtml(t).replace('class="plan-task', 'class="plan-task in'));
+  planRowStats(row, a); planQueueSave(); inp.focus();
+}
+(function planInit() {
+  document.addEventListener("DOMContentLoaded", () => {
+    const list = document.getElementById("planList"); if (!list) return;
+    document.getElementById("planAddAreaBtn").onclick = planAddArea;
+    document.getElementById("planNewArea").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); planAddArea(); } });
+    document.getElementById("planStatus").addEventListener("click", () => {
+      const st = document.getElementById("planStatus");
+      if (!st.classList.contains("err")) return;
+      if (!planLoaded) planLoad(); else planQueueSave();
+    });
+    list.addEventListener("click", async e => {
+      const b = e.target.closest("[data-act]"); if (!b) return;
+      const row = b.closest(".plan-row"); if (!row) return;
+      const a = planFind(row.dataset.id); if (!a) return;
+      const act = b.dataset.act;
+      if (act === "toggle") { planOpen[a.id] = !planOpen[a.id]; row.classList.toggle("open", planOpen[a.id]); }
+      else if (act === "tick") {
+        const te = b.closest(".plan-task"); const t = a.tasks.find(x => x.id === te.dataset.tid); if (!t) return;
+        t.done = !t.done; te.classList.toggle("done", t.done); planRowStats(row, a); planQueueSave();
+      } else if (act === "deltask") {
+        const te = b.closest(".plan-task"); a.tasks = a.tasks.filter(x => x.id !== te.dataset.tid);
+        te.classList.add("out"); setTimeout(() => { te.remove(); planRowStats(row, a); }, 220); planQueueSave();
+      } else if (act === "addtask") planAddTask(row);
+      else if (act === "rename") {
+        const v = await uiPrompt("Название направления", a.name);
+        if (v && v.trim()) { a.name = v.trim().slice(0, 120); row.querySelector(".plan-name").textContent = a.name; planQueueSave(); }
+      } else if (act === "del") {
+        if (await uiConfirm("Удалить направление «" + a.name + "» вместе с задачами и заметками?")) {
+          PLAN.areas = PLAN.areas.filter(x => x.id !== a.id);
+          row.classList.add("out"); setTimeout(planRender, 240); planQueueSave();
+        }
+      }
+    });
+    list.addEventListener("keydown", e => {
+      if (e.key === "Enter" && e.target.classList.contains("plan-new")) { e.preventDefault(); planAddTask(e.target.closest(".plan-row")); }
+      else if (e.key === "Enter" && e.target.classList.contains("plan-ti")) e.target.blur();
+      else if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("plan-head")) { e.preventDefault(); e.target.click(); }
+    });
+    list.addEventListener("input", e => {
+      const row = e.target.closest(".plan-row"); if (!row) return;
+      const a = planFind(row.dataset.id); if (!a) return;
+      if (e.target.classList.contains("plan-notes")) { a.notes = e.target.value; planQueueSave(); }
+      else if (e.target.classList.contains("plan-ti")) {
+        const t = a.tasks.find(x => x.id === e.target.closest(".plan-task").dataset.tid); if (t) { t.text = e.target.value; planQueueSave(); }
+      }
+    });
+  });
+})();
+
 const NAV_GROUPS = [
   { toggleId: "postupleniyaToggle", subgroupId: "postupleniyaSubgroup", sections: POSTUPLENIYA_SECTIONS },
   { toggleId: "personalToggle", subgroupId: "personalSubgroup", sections: PERSONAL_SECTIONS },
@@ -5685,6 +5890,9 @@ function showSection(name) {
   }
   if (name === "vz2otv" && currentRole === "admin") {
     loadVz2OtvSheet();
+  }
+  if (name === "plan" && currentRole === "admin") {
+    planLoad();
   }
   if (name === "approvers" && currentRole === "admin") {
     loadApproverSheet();
@@ -6321,7 +6529,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="plan"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -6337,7 +6545,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features", "taxes", "positions", "approvers"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes", "positions", "approvers", "plan"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
