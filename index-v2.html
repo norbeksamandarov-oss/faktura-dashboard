@@ -2333,6 +2333,7 @@ html[data-theme=dark] #uiDlg .ud-b.go.red{color:#2a0a0a}
 html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 #uiDlg .ud-card.shake{animation:crmShake .42s ease}
 @media (prefers-reduced-motion:reduce){#uiDlg,#uiDlg *{animation:none!important;transition:none!important}}
+#section-realschet .close-docs,#section-dogovorreal .close-docs,#section-zakaznaryad .close-docs,#section-otherreqreal .close-docs{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -5295,6 +5296,7 @@ async function crmSubmit() {
     const ic = document.getElementById("crmIc"); ic.className = "crm-ic ok"; ic.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
     document.getElementById("crmTitle").textContent = "Готово!";
     document.getElementById("crmSub").textContent = res.telegramError ? "Заявка закрыта, но Telegram не доставил: " + res.telegramError : (hadFiles ? "Статус: Выполнено. Файлы отправлены сотруднику." : "Статус: Закрыто. Ответ отправлен сотруднику.");
+    if (hadFiles) { try { await loadCloseDocs(); } catch (e) {} }
     await new Promise(r => setTimeout(r, res.telegramError ? 2200 : 1100));
     closeCloseReqModal();
     if (typeof renderFn === "function") renderFn();
@@ -6455,6 +6457,23 @@ async function sendWriteEmp() {
    audit-log bilan) - Google Sheets API'ga endi TO'G'RIDAN-TO'G'RI
    murojaat qilinmaydi, faqat shu backend orqali.
    ============================================================ */
+
+/* ===== Документы, приложенные при закрытии заявки (только «Реализация») ===== */
+let CLOSE_DOCS = {};
+function closeDocsHtml(reqType, rowIndex) {
+  const list = (CLOSE_DOCS[reqType] || {})[String(rowIndex)] || [];
+  if (!list.length) return "";
+  const apiRoot = API_URL.replace(/\/api\/?$/, "");
+  return `<div class="close-docs">` + list.map(d => `<a href="${apiRoot}/realschet-docs/${encodeURIComponent(d.file)}" target="_blank" rel="noopener" class="admin-open-btn" title="${escapeHtml(d.name)}"><i class="ti ti-paperclip" aria-hidden="true"></i> ${escapeHtml(d.name.length > 22 ? d.name.slice(0, 20) + "…" : d.name)}</a>`).join("") + `</div>`;
+}
+async function loadCloseDocs() {
+  try {
+    const res = await apiCall("getCloseDocs", {});
+    CLOSE_DOCS = (res && res.docs) || {};
+    if (typeof renderDogovorRealTable === "function") { renderDogovorRealTable(); renderRealschetTable(); renderZakaznaryadTable(); renderOtherreqRealTable(); }
+  } catch (e) { /* старый сервер без getCloseDocs - просто без ссылок */ }
+}
+
 async function apiCall(action, params, skipToken, _retryCount) {
   _retryCount = _retryCount || 0;
   const body = Object.assign({ action }, params || {});
@@ -6767,6 +6786,7 @@ async function loadAllData(silent) {
   } finally {
     if (!silent) document.getElementById("loadingOverlay").style.display = "none";
     isLoading = false;
+    loadCloseDocs();
   }
 }
 
@@ -10268,7 +10288,7 @@ function renderDogovorRealTable() {
       <td>${statusBadge(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, dogovorRealRows, renderDogovorRealTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${closeDocsHtml("dogovorReal", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, dogovorRealRows, renderDogovorRealTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10439,7 +10459,7 @@ function renderRealschetTable() {
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
       <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Открыть</a>` : `<span style="color:var(--muted)">—</span>`}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${closeDocsHtml("realschet", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="12" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10528,7 +10548,7 @@ function renderZakaznaryadTable() {
       <td>${statusBadgeZakaznaryad(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, zakaznaryadRows, renderZakaznaryadTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${closeDocsHtml("zakaznaryad", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, zakaznaryadRows, renderZakaznaryadTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10609,7 +10629,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType
       <td>${statusBadgeOtherreq(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "otherreqPostRows" : "otherreqRealRows"}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${reqType === "otherreqReal" ? closeDocsHtml("otherreqReal", r.rowIndex) : ""}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "otherreqPostRows" : "otherreqRealRows"}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
