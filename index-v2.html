@@ -8967,8 +8967,8 @@ function vzaDonut(groups, side, title, color) {
 }
 function vzaBars(groups, mx) {
   return groups.map(g => `<div class="vza-cr"><div class="vza-cd">${escapeHtml(g.k)}</div><div class="vza-cb2">
-      <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 100).toFixed(1)}%"></u><span class="k">${vzaM(g.s.kt)}</span></div>
-      <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 100).toFixed(1)}%"></u><span class="d">${vzaM(g.s.dt)}</span></div></div></div>`).join("");
+      <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 68).toFixed(1)}%"></u><span class="k">${vzFormatNum(g.s.kt)}</span></div>
+      <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 68).toFixed(1)}%"></u><span class="d">${vzFormatNum(g.s.dt)}</span></div></div></div>`).join("");
 }
 function vzaOrgTable(items, cur, catKey) {
   const og = vzaGroup(items, i => i.org);
