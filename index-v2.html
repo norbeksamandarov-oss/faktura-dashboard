@@ -2466,6 +2466,10 @@ html #sidebarNav>*{flex-shrink:0}
 html header.topbar{padding-left:70px!important}
 html .content-area{padding-top:6px!important}
 }
+.lg2 .lg2-eye{position:absolute;right:0;bottom:6px;width:38px;height:36px;border:0;background:transparent;color:var(--l-mut);cursor:pointer;display:grid;place-items:center;border-radius:10px}
+.lg2 .lg2-eye:hover{color:var(--l-fg)}
+.lg2 .lg2-eye .lg2-slash{opacity:1;transition:opacity .2s}.lg2 .lg2-eye.on .lg2-slash{opacity:0}
+.lg2 .lg2-ln input#loginPassword{padding-right:42px}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -2891,8 +2895,8 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <span class="lg2-pill"><i></i> ВНУТРЕННЯЯ СИСТЕМА</span>
         <h2 class="lg2-h">Controlling<br><span>System</span></h2>
         <form id="loginForm" onsubmit="return false;">
-          <div class="lg2-ln"><input type="text" id="loginUsername" placeholder=" " autocomplete="username" class="login-input"><i></i><label for="loginUsername">Логин</label></div>
-          <div class="lg2-ln"><input type="password" id="loginPassword" placeholder=" " autocomplete="current-password" class="login-input"><i></i><label for="loginPassword">Пароль</label></div>
+          <div class="lg2-ln"><input type="text" id="loginUsername" placeholder=" " autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" class="login-input"><i></i><label for="loginUsername">Логин</label></div>
+          <div class="lg2-ln"><input type="password" id="loginPassword" placeholder=" " autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" class="login-input"><i></i><label for="loginPassword">Пароль</label><button type="button" class="lg2-eye" id="lg2Eye" aria-label="Показать пароль" onclick="lg2ToggleEye()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="lg2-slash" d="M4 4l16 16"/></svg></button></div>
           <div class="lg2-go"><button type="submit" id="loginSubmitBtn" class="login-submit-btn">Войти</button></div>
           <div id="loginError"></div>
         </form>
@@ -4809,7 +4813,15 @@ async function handleLoginSubmit() {
   btn.disabled = true;
   btn.textContent = "Вход...";
   try {
-    const data = await apiCall("login", { username, password }, /*skipToken=*/true);
+    let data;
+    try {
+      data = await apiCall("login", { username, password }, /*skipToken=*/true);
+    } catch (e1) {
+      // телефонная клавиатура часто добавляет пробел в конце пароля — пробуем без него
+      if (password !== password.trim() && password.trim()) {
+        data = await apiCall("login", { username, password: password.trim() }, /*skipToken=*/true);
+      } else throw e1;
+    }
     authToken = data.token;
     currentRole = data.role;
     currentUserName = data.name;
@@ -6054,6 +6066,13 @@ function updatePostupleniyaBadge() {
   }
 }
 
+function lg2ToggleEye() {
+  const i = document.getElementById("loginPassword"), b = document.getElementById("lg2Eye");
+  const show = i.type === "password";
+  i.type = show ? "text" : "password";
+  b.classList.toggle("on", show);
+  b.setAttribute("aria-label", show ? "Скрыть пароль" : "Показать пароль");
+}
 function showLoginError(msg) {
   const el = document.getElementById("loginError");
   el.textContent = msg;
