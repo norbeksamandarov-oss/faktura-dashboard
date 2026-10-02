@@ -2147,7 +2147,6 @@ html .qpop .qli.tn i{background:var(--cb)!important;box-shadow:inset 0 0 0 1px c
 html .qpop .qli.tn i svg{stroke:var(--c)!important;width:15px;height:15px;stroke-width:2.2}
 html .qpop .qli.tn:hover{background:rgba(130,140,170,.14)!important}.qli.tn:hover i{transform:scale(1.1) rotate(-6deg)}
 html .qpop .qli.tn.sel{background:var(--cb)!important}.qli.tn em{background:var(--c)}
-#section-summary{display:none!important}
 
 /* user-create-form (Пользователи, Журнал регистрации, Написать сотруднику) = bir xil Q uslubi */
 html .user-create-form{padding:10px!important;border:1px solid var(--border);border-radius:20px;background:var(--sk-glass);gap:8px!important;align-items:stretch!important}
@@ -2956,56 +2955,6 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <button class="nav-item" data-section="history" onclick="showSection('history')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg></span><span class="nav-label">История</span></button>
     </nav>
     <main class="content-area">
-
-    <section id="section-summary" class="content-section">
-    <div id="crbGreeting" style="display:none;margin-bottom:16px;">
-      <div style="font-size:20px;font-weight:800;color:#0B132B;font-family:'Manrope',sans-serif;" id="crbGreetingTitle"></div>
-      <div style="font-size:12.5px;color:#64748B;margin-top:2px;">Краткая сводка на сегодня</div>
-    </div>
-    <div class="panel">
-      <h2>Сводка <span class="sub" id="summaryCountSub">все ожидающие запросы, из всех разделов, старые сверху</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Всё, что сейчас "висит" (не завершено), из всех разделов сразу - для быстрой ежедневной проверки. Отсортировано по количеству дней ожидания (самое старое - сверху).</p>
-      <div class="toolbar" style="margin-bottom:16px;">
-        <div class="filter-field" style="min-width:200px;">
-          <label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label>
-          <input type="text" class="status-filter" id="summarySearchInput" placeholder="Поиск по всем полям...">
-        </div>
-        <div class="filter-field">
-          <label><i class='ti ti-folder-open' aria-hidden='true'></i> Тип</label>
-          <select class="status-filter" id="summaryTypeFilter"><option value="">Все</option></select>
-        </div>
-        <div class="filter-field">
-          <label><i class='ti ti-user' aria-hidden='true'></i> Кому направлено</label>
-          <select class="status-filter" id="summaryTargetFilter"><option value="">Все</option></select>
-        </div>
-        <div class="filter-field">
-          <label>&nbsp;</label>
-          <button id="summaryClearFiltersBtn"><i class='ti ti-x' aria-hidden='true'></i> Сбросить фильтры</button>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table class="invoices" id="summaryTable">
-          <thead>
-            <tr><th>№</th><th>Тип</th><th>Организация</th><th>Детали</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Дней</th><th></th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-top:16px;">
-      <h2><i class='ti ti-stopwatch' aria-hidden='true'></i> Скорость по бухгалтерам <span class="sub">Договор, Доверенность, Банк, Счёт-фактура на авто, Заказ-наряд, Другой запрос</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Только ВЫПОЛНЕННЫЕ запросы за всё время. Среднее время - от даты запроса до даты выполнения. "Опоздания" - запросы, выполненные дольше 3 дней.</p>
-      <div class="table-wrap">
-        <table class="invoices" id="approverSpeedTable">
-          <thead>
-            <tr><th>№</th><th>Кому направлено</th><th>Выполнено всего</th><th>Среднее время</th><th>Опозданий (&gt;3 дн.)</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-    </section>
 
     <section id="section-analytics" class="content-section active">
 
