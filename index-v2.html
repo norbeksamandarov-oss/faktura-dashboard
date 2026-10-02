@@ -8992,7 +8992,8 @@ function vzaPeopleTable(items, cur) {
       <td class="num-cell">${sal ? `${vzFormatNum(sal.net)}<small style="display:block;color:var(--muted)">${escapeHtml(sal.period)}${sal.by === "fio" ? " · по ФИО" : ""}</small>` : '<span style="color:var(--muted)">нет</span>'}</td>
       <td class="num-cell">${pct === null ? "—" : `<b${pct > 100 ? ' class="k"' : ""}>${pct}%</b>`}</td></tr>`;
   }).join("");
-  return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По сотрудникам <small class="vza-sub">(валюта: ${escapeHtml(cur)} · не отчитались: ${owe.length} чел.${noSal ? ` · без зарплаты в базе: ${noSal}` : ""})</small></p>
+  return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По сотрудникам <small class="vza-sub">(валюта: ${escapeHtml(cur)} · не отчитались: ${owe.length} чел.${noSal ? ` · без зарплаты в базе: ${noSal}` : ""})</small>
+    <small class="vza-sub" style="display:block;margin-top:2px">${(() => { const si = VZ2_DATA && VZ2_DATA.salaryInfo; return !si ? "⚠ сервер ещё не обновлён (нет данных о зарплате)" : si.error ? "⚠ ошибка зарплаты: " + escapeHtml(si.error) : `В базе зарплат: ${si.people} чел.`; })()}</small></p>
     <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Не отчитался</th><th class="num-cell">Мы должны ему</th><th class="num-cell">Последняя зарплата (к выдаче)</th><th class="num-cell">Долг / зарплата</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 const vzaL = cat => cat === "podotchetniki" ? { kt: "Не отчитались", dt: "Мы должны сотруднику" } : { kt: "Мы должны", dt: "Нам должны" };
