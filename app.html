@@ -32,6 +32,8 @@
   button, input, select, textarea { font-family: inherit; color: inherit; }
   .wrap { max-width: 520px; margin: 0 auto; padding: 18px 18px 48px; position: relative; }
 
+  /* To'liq ekranda Telegram o'z tugmalarini tepada sahifa ustiga qo'yadi - joy qoldiramiz */
+  html.tg-fs .wrap { padding-top: calc(18px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)); padding-bottom: calc(48px + var(--tg-safe-area-inset-bottom, 0px)); }
   .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; pointer-events: none;
          background-color: var(--orb); transition: background-color 0.9s ease; opacity: 0.5; will-change: transform; }
   .orb.o1 { width: 300px; height: 300px; top: -110px; left: -90px; animation: drift1 16s ease-in-out infinite; }
@@ -231,6 +233,18 @@
 
   var tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor("#07090f"); tg.setBackgroundColor("#07090f"); } catch (e) {} }
+
+  // To'liq ekran rejimi (sinov): faqat manzilga ?fs=1 qo'shilganda yoqiladi,
+  // oddiy ochilishga ta'sir qilmaydi. Telegram 8.0+ kerak (requestFullscreen).
+  (function () {
+    var wantFs = /[?&]fs=1\b/.test(location.search);
+    if (!tg || !wantFs) return;
+    function sync() { document.documentElement.classList.toggle("tg-fs", !!tg.isFullscreen); }
+    try { tg.onEvent("fullscreenChanged", sync); tg.onEvent("safeAreaChanged", sync); tg.onEvent("contentSafeAreaChanged", sync); } catch (e) {}
+    try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch (e) {}
+    try { if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (e) {}
+    sync();
+  })();
 
   var API_URL = "https://expenses-minute-robust-drawings.trycloudflare.com/api";
 
