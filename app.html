@@ -234,10 +234,10 @@
   var tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor("#07090f"); tg.setBackgroundColor("#07090f"); } catch (e) {} }
 
-  // To'liq ekran rejimi (sinov): faqat manzilga ?fs=1 qo'shilganda yoqiladi,
-  // oddiy ochilishga ta'sir qilmaydi. Telegram 8.0+ kerak (requestFullscreen).
+  // To'liq ekran rejimi: hamma uchun standart (Telegram 8.0+ kerak, eski
+  // versiyada oddiy expand() qoladi). O'chirish uchun manzilga ?fs=0 qo'shing.
   (function () {
-    var wantFs = /[?&]fs=1\b/.test(location.search);
+    var wantFs = !/[?&]fs=0\b/.test(location.search); // standart: to'liq ekran; ?fs=0 - o'chirish
     if (!tg || !wantFs) return;
     function sync() { document.documentElement.classList.toggle("tg-fs", !!tg.isFullscreen); }
     try { tg.onEvent("fullscreenChanged", sync); tg.onEvent("safeAreaChanged", sync); tg.onEvent("contentSafeAreaChanged", sync); } catch (e) {}
