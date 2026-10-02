@@ -2248,6 +2248,30 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 .vza-chip{border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(91,141,255,.16);color:var(--navy-text)}
 .vza-chip:hover,.vza-chip.on{background:var(--navy-light);color:#fff}
 .vza-dr2 td{font-size:12px;color:var(--muted);padding-top:3px!important;padding-bottom:3px!important}
+
+/* Окно «Закрыть заявку» (стиль 3: иконка + крупные кнопки) */
+#closeReqModal .crm-card{max-width:390px;width:92%;text-align:center;padding:24px 22px 20px;border-radius:22px!important}
+#closeReqModal .crm-ic{width:48px;height:48px;border-radius:15px;margin:0 auto 10px;display:grid;place-items:center;font-size:24px;background:var(--sk-glass);color:var(--muted);border:1px solid var(--border)}
+#closeReqModal .crm-ic.ok{background:var(--green-bg);color:var(--green-fg);border-color:transparent}
+#closeReqModal .crm-ic.nt{background:rgba(91,141,255,.16);color:var(--navy-text);border-color:transparent}
+#closeReqModal h3{margin:0;font-size:17px;font-weight:800}
+#closeReqModal .crm-sub{margin:4px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
+#closeReqModal .crm-who{margin-top:12px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--sk-glass);text-align:left;font-size:12.5px;line-height:1.4;color:var(--muted)}
+#closeReqModal .crm-who b{display:block;color:var(--text);font-size:13px;overflow-wrap:anywhere}
+#closeReqModal .crm-dz{margin-top:12px;width:100%;display:flex;gap:10px;align-items:center;text-align:left;border:1.5px dashed var(--border);border-radius:12px;padding:11px 12px;background:var(--sk-glass);color:var(--muted);font:inherit;font-size:12px;cursor:pointer}
+#closeReqModal .crm-dz b{display:block;color:var(--text);font-size:13px;overflow-wrap:anywhere}
+#closeReqModal .crm-dz i{font-size:20px;flex:none}
+#closeReqModal .crm-dz.has{border-style:solid;border-color:var(--green-fg);background:var(--green-bg);color:var(--text)}
+#closeReqModal textarea{margin-top:10px;min-height:76px;resize:none;font-size:13px;text-align:left}
+#closeReqModal .crm-st{margin-top:10px;display:inline-flex;gap:6px;align-items:center;border-radius:99px;padding:4px 12px;font-size:12px;font-weight:800;background:var(--sk-glass);color:var(--muted);border:1px solid var(--border)}
+#closeReqModal .crm-st.ok{background:var(--green-bg);color:var(--green-fg);border-color:transparent}
+#closeReqModal .crm-st.nt{background:rgba(91,141,255,.16);color:var(--navy-text);border-color:transparent}
+#closeReqModal .modal-actions{justify-content:stretch;gap:10px}
+#closeReqModal .modal-actions button{flex:1;padding:11px 14px;font-weight:800;font-size:13.5px;border-radius:12px}
+#closeReqModal .modal-actions .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+#closeReqModal .modal-actions .btn-primary.ok{background:var(--green-fg)!important;color:#fff!important}
+html[data-theme=dark] #closeReqModal .modal-actions .btn-primary.ok{color:#04261b!important}
+#closeReqModal .crm-err{margin-top:8px;font-size:12px;color:var(--red-fg);min-height:0}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -4329,6 +4353,24 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
   </div>
 </div>
 
+<div id="closeReqModal" class="modal-overlay">
+  <div class="modal-card crm-card" role="dialog" aria-modal="true" aria-labelledby="crmTitle">
+    <div class="crm-ic" id="crmIc"></div>
+    <h3 id="crmTitle">Закрыть заявку?</h3>
+    <p class="crm-sub">Сотрудник получит ответ в Telegram.</p>
+    <div class="crm-who" id="crmWho"></div>
+    <button type="button" class="crm-dz" id="crmDz"></button>
+    <input type="file" id="crmFile" hidden accept="image/*,.pdf,.xls,.xlsx,.doc,.docx,.zip,.csv,.txt">
+    <textarea id="crmText" placeholder="Напишите ответ сотруднику" aria-label="Комментарий"></textarea>
+    <div class="crm-st" id="crmSt"></div>
+    <div class="crm-err" id="crmErr"></div>
+    <div class="modal-actions">
+      <button type="button" id="crmCancel">Отмена</button>
+      <button type="button" class="btn-primary" id="crmGo">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <div id="contragentModal" class="modal-overlay">
   <div class="modal-card wide" id="contragentModalCard">
     <!-- JS orqali to'ldiriladi (renderContragentModal) -->
@@ -5069,6 +5111,81 @@ async function adminCloseRequestRow(reqType, rowIndex, rowsArray, renderFn) {
     alert("Не удалось закрыть запрос: " + e.message);
   }
 }
+
+/* ===== Окно «Закрыть заявку»: файл → «Выполнено», только текст → «Закрыто (см. комментарий)» ===== */
+const CRM = { ctx: null, file: null, busy: false };
+function crmRender() {
+  const txt = document.getElementById("crmText").value.trim();
+  const mode = CRM.file ? "ok" : (txt ? "nt" : "em");
+  const ic = document.getElementById("crmIc"), st = document.getElementById("crmSt"), go = document.getElementById("crmGo"), dz = document.getElementById("crmDz");
+  ic.className = "crm-ic" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
+  ic.innerHTML = mode === "ok" ? "<i class='ti ti-circle-check' aria-hidden='true'></i>" : mode === "nt" ? "<i class='ti ti-message-2' aria-hidden='true'></i>" : "<i class='ti ti-alert-circle' aria-hidden='true'></i>";
+  st.className = "crm-st" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
+  st.textContent = mode === "ok" ? "Станет: Выполнено" : mode === "nt" ? "Станет: Закрыто (см. комментарий)" : "Добавьте файл или текст";
+  go.textContent = mode === "ok" ? "Выполнено" : mode === "nt" ? "Закрыть с ответом" : "Закрыть";
+  go.disabled = mode === "em" || CRM.busy; go.classList.toggle("ok", mode === "ok");
+  dz.className = "crm-dz" + (CRM.file ? " has" : "");
+  dz.innerHTML = CRM.file
+    ? `<i class="ti ti-circle-check" aria-hidden="true"></i><span><b>${escapeHtml(CRM.file.name)}</b>${(CRM.file.size / 1024).toFixed(0)} КБ · нажмите, чтобы убрать</span>`
+    : `<i class="ti ti-paperclip" aria-hidden="true"></i><span><b>Прикрепить файл или скриншот</b>PDF, JPG, PNG, Excel, до 8 МБ</span>`;
+}
+function openCloseReqModal(reqType, rowIndex, rowsArray, renderFn) {
+  const row = rowsArray.find(r => r.rowIndex === rowIndex) || {};
+  CRM.ctx = { reqType, rowIndex, rowsArray, renderFn }; CRM.file = null; CRM.busy = false;
+  document.getElementById("crmText").value = "";
+  document.getElementById("crmFile").value = "";
+  document.getElementById("crmErr").textContent = "";
+  const title = [row.type, row.details].filter(Boolean).join(" · ") || "Заявка";
+  document.getElementById("crmWho").innerHTML = `<b>${escapeHtml(title)}</b>${escapeHtml([row.employeeName, row.org].filter(Boolean).join(" · "))}`;
+  const m = document.getElementById("closeReqModal");
+  m.style.display = "flex"; requestAnimationFrame(() => m.classList.add("open"));
+  crmRender();
+}
+function closeCloseReqModal() {
+  const m = document.getElementById("closeReqModal");
+  m.classList.remove("open"); m.style.display = "none"; CRM.ctx = null;
+}
+function crmReadB64(file) {
+  return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = () => rej(new Error("Не удалось прочитать файл")); fr.readAsDataURL(file); });
+}
+async function crmSubmit() {
+  if (!CRM.ctx || CRM.busy) return;
+  const { reqType, rowIndex, rowsArray, renderFn } = CRM.ctx;
+  const comment = document.getElementById("crmText").value.trim();
+  const err = document.getElementById("crmErr"); err.textContent = "";
+  CRM.busy = true; crmRender();
+  const go = document.getElementById("crmGo"); go.textContent = "Отправка...";
+  try {
+    const params = { reqType, rowIndex, comment, v2: true };
+    if (CRM.file) { params.fileName = CRM.file.name; params.fileBase64 = await crmReadB64(CRM.file); }
+    const res = await apiCall("adminCloseRequest", params);
+    const row = rowsArray.find(r => r.rowIndex === rowIndex);
+    if (row) { row.status = res.status || (CRM.file ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    closeCloseReqModal();
+    if (typeof renderFn === "function") renderFn();
+    if (res.telegramError) alert("Заявка закрыта, но Telegram не доставил сообщение сотруднику: " + res.telegramError);
+  } catch (e) {
+    CRM.busy = false; crmRender(); err.textContent = "Не удалось закрыть: " + e.message;
+  }
+}
+(function () {
+  document.addEventListener("click", e => {
+    if (!CRM.ctx) return;
+    if (e.target.closest && e.target.closest("#crmDz")) { if (CRM.file) { CRM.file = null; document.getElementById("crmFile").value = ""; crmRender(); } else document.getElementById("crmFile").click(); return; }
+    if (e.target.closest && e.target.closest("#crmCancel")) { closeCloseReqModal(); return; }
+    if (e.target.closest && e.target.closest("#crmGo")) { crmSubmit(); return; }
+    if (e.target.id === "closeReqModal") closeCloseReqModal();
+  });
+  document.addEventListener("change", e => {
+    if (e.target.id !== "crmFile") return;
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    if (f.size > 8 * 1024 * 1024) { document.getElementById("crmErr").textContent = "Файл больше 8 МБ"; e.target.value = ""; return; }
+    document.getElementById("crmErr").textContent = ""; CRM.file = f; crmRender();
+  });
+  document.addEventListener("input", e => { if (e.target.id === "crmText") crmRender(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && CRM.ctx) closeCloseReqModal(); });
+})();
 
 function exportBankExcel() {
   const headers = ["Организация", "Тип", "Детали", "Сотрудник", "Кому направлено", "Дата запроса", "Статус", "Комментарий", "Дата выполнения"];
@@ -10438,7 +10555,7 @@ function renderBankTable() {
       <td>${bankStatusBadge(r.status)}</td>
       <td style="max-width:200px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="openCloseReqModal('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
