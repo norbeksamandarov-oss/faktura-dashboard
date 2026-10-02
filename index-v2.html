@@ -9025,16 +9025,19 @@ function vzaDeductTable(a) {
   const body = rows.map((r, n) => {
     const uzs = r.cur.UZS || 0, net = r.sal ? r.sal.net : null;
     const others = Object.entries(r.cur).filter(([c]) => c !== "UZS").map(([c, v]) => `${vzFormatNum(v)} ${escapeHtml(c)}`).join(" · ");
+    const pct = net && uzs > 0 ? Math.round(uzs / net * 100) : null;
     let after = "—";
     if (uzs > 0) after = net === null ? '<span style="color:var(--muted)">нет зарплаты</span>' : (net - uzs >= 0 ? `<b>${vzFormatNum(net - uzs)}</b>` : `<b class="k">не хватает ${vzFormatNum(uzs - net)}</b>`);
     return `<tr><td class="vza-n">${n + 1}</td><td><b>${escapeHtml(r.name)}</b><small style="display:block;color:var(--muted)">${escapeHtml([...r.orgs].join(", "))}</small></td>
-      <td class="num-cell k">${uzs ? vzFormatNum(uzs) : "—"}</td>
+      <td class="num-cell k">${uzs ? vzFormatNum(uzs) : "—"}</td><td class="num-cell">${others || "—"}</td>
       <td class="num-cell">${net === null ? '<span style="color:var(--muted)">нет</span>' : vzFormatNum(net) + `<small style="display:block;color:var(--muted)">${escapeHtml(r.sal.period)}</small>`}</td>
-      <td class="num-cell">${after}</td><td class="num-cell">${others || "—"}</td></tr>`;
+      <td class="num-cell">${pct === null ? "—" : `<b${pct > 100 ? ' class="k"' : ""}>${pct}%</b>`}</td>
+      <td class="num-cell">${after}</td></tr>`;
   }).join("");
-  return `<div class="panel vza-pn" style="margin-top:12px"><div class="vza-ch"><p class="vza-q1">К удержанию из зарплаты <small class="vza-sub">(только сумы; другие валюты не пересчитываются и показаны отдельно${cards.length ? `; корп. карты не включены: ${cards.length}` : ""})</small></p>
-    <button class="vza-cb on" id="vzaDedCsv" type="button">Скачать Excel (CSV)</button></div>
-    <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Долг, UZS</th><th class="num-cell">Последняя зарплата</th><th class="num-cell">Останется после удержания</th><th class="num-cell">Долг в др. валюте</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+  const si = VZ2_DATA && VZ2_DATA.salaryInfo, note = !si ? "⚠ сервер ещё не обновлён (нет данных о зарплате)" : si.error ? "⚠ ошибка зарплаты: " + escapeHtml(si.error) : "";
+  return `<div class="panel vza-pn" style="margin-top:12px"><div class="vza-ch"><p class="vza-q1">По сотрудникам <small class="vza-sub">(не отчитались: ${rows.length} чел.; сумы — для удержания из зарплаты, другие валюты отдельно и не пересчитываются${cards.length ? `; корп. карты не включены: ${cards.length}` : ""})</small></p>
+    <button class="vza-cb on" id="vzaDedCsv" type="button">Скачать Excel (CSV)</button></div>${note ? `<p class="vza-sub" style="margin:0 0 6px">${note}</p>` : ""}
+    <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Сотрудник</th><th class="num-cell">Не отчитался, UZS</th><th class="num-cell">В другой валюте</th><th class="num-cell">Последняя зарплата (к выдаче)</th><th class="num-cell">Долг / зарплата</th><th class="num-cell">Останется после удержания</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
 }
 function vzaDeductCsv() {
   const a = ((VZ2_DATA && VZ2_DATA.items) || []).filter(i => i.category === "podotchetniki" && (!vzaState.org || (i.org || "—") === vzaState.org) && (!vzaState.dept || (i.dept || "—") === vzaState.dept));
@@ -9075,7 +9078,7 @@ function vzaBlock(cat, a) {
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — ${L.kt.toLowerCase()}, <span class="d">зелёный</span> — ${L.dt.toLowerCase()})</small></p><div class="vza-seg">${seg}</div></div>
       <div class="vza-3"><div>${vzaDonut(dg, "kt", L.kt + " — доли по подразделениям", "k")}</div><div>${vzaDonut(dg, "dt", L.dt + " — доли по подразделениям", "d")}</div>
       </div><p class="vza-sub" style="margin:12px 0 2px"><b>По подразделениям</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
-    ${cat.key === "podotchetniki" ? vzaPeopleTable(inCur, cur) + vzaDeductTable(a) : vzaOrgTable(inCur, cur, cat.key)}
+    ${cat.key === "podotchetniki" ? vzaDeductTable(a) : vzaOrgTable(inCur, cur, cat.key)}
     <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: подразделения и валюты <small class="vza-sub">(<span class="k">${L.kt.toLowerCase()}</span> / <span class="d">${L.dt.toLowerCase()}</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Подразделение</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
