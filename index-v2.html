@@ -1190,7 +1190,8 @@ tr.row-overdue:hover { background: #F7D5D0 !important; }
     gap: 5px;
     transition: background .15s ease, color .15s ease, transform .1s ease;
   }
-.admin-close-btn:hover { background: var(--red-fg); color: #fff; }
+.admin-close-btn { border-color: transparent !important; background: var(--sk-nav-on) !important; color: var(--navy-text) !important; border-radius: 10px !important; padding: 7px 14px !important; }
+.admin-close-btn:hover { background: linear-gradient(135deg,#4F6BFF,#8F6EFF) !important; color: #fff !important; box-shadow: 0 6px 16px rgba(79,107,255,.28); }
 .admin-close-btn:active { transform: scale(0.96); }
 .admin-open-btn {
     padding: 6px 12px;
@@ -1803,7 +1804,7 @@ html .status-new{background:var(--gray-bg);color:var(--gray-fg)}
 html .status-sent,html .status-notmine{background:var(--amber-bg);color:var(--amber-fg)}
 html .status-accepted{background:var(--green-bg);color:var(--green-fg)}
 html .status-rejected,html .status-error{background:var(--red-bg);color:var(--red-fg)}
-html .status-pendingboss{background:var(--sk-nav-on);color:var(--navy-text)}
+html .status-pendingboss,html .status-closed{background:var(--sk-nav-on);color:var(--navy-text)}
 /* Аналитика kartalari: namuna uslubida */
 html[data-brand] .org-card-v2,html[data-brand] .stat-card-v2{background:var(--sk-glass)!important;border:1px solid var(--border)!important;border-radius:18px!important;color:var(--text);box-shadow:0 2px 10px -4px rgba(0,0,0,.28)!important;transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .25s}
 html[data-brand] .org-card-v2:hover,html[data-brand] .stat-card-v2:hover{transform:translateY(-4px);background:var(--sk-glass-hi)!important;border-color:var(--accent-2)!important}
@@ -10151,10 +10152,10 @@ function renderDogovorTable() {
       return `<span class="status-badge status-sent"><i class='ti ti-hourglass' aria-hidden='true'></i> Ждём финальный PDF от вас</span>`;
     }
     if (status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
+      return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Ответил текстом</span>`;
     }
     if (status === "Закрыто администратором") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+      return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     }
     return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Отправлено</span>`;
   }
@@ -10169,10 +10170,10 @@ function renderDogovorTable() {
       return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
     }
     if (r.status === "Закрыто (см. комментарий)") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+      return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
     }
     if (r.status === "Закрыто администратором") {
-      return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+      return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     }
     const cls = r.status === "Принято" ? "status-accepted" : r.status === "Отклонено" ? "status-rejected" : "status-notmine";
     return `<span class="status-badge ${cls}">${escapeHtml(stripEmoji(r.status))}</span>`;
@@ -10249,8 +10250,8 @@ function renderDogovorRealTable() {
   function statusBadge(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -10324,8 +10325,8 @@ function renderDoverennostTable() {
   function statusBadge2(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -10418,8 +10419,8 @@ function renderRealschetTable() {
   function statusBadgeRealschet(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -10508,8 +10509,8 @@ function renderZakaznaryadTable() {
   function statusBadgeZakaznaryad(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -10590,8 +10591,8 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType
   function statusBadgeOtherreq(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
 
@@ -10687,8 +10688,8 @@ function renderBankTable() {
   function bankStatusBadge(status) {
     if (!status || status === "В ожидании") return `<span class="status-badge status-new"><i class='ti ti-hourglass' aria-hidden='true'></i> В ожидании</span>`;
     if (status === "Выполнено") return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Выполнено</span>`;
-    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-rejected"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
-    if (status === "Закрыто администратором") return `<span class="status-badge status-rejected"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
+    if (status === "Закрыто (см. комментарий)") return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
+    if (status === "Закрыто администратором") return `<span class="status-badge status-closed"><i class='ti ti-shield-check' aria-hidden='true'></i> Закрыто администратором</span>`;
     return `<span class="status-badge status-new"><i class='ti ti-circle' aria-hidden='true'></i> ${escapeHtml(stripEmoji(status))}</span>`;
   }
   function bankTypeBadge(type) {
