@@ -2205,6 +2205,7 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 #vzaClear{background:transparent!important;border:1px solid var(--navy-light)!important;color:var(--navy-text)!important;border-radius:12px!important;padding:0 16px!important;height:46px;font-weight:600;cursor:pointer;align-self:flex-end;transition:background .2s,color .2s}
 #vzaClear:hover{background:var(--navy-light)!important;color:#fff!important}
 .vza-tb{margin-bottom:0!important}
+.vza-tb .filter-field{min-width:220px!important;flex:0 1 auto!important}
 .vza-q1{font-size:15px;font-weight:700;margin:0 0 2px;color:var(--text)}
 .vza-name{font-size:17px;font-weight:700;color:var(--text);overflow-wrap:anywhere;margin-top:6px}.vza-amt{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
 .vza-li{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--border);font-size:13px}
@@ -4184,7 +4185,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <div class="vz2-err-banner" data-vz2-err-banner style="display:none;"></div>
         <div class="toolbar vza-tb">
           <div class="filter-field"><label><i class='ti ti-building' aria-hidden='true'></i> Организация</label><select class="status-filter" id="vzaOrg"><option value="">Все организации</option></select></div>
-          <div class="filter-field"><label><i class='ti ti-map-pin' aria-hidden='true'></i> ДЦ</label><select class="status-filter" id="vzaDept"><option value="">Все ДЦ</option></select></div>
+          <div class="filter-field"><label><i class='ti ti-map-pin' aria-hidden='true'></i> Подразделение</label><select class="status-filter" id="vzaDept"><option value="">Все подразделения</option></select></div>
           <button id="vzaClear"><i class='ti ti-x' aria-hidden='true'></i> Сбросить</button>
         </div>
       </div>
@@ -8891,7 +8892,7 @@ const VZA_CATS = [
   { key: "pokupateli", name: "Покупатели" },
   { key: "podotchetniki", name: "Подотчётные лица" }
 ];
-const vzaState = { org: "", dept: "", min: 0, cur: "", open: {} };
+const vzaState = { org: "", dept: "", min: 0, cur: {}, open: {} };
 function vzaSums(items) {
   let kt = 0, dt = 0;
   for (const i of items) { const v = Math.abs(Number(i.total || 0)); if (i.side === "dt") dt += v; else kt += v; }
@@ -8934,12 +8935,12 @@ function vz2RenderAnalytics() {
   if (!every.length) { body.innerHTML = ""; if (empty) empty.style.display = ""; return; }
   if (empty) empty.style.display = "none";
   vzaFillSelect("vzaOrg", [...new Set(every.map(i => i.org || "—"))].sort(), "Все организации");
-  vzaFillSelect("vzaDept", [...new Set(every.map(i => i.dept || "—"))].sort(), "Все ДЦ");
+  vzaFillSelect("vzaDept", [...new Set(every.map(i => i.dept || "—"))].sort(), "Все подразделения");
   const a = every.filter(i => (!vzaState.org || (i.org || "—") === vzaState.org) && (!vzaState.dept || (i.dept || "—") === vzaState.dept));
   body.innerHTML = VZA_SHOWN.map(key => vzaBlock(VZA_CATS.find(c => c.key === key), a.filter(i => i.category === key))).join("");
 }
-// Блоки добавляем по одному: сейчас только Поставщики, дальше Покупатели и Подотчётные лица.
-const VZA_SHOWN = ["postavshiki"];
+// Блоки добавляем по одному: Поставщики, Покупатели; дальше Подотчётные лица.
+const VZA_SHOWN = ["postavshiki", "pokupateli"];
 function vzaCurOrder(items) {
   const c = {};
   items.forEach(i => { const k = vzaCur(i); c[k] = (c[k] || 0) + 1; });
@@ -8960,18 +8961,18 @@ function vzaBars(groups, mx) {
       <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 100).toFixed(1)}%"></u><span class="k">${vzaM(g.s.kt)}</span></div>
       <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 100).toFixed(1)}%"></u><span class="d">${vzaM(g.s.dt)}</span></div></div></div>`).join("");
 }
-function vzaOrgTable(items, cur) {
+function vzaOrgTable(items, cur, catKey) {
   const og = vzaGroup(items, i => i.org);
   const tot = og.reduce((p, g) => p + g.s.kt + g.s.dt, 0) || 1;
   const rows = og.map((g, n) => {
-    const depts = vzaGroup(g.v, i => i.dept), key = cur + "|" + g.k, open = !!vzaState.open[key];
+    const depts = vzaGroup(g.v, i => i.dept), key = catKey + "|" + cur + "|" + g.k, open = !!vzaState.open[key];
     const share = (g.s.kt + g.s.dt) / tot * 100;
     return `<tr class="vza-or"><td class="vza-n">${n + 1}</td>
       <td><span class="vza-oi"><i class="ti ti-building" aria-hidden="true"></i></span><b>${escapeHtml(g.k)}</b></td>
       <td class="num-cell"><b>${g.v.length}</b></td>
       <td class="vza-sh"><div class="vza-sb"><u style="width:${share.toFixed(1)}%"></u></div><span>${Math.round(share)}%</span></td>
       <td class="num-cell k">${vzFormatNum(g.s.kt)}</td><td class="num-cell d">${vzFormatNum(g.s.dt)}</td>
-      <td><button class="vza-chip${open ? " on" : ""}" data-open="${escapeHtml(key)}">${open ? "▾" : "▸"} ${depts.length} ДЦ</button></td></tr>` +
+      <td><button class="vza-chip${open ? " on" : ""}" data-open="${escapeHtml(key)}">${open ? "▾" : "▸"} ${depts.length} подр.</button></td></tr>` +
       (open ? depts.map(d => `<tr class="vza-dr2"><td></td><td colspan="1">${escapeHtml(d.k)}</td><td class="num-cell">${d.v.length}</td><td></td><td class="num-cell k">${vzFormatNum(d.s.kt)}</td><td class="num-cell d">${vzFormatNum(d.s.dt)}</td><td></td></tr>`).join("") : "");
   }).join("");
   return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По организациям <small class="vza-sub">(валюта: ${escapeHtml(cur)} — переключается сверху в диаграммах)</small></p>
@@ -8980,7 +8981,7 @@ function vzaOrgTable(items, cur) {
 function vzaBlock(cat, a) {
   if (!a.length) return `<div class="vza-hd">${cat.name}</div><div class="panel"><p class="vza-sub" style="margin:0">По выбранным фильтрам данных нет.</p></div>`;
   const curs = vzaCurOrder(a);
-  if (!curs.includes(vzaState.cur)) vzaState.cur = curs[0];
+  if (!curs.includes(vzaState.cur[cat.key])) vzaState.cur[cat.key] = curs[0];
   const cards = curs.map(c => {
     const v = a.filter(i => vzaCur(i) === c), q = vzaSums(v), sal = q.dt - q.kt;
     return `<div class="vza-cur"><div class="vza-cn">${escapeHtml(c)}<small>${v.length} зап.</small></div>
@@ -8988,21 +8989,21 @@ function vzaBlock(cat, a) {
       <div class="vza-cl"><span>Нам должны</span><b class="d">${vzFormatNum(q.dt)}</b></div>
       <div class="vza-cl vza-sal"><span>Итог</span><b>${sal < 0 ? "−" : "+"}${vzFormatNum(Math.abs(sal))}</b></div></div>`;
   }).join("");
-  const cur = vzaState.cur, inCur = a.filter(i => vzaCur(i) === cur);
+  const cur = vzaState.cur[cat.key], inCur = a.filter(i => vzaCur(i) === cur);
   const dg = vzaGroup(inCur, i => i.dept);
   const mxD = Math.max(1, ...dg.map(g => Math.max(g.s.kt, g.s.dt)));
-  const seg = curs.map(c => `<button class="vza-cb${c === cur ? " on" : ""}" data-cur="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
+  const seg = curs.map(c => `<button class="vza-cb${c === cur ? " on" : ""}" data-cat="${cat.key}" data-cur="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
   const dAll = vzaGroup(a, i => i.dept);
   const head = curs.map(c => `<th class="num-cell">${escapeHtml(c)}</th>`).join("");
   const rows = dAll.map(g => `<tr><td><b>${escapeHtml(g.k)}</b> <small style="color:var(--muted)">${g.v.length}</small></td>${curs.map(c => { const q = vzaSums(g.v.filter(i => vzaCur(i) === c)); return `<td class="num-cell">${q.kt + q.dt ? `<span class="k">${vzFormatNum(q.kt)}</span> / <span class="d">${vzFormatNum(q.dt)}</span>` : "—"}</td>`; }).join("")}</tr>`).join("");
   return `<div class="vza-hd">${cat.name}</div>
     <div class="vza-curs">${cards}</div>
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — мы должны, <span class="d">зелёный</span> — нам должны)</small></p><div class="vza-seg">${seg}</div></div>
-      <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по ДЦ", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по ДЦ", "d")}</div>
-      </div><p class="vza-sub" style="margin:12px 0 2px"><b>По ДЦ</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
-    ${vzaOrgTable(inCur, cur)}
-    <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: ДЦ и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
-      <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>ДЦ</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+      <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по подразделениям", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по подразделениям", "d")}</div>
+      </div><p class="vza-sub" style="margin:12px 0 2px"><b>По подразделениям</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
+    ${vzaOrgTable(inCur, cur, cat.key)}
+    <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: подразделения и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
+      <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Подразделение</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 (function () {
   const rerender = () => vz2RenderAnalytics();
@@ -9014,9 +9015,9 @@ function vzaBlock(cat, a) {
     const ch = e.target.closest && e.target.closest(".vza-chip");
     if (ch) { const k = ch.dataset.open; vzaState.open[k] = !vzaState.open[k]; rerender(); return; }
     const cb = e.target.closest && e.target.closest(".vza-cb");
-    if (cb) { vzaState.cur = cb.dataset.cur; rerender(); return; }
+    if (cb) { vzaState.cur[cb.dataset.cat] = cb.dataset.cur; rerender(); return; }
     if (e.target.closest && e.target.closest("#vzaClear")) {
-      vzaState.org = ""; vzaState.dept = ""; vzaState.min = 0; vzaState.cur = "";
+      vzaState.org = ""; vzaState.dept = ""; vzaState.min = 0; vzaState.cur = {};
       ["vzaOrg", "vzaDept"].forEach(id => { const s = document.getElementById(id); if (s) s.value = ""; });
             rerender();
     }
