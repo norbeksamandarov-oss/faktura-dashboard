@@ -3593,7 +3593,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="table-wrap">
         <table class="invoices" id="realschetTable">
           <thead>
-            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th><th>Договор</th><th></th></tr>
+            <tr><th>№</th><th>Организация</th><th>Контрагент</th><th>ИНН/ПНФЛ</th><th>Сотрудник</th><th>Кому направлено</th><th>Дата запроса</th><th>Статус</th><th>Комментарий</th><th>Дата выполнения</th><th>Договор</th><th>Счёт-фактура</th><th></th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -10459,8 +10459,9 @@ function renderRealschetTable() {
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
       <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Открыть</a>` : `<span style="color:var(--muted)">—</span>`}</td>
-      <td>${closeDocsHtml("realschet", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
-    </tr>`).join("") || `<tr><td colspan="12" style="color:var(--muted)">Ничего не найдено</td></tr>`;
+      <td>${closeDocsHtml("realschet", r.rowIndex) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+    </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
 function realschetFileHref(fileName) {
