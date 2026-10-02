@@ -2227,6 +2227,18 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 .vza-b u.k{background:linear-gradient(90deg,#ff6b6b,#e0475b)}.vza-b u.d{background:linear-gradient(90deg,#34d399,#16a870)}
 .vza-b span{font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:700px){.vza-cr{grid-template-columns:1fr}}
+.vza-pn{padding:12px 14px!important}.vza-pn .vza-q1{margin-bottom:6px}
+.vza-curs{gap:10px!important;margin-bottom:12px}
+.vza-cur{padding:9px 12px!important;gap:3px!important;border-radius:12px!important}.vza-cn{font-size:13.5px!important}.vza-cl{font-size:12px!important}
+.vza-3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:16px;align-items:start}.vza-3>div{min-width:0}
+.vza-dr{display:flex;gap:12px;align-items:center}.vza-ring2{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;flex:none}
+.vza-ring2 span{width:56px;height:56px;border-radius:50%;background:var(--sk-glass);display:grid;place-items:center;font-size:11px;font-weight:800;text-align:center;line-height:1.1}
+.vza-lgs{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.vza-lg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text)}.vza-lg i{width:9px;height:9px;border-radius:3px;flex:none}.vza-lg span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vza-lg b{font-variant-numeric:tabular-nums}
+.vza-cr{padding:4px 0!important;gap:10px!important;grid-template-columns:minmax(80px,150px) 1fr!important}.vza-cd{font-size:12px!important}.vza-b{height:11px!important}.vza-b span{font-size:10.5px!important}
+.vza-3 .vza-cr{grid-template-columns:1fr!important;gap:2px!important}
+.vza-hd{margin:12px 2px 6px!important}
+.vza-pn .invoices td,.vza-pn .invoices th{padding:6px 8px!important;font-size:12px}
+@media(max-width:900px){.vza-3{grid-template-columns:1fr}}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -8925,8 +8937,22 @@ function vzaCurOrder(items) {
   items.forEach(i => { const k = vzaCur(i); c[k] = (c[k] || 0) + 1; });
   return Object.keys(c).sort((x, y) => (y === "UZS") - (x === "UZS") || c[y] - c[x]);
 }
+const VZA_PAL = ["#4f7dff", "#7a3cff", "#14b8a6", "#f59e0b", "#ec4899", "#64748b", "#22c55e", "#ef4444"];
+function vzaDonut(groups, side, title, color) {
+  const vals = groups.map(g => ({ k: g.k, v: g.s[side] })).filter(x => x.v > 0).sort((x, y) => y.v - x.v);
+  const tot = vals.reduce((p, x) => p + x.v, 0);
+  if (!tot) return `<div class="vza-dn"><p class="vza-sub" style="margin:0 0 6px"><b>${title}</b></p><div class="vza-sub">нет данных</div></div>`;
+  let acc = 0;
+  const stops = vals.map((x, i) => { const st = acc / tot * 100; acc += x.v; return `${VZA_PAL[i % 8]} ${st.toFixed(2)}% ${(acc / tot * 100).toFixed(2)}%`; }).join(",");
+  const leg = vals.slice(0, 6).map((x, i) => `<div class="vza-lg"><i style="background:${VZA_PAL[i % 8]}"></i><span>${escapeHtml(x.k)}</span><b>${Math.round(x.v / tot * 100)}%</b></div>`).join("");
+  return `<div class="vza-dn"><p class="vza-sub" style="margin:0 0 6px"><b class="${color}">${title}</b></p><div class="vza-dr"><div class="vza-ring2" style="background:conic-gradient(${stops})"><span class="${color}">${vzaM(tot)}</span></div><div class="vza-lgs">${leg}</div></div></div>`;
+}
+function vzaBars(groups, mx) {
+  return groups.map(g => `<div class="vza-cr"><div class="vza-cd">${escapeHtml(g.k)}</div><div class="vza-cb2">
+      <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 100).toFixed(1)}%"></u><span class="k">${vzaM(g.s.kt)}</span></div>
+      <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 100).toFixed(1)}%"></u><span class="d">${vzaM(g.s.dt)}</span></div></div></div>`).join("");
+}
 function vzaBlock(cat, a) {
-  const amt = i => Math.abs(Number(i.total || 0));
   if (!a.length) return `<div class="vza-hd">${cat.name}</div><div class="panel"><p class="vza-sub" style="margin:0">По выбранным фильтрам данных нет.</p></div>`;
   const curs = vzaCurOrder(a);
   if (!curs.includes(vzaState.cur)) vzaState.cur = curs[0];
@@ -8937,22 +8963,20 @@ function vzaBlock(cat, a) {
       <div class="vza-cl"><span>Нам должны</span><b class="d">${vzFormatNum(q.dt)}</b></div>
       <div class="vza-cl vza-sal"><span>Итог</span><b>${sal < 0 ? "−" : "+"}${vzFormatNum(Math.abs(sal))}</b></div></div>`;
   }).join("");
-  // диаграмма по ДЦ — в выбранной валюте
   const cur = vzaState.cur, inCur = a.filter(i => vzaCur(i) === cur);
-  const dg = vzaGroup(inCur, i => i.dept);
-  const mx = Math.max(1, ...dg.map(g => Math.max(g.s.kt, g.s.dt)));
-  const chart = dg.map(g => `<div class="vza-cr"><div class="vza-cd">${escapeHtml(g.k)}</div><div class="vza-cb2">
-      <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 100).toFixed(1)}%"></u><span class="k">${vzFormatNum(g.s.kt)}</span></div>
-      <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 100).toFixed(1)}%"></u><span class="d">${vzFormatNum(g.s.dt)}</span></div></div></div>`).join("");
+  const dg = vzaGroup(inCur, i => i.dept), og = vzaGroup(inCur, i => i.org);
+  const mxD = Math.max(1, ...dg.map(g => Math.max(g.s.kt, g.s.dt))), mxO = Math.max(1, ...og.map(g => Math.max(g.s.kt, g.s.dt)));
   const seg = curs.map(c => `<button class="vza-cb${c === cur ? " on" : ""}" data-cur="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
-  // таблица ДЦ × валюты
   const dAll = vzaGroup(a, i => i.dept);
   const head = curs.map(c => `<th class="num-cell">${escapeHtml(c)}</th>`).join("");
-  const rows = dAll.map(g => `<tr><td><b>${escapeHtml(g.k)}</b><br><small style="color:var(--muted)">${g.v.length} зап.</small></td>${curs.map(c => { const q = vzaSums(g.v.filter(i => vzaCur(i) === c)); return `<td class="num-cell">${q.kt + q.dt ? `<div class="k">${vzFormatNum(q.kt)}</div><div class="d">${vzFormatNum(q.dt)}</div>` : "—"}</td>`; }).join("")}</tr>`).join("");
+  const rows = dAll.map(g => `<tr><td><b>${escapeHtml(g.k)}</b> <small style="color:var(--muted)">${g.v.length}</small></td>${curs.map(c => { const q = vzaSums(g.v.filter(i => vzaCur(i) === c)); return `<td class="num-cell">${q.kt + q.dt ? `<span class="k">${vzFormatNum(q.kt)}</span> / <span class="d">${vzFormatNum(q.dt)}</span>` : "—"}</td>`; }).join("")}</tr>`).join("");
   return `<div class="vza-hd">${cat.name}</div>
-    <div class="panel"><p class="vza-q1">Итого по валютам</p><p class="vza-sub">Каждая валюта отдельно, не смешиваются</p><div class="vza-curs">${cards}</div></div>
-    <div class="panel" style="margin-top:14px"><div class="vza-ch"><div><p class="vza-q1">По ДЦ</p><p class="vza-sub"><span class="k">красный</span> — мы должны · <span class="d">зелёный</span> — нам должны</p></div><div class="vza-seg">${seg}</div></div>${chart}</div>
-    <div class="panel" style="margin-top:14px"><p class="vza-q1">Таблица: ДЦ и валюты</p><p class="vza-sub"><span class="k">красный</span> — мы должны · <span class="d">зелёный</span> — нам должны</p>
+    <div class="vza-curs">${cards}</div>
+    <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — мы должны, <span class="d">зелёный</span> — нам должны)</small></p><div class="vza-seg">${seg}</div></div>
+      <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по ДЦ", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по ДЦ", "d")}</div>
+      <div><p class="vza-sub" style="margin:0 0 4px"><b>По организациям</b></p>${vzaBars(og, mxO)}</div></div>
+      <p class="vza-sub" style="margin:10px 0 2px"><b>По ДЦ</b></p>${vzaBars(dg, mxD)}</div>
+    <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: ДЦ и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>ДЦ</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 (function () {
