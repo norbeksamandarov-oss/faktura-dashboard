@@ -34,6 +34,42 @@
 
   /* To'liq ekranda Telegram o'z tugmalarini tepada sahifa ustiga qo'yadi - joy qoldiramiz */
   html.tg-fs .wrap { padding-top: calc(18px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)); padding-bottom: calc(48px + var(--tg-safe-area-inset-bottom, 0px)); }
+  /* Мои заявки */
+  .stat[data-f] { cursor: pointer; transition: transform 0.15s var(--spring), border-color 0.2s; }
+  .stat[data-f]:active { transform: scale(0.95); }
+  .mr-q { width: 100%; height: 46px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--text);
+          padding: 0 16px; font-size: 15px; font-weight: 600; outline: 0; -webkit-appearance: none; }
+  .mr-q:focus { border-color: color-mix(in srgb, var(--accent) 70%, transparent); box-shadow: 0 0 0 3px rgba(47,107,255,0.22); }
+  .mr-chips { display: flex; gap: 8px; margin: 12px 0 14px; overflow-x: auto; scrollbar-width: none; }
+  .mr-chips::-webkit-scrollbar { display: none; }
+  .mr-chip { flex: none; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 8px 14px;
+             font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s; }
+  .mr-chip:active { transform: scale(0.95); }
+  .mr-chip.on { background: var(--text); color: var(--bg); border-color: transparent; }
+  .mr-item { border-bottom: 1px solid var(--line); animation: mrIn 0.4s var(--ease) both; }
+  @keyframes mrIn { from { opacity: 0; transform: translateY(10px); } }
+  .mr-head { width: 100%; display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; text-align: left;
+             background: none; border: 0; padding: 14px 2px; cursor: pointer; color: var(--text); }
+  .mr-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .mr-type { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; }
+  .mr-sum { font-size: 12.5px; color: var(--muted); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mr-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  .mr-st { font-size: 11.5px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--surface-hi); color: var(--muted); }
+  .mr-item.open .mr-st { background: rgba(255,159,10,0.16); color: #ffb340; }
+  .mr-item.done .mr-st { background: var(--ok-bg); color: var(--ok); }
+  .mr-item.rejected .mr-st { background: var(--danger-bg); color: var(--danger); }
+  .mr-date { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .mr-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+  .mr-item.open .mr-more { grid-template-rows: 1fr; }
+  .mr-more-in { overflow: hidden; min-height: 0; }
+  .mr-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 4px 2px; color: var(--muted); }
+  .mr-row b { color: var(--text); font-weight: 700; text-align: right; }
+  .mr-cm { margin: 8px 2px 14px; padding: 12px 14px; border-radius: 12px; background: var(--surface); font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .mr-more-in > :last-child { margin-bottom: 14px; }
+  .mr-empty { padding: 36px 4px; text-align: center; color: var(--muted); font-weight: 600; }
+  .mr-retry { display: block; margin: 14px auto 0; border: 0; border-radius: 12px; padding: 10px 18px; background: var(--accent); color: #fff; font-weight: 800; cursor: pointer; }
+  .mr-sk { height: 62px; margin: 10px 0; border-radius: 14px; background: linear-gradient(100deg, var(--surface) 30%, var(--surface-hi) 50%, var(--surface) 70%); background-size: 200% 100%; animation: mrSk 1.2s linear infinite; }
+  @keyframes mrSk { to { background-position: -200% 0; } }
   .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; pointer-events: none;
          background-color: var(--orb); transition: background-color 0.9s ease; opacity: 0.5; will-change: transform; }
   .orb.o1 { width: 300px; height: 300px; top: -110px; left: -90px; animation: drift1 16s ease-in-out infinite; }
@@ -969,11 +1005,93 @@
       items: ["realschet", "zakaznaryad", "otherreq_real"],
     },
   };
+
+  // ------------------------------------------------------------
+  // «Мои заявки»: список своих заявок, поиск и фильтр по статусу
+  // ------------------------------------------------------------
+  var MR = { filter: "all", q: "", items: null, loading: false, error: "" };
+  var MR_FILTERS = [["all", "Все"], ["open", "В работе"], ["done", "Готово"], ["rejected", "Отклонено"]];
+  var MR_STATUS = { open: "В работе", done: "Готово", rejected: "Отклонено" };
+
+  function mrFmtDate(raw) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(raw || "");
+    return m ? m[3] + "." + m[2] + "." + m[1] + (m[4] ? " " + m[4] + ":" + m[5] : "") : (raw || "");
+  }
+
+  function mrRender(root) {
+    var list = root.querySelector(".mr-list");
+    root.querySelectorAll(".mr-chip").forEach(function (c) { c.classList.toggle("on", c.dataset.f === MR.filter); });
+    if (MR.loading) {
+      list.innerHTML = "<div class='mr-sk'></div><div class='mr-sk'></div><div class='mr-sk'></div>";
+      return;
+    }
+    if (MR.error) {
+      list.innerHTML = "<div class='mr-empty'>Не удалось загрузить заявки<button type='button' class='mr-retry'>Повторить</button></div>";
+      list.querySelector(".mr-retry").onclick = function () { mrLoad(root); };
+      return;
+    }
+    var q = MR.q.trim().toLowerCase();
+    var rows = (MR.items || []).filter(function (it) {
+      if (MR.filter !== "all" && it.bucket !== MR.filter) return false;
+      if (!q) return true;
+      return (it.typeLabel + " " + it.org + " " + it.summary + " " + it.status + " " + it.comment).toLowerCase().indexOf(q) >= 0;
+    });
+    if (!rows.length) {
+      list.innerHTML = "<div class='mr-empty'>" + ((MR.items || []).length ? "Ничего не найдено" : "Заявок пока нет") + "</div>";
+      return;
+    }
+    list.innerHTML = rows.map(function (it, i) {
+      return "<div class='mr-item " + it.bucket + "' style='animation-delay:" + Math.min(i, 12) * 40 + "ms'>" +
+        "<button type='button' class='mr-head'>" +
+          "<span class='mr-main'><span class='mr-type'>" + esc(it.typeLabel) + "</span>" +
+          "<span class='mr-sum'>" + esc(it.org + (it.summary ? " · " + it.summary : "")) + "</span></span>" +
+          "<span class='mr-side'><span class='mr-st'>" + esc(MR_STATUS[it.bucket] || it.status) + "</span>" +
+          "<span class='mr-date'>" + esc(mrFmtDate(it.date)) + "</span></span>" +
+        "</button>" +
+        "<div class='mr-more'><div class='mr-more-in'>" +
+          "<div class='mr-row'><span>Статус</span><b>" + esc(it.status) + "</b></div>" +
+          (it.doneDate ? "<div class='mr-row'><span>Ответ получен</span><b>" + esc(mrFmtDate(it.doneDate)) + "</b></div>" : "") +
+          (it.comment ? "<div class='mr-cm'>" + esc(it.comment) + "</div>" : "") +
+        "</div></div></div>";
+    }).join("");
+    list.querySelectorAll(".mr-head").forEach(function (b) {
+      b.onclick = function () { b.parentNode.classList.toggle("open"); if (tg && tg.HapticFeedback) { try { tg.HapticFeedback.selectionChanged(); } catch (e) {} } };
+    });
+  }
+
+  function mrLoad(root) {
+    var chatId = getChatId();
+    if (!chatId) { MR.error = "no chat"; mrRender(root); return; }
+    MR.loading = true; MR.error = ""; mrRender(root);
+    callApi("miniAppMyRequests", { chatId: chatId }).then(function (res) {
+      MR.items = res.items || []; MR.loading = false; mrRender(root);
+    }).catch(function () { MR.loading = false; MR.error = "x"; mrRender(root); });
+  }
+
+  SECTIONS.myrequests = {
+    icon: "ti-list-details", label: "Мои заявки", title: "Мои заявки",
+    render: function () {
+      var root = document.createElement("div");
+      root.className = "mr";
+      root.innerHTML =
+        "<input type='search' class='mr-q' placeholder='Поиск по заявкам' autocomplete='off'>" +
+        "<div class='mr-chips'>" + MR_FILTERS.map(function (f) { return "<button type='button' class='mr-chip' data-f='" + f[0] + "'>" + f[1] + "</button>"; }).join("") + "</div>" +
+        "<div class='mr-list'></div>";
+      content.appendChild(root);
+      var q = root.querySelector(".mr-q");
+      q.value = MR.q;
+      q.oninput = function () { MR.q = q.value; if (!MR.loading && !MR.error) mrRender(root); };
+      root.querySelectorAll(".mr-chip").forEach(function (c) { c.onclick = function () { MR.filter = c.dataset.f; mrRender(root); }; });
+      mrLoad(root);
+    },
+  };
+
   var TOP_MENU = [
     { type: "cat", key: "postupleniya" },
     { type: "cat", key: "realizatsiya" },
     { type: "sec", key: "bank" },
     { type: "sec", key: "salary" },
+    { type: "sec", key: "myrequests" },
     { type: "sec", key: "suggestion" },
   ];
   var ICON_COLORS = {
@@ -986,6 +1104,7 @@
     otherreq_real: "#8E8E93",
     salary: "#30D158",
     suggestion: "#FFB800",
+    myrequests: "#5E9BFF",
   };
 
   // ------------------------------------------------------------
@@ -999,7 +1118,7 @@
 
   var SUBS = {
     postupleniya: "Договор, доверенность", realizatsiya: "Счёт-фактура, заказ-наряд",
-    bank: "Платёжные вопросы", salary: "Расчётный лист", suggestion: "Напишите нам напрямую",
+    bank: "Платёжные вопросы", myrequests: "Статус и история", salary: "Расчётный лист", suggestion: "Напишите нам напрямую",
     dogovor: "Запрос по договору", doverennost: "Оформить доверенность", realschet: "На автомобиль",
     zakaznaryad: "По сервису и запчастям", otherreq_post: "Если ничего не подошло", otherreq_real: "Если ничего не подошло",
   };
@@ -1091,9 +1210,12 @@
     var t = st.total || {};
     statsSlot.innerHTML =
       "<div class='stats'>" +
-      "<div class='stat work'><b data-to='" + (t.open || 0) + "'>0</b><span>в работе</span></div>" +
-      "<div class='stat done'><b data-to='" + (t.done || 0) + "'>0</b><span>готово</span></div>" +
-      "<div class='stat rej'><b data-to='" + (t.rejected || 0) + "'>0</b><span>отклонено</span></div></div>";
+      "<div class='stat work' data-f='open' role='button' tabindex='0'><b data-to='" + (t.open || 0) + "'>0</b><span>в работе</span></div>" +
+      "<div class='stat done' data-f='done' role='button' tabindex='0'><b data-to='" + (t.done || 0) + "'>0</b><span>готово</span></div>" +
+      "<div class='stat rej' data-f='rejected' role='button' tabindex='0'><b data-to='" + (t.rejected || 0) + "'>0</b><span>отклонено</span></div></div>";
+    Array.prototype.forEach.call(statsSlot.querySelectorAll(".stat"), function (el) {
+      el.onclick = function () { MR.filter = el.dataset.f; showSection("myrequests", showMenu); };
+    });
     Array.prototype.forEach.call(statsSlot.querySelectorAll("b"), function (b) { setTimeout(function () { countUp(b); }, 300); });
   }
 
@@ -1165,7 +1287,7 @@
         return { kind: "cat", key: entry.key, icon: c.icon, color: c.color, label: c.label, sub: SUBS[entry.key], badgeKey: entry.key };
       }
       var s = SECTIONS[entry.key];
-      var wide = entry.key === "suggestion";
+      var wide = entry.key === "suggestion" || entry.key === "myrequests";
       return { kind: "sec", key: entry.key, icon: s.icon, color: ICON_COLORS[entry.key], label: s.label, sub: SUBS[entry.key], wide: wide, badgeKey: entry.key === "bank" ? "bank" : "" };
     }), function (m) {
       if (m.kind === "cat") showCategory(m.key); else showSection(m.key, showMenu);
@@ -1201,7 +1323,7 @@
     chrome(false);
     pageSub.dataset.screen = "form";
     setOrb(ICON_COLORS[key] || "#2f6bff");
-    setHero(esc(s.title), key === "salary" ? "Ваш расчётный лист" : "Заполните форму ниже", "");
+    setHero(esc(s.title), key === "salary" ? "Ваш расчётный лист" : key === "myrequests" ? "Статус каждой заявки" : "Заполните форму ниже", "");
     backBtn.onclick = onBack;
     if (tg && tg.BackButton) { tg.BackButton.show(); tg.BackButton.onClick(onBack); }
     s.render();
