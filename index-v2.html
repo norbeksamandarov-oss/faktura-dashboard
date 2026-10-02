@@ -2230,15 +2230,15 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 .vza-pn{padding:12px 14px!important}.vza-pn .vza-q1{margin-bottom:6px}
 .vza-curs{gap:10px!important;margin-bottom:12px}
 .vza-cur{padding:9px 12px!important;gap:3px!important;border-radius:12px!important}.vza-cn{font-size:13.5px!important}.vza-cl{font-size:12px!important}
-.vza-3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:16px;align-items:start}.vza-3>div{min-width:0}
+.vza-3{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.vza-3>div{min-width:0}
 .vza-dr{display:flex;gap:12px;align-items:center}.vza-ring2{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;flex:none}
 .vza-ring2 span{width:56px;height:56px;border-radius:50%;background:var(--sk-glass);display:grid;place-items:center;font-size:11px;font-weight:800;text-align:center;line-height:1.1}
 .vza-lgs{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.vza-lg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text)}.vza-lg i{width:9px;height:9px;border-radius:3px;flex:none}.vza-lg span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vza-lg b{font-variant-numeric:tabular-nums}
 .vza-cr{padding:4px 0!important;gap:10px!important;grid-template-columns:minmax(80px,150px) 1fr!important}.vza-cd{font-size:12px!important}.vza-b{height:11px!important}.vza-b span{font-size:10.5px!important}
-.vza-3 .vza-cr{grid-template-columns:1fr!important;gap:2px!important}
+.vza-cols{column-count:2;column-gap:28px}.vza-cols .vza-cr{break-inside:avoid;grid-template-columns:1fr!important;gap:2px!important}
 .vza-hd{margin:12px 2px 6px!important}
 .vza-pn .invoices td,.vza-pn .invoices th{padding:6px 8px!important;font-size:12px}
-@media(max-width:900px){.vza-3{grid-template-columns:1fr}}
+@media(max-width:900px){.vza-3{grid-template-columns:1fr}.vza-cols{column-count:1}}
 .vza-oi{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;color:#fff;background:linear-gradient(135deg,#4f7dff,#7a3cff);margin-right:10px;vertical-align:middle;font-size:15px}
 .vza-or td{vertical-align:middle}.vza-n{color:var(--muted);width:28px}
 .vza-sh{min-width:160px}.vza-sh .vza-sb{display:inline-block;width:calc(100% - 42px);height:7px;border-radius:99px;background:rgba(120,130,170,.18);vertical-align:middle;overflow:hidden}
@@ -8999,7 +8999,7 @@ function vzaBlock(cat, a) {
     <div class="vza-curs">${cards}</div>
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — мы должны, <span class="d">зелёный</span> — нам должны)</small></p><div class="vza-seg">${seg}</div></div>
       <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по ДЦ", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по ДЦ", "d")}</div>
-      <div><p class="vza-sub" style="margin:0 0 4px"><b>По ДЦ</b></p>${vzaBars(dg, mxD)}</div></div></div>
+      </div><p class="vza-sub" style="margin:12px 0 2px"><b>По ДЦ</b></p><div class="vza-cols">${vzaBars(dg, mxD)}</div></div>
     ${vzaOrgTable(inCur, cur)}
     <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: ДЦ и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>ДЦ</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
