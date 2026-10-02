@@ -2135,6 +2135,15 @@ html #section-analytics .period-filter-box .qdw .qdi.bad{color:#ff6b6b!important
 html #section-analytics .period-filter-box .qdw .qdi:focus{box-shadow:0 2px 0 0 var(--navy-light)!important;border-radius:0}
 html #section-analytics .period-filter-box .qic{width:28px!important;height:28px!important;display:grid!important;place-items:center;border-radius:9px!important;padding:0!important}
 html #section-analytics .period-filter-box .qic:hover,html #section-analytics .period-filter-box .qic.open{background:rgba(91,141,255,.18)!important}
+
+/* ===== Filtr ro'yxati: har bir punkt o'z rangi va belgisi bilan (A) ===== */
+.qli.tn{--c:#8e97b4;--cb:rgba(130,140,170,.16)}
+.qli.t-b{--c:#7da3ff;--cb:rgba(91,141,255,.2)}.qli.t-g{--c:var(--green-fg,#16a36a);--cb:var(--green-bg,rgba(22,163,106,.16))}.qli.t-a{--c:var(--amber-fg,#d98a00);--cb:var(--amber-bg,rgba(245,158,11,.18))}.qli.t-r{--c:var(--red-fg,#e04848);--cb:var(--red-bg,rgba(239,68,68,.16))}.qli.t-v{--c:#a98bff;--cb:rgba(150,110,255,.2)}
+html:not([data-theme=dark]) .qli.t-b{--c:#2f63d8}html:not([data-theme=dark]) .qli.t-v{--c:#7a49d6}html:not([data-theme=dark]) .qli.tn{--c:#5d6684}
+html .qpop .qli.tn i{background:var(--cb)!important;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 38%,transparent);transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+html .qpop .qli.tn i svg{stroke:var(--c)!important;width:15px;height:15px;stroke-width:2.2}
+html .qpop .qli.tn:hover{background:rgba(130,140,170,.14)!important}.qli.tn:hover i{transform:scale(1.1) rotate(-6deg)}
+html .qpop .qli.tn.sel{background:var(--cb)!important}.qli.tn em{background:var(--c)}
 @media(prefers-reduced-motion:reduce){.qpop,.qgd,.qli{animation:none!important}}
 /* ===== Analytics pastki qism: T dizayn (halqa + chiziq + yuguruvchi chiziqlar) ===== */
 html[data-brand] #statsRow{display:none}
@@ -10735,6 +10744,12 @@ async function recallInvoice(facturaid, btnEl) {
   var ALL='<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
   var CHK='<svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
   var DOT='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/></svg>';
+  function sv(p){return '<svg viewBox="0 0 24 24">'+p+'</svg>'}
+  var TONE={
+    statusFilter:{new:['n',sv('<path d="M4 7h16M4 12h16M4 17h10"/>')],sent:['b',sv('<path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/>')],pendingboss:['a',sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>')],accepted:['g',sv('<path d="M5 12.5l4.5 4.5L19 7"/>')],rejected:['r',sv('<path d="M6 6l12 12M18 6L6 18"/>')],notmine:['v',sv('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>')]},
+    daysFilter:{green:['g',sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>')],amber:['a',sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>')],red:['r',sv('<path d="M12 4l9 16H3zM12 10v4M12 17.5h.01"/>')]},
+    didoxFilter:{done:['g',sv('<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>')],pending:['a',sv('<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>')]}
+  };
   var cur=null;
   function p2(n){return (n<10?'0':'')+n}
   function iso(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
@@ -10840,7 +10855,8 @@ async function recallInvoice(facturaid, btnEl) {
       var pop=document.createElement('div');pop.className='qpop qlist';
       var html='';
       Array.prototype.forEach.call(sel.options,function(o,k){
-        html+='<button type="button" class="qli'+(o.value===''?' all':'')+(o.value===sel.value?' sel':'')+'" data-v="'+o.value.replace(/"/g,'&quot;')+'" style="--k:'+k+'"><i>'+(o.value===''?ALL:(sel.id==='buyerFilter'||sel.id==='departmentFilter'||sel.id==='analyticsOrgFilter'?BLD:DOT))+'</i><span>'+o.text+'</span><em>'+CHK+'</em></button>';
+        var tn=TONE[sel.id]&&TONE[sel.id][o.value];
+        html+='<button type="button" class="qli'+(o.value===''?' all':'')+(tn?' tn t-'+tn[0]:'')+(o.value===sel.value?' sel':'')+'" data-v="'+o.value.replace(/"/g,'&quot;')+'" style="--k:'+k+'"><i>'+(o.value===''?ALL:(tn?tn[1]:(sel.id==='buyerFilter'||sel.id==='departmentFilter'||sel.id==='analyticsOrgFilter'?BLD:DOT)))+'</i><span>'+o.text+'</span><em>'+CHK+'</em></button>';
       });
       pop.innerHTML=html;
       pop.addEventListener('click',function(ev){
