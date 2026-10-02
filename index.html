@@ -2485,6 +2485,28 @@ html .reg-approve-btn{background:linear-gradient(135deg,#4f7dff,#7a3cff);color:#
 html .reg-approve-btn:hover{background:linear-gradient(135deg,#4f7dff,#7a3cff);box-shadow:0 10px 22px -10px rgba(100,90,255,.8)}
 html .reg-reject-btn:hover{background:var(--red-fg);color:#fff}
 html .reg-btn:active{transform:scale(.96)}
+/* ===== Карточка контрагента: окно со списком (без горизонтальной прокрутки) ===== */
+html #contragentModal .modal-card.wide{position:relative;width:min(860px,calc(100% - 32px))!important;max-width:none!important;max-height:calc(100vh - 40px);overflow-y:auto;padding:30px 32px!important;background:var(--sk-glass-strong,var(--panel,#0e1122))!important;border:1px solid var(--border)!important;border-radius:24px!important}
+html:not([data-theme="dark"]) #contragentModal .modal-card.wide{background:#fff!important}
+html[data-theme="dark"] #contragentModal .modal-card.wide{background:#0e1122!important}
+.cm-x{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--sk-glass);color:var(--text);cursor:pointer;font-size:14px;transition:transform .2s,background .15s}
+.cm-x:hover{transform:rotate(90deg);background:var(--red-bg);color:var(--red-fg)}
+.cm-title{margin:0;padding-right:40px;font-size:26px;letter-spacing:-.02em;color:var(--text);text-wrap:balance}
+.cm-sub{color:var(--muted);font-size:12.5px;margin:6px 0 22px}
+.cm-row{display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:22px}
+.cm-row>div{padding:0 18px;border-left:1px solid var(--border)}
+.cm-row>div:first-child{padding-left:0;border:0}
+.cm-l{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.cm-row b{display:block;font-size:30px;line-height:1.1;letter-spacing:-.03em;margin-top:4px;color:var(--text);font-variant-numeric:tabular-nums}
+.cm-row small{display:block;color:var(--muted);font-size:11.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+.cm-li{display:grid;grid-template-columns:90px 1.6fr 1.1fr 1.2fr auto;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;color:var(--text);font-size:13px}
+.cm-list .cm-li:nth-child(even){background:var(--sk-glass)}
+.cm-li.cm-h{padding-block:6px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.cm-li .r{text-align:right;font-variant-numeric:tabular-nums}
+.cm-li small{display:block;color:var(--muted);font-size:11px}
+.cm-empty{padding:18px;color:var(--muted)}
+#contragentModal .modal-actions{display:none}
+@media(max-width:700px){html #contragentModal .modal-card.wide{padding:24px 18px!important}.cm-row{grid-template-columns:1fr 1fr;gap:16px 0}.cm-row>div:nth-child(3){padding-left:0;border:0}.cm-li{grid-template-columns:1fr auto}.cm-li.cm-h{display:none}.cm-li>span:nth-child(2),.cm-li>span:nth-child(4){grid-column:1/-1}}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -10189,39 +10211,28 @@ function openContragentCard(encodedName) {
   const rows = invoiceRows.filter(r => r.seller === name).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
   const card = document.getElementById("contragentModalCard");
+  const short = n => { const a = Math.abs(n); return a >= 1e9 ? (n / 1e9).toFixed(2).replace(/\.?0+$/, "") + " млрд" : a >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + " млн" : Math.round(n).toLocaleString("ru-RU"); };
+  const avg = c.count ? c.sum / c.count : 0;
   card.innerHTML = `
-    <h3>${escapeHtml(c.name)}</h3>
-    <p style="color:var(--muted);font-size:13px;margin:0 0 4px;">${c.inn ? "ИНН: " + escapeHtml(c.inn) : "ИНН не указан"}</p>
-    <p style="color:var(--muted);font-size:12px;margin:0;">Первый счёт: ${formatDateOnly(c.firstDate) || "—"} · Последний: ${formatDateOnly(c.lastDate) || "—"}</p>
-
-    <div class="cc-detail-summary">
-      <div><div class="num">${c.count}</div><div class="lbl">Всего счетов</div></div>
-      <div><div class="num">${c.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</div><div class="lbl">Общая сумма</div></div>
-      <div><div class="num">${c.count ? Math.round(c.sum / c.count).toLocaleString("ru-RU") : 0}</div><div class="lbl">Средний счёт</div></div>
-      <div><div class="num">${c.accepted}</div><div class="lbl">Принято</div></div>
-      <div><div class="num">${c.rejected}</div><div class="lbl">Отклонено</div></div>
-      <div><div class="num">${c.decided ? c.rejectRate.toFixed(0) + "%" : "—"}</div><div class="lbl">Доля отказов</div></div>
-      <div><div class="num">${c.avgMs != null ? formatDuration(c.avgMs) : "—"}</div><div class="lbl">Среднее время ответа</div></div>
+    <button class="cm-x" onclick="closeContragentModal()" aria-label="Закрыть">&#10005;</button>
+    <h2 class="cm-title">${escapeHtml(c.name)}</h2>
+    <div class="cm-sub">${c.inn ? "ИНН " + escapeHtml(c.inn) : "ИНН не указан"} · Первый счёт ${formatDateOnly(c.firstDate) || "—"} · Последний ${formatDateOnly(c.lastDate) || "—"}</div>
+    <div class="cm-row">
+      <div><span class="cm-l">Счетов</span><b>${c.count}</b><small>принято ${c.accepted} · отклонено ${c.rejected}</small></div>
+      <div><span class="cm-l">Общая сумма</span><b>${short(c.sum)}</b><small>${c.sum.toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</small></div>
+      <div><span class="cm-l">Средний счёт</span><b>${short(avg)}</b><small>${Math.round(avg).toLocaleString("ru-RU")}</small></div>
+      <div><span class="cm-l">Ответ / отказы</span><b>${c.avgMs != null ? formatDuration(c.avgMs) : "—"}</b><small>доля отказов ${c.decided ? c.rejectRate.toFixed(0) + "%" : "—"}</small></div>
     </div>
-
-    <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
-      <table class="invoices">
-        <thead><tr><th>№ / Дата</th><th>Организация</th><th>Сумма</th><th>Ответственный</th><th>Статус</th></tr></thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr>
-              <td><div style="font-weight:600;">${escapeHtml(r.no)}</div><div style="font-size:10.5px;color:var(--muted);">${formatDateOnly(r.date)}</div></td>
-              <td>${escapeHtml(r.buyer)}</td>
-              <td class="num-cell">${escapeHtml(r.sum)}</td>
-              <td>${escapeHtml(r.resp)}</td>
-              <td>${statusBadge(r.status)}</td>
-            </tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">Нет счетов</td></tr>`}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="closeContragentModal()">Закрыть</button>
+    <div class="cm-li cm-h"><span>№ / дата</span><span>Организация</span><span class="r">Сумма</span><span>Ответственный</span><span>Статус</span></div>
+    <div class="cm-list">
+      ${rows.map(r => `
+        <div class="cm-li">
+          <span><b>${escapeHtml(r.no)}</b><small>${formatDateOnly(r.date)}</small></span>
+          <span>${escapeHtml(r.buyer)}</span>
+          <span class="r">${escapeHtml(r.sum)}</span>
+          <span>${escapeHtml(r.resp)}</span>
+          <span>${statusBadge(r.status)}</span>
+        </div>`).join("") || `<div class="cm-empty">Нет счетов</div>`}
     </div>
   `;
   const cModal = document.getElementById("contragentModal");
