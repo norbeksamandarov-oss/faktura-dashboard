@@ -2239,6 +2239,14 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 .vza-hd{margin:12px 2px 6px!important}
 .vza-pn .invoices td,.vza-pn .invoices th{padding:6px 8px!important;font-size:12px}
 @media(max-width:900px){.vza-3{grid-template-columns:1fr}}
+.vza-oi{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:9px;color:#fff;background:linear-gradient(135deg,#4f7dff,#7a3cff);margin-right:10px;vertical-align:middle;font-size:15px}
+.vza-or td{vertical-align:middle}.vza-n{color:var(--muted);width:28px}
+.vza-sh{min-width:160px}.vza-sh .vza-sb{display:inline-block;width:calc(100% - 42px);height:7px;border-radius:99px;background:rgba(120,130,170,.18);vertical-align:middle;overflow:hidden}
+.vza-sb u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#4f7dff,#7a3cff);animation:vzaGrow .8s both;transform-origin:left}
+.vza-sh span{display:inline-block;width:38px;text-align:right;font-size:11.5px;font-weight:700;color:var(--text)}
+.vza-chip{border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(91,141,255,.16);color:var(--navy-text)}
+.vza-chip:hover,.vza-chip.on{background:var(--navy-light);color:#fff}
+.vza-dr2 td{font-size:12px;color:var(--muted);padding-top:3px!important;padding-bottom:3px!important}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:900px){.vza-hero,.vza-k3,.vza-2,.vza-2b{grid-template-columns:1fr}.vza-row{grid-template-columns:1fr}}
@@ -8883,7 +8891,7 @@ const VZA_CATS = [
   { key: "pokupateli", name: "Покупатели" },
   { key: "podotchetniki", name: "Подотчётные лица" }
 ];
-const vzaState = { org: "", dept: "", min: 0, cur: "" };
+const vzaState = { org: "", dept: "", min: 0, cur: "", open: {} };
 function vzaSums(items) {
   let kt = 0, dt = 0;
   for (const i of items) { const v = Math.abs(Number(i.total || 0)); if (i.side === "dt") dt += v; else kt += v; }
@@ -8952,6 +8960,23 @@ function vzaBars(groups, mx) {
       <div class="vza-b"><u class="k" style="width:${(g.s.kt / mx * 100).toFixed(1)}%"></u><span class="k">${vzaM(g.s.kt)}</span></div>
       <div class="vza-b"><u class="d" style="width:${(g.s.dt / mx * 100).toFixed(1)}%"></u><span class="d">${vzaM(g.s.dt)}</span></div></div></div>`).join("");
 }
+function vzaOrgTable(items, cur) {
+  const og = vzaGroup(items, i => i.org);
+  const tot = og.reduce((p, g) => p + g.s.kt + g.s.dt, 0) || 1;
+  const rows = og.map((g, n) => {
+    const depts = vzaGroup(g.v, i => i.dept), key = cur + "|" + g.k, open = !!vzaState.open[key];
+    const share = (g.s.kt + g.s.dt) / tot * 100;
+    return `<tr class="vza-or"><td class="vza-n">${n + 1}</td>
+      <td><span class="vza-oi"><i class="ti ti-building" aria-hidden="true"></i></span><b>${escapeHtml(g.k)}</b></td>
+      <td class="num-cell"><b>${g.v.length}</b></td>
+      <td class="vza-sh"><div class="vza-sb"><u style="width:${share.toFixed(1)}%"></u></div><span>${Math.round(share)}%</span></td>
+      <td class="num-cell k">${vzFormatNum(g.s.kt)}</td><td class="num-cell d">${vzFormatNum(g.s.dt)}</td>
+      <td><button class="vza-chip${open ? " on" : ""}" data-open="${escapeHtml(key)}">${open ? "▾" : "▸"} ${depts.length} ДЦ</button></td></tr>` +
+      (open ? depts.map(d => `<tr class="vza-dr2"><td></td><td colspan="1">${escapeHtml(d.k)}</td><td class="num-cell">${d.v.length}</td><td></td><td class="num-cell k">${vzFormatNum(d.s.kt)}</td><td class="num-cell d">${vzFormatNum(d.s.dt)}</td><td></td></tr>`).join("") : "");
+  }).join("");
+  return `<div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">По организациям <small class="vza-sub">(валюта: ${escapeHtml(cur)} — переключается сверху в диаграммах)</small></p>
+    <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>#</th><th>Организация</th><th class="num-cell">Записей</th><th>Доля</th><th class="num-cell">Мы должны</th><th class="num-cell">Нам должны</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
 function vzaBlock(cat, a) {
   if (!a.length) return `<div class="vza-hd">${cat.name}</div><div class="panel"><p class="vza-sub" style="margin:0">По выбранным фильтрам данных нет.</p></div>`;
   const curs = vzaCurOrder(a);
@@ -8964,8 +8989,8 @@ function vzaBlock(cat, a) {
       <div class="vza-cl vza-sal"><span>Итог</span><b>${sal < 0 ? "−" : "+"}${vzFormatNum(Math.abs(sal))}</b></div></div>`;
   }).join("");
   const cur = vzaState.cur, inCur = a.filter(i => vzaCur(i) === cur);
-  const dg = vzaGroup(inCur, i => i.dept), og = vzaGroup(inCur, i => i.org);
-  const mxD = Math.max(1, ...dg.map(g => Math.max(g.s.kt, g.s.dt))), mxO = Math.max(1, ...og.map(g => Math.max(g.s.kt, g.s.dt)));
+  const dg = vzaGroup(inCur, i => i.dept);
+  const mxD = Math.max(1, ...dg.map(g => Math.max(g.s.kt, g.s.dt)));
   const seg = curs.map(c => `<button class="vza-cb${c === cur ? " on" : ""}" data-cur="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
   const dAll = vzaGroup(a, i => i.dept);
   const head = curs.map(c => `<th class="num-cell">${escapeHtml(c)}</th>`).join("");
@@ -8974,8 +8999,8 @@ function vzaBlock(cat, a) {
     <div class="vza-curs">${cards}</div>
     <div class="panel vza-pn"><div class="vza-ch"><p class="vza-q1">Диаграммы <small class="vza-sub">(<span class="k">красный</span> — мы должны, <span class="d">зелёный</span> — нам должны)</small></p><div class="vza-seg">${seg}</div></div>
       <div class="vza-3"><div>${vzaDonut(dg, "kt", "Мы должны — доли по ДЦ", "k")}</div><div>${vzaDonut(dg, "dt", "Нам должны — доли по ДЦ", "d")}</div>
-      <div><p class="vza-sub" style="margin:0 0 4px"><b>По организациям</b></p>${vzaBars(og, mxO)}</div></div>
-      <p class="vza-sub" style="margin:10px 0 2px"><b>По ДЦ</b></p>${vzaBars(dg, mxD)}</div>
+      <div><p class="vza-sub" style="margin:0 0 4px"><b>По ДЦ</b></p>${vzaBars(dg, mxD)}</div></div></div>
+    ${vzaOrgTable(inCur, cur)}
     <div class="panel vza-pn" style="margin-top:12px"><p class="vza-q1">Таблица: ДЦ и валюты <small class="vza-sub">(<span class="k">мы должны</span> / <span class="d">нам должны</span>)</small></p>
       <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>ДЦ</th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
@@ -8986,6 +9011,8 @@ function vzaBlock(cat, a) {
     else if (e.target.id === "vzaDept") { vzaState.dept = e.target.value; rerender(); }
   });
   document.addEventListener("click", e => {
+    const ch = e.target.closest && e.target.closest(".vza-chip");
+    if (ch) { const k = ch.dataset.open; vzaState.open[k] = !vzaState.open[k]; rerender(); return; }
     const cb = e.target.closest && e.target.closest(".vza-cb");
     if (cb) { vzaState.cur = cb.dataset.cur; rerender(); return; }
     if (e.target.closest && e.target.closest("#vzaClear")) {
