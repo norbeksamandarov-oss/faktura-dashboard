@@ -10361,7 +10361,7 @@ function renderDogovorTable() {
       <td>${employeeStatusBadge(r)}</td>
       <td style="max-width:220px;font-size:12px;color:${r.status === "Отклонено" ? "var(--red-fg)" : "var(--muted)"};">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovor', ${r.rowIndex}, dogovorRows, renderDogovorTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovor', ${r.rowIndex}, dogovorRows, renderDogovorTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10436,7 +10436,7 @@ function renderDogovorRealTable() {
       <td>${statusBadge(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${closeDocsHtml("dogovorReal", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, dogovorRealRows, renderDogovorRealTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${closeDocsHtml("dogovorReal", r.rowIndex)}${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('dogovorReal', ${r.rowIndex}, dogovorRealRows, renderDogovorRealTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10511,7 +10511,7 @@ function renderDoverennostTable() {
       <td>${statusBadge2(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('doverennost', ${r.rowIndex}, doverennostRows, renderDoverennostTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('doverennost', ${r.rowIndex}, doverennostRows, renderDoverennostTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10608,7 +10608,7 @@ function renderRealschetTable() {
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
       <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Открыть</a>` : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${closeDocsHtml("realschet", r.rowIndex) || `<span style="color:var(--muted)">—</span>`}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10697,7 +10697,7 @@ function renderZakaznaryadTable() {
       <td>${statusBadgeZakaznaryad(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${closeDocsHtml("zakaznaryad", r.rowIndex)}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, zakaznaryadRows, renderZakaznaryadTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${closeDocsHtml("zakaznaryad", r.rowIndex)}${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('zakaznaryad', ${r.rowIndex}, zakaznaryadRows, renderZakaznaryadTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10778,7 +10778,7 @@ function _renderOtherreqTable(rows, prefix, badgeId, lastFilteredSetter, reqType
       <td>${statusBadgeOtherreq(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${reqType === "otherreqReal" ? closeDocsHtml("otherreqReal", r.rowIndex) : ""}${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "otherreqPostRows" : "otherreqRealRows"}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${reqType === "otherreqReal" ? closeDocsHtml("otherreqReal", r.rowIndex) : ""}${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('${reqType}', ${r.rowIndex}, ${reqType === "otherreqPost" ? "otherreqPostRows" : "otherreqRealRows"}, ${reqType === "otherreqPost" ? "renderOtherreqPostTable" : "renderOtherreqRealTable"})"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
@@ -10881,7 +10881,7 @@ function renderBankTable() {
       <td>${bankStatusBadge(r.status)}</td>
       <td style="max-width:200px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${(currentRole === "admin" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
+      <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('bank', ${r.rowIndex}, bankRows, renderBankTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
 
