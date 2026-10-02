@@ -2279,6 +2279,31 @@ html[data-theme=dark] #closeReqModal .modal-actions .btn-primary.ok{color:#04261
 #closeReqModal .crm-f>span{flex:1;min-width:0}#closeReqModal .crm-f b{display:block;color:var(--text);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #closeReqModal .crm-x{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px}
 #closeReqModal .crm-x:hover{background:var(--red-bg);color:var(--red-fg)}
+
+/* анимации окна: появление, загрузка, успех, ошибка */
+#closeReqModal{opacity:0;transition:opacity .25s ease}
+#closeReqModal.open{opacity:1}
+#closeReqModal .crm-card{position:relative;overflow:hidden;transform:translateY(16px) scale(.95);opacity:0;transition:transform .38s cubic-bezier(.34,1.45,.64,1),opacity .25s ease}
+#closeReqModal.open .crm-card{transform:none;opacity:1}
+#closeReqModal .crm-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,transparent,var(--navy-light),#7a3cff,transparent);background-size:50% 100%;background-repeat:no-repeat;opacity:0;transition:opacity .2s}
+#closeReqModal .crm-card.busy::before{opacity:1;animation:crmBar 1.05s linear infinite}
+@keyframes crmBar{from{background-position:-60% 0}to{background-position:160% 0}}
+#closeReqModal .crm-card.busy #crmGo:disabled{opacity:.95;cursor:progress}
+#closeReqModal .crm-card.busy .crm-ic{animation:crmPulse 1.1s ease-in-out infinite}
+@keyframes crmPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+#closeReqModal .crm-card.busy .crm-dz,#closeReqModal .crm-card.busy textarea,#closeReqModal .crm-card.busy .crm-x,#closeReqModal .crm-card.busy #crmCancel{pointer-events:none;opacity:.55}
+#closeReqModal .crm-spin{display:inline-block;animation:crmSpin .8s linear infinite;margin-right:6px;vertical-align:-2px}
+@keyframes crmSpin{to{transform:rotate(360deg)}}
+#closeReqModal .crm-f{animation:crmIn .28s cubic-bezier(.34,1.4,.64,1) both}
+@keyframes crmIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+#closeReqModal .crm-card.shake{animation:crmShake .42s ease}
+@keyframes crmShake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+#closeReqModal .crm-card.done>:not(.crm-ic):not(h3):not(.crm-sub){display:none}
+#closeReqModal .crm-card.done .crm-ic{width:64px;height:64px;font-size:34px;animation:crmPop .55s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes crmPop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.18);opacity:1}100%{transform:scale(1)}}
+#closeReqModal .crm-card.done h3,#closeReqModal .crm-card.done .crm-sub{animation:crmIn .4s .12s ease both}
+#closeReqModal .crm-card.done{padding-bottom:26px}
+@media (prefers-reduced-motion:reduce){#closeReqModal *,#closeReqModal{animation:none!important;transition:none!important}}
 #closeReqModal .crm-err{margin-top:8px;font-size:12px;color:var(--red-fg);min-height:0}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -4365,7 +4390,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
   <div class="modal-card crm-card" role="dialog" aria-modal="true" aria-labelledby="crmTitle">
     <div class="crm-ic" id="crmIc"></div>
     <h3 id="crmTitle">Закрыть заявку?</h3>
-    <p class="crm-sub">Сотрудник получит ответ в Telegram.</p>
+    <p class="crm-sub" id="crmSub">Сотрудник получит ответ в Telegram.</p>
     <div class="crm-who" id="crmWho"></div>
     <button type="button" class="crm-dz" id="crmDz"></button>
     <div class="crm-fl" id="crmFiles"></div>
@@ -5156,12 +5181,16 @@ function openCloseReqModal(reqType, rowIndex, rowsArray, renderFn) {
   const title = [row.type, row.details].filter(Boolean).join(" · ") || "Заявка";
   document.getElementById("crmWho").innerHTML = `<b>${escapeHtml(title)}</b>${escapeHtml([row.employeeName, row.org].filter(Boolean).join(" · "))}`;
   const m = document.getElementById("closeReqModal");
-  m.style.display = "flex"; requestAnimationFrame(() => m.classList.add("open"));
+  const card = m.querySelector(".crm-card"); card.classList.remove("busy", "done", "shake");
+  document.getElementById("crmTitle").textContent = "Закрыть заявку?";
+  document.getElementById("crmSub").textContent = "Сотрудник получит ответ в Telegram.";
+  m.style.display = "flex"; requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add("open")));
   crmRender();
 }
 function closeCloseReqModal() {
   const m = document.getElementById("closeReqModal");
-  m.classList.remove("open"); m.style.display = "none"; CRM.ctx = null;
+  m.classList.remove("open"); CRM.ctx = null;
+  setTimeout(() => { if (!CRM.ctx) m.style.display = "none"; }, 280);
 }
 function crmReadB64(file) {
   return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = () => rej(new Error("Не удалось прочитать файл")); fr.readAsDataURL(file); });
@@ -5171,19 +5200,29 @@ async function crmSubmit() {
   const { reqType, rowIndex, rowsArray, renderFn } = CRM.ctx;
   const comment = document.getElementById("crmText").value.trim();
   const err = document.getElementById("crmErr"); err.textContent = "";
-  CRM.busy = true; crmRender();
-  const go = document.getElementById("crmGo"); go.textContent = "Отправка...";
+  const card = document.querySelector("#closeReqModal .crm-card"), go = document.getElementById("crmGo");
+  const n = CRM.files.length, hadFiles = n > 0;
+  CRM.busy = true; card.classList.add("busy");
+  go.disabled = true;
+  go.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>${hadFiles ? "Отправляю файлы" + (n > 1 ? " (" + n + ")" : "") + "…" : "Отправляю…"}`;
   try {
     const params = { reqType, rowIndex, comment, v2: true };
-    if (CRM.files.length) params.files = await Promise.all(CRM.files.map(async f => ({ name: f.name, b64: await crmReadB64(f) })));
+    if (n) params.files = await Promise.all(CRM.files.map(async f => ({ name: f.name, b64: await crmReadB64(f) })));
     const res = await apiCall("adminCloseRequest", params);
     const row = rowsArray.find(r => r.rowIndex === rowIndex);
-    if (row) { row.status = res.status || (CRM.files.length ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    if (row) { row.status = res.status || (hadFiles ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    // успех: большая галочка, затем плавное закрытие
+    card.classList.remove("busy"); card.classList.add("done");
+    const ic = document.getElementById("crmIc"); ic.className = "crm-ic ok"; ic.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
+    document.getElementById("crmTitle").textContent = "Готово!";
+    document.getElementById("crmSub").textContent = res.telegramError ? "Заявка закрыта, но Telegram не доставил: " + res.telegramError : (hadFiles ? "Статус: Выполнено. Файлы отправлены сотруднику." : "Статус: Закрыто. Ответ отправлен сотруднику.");
+    await new Promise(r => setTimeout(r, res.telegramError ? 2200 : 1100));
     closeCloseReqModal();
     if (typeof renderFn === "function") renderFn();
-    if (res.telegramError) alert("Заявка закрыта, но Telegram не доставил сообщение сотруднику: " + res.telegramError);
   } catch (e) {
-    CRM.busy = false; crmRender(); err.textContent = "Не удалось закрыть: " + e.message;
+    CRM.busy = false; card.classList.remove("busy"); crmRender();
+    card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+    err.textContent = "Не удалось закрыть: " + e.message;
   }
 }
 (function () {
