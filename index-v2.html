@@ -10840,7 +10840,7 @@ async function recallInvoice(facturaid, btnEl) {
       openPop(btn,field,box,pop);
     }
     btn.addEventListener('click',open);
-    field.addEventListener('click',function(e){if(e.target.closest('.qpop')||wrap.contains(e.target))return;txt.focus()});
+    field.addEventListener('click',function(e){if(e.target.closest('.qpop,.qdw'))return;if(field.querySelector('.qdi')!==txt)return;txt.focus()});
   }
   /* ---- tashkilot ro'yxati ---- */
   function selectField(sel){
