@@ -2183,7 +2183,7 @@ html #section-reconcile .reconcile-upload .login-submit-btn{border-radius:14px!i
 .vza-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .vza-kpi{background:var(--sk-glass);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;flex-direction:column;gap:4px;animation:vzaIn .5s both}
 .vza-kpi:nth-child(2){animation-delay:.08s}.vza-kpi:nth-child(3){animation-delay:.16s}
-.vza-kpi span{font-size:12px;color:var(--muted)}.vza-kpi b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text)}
+.vza-kpi span,.vza-kpi small{font-size:12px;color:var(--muted)!important}.vza-kpi b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--text)}
 .vza-kpi.k b,.k{color:var(--red-fg)}.vza-kpi.d b,.d{color:var(--green-fg)}.vza-kpi.s b{color:var(--navy-text)}
 .vza-split{grid-column:1/-1}.vza-split .vza-bar{height:12px}
 .vza-bar{display:flex;height:7px;border-radius:99px;overflow:hidden;background:rgba(120,130,170,.18);min-width:80px;width:100%}
@@ -8914,25 +8914,32 @@ function vz2RenderAnalytics() {
   vzaFillSelect("vzaOrg", orgs, "Все организации");
   vzaFillSelect("vzaDept", depts, "Все ДЦ");
   const a = inCur.filter(i => (!vzaState.org || (i.org || "—") === vzaState.org) && (!vzaState.dept || (i.dept || "—") === vzaState.dept));
+  body.innerHTML = VZA_SHOWN.map(key => vzaBlock(VZA_CATS.find(c => c.key === key), a.filter(i => i.category === key))).join("");
+}
+// Блоки добавляем по одному: сейчас только Поставщики, дальше Покупатели и Подотчётные лица.
+const VZA_SHOWN = ["postavshiki"];
+function vzaBlock(cat, a) {
   const amt = i => Math.abs(Number(i.total || 0));
   const S = vzaSums(a), saldo = S.dt - S.kt;
   const kt = a.filter(i => i.side !== "dt").sort((x, y) => amt(y) - amt(x));
   const dt = a.filter(i => i.side === "dt").sort((x, y) => amt(y) - amt(x));
+  const who = cat.key === "pokupateli" ? ["Кто должен нам больше всего?", "С кого надо получить деньги"] : ["Кому мы должны больше всего?", "Кому платить в первую очередь"];
   const card = (q, hint, it, cls) => `<div class="panel"><p class="vza-q1">${q}</p><p class="vza-sub">${hint}</p>${it ? `<div class="vza-name">${escapeHtml(it.name)}</div><div class="vza-amt ${cls}">${vzFormatNum(amt(it))}</div><div class="vza-sub">${escapeHtml(it.org || "—")} · ${escapeHtml(it.dept || "—")}</div>` : "<div class='vza-sub'>—</div>"}</div>`;
-  const cell = q => (q.kt + q.dt) ? `<div class="k">${vzFormatNum(q.kt)}</div><div class="d">${vzFormatNum(q.dt)}</div>` : "—";
-  const orgList = [...new Set(a.map(i => i.org || "—"))].sort();
-  const rowsT = orgList.map(o => { const b = a.filter(i => (i.org || "—") === o); return `<tr><td><b>${escapeHtml(o)}</b></td>${VZA_CATS.map(c => `<td class="num-cell">${cell(vzaSums(b.filter(i => i.category === c.key)))}</td>`).join("")}<td class="num-cell"><b class="k">${vzFormatNum(vzaSums(b).kt)}</b><br><b class="d">${vzFormatNum(vzaSums(b).dt)}</b></td></tr>`; }).join("");
+  const grp = {};
+  a.forEach(i => { const k = (i.org || "—") + "\u0001" + (i.dept || "—"); (grp[k] = grp[k] || []).push(i); });
+  const rows = Object.keys(grp).sort().map(k => { const [o, d] = k.split("\u0001"), q = vzaSums(grp[k]); return `<tr><td><b>${escapeHtml(o)}</b></td><td>${escapeHtml(d)}</td><td class="num-cell k">${vzFormatNum(q.kt)}</td><td class="num-cell d">${vzFormatNum(q.dt)}</td><td class="num-cell">${grp[k].length}</td></tr>`; }).join("");
   const list = (arr, cls) => { const m = arr[0] ? amt(arr[0]) : 1; return arr.slice(0, 8).map((x, n) => `<div class="vza-li"><span class="vza-n">${n + 1}</span><div class="nm">${escapeHtml(x.name)}<small>${escapeHtml(x.org || "—")} · ${escapeHtml(x.dept || "—")}</small><div class="vza-t"><u class="${cls}" style="width:${(amt(x) / m * 100).toFixed(1)}%"></u></div></div><b class="${cls}">${vzFormatNum(amt(x))}</b></div>`).join("") || "<div class='vza-sub'>нет данных</div>"; };
-  body.innerHTML = `
+  if (!a.length) return `<div class="vza-hd">${cat.name}</div><div class="panel"><p class="vza-sub" style="margin:0">По выбранным фильтрам данных нет.</p></div>`;
+  return `<div class="vza-hd">${cat.name}</div>
     <div class="vza-hero">
-      <div class="vza-kpi k"><span>Сколько мы должны всем</span><b>${vzFormatNum(S.kt)}</b></div>
-      <div class="vza-kpi d"><span>Сколько должны нам</span><b>${vzFormatNum(S.dt)}</b></div>
+      <div class="vza-kpi k"><span>Сколько мы должны</span><b>${vzFormatNum(S.kt)}</b><small>${kt.length} контрагентов</small></div>
+      <div class="vza-kpi d"><span>Сколько должны нам</span><b>${vzFormatNum(S.dt)}</b><small>${dt.length} контрагентов</small></div>
       <div class="vza-kpi s"><span>Итог (нам должны − мы должны)</span><b>${saldo < 0 ? "−" : "+"}${vzFormatNum(Math.abs(saldo))}</b><small>${saldo < 0 ? "мы должны больше, чем нам" : "нам должны больше, чем мы"}</small></div>
     </div>
     <div class="vza-2b" style="margin-top:14px">${card("Кому мы должны больше всего?", "Кому платить в первую очередь", kt[0], "k")}${card("Кто должен нам больше всего?", "С кого надо получить деньги", dt[0], "d")}</div>
-    <div class="panel" style="margin-top:14px"><p class="vza-q1">Всё в одной таблице</p><p class="vza-sub"><span class="k">красный</span> — мы должны · <span class="d">зелёный</span> — нам должны</p>
-      <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Организация</th>${VZA_CATS.map(c => `<th class="num-cell">${c.name}</th>`).join("")}<th class="num-cell">Всего</th></tr></thead><tbody>${rowsT}
-      <tr><td><b>ИТОГО</b></td>${VZA_CATS.map(c => `<td class="num-cell">${cell(vzaSums(a.filter(i => i.category === c.key)))}</td>`).join("")}<td class="num-cell"><b class="k">${vzFormatNum(S.kt)}</b><br><b class="d">${vzFormatNum(S.dt)}</b></td></tr></tbody></table></div></div>
+    <div class="panel" style="margin-top:14px"><p class="vza-q1">По организациям и ДЦ</p><p class="vza-sub"><span class="k">красный</span> — мы должны · <span class="d">зелёный</span> — нам должны</p>
+      <div style="overflow-x:auto"><table class="invoices"><thead><tr><th>Организация</th><th>ДЦ</th><th class="num-cell">Мы должны</th><th class="num-cell">Нам должны</th><th class="num-cell">Контрагентов</th></tr></thead><tbody>${rows}
+      <tr><td colspan="2"><b>ИТОГО</b></td><td class="num-cell k"><b>${vzFormatNum(S.kt)}</b></td><td class="num-cell d"><b>${vzFormatNum(S.dt)}</b></td><td class="num-cell"><b>${a.length}</b></td></tr></tbody></table></div></div>
     <div class="vza-2b" style="margin-top:14px"><div class="panel"><p class="vza-q1 k">Кому платить</p><p class="vza-sub">Самые большие наши долги</p>${list(kt, "k")}</div><div class="panel"><p class="vza-q1 d">От кого ждать</p><p class="vza-sub">Самые большие долги перед нами</p>${list(dt, "d")}</div></div>`;
 }
 (function () {
