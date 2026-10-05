@@ -10592,8 +10592,9 @@ function rcMatch(c1, src) {
     if (hit >= 0) used.add(hit);
     return Object.assign({}, r, { ci: hit, mk: k, c: hit >= 0 ? cs[hit] : null });
   });
-  const dupMap = {}; cs.forEach(x => { if (x.no) { const k = x.id + "|" + x.no; dupMap[k] = (dupMap[k] || 0) + 1; } });
-  const dup = cs.filter(x => x.no && dupMap[x.id + "|" + x.no] > 1);
+  const dk = x => x.id + "|" + x.no + "|" + Math.round(x.sum);
+  const dupMap = {}; cs.forEach(x => { if (x.no) dupMap[dk(x)] = (dupMap[dk(x)] || 0) + 1; });
+  const dup = cs.filter(x => x.no && dupMap[dk(x)] > 1);
   const cats = {
     missing: res.filter(r => r.ci < 0),
     numdiff: res.filter(r => r.mk === "id+sum"),
