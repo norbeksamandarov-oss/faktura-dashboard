@@ -11277,7 +11277,7 @@ function bnParseRows(rows) {
     const r = rows[i], lab = r.map(bnNorm);
     const di = lab.indexOf("дебет"), ci = lab.indexOf("кредит");
     if (di >= 0 && ci >= 0) {
-      P = { deb: di, cre: ci, dp: -1, dop: -1, payer: lab.indexOf("счет плательщика"), recv: lab.indexOf("счет получателя") };
+      P = { deb: di, cre: ci, dp: -1, dop: -1, inn: lab.indexOf("инн"), corr: lab.findIndex(x => /^корреспондент/.test(x)), purp: lab.findIndex(x => /^(детали платежа|назначение платежа)/.test(x)), payer: lab.indexOf("счет плательщика"), recv: lab.indexOf("счет получателя") };
       lab.forEach((x, j) => { if (P.dp < 0 && (x === "дата" || /^дата проводки/.test(x) || /^дата\/время/.test(x))) P.dp = j; if (P.dop < 0 && /^дата опер/.test(x)) P.dop = j; });
       continue;
     }
@@ -11296,7 +11296,8 @@ function bnParseRows(rows) {
     }
     let oacc = acc;
     if (!oacc) oacc = bnAcc(cr ? r[P.recv] : r[P.payer]);
-    ops.push({ d: (P.dop >= 0 && bnDay(r[P.dop])) || dkey, db, cr, acc: oacc });
+    const ptxt = String(r[P.purp >= 0 ? P.purp : P.corr] == null ? "" : r[P.purp >= 0 ? P.purp : P.corr]) + " " + (P.corr >= 0 && P.purp >= 0 ? String(r[P.corr] == null ? "" : r[P.corr]) : "");
+    ops.push({ d: (P.dop >= 0 && bnDay(r[P.dop])) || dkey, db, cr, acc: oacc, own: cr > 0 && /перекидк/i.test(ptxt) });
   }
   return { ops, acc, per };
 }
@@ -11405,7 +11406,7 @@ function bnMatch() {
     v.ops.forEach(o => {
       const a = (accs[o.acc] = accs[o.acc] || { acc: o.acc, per: [v.per[0], v.per[1]], days: {}, files: new Set() });
       a.files.add(v.name); if (v.per[0] < a.per[0]) a.per[0] = v.per[0]; if (v.per[1] > a.per[1]) a.per[1] = v.per[1];
-      const d = (a.days[o.d] = a.days[o.d] || { i: 0, o: 0 }); d.i += o.cr; d.o += o.db;
+      const d = (a.days[o.d] = a.days[o.d] || { i: 0, o: 0, w: 0 }); d.i += o.cr; d.o += o.db; if (o.own) d.w += o.cr;
     });
   });
   const all = [], accRows = [], nopair = [], fx = [], nowyp = [];
@@ -11418,10 +11419,11 @@ function bnMatch() {
     const row = { acc: a.acc, org, bank, from, to, bi: 0, ci: 0, tr: 0, bo: 0, co: 0, days: 0, bad: 0 };
     if (from > to) { row.skip = true; accRows.push(row); return; }
     for (let t = Date.parse(from + "T00:00:00Z"); t <= Date.parse(to + "T00:00:00Z"); t += 86400000) {
-      const k = new Date(t).toISOString().slice(0, 10), b = a.days[k] || { i: 0, o: 0 }, c = C[a.acc + "|" + k] || { i: 0, o: 0 };
+      const k = new Date(t).toISOString().slice(0, 10), b = a.days[k] || { i: 0, o: 0, w: 0 }, c = C[a.acc + "|" + k] || { i: 0, o: 0 };
       const raw = round(b.i - c.i), pl = POOL[org + "|" + k] || {}; let other = 0; Object.keys(pl).forEach(ac => { if (ac !== a.acc) other += pl[ac]; });
-      const tr = raw > 0.5 ? round(Math.min(raw, other)) : 0;
-      const r = { acc: a.acc, org, bank, d: k, bi: round(b.i), ci: round(c.i), tr, di: round(raw - tr), bo: round(b.o), co: round(c.o), dout: round(b.o - c.o) };
+      const tr1 = raw > 0.5 ? round(Math.min(raw, other)) : 0;
+      const rest = round(raw - tr1), tr2 = rest > 0.5 ? round(Math.min(rest, b.w || 0)) : 0, tr = round(tr1 + tr2);
+      const r = { acc: a.acc, org, bank, d: k, bi: round(b.i), ci: round(c.i), tr, note: tr2 > 0 ? "по выписке («Перекидка»), в 1С не проверено" : "", di: round(raw - tr), bo: round(b.o), co: round(c.o), dout: round(b.o - c.o) };
       r.bad = Math.abs(r.di) > 0.5 || Math.abs(r.dout) > 0.5;
       row.bi += r.bi; row.ci += r.ci; row.tr += r.tr; row.bo += r.bo; row.co += r.co; row.days++; if (r.bad) row.bad++;
       if (r.bi || r.ci || r.bo || r.co) all.push(r);
@@ -11457,7 +11459,7 @@ function bnRun() {
   document.getElementById("bnActs").style.display = "flex";
   const rules = document.getElementById("bnRules"); rules.style.display = "";
   rules.innerHTML = "Выписка банка - эталон, 1С сверяется с ней. Сравниваются суммы за день по каждому счёту: приход в банке (Кредит) с «Поступление» в 1С, расход в банке (Дебет) со «Списание» в 1С. " +
-    "Период каждой выписки ограничен периодом выгрузки 1С (" + bnFmtDay(R.lo) + " - " + bnFmtDay(R.hi) + "). Счета объединяются по номеру счёта, название банка в 1С не важно. Допуск 0,50 сум. Переводы между своими счетами 1С создаёт сам: вносится только списание с одного счёта, а приход на другой отдельным документом не вводится. Поэтому разница прихода, равная переводам с других счетов организации за тот же день, показана в колонке «Перевод со своего счёта» и расхождением не считается. " +
+    "Период каждой выписки ограничен периодом выгрузки 1С (" + bnFmtDay(R.lo) + " - " + bnFmtDay(R.hi) + "). Счета объединяются по номеру счёта, название банка в 1С не важно. Допуск 0,50 сум. Переводы между своими счетами 1С создаёт сам: вносится только списание с одного счёта, а приход на другой отдельным документом не вводится. Поэтому разница прихода, равная переводам с других счетов организации за тот же день, показана в колонке «Перевод со своего счёта» и расхождением не считается. Если в выгрузке 1С нет других счетов, такой приход определяется по выписке (в назначении платежа «Перекидка»), с пометкой «в 1С не проверено». " +
     "Сверяются только те счета, чьи выписки загружены, остальные счета из файла 1С не учитываются. Валютные счета в сверку не входят." + (R.skipped ? " Документов 1С без банковского счёта (например, корпоративная карта): " + R.skipped + ", в сверку не входят." : "");
 }
 function bnRenderTabs() {
@@ -11470,7 +11472,7 @@ function bnCols(tab) {
   const S = f => r => rcFmtSum(f(r)), D = r => bnFmtDay(r.d);
   const day = [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Дата", D],
     ["Банк: приход", S(r => r.bi), "n", 20, true], ["1С: приход", S(r => r.ci), "n", 20, true], ["Перевод со своего счёта", S(r => r.tr), "n", 20, true], ["Разница прихода", S(r => r.di), "neg", 20, true],
-    ["Банк: расход", S(r => r.bo), "n", 20, true], ["1С: расход", S(r => r.co), "n", 20, true], ["Разница расхода", S(r => r.dout), "neg", 20, true]];
+    ["Банк: расход", S(r => r.bo), "n", 20, true], ["1С: расход", S(r => r.co), "n", 20, true], ["Разница расхода", S(r => r.dout), "neg", 20, true], ["Примечание", r => r.note]];
   const map = {
     diff: day, all: day,
     acc: [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Период сверки", r => r.skip ? "вне периода 1С" : bnFmtDay(r.from) + " - " + bnFmtDay(r.to)],
@@ -11507,7 +11509,7 @@ function bnXCols(tab) {
   const N = "n", T = "t", D = "d";
   const day = [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Дата", r => r.d ? new Date(r.d + "T00:00:00Z") : null, D, 12],
     ["Банк: приход", r => r.bi, N, 20, true], ["1С: приход", r => r.ci, N, 20, true], ["Перевод со своего счёта", r => r.tr, N, 20, true], ["Разница прихода", r => r.di, N, 20, true],
-    ["Банк: расход", r => r.bo, N, 20, true], ["1С: расход", r => r.co, N, 20, true], ["Разница расхода", r => r.dout, N, 20, true]];
+    ["Банк: расход", r => r.bo, N, 20, true], ["1С: расход", r => r.co, N, 20, true], ["Разница расхода", r => r.dout, N, 20, true], ["Примечание", r => r.note, T, 46]];
   const map = {
     diff: day, all: day,
     acc: [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Период сверки", r => r.skip ? "вне периода 1С" : bnFmtDay(r.from) + " - " + bnFmtDay(r.to), T, 24],
