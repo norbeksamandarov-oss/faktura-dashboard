@@ -2383,6 +2383,9 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .rn-table tr.rn-out{animation:rnOut .3s ease forwards}
 @keyframes rnIn{from{opacity:0;transform:translateY(6px)}}
 @keyframes rnOut{to{opacity:0;transform:translateX(24px)}}
+.rn-chip{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#b45f00;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4)}
+.rn-nc .rn-chip{margin-left:0}
+#section-rental .rn-st b.rn-warn{color:#d98a00}
 .rn-end.warn{color:#d98a00;font-weight:600}.rn-end.bad{color:#d92d20;font-weight:600}
 .rn-ac{white-space:nowrap}.rn-ac button{background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted)}
 .rn-ac button:hover{color:var(--text)}.rn-ac .rn-del:hover{color:#d92d20}
@@ -2398,6 +2401,9 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .rn-f input:focus,.rn-f select:focus{outline:none;border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
 .rn-f{font-weight:700;font-size:10.5px;letter-spacing:.03em}
 .rn-w2{grid-column:1/-1}
+.rn-nc-toggle{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;font-weight:600;cursor:pointer}
+.rn-nc-toggle input{width:16px;height:16px;accent-color:#7a3cff}
+.rn-f.off{opacity:.38}.rn-f.off input,.rn-f.off select{pointer-events:none}
 .rn-f.bad{color:#d92d20}.rn-f.bad input,.rn-f.bad select{border-color:#d92d20;box-shadow:0 0 0 3px rgba(217,45,32,.15)}
 .rn-err{min-height:18px;margin-top:10px;font-size:13px;color:#d92d20}
 .rn-act{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
@@ -4830,6 +4836,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
   <div class="rn-card" id="rnCard">
     <div class="rn-bar-busy"></div>
     <h3 id="rnTitle">Новая запись</h3>
+    <label class="rn-nc-toggle"><input type="checkbox" id="rnfNo" onchange="rnToggleNo()"> <span>Используем помещение без договора аренды</span></label>
     <div class="rn-grid">
       <label class="rn-f rn-w2" data-l="Организация">Организация<input type="text" id="rnfOrg" list="rnOrgList" autocomplete="off"><datalist id="rnOrgList"></datalist></label>
       <label class="rn-f" data-l="Бренд">Бренд<input type="text" id="rnfBrand"></label>
@@ -6150,7 +6157,7 @@ function rnReset() {
   document.getElementById("rnLocFilter").value = "";
   rnRender(true);
 }
-function rnIsEmpty(r) { return !(r.tenant || r.contract || rnNum(r.sum) || rnNum(r.area)); }
+function rnIsEmpty(r) { return !r.noContract && !(r.tenant || r.contract || rnNum(r.sum) || rnNum(r.area)); }
 function rnRender(anim) {
   const q = (document.getElementById("rnSearch").value || "").trim().toLowerCase();
   const sel = document.getElementById("rnOrgFilter");
@@ -6171,20 +6178,27 @@ function rnRender(anim) {
   const of = sel.value, lf = lsel.value;
   const rows = RN.rows.filter(r => (!of || r.org === of) && (!lf || (r.location || "").trim() === lf) &&
     (!q || [r.org, r.brand, r.location, r.address, r.tenant, r.contract].join(" ").toLowerCase().includes(q)));
-  const real = rows.filter(r => !rnIsEmpty(r));
+  const nocon = rows.filter(r => r.noContract);
+  const real = rows.filter(r => !rnIsEmpty(r) && !r.noContract);
   document.getElementById("rnStats").innerHTML =
     `<div class="rn-st"><b>${real.length}</b><span>Договоров</span></div>` +
     `<div class="rn-st"><b>${rnFmt(real.reduce((a, r) => a + rnNum(r.area), 0))}</b><span>Площадь, м²</span></div>` +
-    `<div class="rn-st"><b>${rnFmt(real.reduce((a, r) => a + rnNum(r.sum), 0))}</b><span>Сумма</span></div>`;
+    `<div class="rn-st"><b>${rnFmt(real.reduce((a, r) => a + rnNum(r.sum), 0))}</b><span>Сумма</span></div>` +
+    `<div class="rn-st"><b class="${nocon.length ? "rn-warn" : ""}">${nocon.length}</b><span>Без договора</span></div>`;
   const groups = new Map();
   rows.forEach(r => { if (!groups.has(r.org)) groups.set(r.org, []); groups.get(r.org).push(r); });
   let html = "", n = 0, delay = 0;
   groups.forEach((list, org) => {
-    const rr = list.filter(r => !rnIsEmpty(r));
-    html += `<tr class="rn-gh"><td colspan="12">${escapeHtml(org)}<span class="rn-gs">${rr.length ? rr.length + " дог. · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.area), 0)) + " м² · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.sum), 0)) : "аренды нет"}</span></td></tr>`;
+    const rr = list.filter(r => !rnIsEmpty(r) && !r.noContract);
+    const nc = list.filter(r => r.noContract).length;
+    html += `<tr class="rn-gh"><td colspan="12">${escapeHtml(org)}<span class="rn-gs">${rr.length ? rr.length + " дог. · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.area), 0)) + " м² · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.sum), 0)) : (nc ? "" : "аренды нет")}${nc ? `<span class="rn-chip">без договора: ${nc}</span>` : ""}</span></td></tr>`;
     list.forEach(r => {
       const ac = `<td class="rn-ac"><button onclick="rnOpen(${r.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="rnDelete(${r.rowIndex}, this)" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td>`;
       const cls = anim ? ` class="rn-in" style="animation-delay:${Math.min(delay++, 20) * 20}ms"` : "";
+      if (r.noContract) {
+        html += `<tr data-rn="${r.rowIndex}"${cls.replace('class="rn-in"', 'class="rn-nc rn-in"') || ' class="rn-nc"'}><td style="color:var(--muted);">${++n}</td><td>${escapeHtml(r.brand)}</td><td>${escapeHtml(r.location)}</td><td class="rn-addr">${escapeHtml(r.address)}</td><td colspan="7"><span class="rn-chip">Используем без договора аренды</span></td>${ac}</tr>`;
+        return;
+      }
       if (rnIsEmpty(r)) {
         html += `<tr data-rn="${r.rowIndex}"${cls.replace('class="rn-in"', 'class="rn-none rn-in"') || ' class="rn-none"'}><td></td><td>${escapeHtml(r.brand)}</td><td colspan="9">Нет договоров аренды</td>${ac}</tr>`;
         return;
@@ -6198,6 +6212,11 @@ function rnRender(anim) {
   });
   document.getElementById("rnBody").innerHTML = html || `<tr><td colspan="12" style="color:var(--muted);">Ничего не найдено</td></tr>`;
 }
+const RN_CONTRACT_FIELDS = ["rnfTenant", "rnfPtype", "rnfUtil", "rnfContract", "rnfEnd", "rnfArea", "rnfSum"];
+function rnToggleNo() {
+  const on = document.getElementById("rnfNo").checked;
+  RN_CONTRACT_FIELDS.forEach(id => document.getElementById(id).closest(".rn-f").classList.toggle("off", on));
+}
 function rnOpen(rowIndex) {
   const r = rowIndex ? RN.rows.find(x => x.rowIndex === rowIndex) : null;
   RN.editing = r ? r.rowIndex : null;
@@ -6206,6 +6225,8 @@ function rnOpen(rowIndex) {
   set("rnfOrg", r ? r.org : document.getElementById("rnOrgFilter").value); set("rnfBrand", r && r.brand); set("rnfLocation", r && r.location);
   set("rnfAddress", r && r.address); set("rnfTenant", r && r.tenant); set("rnfPtype", r && r.ptype); set("rnfUtil", r && r.utilities);
   set("rnfContract", r && r.contract); set("rnfEnd", r ? rnDate(r.endDate) : ""); set("rnfArea", r && r.area); set("rnfSum", r && r.sum);
+  document.getElementById("rnfNo").checked = !!(r && r.noContract);
+  rnToggleNo();
   document.getElementById("rnErr").textContent = "";
   document.querySelectorAll("#rnCard .rn-f.bad").forEach(x => x.classList.remove("bad"));
   const ov = document.getElementById("rnModal");
@@ -6221,19 +6242,20 @@ async function rnSave() {
   const g = id => document.getElementById(id).value.trim();
   const card = document.getElementById("rnCard"), btn = document.getElementById("rnSave"), err = document.getElementById("rnErr");
   const fail = msg => { err.textContent = msg; card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
-  const ids = ["rnfOrg", "rnfBrand", "rnfLocation", "rnfAddress", "rnfTenant", "rnfPtype", "rnfUtil", "rnfContract", "rnfEnd", "rnfArea", "rnfSum"];
+  const noC = document.getElementById("rnfNo").checked;
+  const ids = noC ? ["rnfOrg", "rnfBrand", "rnfLocation"] : ["rnfOrg", "rnfBrand", "rnfLocation", "rnfAddress", "rnfTenant", "rnfPtype", "rnfUtil", "rnfContract", "rnfEnd", "rnfArea", "rnfSum"];
   card.querySelectorAll(".rn-f.bad").forEach(x => x.classList.remove("bad"));
   const empty = ids.filter(id => !g(id));
   empty.forEach(id => document.getElementById(id).closest(".rn-f").classList.add("bad"));
   if (empty.length) return fail("Заполните все поля: " + empty.map(id => document.getElementById(id).closest(".rn-f").dataset.l).join(", "));
-  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(g("rnfEnd"));
-  if (!m || +m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) { document.getElementById("rnfEnd").closest(".rn-f").classList.add("bad"); return fail("Срок: дата в формате дд.мм.гггг"); }
-  const endIso = `${m[3]}-${m[2]}-${m[1]}`;
-  if (!(rnNum(g("rnfArea")) > 0) || !(rnNum(g("rnfSum")) > 0)) { ["rnfArea", "rnfSum"].forEach(id => { if (!(rnNum(g(id)) > 0)) document.getElementById(id).closest(".rn-f").classList.add("bad"); }); return fail("Площадь и сумма должны быть числом больше нуля"); }
+  const m = noC ? null : /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(g("rnfEnd"));
+  if (!noC && (!m || +m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31)) { document.getElementById("rnfEnd").closest(".rn-f").classList.add("bad"); return fail("Срок: дата в формате дд.мм.гггг"); }
+  const endIso = noC ? "" : `${m[3]}-${m[2]}-${m[1]}`;
+  if (!noC && (!(rnNum(g("rnfArea")) > 0) || !(rnNum(g("rnfSum")) > 0))) { ["rnfArea", "rnfSum"].forEach(id => { if (!(rnNum(g(id)) > 0)) document.getElementById(id).closest(".rn-f").classList.add("bad"); }); return fail("Площадь и сумма должны быть числом больше нуля"); }
   RN.busy = true; card.classList.add("busy"); btn.disabled = true;
   btn.innerHTML = '<span class="rn-spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4)"></span><span class="rn-bt">Сохраняем...</span>';
   try {
-    await apiCall("saveRental", { rowIndex: RN.editing, org: g("rnfOrg"), brand: g("rnfBrand"), location: g("rnfLocation"), address: g("rnfAddress"),
+    await apiCall("saveRental", { rowIndex: RN.editing, noContract: noC, org: g("rnfOrg"), brand: g("rnfBrand"), location: g("rnfLocation"), address: g("rnfAddress"),
       tenant: g("rnfTenant"), ptype: g("rnfPtype"), contract: g("rnfContract"), endDate: endIso, area: g("rnfArea"), utilities: g("rnfUtil"), sum: g("rnfSum") });
     btn.classList.add("ok"); btn.innerHTML = '<i class="ti ti-check mc-ok" aria-hidden="true"></i><span class="rn-bt">Сохранено</span>';
     await new Promise(r => setTimeout(r, 650));
