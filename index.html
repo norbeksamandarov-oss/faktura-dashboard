@@ -3173,7 +3173,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       </div>
       <button id="notifyBtn" onclick="triggerStartupNotify()" style="display:none;" title="Отправить сотрудникам сообщение о том, что бот снова работает"><i class='ti ti-bell' aria-hidden='true'></i> Уведомить сотрудников</button>
       <button id="announcementBtn" onclick="openAnnouncementModal()" style="display:none;" title="Отправить произвольное объявление всем сотрудникам"><i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление</button>
-      <button id="changePasswordBtn" onclick="handleChangeOwnPassword()" title="Изменить свой пароль"><i class='ti ti-key' aria-hidden='true'></i> Пароль</button>
+      <button id="changePasswordBtn" onclick="openAccountModal()" title="Изменить свой логин или пароль"><i class='ti ti-key' aria-hidden='true'></i> Аккаунт</button>
       <button id="refreshBtn"><i class='ti ti-refresh' aria-hidden='true'></i> Обновить</button>
       <button id="logoutBtn">Выйти</button>
     </div>
@@ -4831,6 +4831,26 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
   </div>
 </div>
 
+
+<div id="accModal" class="rn-ov">
+  <div class="rn-card" id="accCard" style="width:min(460px,100%)">
+    <div class="rn-bar-busy"></div>
+    <h3>Аккаунт</h3>
+    <p style="margin:0 0 14px;font-size:13px;color:var(--muted);">Текущий логин: <b id="accCur" style="color:var(--text)"></b></p>
+    <div class="rn-grid">
+      <label class="rn-f rn-w2" data-l="Новый логин">Новый логин<input type="text" id="accNew" autocomplete="off" maxlength="32" placeholder="латиница, цифры, . _ -"></label>
+      <label class="rn-f rn-w2" data-l="Текущий пароль">Текущий пароль<input type="password" id="accPass" autocomplete="current-password"></label>
+    </div>
+    <div class="rn-err" id="accErr"></div>
+    <div class="rn-act" style="justify-content:space-between;">
+      <button class="rn-b" onclick="accToPassword()"><i class='ti ti-key' aria-hidden='true'></i> Сменить пароль</button>
+      <span style="display:flex;gap:10px;">
+        <button class="rn-b" onclick="accClose()">Закрыть</button>
+        <button class="rn-b rn-pri" id="accSave" onclick="accSaveLogin()"><span class="rn-bt">Сменить логин</span></button>
+      </span>
+    </div>
+  </div>
+</div>
 
 <div id="rnModal" class="rn-ov">
   <div class="rn-card" id="rnCard">
@@ -10564,6 +10584,45 @@ async function handleChangeOwnPassword() {
   }
 }
 
+
+/* ===== Аккаунт: смена своего логина (и переход к смене пароля) ===== */
+let ACC = { busy: false };
+function openAccountModal() {
+  document.getElementById("accCur").textContent = currentUsername || "";
+  document.getElementById("accNew").value = ""; document.getElementById("accPass").value = "";
+  document.getElementById("accErr").textContent = "";
+  const ov = document.getElementById("accModal");
+  ov.style.display = "flex"; requestAnimationFrame(() => ov.classList.add("open"));
+}
+function accClose() {
+  if (ACC.busy) return;
+  const ov = document.getElementById("accModal"); ov.classList.remove("open");
+  setTimeout(() => { if (!ov.classList.contains("open")) ov.style.display = "none"; }, 280);
+}
+function accToPassword() { if (ACC.busy) return; accClose(); setTimeout(handleChangeOwnPassword, 300); }
+async function accSaveLogin() {
+  if (ACC.busy) return;
+  const card = document.getElementById("accCard"), btn = document.getElementById("accSave"), err = document.getElementById("accErr");
+  const nu = document.getElementById("accNew").value.trim(), pw = document.getElementById("accPass").value;
+  const fail = msg => { err.textContent = msg; card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
+  if (!/^[A-Za-z0-9._-]{3,32}$/.test(nu)) return fail("Логин: 3-32 символа, латиница, цифры, точка, дефис, подчёркивание");
+  if (!pw) return fail("Введите текущий пароль");
+  ACC.busy = true; card.classList.add("busy"); btn.disabled = true; err.textContent = "";
+  btn.innerHTML = '<span class="rn-spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4)"></span><span class="rn-bt">Сохраняем...</span>';
+  try {
+    const d = await apiCall("changeOwnUsername", { newUsername: nu, password: pw });
+    currentUsername = d.username || nu;
+    const ss = loadSession(); if (ss) { ss.username = currentUsername; saveSession(ss); }
+    btn.classList.add("ok"); btn.innerHTML = '<i class="ti ti-check mc-ok" aria-hidden="true"></i><span class="rn-bt">Готово</span>';
+    await new Promise(r => setTimeout(r, 800));
+    ACC.busy = false; card.classList.remove("busy"); accClose();
+  } catch (e) {
+    ACC.busy = false; card.classList.remove("busy"); fail(e.message || "Не удалось изменить логин");
+  } finally {
+    ACC.busy = false; btn.disabled = false; btn.classList.remove("ok"); btn.innerHTML = '<span class="rn-bt">Сменить логин</span>';
+  }
+}
+
 async function handleDeleteUser(rowIndex, username, btnEl) {
   if (!await uiConfirm(`Удалить пользователя «${username}»? Он больше не сможет войти в dashboard.`)) return;
   btnEl.disabled = true;
@@ -13227,7 +13286,7 @@ async function recallInvoice(facturaid, btnEl) {
       });
       var tr=document.querySelector('header.topbar .topbar-right');
       if(tr&&!document.getElementById('tbTheme')){
-        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Сменить пароль',refreshBtn:'Обновить данные',logoutBtn:'Выйти'};
+        var tips={notifyBtn:'Уведомить сотрудников',announcementBtn:'Объявление',changePasswordBtn:'Логин и пароль',refreshBtn:'Обновить данные',logoutBtn:'Выйти'};
         Object.keys(tips).forEach(function(id){var e=document.getElementById(id);if(e){e.setAttribute('data-tip',tips[id]);e.removeAttribute('title');}});
         var lo=document.getElementById('logoutBtn');
         if(lo)lo.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>';
