@@ -2580,6 +2580,10 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-tab{background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:color .2s,border-color .2s}
 .rc-tab:hover{color:var(--text)}
 .rc-tab.on{color:var(--text);border-bottom-color:#6a58ee}
+.rc-tabs{overflow-x:auto}.rc-tab{white-space:nowrap}
+.rc-tab.soon{opacity:.4;cursor:default}.rc-tab.soon i{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-left:4px;color:var(--muted)}
+@keyframes rcTabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rc-tabin{animation:rcTabIn .35s ease both}
 .rc-drops{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:760px){.rc-drops{grid-template-columns:1fr}}
 .rc-drop{border:1.5px dashed var(--border);border-radius:16px;padding:22px 24px;cursor:pointer;transition:border-color .2s,background .2s,transform .2s;position:relative}
@@ -4337,10 +4341,14 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </section>
 
     <section id="section-reconcile" class="content-section">
-    <h2 class="sec-title">Сверка с 1С <span class="sub">налоговый реестр и 1С</span></h2>
+    <h2 class="sec-title">Сверка с 1С <span class="sub">поступления, реализация и другие разделы</span></h2>
     <div class="rc-tabs" id="rcTabs">
       <button type="button" class="rc-tab on" data-t="recv" onclick="rcSwitchTab('recv')">Поступления</button>
       <button type="button" class="rc-tab" data-t="real" onclick="rcSwitchTab('real')">Реализация</button>
+      <button type="button" class="rc-tab soon" data-t="bank" disabled>Банк <i>скоро</i></button>
+      <button type="button" class="rc-tab soon" data-t="chek" disabled>Чеки <i>скоро</i></button>
+      <button type="button" class="rc-tab soon" data-t="nds" disabled>НДС <i>скоро</i></button>
+      <button type="button" class="rc-tab soon" data-t="loan" disabled>Займы <i>скоро</i></button>
     </div>
     <div class="panel" id="rcAccPanel" style="display:none;">
       <p class="analytics-note" style="margin:0 0 16px;">Загрузите файл, выгруженный из 1С (Excel). Сверка сопоставит каждый ПРИНЯТЫЙ счёт-фактуру по 4 признакам: ИНН + Сумма + Номер счёта + Дата. Файл нигде не сохраняется - обработка происходит только у вас в браузере.</p>
@@ -10471,6 +10479,8 @@ function rcSwitchTab(t) {
   document.querySelectorAll("#rcTabs .rc-tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
   document.getElementById("rcRecvPanel").style.display = t === "recv" ? "" : "none";
   document.getElementById("rzPanel").style.display = t === "real" ? "" : "none";
+  const pn = document.getElementById(t === "real" ? "rzPanel" : "rcRecvPanel");
+  pn.classList.remove("rc-tabin"); void pn.offsetWidth; pn.classList.add("rc-tabin");
 }
 function rcShowTabForRole() {}
 function rcErr(msg) {
