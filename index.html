@@ -4371,6 +4371,10 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         </div>
         <div class="filter-field">
           <label>&nbsp;</label>
+          <button class="secondary-btn" id="rnResetBtn" onclick="rnReset()"><i class='ti ti-filter-off' aria-hidden='true'></i> Сбросить</button>
+        </div>
+        <div class="filter-field">
+          <label>&nbsp;</label>
           <button id="rnAddBtn" onclick="rnOpen()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button>
         </div>
       </div>
@@ -6139,6 +6143,12 @@ async function rnLoad() {
   } catch (e) {
     document.getElementById("rnLoading").innerHTML = "Не удалось загрузить: " + escapeHtml(e.message);
   }
+}
+function rnReset() {
+  document.getElementById("rnSearch").value = "";
+  document.getElementById("rnOrgFilter").value = "";
+  document.getElementById("rnLocFilter").value = "";
+  rnRender(true);
 }
 function rnIsEmpty(r) { return !(r.tenant || r.contract || rnNum(r.sum) || rnNum(r.area)); }
 function rnRender(anim) {
