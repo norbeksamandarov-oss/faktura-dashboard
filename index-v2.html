@@ -9357,9 +9357,7 @@ function renderSalaryRequestsTable() {
       ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#1E7A4C;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'approve', this)"><i class='ti ti-circle-check' aria-hidden='true'></i> Одобрить</button>
          <button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:#C0392B;margin-left:6px;" onclick="handleDecideSalaryRequest(${r.rowIndex}, 'reject', this)"><i class='ti ti-circle-x' aria-hidden='true'></i> Отклонить</button>`
       : `<span style="color:var(--muted);font-size:12.5px;">${r.processed ? "выполнено" : "обрабатывается..."}</span>`;
-    const namesMatch = !r.systemName || normalizeForSearch(r.systemName) === normalizeForSearch(r.fio) ||
-      normalizeForSearch(r.systemName).includes(normalizeForSearch(r.fio)) ||
-      normalizeForSearch(r.fio).includes(normalizeForSearch(r.systemName));
+    const namesMatch = !r.systemName || !r.salaryFound || fioLooksSame(r.systemName, r.fio);
     const systemNameCell = r.systemName
       ? `${escapeHtml(r.systemName)}${!namesMatch ? ` <i class='ti ti-alert-triangle' aria-hidden='true' style="color:#C0392B;" title="Не совпадает с ФИО по зарплате!"></i>` : ""}`
       : `<span style="color:var(--muted);">не найден</span>`;
@@ -9367,7 +9365,7 @@ function renderSalaryRequestsTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.dateRequested)}</td>
-      <td>${escapeHtml(r.fio)}</td>
+      <td>${r.salaryFound ? escapeHtml(r.fio) : `<span style="color:var(--muted);">${escapeHtml(r.typedFio || "")}</span> <span class="rn-chip" style="margin-left:6px;">нет в зарплате</span>`}</td>
       <td>${systemNameCell}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${escapeHtml(r.pnfl)}</td>
       <td style="font-size:12px;color:var(--muted);">${escapeHtml(r.chatId)}</td>
@@ -9377,6 +9375,20 @@ function renderSalaryRequestsTable() {
   }).join("") || `<tr><td colspan="8" style="color:var(--muted)">Нет заявок</td></tr>`;
 }
 
+
+// Kirill/lotin yozuvidagi ismlarni solishtirish: translit + o'xshash harflar (q/k, y/i, h/x...).
+// Familiya (birinchi so'z) boshi mos kelsa - bir xil deb hisoblaymiz.
+function fioKey(s) {
+  const map = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"j",з:"z",и:"i",й:"i",к:"k",қ:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ў:"u",ф:"f",х:"h",ҳ:"h",ц:"c",ч:"c",ш:"s",щ:"s",ъ:"",ы:"i",ь:"",э:"e",ю:"u",я:"a",ғ:"g" };
+  return String(s || "").toLowerCase().replace(/[а-яёқўҳғ]/g, ch => map[ch] ?? "").replace(/q/g, "k").replace(/x/g, "h").replace(/y/g, "i").replace(/w/g, "v").replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+function fioLooksSame(a, b) {
+  const ta = fioKey(a).split(" ").filter(Boolean), tb = fioKey(b).split(" ").filter(Boolean);
+  if (!ta.length || !tb.length) return true;
+  // Familiya: har ikkala ro'yxatdagi birorta so'z boshi 4 harf bo'yicha mos kelsa - mos
+  const pa = ta.map(w => w.slice(0, 4)), pb = tb.map(w => w.slice(0, 4));
+  return pa.some(x => pb.includes(x));
+}
 async function handleDecideSalaryRequest(rowIndex, decision, btnEl) {
   const row = btnEl.closest("tr");
   const buttons = row.querySelectorAll("button");
