@@ -7841,7 +7841,7 @@ function renderInvoicesTable() {
     if (dateTo && r.date && r.date > dateTo) return false;
     if (search && !(r.no + " " + r.comment).toLowerCase().includes(search)) return false;
     return true;
-  });
+  }).sort((a, b) => b.rowIndex - a.rowIndex); // новые (добавленные позже) - сверху, старые - вниз
 
   const countText = `показано ${filtered.length} из ${invoiceRows.length}`;
   document.getElementById("tableCount").textContent = countText;
