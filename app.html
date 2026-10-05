@@ -274,7 +274,10 @@
   // versiyada oddiy expand() qoladi). O'chirish uchun manzilga ?fs=0 qo'shing.
   (function () {
     var wantFs = !/[?&]fs=0\b/.test(location.search); // standart: to'liq ekran; ?fs=0 - o'chirish
-    if (!tg || !wantFs) return;
+    // To'liq ekran FAQAT telefonda (android/ios). Kompyuter/noutbuk (Telegram Desktop,
+    // macOS, web) da oddiy oyna holida qoladi - butun ekranga yoyilmaydi.
+    var mobile = /^(android|android_x|ios)$/.test(String((tg && tg.platform) || ""));
+    if (!tg || !wantFs || !mobile) return;
     function sync() { document.documentElement.classList.toggle("tg-fs", !!tg.isFullscreen); }
     try { tg.onEvent("fullscreenChanged", sync); tg.onEvent("safeAreaChanged", sync); tg.onEvent("contentSafeAreaChanged", sync); } catch (e) {}
     try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch (e) {}
