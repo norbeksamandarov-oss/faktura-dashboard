@@ -2613,19 +2613,19 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-chk path{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18;stroke-dashoffset:18;animation:rcDraw .35s .25s ease-out forwards}
 .rc-busy.done .rc-bar i{width:100%;animation:rcDone .4s ease-out;transform-origin:left;background:linear-gradient(90deg,#00b478,#00d4a0)}
 .rc-busy.done #rcBusyT{color:var(--green-fg);font-weight:700}
-#rcSummary>div{animation:rcRise .6s cubic-bezier(.2,.8,.2,1) both,rcRing .9s ease-out .5s 1;transition:transform .25s,box-shadow .25s}
-#rcSummary>div:hover{transform:translateY(-4px)}
+#rcSummary>div,#rzSummary>div{animation:rcRise .6s cubic-bezier(.2,.8,.2,1) both,rcRing .9s ease-out .5s 1;transition:transform .25s,box-shadow .25s}
+#rcSummary>div:hover,#rzSummary>div:hover{transform:translateY(-4px)}
 .rc-rt b{animation:rcPop .4s cubic-bezier(.2,.9,.3,1.3) both}
-#rcSummary>div:nth-child(2){animation-delay:.06s}#rcSummary>div:nth-child(3){animation-delay:.12s}
-#rcSummary>div:nth-child(4){animation-delay:.18s}#rcSummary>div:nth-child(5){animation-delay:.24s}#rcSummary>div:nth-child(6){animation-delay:.3s}
+#rcSummary>div:nth-child(2),#rzSummary>div:nth-child(2){animation-delay:.06s}#rcSummary>div:nth-child(3),#rzSummary>div:nth-child(3){animation-delay:.12s}
+#rcSummary>div:nth-child(4),#rzSummary>div:nth-child(4){animation-delay:.18s}#rcSummary>div:nth-child(5),#rzSummary>div:nth-child(5){animation-delay:.24s}#rcSummary>div:nth-child(6),#rzSummary>div:nth-child(6){animation-delay:.3s}
 .rc-orgrow,.rc-restabs,.rc-search,.rc-rules{animation:rcRise .5s ease both}
 .rc-rt{position:relative;border-bottom-color:transparent!important}
 .rc-rt::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,#4f7dff,#8a52ff);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .rc-rt.on::after{transform:scaleX(1)}
-#rcTable tbody tr{animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*22ms)}
+#rcTable tbody tr,#rzTable tbody tr{animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*22ms)}
 .rc-btn.busy{pointer-events:none;opacity:.85}
 .rc-btn.busy i{display:inline-block;animation:rcSpin .7s linear infinite}
-@media (prefers-reduced-motion:reduce){.rc-rt b,#rcSummary>div,.rc-orgrow,.rc-restabs,.rc-search,.rc-rules,#rcTable tbody tr,.rc-drop.ok,.rc-chk,.rc-chk path{animation:none!important}.rc-chk path{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.rc-rt b,#rcSummary>div,#rzSummary>div,#rzTable tbody tr,.rc-orgrow,.rc-restabs,.rc-search,.rc-rules,#rcTable tbody tr,.rc-drop.ok,.rc-chk,.rc-chk path{animation:none!important}.rc-chk path{stroke-dashoffset:0}}
 .rc-orgrow{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .rc-orgrow label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .rc-orgrow select{background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--text);max-width:320px}
@@ -2643,8 +2643,8 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-search{display:flex;align-items:center;gap:14px;margin-top:14px}
 .rc-search input{flex:0 1 360px;background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font:inherit;font-size:13.5px;color:var(--text)}
 .rc-search span{font-size:12.5px;color:var(--muted)}
-#rcTable td.rc-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-#rcTable td.rc-neg{color:var(--red-fg);font-weight:700}
+#rcTable td.rc-num,#rzTable td.rc-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#rcTable td.rc-neg,#rzTable td.rc-neg{color:var(--red-fg);font-weight:700}
 .rc-rules{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);line-height:1.6}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -4338,6 +4338,10 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
 
     <section id="section-reconcile" class="content-section">
     <h2 class="sec-title">Сверка с 1С <span class="sub">налоговый реестр и 1С</span></h2>
+    <div class="rc-tabs" id="rcTabs">
+      <button type="button" class="rc-tab on" data-t="recv" onclick="rcSwitchTab('recv')">Поступления</button>
+      <button type="button" class="rc-tab" data-t="real" onclick="rcSwitchTab('real')">Реализация</button>
+    </div>
     <div class="panel" id="rcAccPanel" style="display:none;">
       <p class="analytics-note" style="margin:0 0 16px;">Загрузите файл, выгруженный из 1С (Excel). Сверка сопоставит каждый ПРИНЯТЫЙ счёт-фактуру по 4 признакам: ИНН + Сумма + Номер счёта + Дата. Файл нигде не сохраняется - обработка происходит только у вас в браузере.</p>
 
@@ -4391,6 +4395,37 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div id="rcSearchRow" class="rc-search" style="display:none;"><input type="text" id="rcSearch" placeholder="Поиск по контрагенту, номеру, ИНН…" oninput="rcRenderTable()"><span id="rcCount"></span></div>
       <div class="table-wrap" style="margin-top:8px;"><table class="invoices" id="rcTable" style="display:none;"><thead></thead><tbody></tbody></table></div>
       <div id="rcRules" class="rc-rules" style="display:none;"></div>
+    </div>
+    <div class="panel" id="rzPanel" style="display:none;">
+      <p class="analytics-note" style="margin:0 0 18px;">Загрузите два файла: налоговый реестр ВЫДАННЫХ счетов-фактур (CSV с сайта налоговой) и реестр реализации из 1С (Excel). Сверка запустится сама, как только оба файла загружены. Файлы нигде не сохраняются - всё считается только у вас в браузере.</p>
+      <div class="rc-drops">
+        <div class="rc-drop" id="rzDropTax" onclick="document.getElementById('rzFileTax').click()">
+          <div class="rc-drop-t">Налоговый реестр (выданные)<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
+          <div class="rc-drop-s" id="rzMetaTax">CSV с сайта налоговой (выданные счета-фактуры, factura_sent). Перетащите файл сюда или нажмите</div>
+          <input type="file" id="rzFileTax" accept=".csv,.txt,.xlsx,.xls" hidden onchange="rzPickFile('tax', this)">
+        </div>
+        <div class="rc-drop" id="rzDrop1c" onclick="document.getElementById('rzFile1c').click()">
+          <div class="rc-drop-t">Реестр реализации 1С<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
+          <div class="rc-drop-s" id="rzMeta1c">Excel из 1С: реализация за период (с колонкой «Организация»). Перетащите файл сюда или нажмите</div>
+          <input type="file" id="rzFile1c" accept=".xlsx,.xls,.csv" hidden onchange="rzPickFile('c1', this)">
+        </div>
+      </div>
+      <div id="rzErr" class="rc-err"></div>
+      <div id="rzBusy" class="rc-busy" style="display:none;"><div class="rc-bar"><i></i></div><span id="rzBusyT">Сверяем…</span></div>
+      <div id="rzOrgRow" class="rc-orgrow" style="display:none;">
+        <label for="rzOrgSel">Организация в 1С</label>
+        <select id="rzOrgSel" onchange="rzRun(this.value)"></select>
+        <span id="rzOrgNote" class="rc-note"></span>
+        <span class="rc-actions">
+          <button type="button" class="login-submit-btn rc-btn" id="rzExportBtn" onclick="rzExport()"><i class='ti ti-download' aria-hidden='true'></i> Скачать Excel</button>
+          <button type="button" class="rc-btn-ghost" onclick="rzClear()"><i class='ti ti-trash' aria-hidden='true'></i> Очистить</button>
+        </span>
+      </div>
+      <div id="rzSummary" class="analytics-summary" style="display:none;margin-top:18px;"></div>
+      <div id="rzTabsRes" class="rc-restabs" style="display:none;"></div>
+      <div id="rzSearchRow" class="rc-search" style="display:none;"><input type="text" id="rzSearch" placeholder="Поиск по покупателю, номеру, ИНН…" oninput="rzRenderTable()"><span id="rzCount"></span></div>
+      <div class="table-wrap" style="margin-top:8px;"><table class="invoices" id="rzTable" style="display:none;"><thead></thead><tbody></tbody></table></div>
+      <div id="rzRules" class="rc-rules" style="display:none;"></div>
     </div>
     </section>
 
@@ -10432,7 +10467,11 @@ function renderReconcileResults(results) {
 
 /* ===== Сверка поступлений (налоговый реестр ↔ 1С), всё в браузере ===== */
 const RC = { tax: null, c1: null, orgs: [], res: null, tab: "missing", org: "" };
-function rcSwitchTab() {}
+function rcSwitchTab(t) {
+  document.querySelectorAll("#rcTabs .rc-tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.getElementById("rcRecvPanel").style.display = t === "recv" ? "" : "none";
+  document.getElementById("rzPanel").style.display = t === "real" ? "" : "none";
+}
 function rcShowTabForRole() {}
 function rcErr(msg) {
   const e = document.getElementById("rcErr");
@@ -10685,7 +10724,7 @@ function rcMatch(c1all, src) {
 }
 const RC_TABS = [
   ["missing", "Нет в 1С", true], ["numdiff", "Другой номер", false], ["sumdiff", "Сумма отличается", true],
-  ["datediff", "Другая дата", false], ["only1c", "Лишние в 1С", true], ["dup", "Дубли в 1С", true], ["card", "Корп. карта", false], ["imp", "Импорт (валюта)", false]
+  ["datediff", "Другая дата", false], ["only1c", "Лишние в 1С", true], ["dup", "Дубли в 1С", true], ["card", "Корп. карта", false, true], ["imp", "Импорт (валюта)", false, true]
 ];
 function rcRun(org) {
   RC.org = org;
@@ -10797,9 +10836,14 @@ function rcXCols(tab) {
   return map[tab];
 }
 async function rcExportNow() {
-  const R = RC.res;
+  return rcWriteWorkbook({ res: RC.res, org: RC.org, tabs: RC_TABS, xcols: rcXCols, notes: RC_NOTES, title: "Сверка поступлений",
+    plain: rcExportPlain,
+    summary: [["Счетов-фактур в налоговом реестре", RC.res.total], ["Документов в 1С (в сумах)", RC.res.cs.length], ["Найдено в 1С", RC.res.found]] });
+}
+async function rcWriteWorkbook(X) {
+  const R = X.res, RC_TABS = X.tabs, RC_NOTES = X.notes, rcXCols = X.xcols, RC = { org: X.org };
   let wb;
-  try { await rcLoadExcelJS(); } catch (e) { return rcExportPlain(); }
+  try { await rcLoadExcelJS(); } catch (e) { return X.plain(); }
   wb = new ExcelJS.Workbook(); wb.creator = "CRB Controlling System"; wb.created = new Date();
   const NAVY = "FF1F2A55", LINE = "FFD9DCE8", ZEBRA = "FFF6F7FB", RED = "FFC0392B", GREEN = "FF0E8F63", MUTED = "FF6B7189";
   const font = (o) => Object.assign({ name: "Calibri", size: 11, color: { argb: "FF1B1F33" } }, o || {});
@@ -10808,15 +10852,15 @@ async function rcExportNow() {
   // --- Итог ---
   const ws0 = wb.addWorksheet("Итог", { views: [{ showGridLines: false }], properties: { tabColor: { argb: NAVY } } });
   ws0.columns = [{ width: 46 }, { width: 16 }];
-  ws0.mergeCells("A1:B1"); const t = ws0.getCell("A1"); t.value = "Сверка поступлений"; t.font = font({ size: 20, bold: true, color: { argb: NAVY } }); ws0.getRow(1).height = 32;
+  ws0.mergeCells("A1:B1"); const t = ws0.getCell("A1"); t.value = X.title; t.font = font({ size: 20, bold: true, color: { argb: NAVY } }); ws0.getRow(1).height = 32;
   ws0.getCell("A2").value = RC.org; ws0.getCell("A2").font = font({ size: 12, bold: true });
   ws0.getCell("A3").value = "Сформировано: " + stamp; ws0.getCell("A3").font = font({ size: 10, color: { argb: MUTED } });
   const head = (r, a, b) => { [["A", a], ["B", b]].forEach(([c, v], i) => { const x = ws0.getCell(c + r); x.value = v; x.font = font({ bold: true, color: { argb: "FFFFFFFF" } }); x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; x.alignment = { horizontal: i ? "right" : "left", vertical: "middle", indent: 1 }; }); ws0.getRow(r).height = 22; };
   const line = (r, a, b, bad) => { const x = ws0.getCell("A" + r), y = ws0.getCell("B" + r); x.value = a; y.value = b; x.font = font(); y.font = font({ bold: true, color: bad === undefined ? undefined : { argb: bad ? RED : GREEN } }); x.border = y.border = border; x.alignment = { indent: 1, vertical: "middle" }; y.alignment = { horizontal: "right", vertical: "middle" }; y.numFmt = "#,##0"; ws0.getRow(r).height = 20; };
   head(5, "Показатель", "Кол-во");
-  line(6, "Счетов-фактур в налоговом реестре", R.total); line(7, "Документов в 1С (в сумах)", R.cs.length); line(8, "Найдено в 1С", R.found);
-  head(10, "Расхождения", "Кол-во");
-  let rr = 11; RC_TABS.forEach(tb => { const n = R.cats[tb[0]].length; line(rr++, tb[1], n, tb[0] === "card" || tb[0] === "imp" ? undefined : n > 0); });
+  X.summary.forEach((x, i) => line(6 + i, x[0], x[1]));
+  const h2 = 6 + X.summary.length + 1; head(h2, "Расхождения", "Кол-во");
+  let rr = h2 + 1; RC_TABS.forEach(tb => { const n = R.cats[tb[0]].length; line(rr++, tb[1], n, tb[3] ? undefined : n > 0); });
   ws0.pageSetup = { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
   // --- вкладки с данными ---
   RC_TABS.forEach(tb => {
@@ -10839,7 +10883,7 @@ async function rcExportNow() {
         if (ri % 2) x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: ZEBRA } };
       });
     });
-    const sumCol = cols.findIndex(c => c[2] === "n" && /^Сумма( в реестре)?$/.test(c[0]));
+    const sumCol = cols.findIndex(c => c[2] === "n" && /^Сумма( в реестре| с НДС)?$/.test(c[0]));
     if (sumCol >= 0) {
       const tr = ws.getRow(5 + rows.length + 1); tr.height = 22;
       const lab = tr.getCell(1); lab.value = "Итого"; lab.font = font({ bold: true });
@@ -10854,7 +10898,7 @@ async function rcExportNow() {
   const orgName = RC.org.replace(/["'«»]/g, "").replace(/[\\\/:*?<>|]+/g, " ").replace(/\s+/g, " ").trim();
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
-  a.download = "Сверка поступлений - " + orgName + " - " + d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + ".xlsx";
+  a.download = X.title + " - " + orgName + " - " + d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + ".xlsx";
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 function rcExportPlain() {
@@ -10886,6 +10930,256 @@ function rcClear() {
     el.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) rcLoad(kind, f); });
   };
   bind("rcDropTax", "tax"); bind("rcDrop1c", "c1");
+})();
+
+
+/* ===== Сверка реализации (налоговый реестр выданных ЭСФ ↔ 1С) ===== */
+const RZ = { tax: null, c1: null, orgs: [], res: null, tab: "missing", org: "" };
+function rzErr(msg) {
+  const e = document.getElementById("rzErr"); e.textContent = msg || "";
+  if (msg) { e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); }
+}
+function rzBusy(on, t, done) {
+  const b = document.getElementById("rzBusy"); b.style.display = on ? "flex" : "none"; b.classList.toggle("done", !!done);
+  if (t) document.getElementById("rzBusyT").textContent = t;
+}
+function rzContractKey(v) {
+  const m = String(v || "").replace(/["«»“”]/g, " ").match(/№?\s*([^\s,;]+)\s+(?:от|ОТ|От)\s+(\d{1,2})[.,](\d{2})[.,](\d{4})/);
+  return m ? (m[1].replace(/^№/, "").toUpperCase() + "|" + m[4] + m[3] + m[2].padStart(2, "0")) : "";
+}
+function rzParseTax(rows, fname) {
+  if (/received/i.test(fname || "")) throw new Error("Это реестр ПОЛУЧЕННЫХ счетов-фактур. Для реализации нужен реестр ВЫДАННЫХ (factura_sent).");
+  const hi = rows.findIndex(r => r.some(c => /СЧ[ЁЕ]Т-ФАКТУРА/i.test(String(c))) && r.some(c => /ПОКУПАТЕЛЬ \(ИНН/i.test(String(c))));
+  if (hi < 0) throw new Error("В налоговом реестре не найдены колонки «СЧЁТ-ФАКТУРА» и «ПОКУПАТЕЛЬ (ИНН…)». Проверьте, что это выгрузка выданных счетов-фактур.");
+  const h = rows[hi];
+  const cSf = rcFindCol(h, "СЧЁТ-ФАКТУРА", "СЧЕТ-ФАКТУРА"), cSt = rcFindCol(h, "СТАТУС"), cTy = rcFindCol(h, "ТИП ЭСФ"), cCo = rcFindCol(h, "ДОГОВОР"),
+    cBid = rcFindCol(h, "ПОКУПАТЕЛЬ (ИНН ИЛИ ПИНФЛ)"), cBn = rcFindCol(h, "ПОКУПАТЕЛЬ (НАИМЕНОВАНИЕ)"), cSn = rcFindCol(h, "ПРОДАВЕЦ (НАИМЕНОВАНИЕ)"),
+    cSum = rcFindCol(h, "СУММА К ОПЛАТЕ"), cCm = rcFindCol(h, "ПРИМЕЧАНИЕ");
+  if (cSum < 0) throw new Error("В налоговом реестре нет колонки «СУММА К ОПЛАТЕ».");
+  const out = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i]; const sf = String(r[cSf] || "").trim(); if (!sf) continue;
+    const m = sf.match(/^(.*?)\s+от\s+(\d{2}\.\d{2}\.\d{4})/);
+    const st = cSt >= 0 ? String(r[cSt] || "").trim() : "";
+    out.push({
+      no: rcNN(m ? m[1] : sf), noRaw: (m ? m[1] : sf).trim(), d: m ? rcDate(m[2]) : null, status: st, type: cTy >= 0 ? String(r[cTy] || "").trim() : "",
+      contract: cCo >= 0 ? String(r[cCo] || "").trim() : "", ck: cCo >= 0 ? rzContractKey(r[cCo]) : "",
+      id: String(r[cBid] || "").trim(), name: String(r[cBn] || "").trim(), seller: cSn >= 0 ? String(r[cSn] || "").trim() : "",
+      total: rcNum(r[cSum]), comment: cCm >= 0 ? String(r[cCm] || "").trim() : "",
+      valid: /подтвержд|ожидает/i.test(st), pending: /ожидает/i.test(st)
+    });
+  }
+  if (!out.length) throw new Error("В налоговом реестре нет строк.");
+  return out;
+}
+function rzParse1c(rows) {
+  const hi = rows.findIndex(r => r.some(c => String(c).trim() === "Контрагент") && r.some(c => String(c).trim() === "Сумма"));
+  if (hi < 0) throw new Error("В файле 1С не найдены колонки «Контрагент» и «Сумма». Проверьте выгрузку.");
+  const h = rows[hi]; const f = (...k) => rcFindCol(h, ...k.map(x => x.toUpperCase()));
+  const cDoc = f("Номер"), cDate = f("Дата"), cInn = f("ИНН"), cPin = f("ПИНФЛ"), cNm = f("Контрагент"), cCon = f("Договор"), cSum = f("Сумма"),
+    cCur = f("Валюта"), cSf = f("Счет-фактура"), cCom = f("Комментарий"), cOrg = f("Организация");
+  if (cOrg < 0) throw new Error("В файле 1С нет колонки «Организация». Выгрузите реестр с этой колонкой.");
+  const out = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i]; const org = String(r[cOrg] || "").trim(); if (!org) continue;
+    const con = String(r[cCon] || "").trim();
+    out.push({
+      doc: String(r[cDoc] || "").trim(), d: rcDate(r[cDate]), inn: String(r[cInn] || "").trim(), pin: String(r[cPin] || "").trim(),
+      name: String(r[cNm] || "").trim(), contract: con, ck: rzContractKey(con), sum: rcNum(r[cSum]), cur: cCur >= 0 ? String(r[cCur] || "").trim() : "",
+      esf: cSf >= 0 ? String(r[cSf] || "").trim() : "", comment: String(r[cCom] || "").trim(), org
+    });
+  }
+  if (!out.length) throw new Error("В файле 1С нет строк.");
+  return out;
+}
+async function rzPickFile(kind, input) {
+  const file = input.files && input.files[0]; input.value = ""; if (file) await rzLoad(kind, file);
+}
+async function rzLoad(kind, file) {
+  rzErr("");
+  const drop = document.getElementById(kind === "tax" ? "rzDropTax" : "rzDrop1c"), meta = document.getElementById(kind === "tax" ? "rzMetaTax" : "rzMeta1c");
+  try {
+    rzBusy(true, "Читаем файл…");
+    const rows = await rcReadRows(file);
+    if (kind === "tax") RZ.tax = rzParseTax(rows, file.name); else RZ.c1 = rzParse1c(rows);
+    drop.classList.remove("ok"); void drop.offsetWidth; drop.classList.add("ok");
+    meta.textContent = file.name + " · " + (kind === "tax" ? RZ.tax.length : RZ.c1.length) + " строк";
+  } catch (e) {
+    if (kind === "tax") RZ.tax = null; else RZ.c1 = null;
+    drop.classList.remove("ok"); rzBusy(false); rzErr(e.message || "Не удалось прочитать файл"); return;
+  }
+  rzBusy(false);
+  if (RZ.tax && RZ.c1) await rzStart();
+}
+async function rzStart() {
+  rzBusy(true, "Читаем документы…"); await rcWait(450);
+  rzBusy(true, "Сопоставляем " + RZ.tax.filter(x => x.valid).length + " счетов-фактур с 1С…"); await rcWait(650);
+  const cnt = {}; RZ.c1.forEach(r => { cnt[r.org] = (cnt[r.org] || 0) + 1; });
+  RZ.orgs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
+  const sc = {}; RZ.tax.forEach(r => { if (r.seller) sc[r.seller] = (sc[r.seller] || 0) + 1; });
+  const seller = Object.keys(sc).sort((a, b) => sc[b] - sc[a])[0] || ""; const sw = new Set(rcWords(seller));
+  let best = RZ.orgs[0], bs = -1, found = false;
+  RZ.orgs.forEach(o => { const k = rcWords(o).filter(w => sw.has(w)).length; if (k > bs) { bs = k; best = o; found = k > 0; } });
+  const sel = document.getElementById("rzOrgSel");
+  sel.innerHTML = RZ.orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)} (${cnt[o]})</option>`).join(""); sel.value = best;
+  document.getElementById("rzOrgNote").textContent = found ? "Определена по продавцу в налоговом реестре: " + seller : "Не удалось определить автоматически - выберите организацию";
+  document.getElementById("rzOrgRow").style.display = "flex";
+  const single = RZ.orgs.length === 1;
+  sel.style.display = single ? "none" : ""; document.querySelector("#rzOrgRow label").style.display = single ? "none" : "";
+  if (single) document.getElementById("rzOrgNote").textContent = "Организация: " + best;
+  rzRun(best);
+  rzBusy(true, "Готово", true); await rcWait(900); rzBusy(false);
+  try { apiCall("auditNote", { tag: "RECONCILE_REAL", note: "org=" + best + "; tax=" + RZ.tax.length + "; 1c=" + RZ.c1.length }).catch(() => {}); } catch (e) {}
+}
+function rzMatch(c1org, taxAll) {
+  const valid = taxAll.filter(x => x.valid), invalid = taxAll.filter(x => !x.valid);
+  const dts = valid.map(x => x.d).filter(Boolean).map(d => d.getTime());
+  let lo = -Infinity, hi = Infinity;
+  if (dts.length) { const a = new Date(Math.min(...dts)), b = new Date(Math.max(...dts)); lo = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), 1); hi = Date.UTC(b.getUTCFullYear(), b.getUTCMonth() + 1, 0); }
+  const inPeriod = c1org.filter(x => !x.d || (x.d.getTime() >= lo && x.d.getTime() <= hi));
+  const imp = inPeriod.filter(x => !rcIsSum(x.cur));
+  const cs = inPeriod.filter(x => rcIsSum(x.cur)).map((x, i) => Object.assign({ i }, x));
+  const used = new Set(), sameSum = (a, b) => Math.abs(a - b) <= 1.0;
+  const res = valid.map(r => Object.assign({}, r, { ci: -1, mk: "", c: null }));
+  const idm = (r, x) => r.id && (r.id === x.inn || r.id === x.pin);
+  const dd = (r, x) => (r.d && x.d) ? Math.abs(r.d - x.d) : 0;
+  const rank = r => (p, q) => ((q.ck && q.ck === r.ck) - (p.ck && p.ck === r.ck)) || (dd(r, p) - dd(r, q));
+  const take = (r, x, k) => { used.add(x.i); r.ci = x.i; r.mk = k; r.c = x; };
+  // 1) покупатель (ИНН/ПИНФЛ) + сумма
+  res.forEach(r => { const c = cs.filter(x => !used.has(x.i) && idm(r, x) && sameSum(x.sum, r.total)); if (c.length) { c.sort(rank(r)); take(r, c[0], "id+sum"); } });
+  // 2) покупатель + договор, сумма другая
+  res.forEach(r => { if (r.ci >= 0) return; const c = cs.filter(x => !used.has(x.i) && idm(r, x)); if (c.length) { c.sort(rank(r)); take(r, c[0], "id"); } });
+  // 3) договор + сумма, покупатель другой
+  res.forEach(r => { if (r.ci >= 0 || !r.ck) return; const c = cs.filter(x => !used.has(x.i) && x.ck === r.ck && sameSum(x.sum, r.total)); if (c.length) { c.sort(rank(r)); take(r, c[0], "contract+sum"); } });
+  const inv = (r) => invalid.filter(v => v.no === r.no);
+  res.forEach(r => {
+    r.note = "";
+    if (r.ci >= 0 && Math.abs(r.total - r.c.sum) > 1) { const v = inv(r).find(v => sameSum(v.total, r.c.sum)); if (v) r.note = "В 1С сумма по старой версии ЭСФ (статус: " + v.status + ")"; }
+  });
+  const noesf = cs.filter(x => /отсутствует|не требуется/i.test(x.esf));
+  const noesfSet = new Set(noesf.map(x => x.i));
+  const cats = {
+    missing: res.filter(r => r.ci < 0),
+    buyer: res.filter(r => r.mk === "contract+sum"),
+    sumdiff: res.filter(r => r.ci >= 0 && Math.abs(r.total - r.c.sum) > 1),
+    datediff: res.filter(r => r.ci >= 0 && r.d && r.c.d && r.d.getTime() !== r.c.d.getTime()),
+    only1c: cs.filter(x => !used.has(x.i) && !noesfSet.has(x.i)),
+    noesf: noesf.map(x => Object.assign({ inReg: used.has(x.i) }, x)),
+    pending: res.filter(r => r.pending),
+    inval: invalid,
+    imp
+  };
+  const per = isFinite(lo) ? rcFmtDate(new Date(lo)) + " - " + rcFmtDate(new Date(hi)) : "";
+  return { res, cs, cats, found: res.filter(r => r.ci >= 0).length, total: res.length, period: per };
+}
+const RZ_TABS = [
+  ["missing", "Нет в 1С", true], ["buyer", "Другой покупатель", true], ["sumdiff", "Сумма отличается", true], ["datediff", "Другая дата", false],
+  ["only1c", "Лишние в 1С", true], ["noesf", "ЭСФ в 1С не выписан", false], ["pending", "Ждут подписи", false, true], ["inval", "Отменённые / отказанные", false, true], ["imp", "Экспорт (валюта)", false, true]
+];
+function rzRun(org) {
+  RZ.org = org; RZ.res = rzMatch(RZ.c1.filter(x => x.org === org), RZ.tax);
+  const R = RZ.res;
+  const tile = (v, l, bad, ic) => `<div><span class="sum-icon"><i class='ti ti-${ic}' aria-hidden='true'></i></span><div><div class="num"${bad ? ' style="color:var(--red-fg)"' : ""}>${v}</div><div class="lbl">${l}</div></div></div>`;
+  const sm = document.getElementById("rzSummary");
+  sm.innerHTML = tile(R.total, "Действующих ЭСФ в реестре", false, "file-text") + tile(R.cs.length, "Документов 1С за период", false, "database") + tile(R.found, "Найдено в 1С", false, "circle-check") +
+    tile(R.cats.missing.length, "Нет в 1С", R.cats.missing.length > 0, "circle-x") + tile(R.cats.sumdiff.length, "Сумма отличается", R.cats.sumdiff.length > 0, "alert-triangle") + tile(R.cats.only1c.length, "Лишние в 1С", R.cats.only1c.length > 0, "arrow-back-up");
+  sm.style.display = ""; rcCountUp(sm);
+  const first = RZ_TABS.find(t => !t[3] && R.cats[t[0]].length) || RZ_TABS[0]; RZ.tab = first[0];
+  rzRenderTabs(); document.getElementById("rzSearchRow").style.display = ""; document.getElementById("rzSearch").value = ""; rzRenderTable();
+  const rules = document.getElementById("rzRules"); rules.style.display = "";
+  rules.innerHTML = "Сверка идёт по суммам с НДС. " + (R.period ? "Период 1С: " + R.period + " (по датам ЭСФ). " : "") +
+    "Берутся только действующие ЭСФ (Подтверждён и Ожидает подписи партнёра); отменённые, отказанные и недействительные вынесены отдельно. " +
+    "Порядок: покупатель (ИНН/ПИНФЛ) + сумма; затем покупатель с другой суммой; затем договор + сумма (если покупатель в 1С другой). " +
+    "Документы в валюте (не сум) - экспорт, в сверку не входят. «Лишние в 1С» - документы 1С, которых нет среди действующих ЭСФ (документы со статусом «Отсутствует/Не требуется» вынесены отдельно).";
+}
+function rzRenderTabs() {
+  const R = RZ.res, box = document.getElementById("rzTabsRes");
+  box.innerHTML = RZ_TABS.map(t => { const n = R.cats[t[0]].length; return `<button type="button" class="rc-rt${RZ.tab === t[0] ? " on" : ""}${t[2] && n ? " bad" : ""}${n ? "" : " zero"}" onclick="rzPickTab('${t[0]}')">${t[1]}<b>${n}</b></button>`; }).join("");
+  box.style.display = "flex";
+}
+function rzPickTab(t) { RZ.tab = t; rzRenderTabs(); rzRenderTable(); }
+function rzCols(tab) {
+  const D = r => rcFmtDate(r.d), N = f => r => rcFmtSum(f(r));
+  const map = {
+    missing: [["Покупатель", r => r.name], ["ИНН / ПИНФЛ", r => r.id], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"]],
+    buyer: [["Покупатель в ЭСФ", r => r.name], ["Покупатель в 1С", r => r.c.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"], ["Документ 1С", r => r.c.doc]],
+    sumdiff: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["В ЭСФ", N(r => r.total), "n"], ["В 1С", N(r => r.c.sum), "n"], ["Разница", N(r => r.total - r.c.sum), "neg"], ["Документ 1С", r => r.c.doc], ["Примечание", r => r.note]],
+    datediff: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата ЭСФ", D], ["Дата в 1С", r => rcFmtDate(r.c.d)], ["Сумма с НДС", N(r => r.total), "n"], ["Документ 1С", r => r.c.doc]],
+    only1c: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["ИНН / ПИНФЛ", r => r.inn || r.pin], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Сумма", N(r => r.sum), "n"], ["ЭСФ (1С)", r => r.esf]],
+    noesf: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Сумма", N(r => r.sum), "n"], ["ЭСФ (1С)", r => r.esf], ["Есть в реестре", r => r.inReg ? "Да" : "Нет"]],
+    pending: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"], ["Статус", r => r.status]],
+    inval: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"], ["Статус", r => r.status], ["Тип", r => r.type], ["Причина / примечание", r => r.comment]],
+    imp: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Валюта", r => r.cur], ["Сумма в валюте", N(r => r.sum), "n"]]
+  };
+  return map[tab];
+}
+function rzRenderTable() {
+  if (!RZ.res) return;
+  const rowsAll = RZ.res.cats[RZ.tab], cols = rzCols(RZ.tab);
+  const q = (document.getElementById("rzSearch").value || "").trim().toLowerCase();
+  const rows = q ? rowsAll.filter(r => cols.some(c => String(c[1](r) || "").toLowerCase().indexOf(q) >= 0)) : rowsAll;
+  const t = document.getElementById("rzTable");
+  t.querySelector("thead").innerHTML = "<tr><th>№</th>" + cols.map(c => `<th${c[2] ? ' style="text-align:right"' : ""}>${c[0]}</th>`).join("") + "</tr>";
+  t.querySelector("tbody").innerHTML = rows.length
+    ? rows.map((r, i) => `<tr style="--i:${Math.min(i, 24)}"><td>` + (i + 1) + "</td>" + cols.map(c => { const v = c[1](r); const cls = c[2] === "n" ? "rc-num" : c[2] === "neg" ? "rc-num rc-neg" : ""; return `<td${cls ? ` class="${cls}"` : ""}>${escapeHtml(String(v == null ? "" : v))}</td>`; }).join("") + "</tr>").join("")
+    : `<tr><td colspan="${cols.length + 1}" style="color:var(--muted)">${rowsAll.length ? "Ничего не найдено" : "Расхождений нет"}</td></tr>`;
+  t.style.display = "";
+  document.getElementById("rzCount").textContent = rows.length + (rows.length !== rowsAll.length ? " из " + rowsAll.length : "") + " строк";
+}
+const RZ_NOTES = {
+  missing: "Действующие ЭСФ из налогового реестра, которых нет в 1С",
+  buyer: "Найдены по договору и сумме, но покупатель в 1С другой",
+  sumdiff: "Покупатель совпал, но суммы с НДС отличаются",
+  datediff: "Совпали, но даты ЭСФ и документа 1С различаются",
+  only1c: "Лишние: документы 1С, которых нет среди действующих ЭСФ (валютный экспорт и документы без ЭСФ исключены)",
+  noesf: "Документы 1С со статусом «Отсутствует» или «Не требуется» по счёту-фактуре",
+  pending: "Действующие ЭСФ, ожидающие подписи партнёра (в сверку включены)",
+  inval: "ЭСФ со статусом Отменено / Отказано / Недействительный (в сверку не входят)",
+  imp: "Документы в валюте - в сверку не входят (экспорт)"
+};
+function rzXCols(tab) {
+  const N = "n", D = "d", T = "t";
+  const map = {
+    missing: [["Покупатель", r => r.name, T, 42], ["ИНН / ПИНФЛ", r => r.id, T, 17], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20]],
+    buyer: [["Покупатель в ЭСФ", r => r.name, T, 38], ["Покупатель в 1С", r => r.c.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 20]],
+    sumdiff: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма в ЭСФ", r => r.total, N, 20], ["Сумма в 1С", r => r.c.sum, N, 20], ["Разница", r => r.total - r.c.sum, N, 20], ["Документ 1С", r => r.c.doc, T, 20], ["Примечание", r => r.note, T, 46]],
+    datediff: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата ЭСФ", r => r.d, D, 14], ["Дата в 1С", r => r.c.d, D, 14], ["Сумма с НДС", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 20]],
+    only1c: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["ИНН / ПИНФЛ", r => r.inn || r.pin, T, 17], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Сумма", r => r.sum, N, 20], ["ЭСФ (1С)", r => r.esf, T, 14]],
+    noesf: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Сумма", r => r.sum, N, 20], ["ЭСФ (1С)", r => r.esf, T, 16], ["Есть в реестре", r => r.inReg ? "Да" : "Нет", T, 14]],
+    pending: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20], ["Статус", r => r.status, T, 26]],
+    inval: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20], ["Статус", r => r.status, T, 20], ["Тип", r => r.type, T, 16], ["Причина / примечание", r => r.comment, T, 60]],
+    imp: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Валюта", r => r.cur, T, 10], ["Сумма в валюте", r => r.sum, N, 20]]
+  };
+  return map[tab];
+}
+async function rzExport() {
+  if (!RZ.res) return;
+  const btn = document.getElementById("rzExportBtn"), old = btn.innerHTML;
+  btn.classList.add("busy"); btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Готовим файл…"; await rcWait(600);
+  try {
+    const R = RZ.res;
+    await rcWriteWorkbook({ res: R, org: RZ.org, tabs: RZ_TABS, xcols: rzXCols, notes: RZ_NOTES, title: "Сверка реализации", plain: () => rcErr("Не удалось сформировать Excel"),
+      summary: [["Действующих ЭСФ в налоговом реестре", R.total], ["Документов в 1С за период (в сумах)", R.cs.length], ["Найдено в 1С", R.found]] });
+    btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово"; await rcWait(1200);
+  } catch (e) { rzErr("Не удалось сформировать Excel"); }
+  btn.innerHTML = old; btn.classList.remove("busy");
+}
+function rzClear() {
+  RZ.tax = null; RZ.c1 = null; RZ.res = null;
+  ["rzDropTax", "rzDrop1c"].forEach(id => document.getElementById(id).classList.remove("ok"));
+  document.getElementById("rzMetaTax").textContent = "CSV с сайта налоговой (выданные счета-фактуры, factura_sent). Перетащите файл сюда или нажмите";
+  document.getElementById("rzMeta1c").textContent = "Excel из 1С: реализация за период (с колонкой «Организация»). Перетащите файл сюда или нажмите";
+  ["rzOrgRow", "rzSummary", "rzTabsRes", "rzSearchRow", "rzTable", "rzRules"].forEach(id => { document.getElementById(id).style.display = "none"; });
+  rzErr("");
+}
+(function rzInitDnD() {
+  const bind = (id, kind) => {
+    const el = document.getElementById(id); if (!el) return;
+    ["dragenter", "dragover"].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.add("over"); }));
+    ["dragleave", "drop"].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.remove("over"); }));
+    el.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) rzLoad(kind, f); });
+  };
+  bind("rzDropTax", "tax"); bind("rzDrop1c", "c1");
 })();
 
 function renderHistoryTable() {
