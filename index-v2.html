@@ -7890,6 +7890,9 @@ function renderInvoicesTable() {
         ` : ""}
         ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
           <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i></button>
+        ` : ""}
+        ${(classifyStatus(r.status) === "rejected" || classifyStatus(r.status) === "notmine") && currentRole === "admin" ? `
+          <button class="remind-btn recall-btn" title="Вернуть в «Не отправлено» - очистит ответственного, затем можно назначить другого и отправить заново" onclick="resetInvoice(${r.rowIndex}, this)"><i class='ti ti-arrow-back-up' aria-hidden='true'></i></button>
         ` : ""}</span></span></td>
       <td style="text-align:center;vertical-align:middle">
         <input type="checkbox" class="didox-check" ${r.didoxDone ? "checked" : ""} onchange="updateDidoxDone(${r.rowIndex}, this.checked, this)">
@@ -11333,6 +11336,27 @@ async function sendManualReminder(facturaid, btnEl) {
   } catch (e) {
     alert("Не удалось отправить напоминание: " + e.message);
     btnEl.textContent = original;
+    btnEl.disabled = false;
+  }
+}
+
+async function resetInvoice(rowIndex, btnEl) {
+  const confirmed = await uiConfirm(
+    "Вернуть этот счёт в «Не отправлено»?\n\n" +
+    "Статус станет «Не отправлено», поле «Ответственный» очистится. " +
+    "Затем назначьте нужного сотрудника и поставьте отметку «Отправить»."
+  );
+  if (!confirmed) return;
+  btnEl.disabled = true;
+  btnEl.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i>";
+  try {
+    await apiCall("resetInvoiceStatus", { rowIndex });
+    btnEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
+    await loadAllData(true);
+    renderInvoicesTable();
+  } catch (e) {
+    alert("Не удалось вернуть счёт: " + e.message);
+    btnEl.innerHTML = "<i class='ti ti-arrow-back-up' aria-hidden='true'></i>";
     btnEl.disabled = false;
   }
 }
