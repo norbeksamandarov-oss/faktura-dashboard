@@ -6983,7 +6983,9 @@ function closeDocsHtml(reqType, rowIndex) {
   const list = (CLOSE_DOCS[reqType] || {})[String(rowIndex)] || [];
   if (!list.length) return "";
   const apiRoot = API_URL.replace(/\/api\/?$/, "");
-  return `<div class="close-docs">` + list.map(d => `<a href="${apiRoot}/realschet-docs/${encodeURIComponent(d.file)}" target="_blank" rel="noopener" class="admin-open-btn" title="${escapeHtml(d.name)}"><i class="ti ti-paperclip" aria-hidden="true"></i> ${escapeHtml(d.name.length > 22 ? d.name.slice(0, 20) + "…" : d.name)}</a>`).join("") + `</div>`;
+  const LBL = { realschet: "Счёт-фактура", zakaznaryad: "Заказ-наряд", dogovorReal: "Договор", otherreqReal: "Документ" };
+  const lbl = LBL[reqType] || "Документ";
+  return `<div class="close-docs">` + list.map((d, i) => `<a href="${apiRoot}/realschet-docs/${encodeURIComponent(d.file)}" target="_blank" rel="noopener" class="admin-open-btn" title="${escapeHtml(d.name)}"><i class="ti ti-paperclip" aria-hidden="true"></i> ${lbl}${list.length > 1 ? " " + (i + 1) : ""}</a>`).join("") + `</div>`;
 }
 async function loadCloseDocs() {
   try {
@@ -12050,7 +12052,7 @@ function renderRealschetTable() {
       <td>${statusBadgeRealschet(r.status)}</td>
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
-      <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Открыть</a>` : `<span style="color:var(--muted)">—</span>`}</td>
+      <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Договор</a>` : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${closeDocsHtml("realschet", r.rowIndex) || `<span style="color:var(--muted)">—</span>`}</td>
       <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Ничего не найдено</td></tr>`;
