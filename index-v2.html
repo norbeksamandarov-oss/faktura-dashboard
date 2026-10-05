@@ -11048,7 +11048,9 @@ function rzMatch(c1org, taxAll) {
   if (dts.length) { const a = new Date(Math.min(...dts)), b = new Date(Math.max(...dts)); lo = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), 1); hi = Date.UTC(b.getUTCFullYear(), b.getUTCMonth() + 1, 0); }
   const inPeriod = c1org.filter(x => !x.d || (x.d.getTime() >= lo && x.d.getTime() <= hi));
   const imp = inPeriod.filter(x => !rcIsSum(x.cur));
-  const cs = inPeriod.filter(x => rcIsSum(x.cur)).map((x, i) => Object.assign({ i }, x));
+  const sumDocs = inPeriod.filter(x => rcIsSum(x.cur));
+  const noid = sumDocs.filter(x => !x.inn && !x.pin);
+  const cs = sumDocs.filter(x => x.inn || x.pin).map((x, i) => Object.assign({ i }, x));
   const used = new Set(), sameSum = (a, b) => Math.abs(a - b) <= 1.0;
   const res = valid.map(r => Object.assign({}, r, { ci: -1, mk: "", c: null }));
   const idm = (r, x) => r.id && (r.id === x.inn || r.id === x.pin);
@@ -11066,15 +11068,13 @@ function rzMatch(c1org, taxAll) {
     r.note = "";
     if (r.ci >= 0 && Math.abs(r.total - r.c.sum) > 1) { const v = inv(r).find(v => sameSum(v.total, r.c.sum)); if (v) r.note = "В 1С сумма по старой версии ЭСФ (статус: " + v.status + ")"; }
   });
-  const noesf = cs.filter(x => /отсутствует|не требуется/i.test(x.esf));
-  const noesfSet = new Set(noesf.map(x => x.i));
   const cats = {
     missing: res.filter(r => r.ci < 0),
     buyer: res.filter(r => r.mk === "contract+sum"),
     sumdiff: res.filter(r => r.ci >= 0 && Math.abs(r.total - r.c.sum) > 1),
     datediff: res.filter(r => r.ci >= 0 && r.d && r.c.d && r.d.getTime() !== r.c.d.getTime()),
-    only1c: cs.filter(x => !used.has(x.i) && !noesfSet.has(x.i)),
-    noesf: noesf.map(x => Object.assign({ inReg: used.has(x.i) }, x)),
+    only1c: cs.filter(x => !used.has(x.i)),
+    noid,
     pending: res.filter(r => r.pending),
     inval: invalid,
     imp
@@ -11084,7 +11084,7 @@ function rzMatch(c1org, taxAll) {
 }
 const RZ_TABS = [
   ["missing", "Нет в 1С", true], ["buyer", "Другой покупатель", true], ["sumdiff", "Сумма отличается", true], ["datediff", "Другая дата", false],
-  ["only1c", "Лишние в 1С", true], ["noesf", "ЭСФ в 1С не выписан", false], ["pending", "Ждут подписи", false, true], ["inval", "Отменённые / отказанные", false, true], ["imp", "Экспорт (валюта)", false, true]
+  ["only1c", "Лишние в 1С", true], ["noid", "Нет ИНН / ПИНФЛ", true], ["pending", "Ждут подписи", false, true], ["inval", "Отменённые / отказанные", false, true], ["imp", "Экспорт (валюта)", false, true]
 ];
 function rzRun(org) {
   RZ.org = org; RZ.res = rzMatch(RZ.c1.filter(x => x.org === org), RZ.tax);
@@ -11100,7 +11100,7 @@ function rzRun(org) {
   rules.innerHTML = "Сверка идёт по суммам с НДС. " + (R.period ? "Период 1С: " + R.period + " (по датам ЭСФ). " : "") +
     "Берутся только действующие ЭСФ (Подтверждён и Ожидает подписи партнёра); отменённые, отказанные и недействительные вынесены отдельно. " +
     "Порядок: покупатель (ИНН/ПИНФЛ) + сумма; затем покупатель с другой суммой; затем договор + сумма (если покупатель в 1С другой). " +
-    "Документы в валюте (не сум) - экспорт, в сверку не входят. «Лишние в 1С» - документы 1С, которых нет среди действующих ЭСФ (документы со статусом «Отсутствует/Не требуется» вынесены отдельно).";
+    "Документы в валюте (не сум) - экспорт, в сверку не входят. «Лишние в 1С» - документы 1С, которых нет среди действующих ЭСФ. Документы без ИНН / ПИНФЛ контрагента в сверку не берутся - они в отдельной вкладке.";
 }
 function rzRenderTabs() {
   const R = RZ.res, box = document.getElementById("rzTabsRes");
@@ -11116,7 +11116,7 @@ function rzCols(tab) {
     sumdiff: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["В ЭСФ", N(r => r.total), "n"], ["В 1С", N(r => r.c.sum), "n"], ["Разница", N(r => r.total - r.c.sum), "neg"], ["Документ 1С", r => r.c.doc], ["Примечание", r => r.note], ["Что исправить в 1С", r => "Исправить сумму в 1С на " + rcFmtSum(r.total)]],
     datediff: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата ЭСФ", D], ["Дата в 1С", r => rcFmtDate(r.c.d)], ["Сумма с НДС", N(r => r.total), "n"], ["Документ 1С", r => r.c.doc], ["Что исправить в 1С", r => "Исправить дату в 1С на " + rcFmtDate(r.d)]],
     only1c: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["ИНН / ПИНФЛ", r => r.inn || r.pin], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Сумма", N(r => r.sum), "n"], ["ЭСФ (1С)", r => r.esf], ["Что исправить в 1С", r => "Нет в реестре: проверить / исправить в 1С"]],
-    noesf: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Сумма", N(r => r.sum), "n"], ["ЭСФ (1С)", r => r.esf], ["Есть в реестре", r => r.inReg ? "Да" : "Нет"]],
+    noid: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Сумма", N(r => r.sum), "n"], ["Что исправить в 1С", r => "Указать ИНН / ПИНФЛ контрагента"]],
     pending: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"], ["Статус", r => r.status]],
     inval: [["Покупатель", r => r.name], ["№ ЭСФ", r => r.noRaw], ["Дата", D], ["Сумма с НДС", N(r => r.total), "n"], ["Статус", r => r.status], ["Тип", r => r.type], ["Причина / примечание", r => r.comment]],
     imp: [["Документ 1С", r => r.doc], ["Дата", r => rcFmtDate(r.d)], ["Контрагент", r => r.name], ["Договор", r => r.contract], ["Валюта", r => r.cur], ["Сумма в валюте", N(r => r.sum), "n"]]
@@ -11141,8 +11141,8 @@ const RZ_NOTES = {
   buyer: "Найдены по договору и сумме, но покупатель в 1С другой",
   sumdiff: "Покупатель совпал, но суммы с НДС отличаются",
   datediff: "Совпали, но даты ЭСФ и документа 1С различаются",
-  only1c: "Лишние: документы 1С, которых нет среди действующих ЭСФ (валютный экспорт и документы без ЭСФ исключены)",
-  noesf: "Документы 1С со статусом «Отсутствует» или «Не требуется» по счёту-фактуре",
+  only1c: "Лишние: документы 1С, которых нет среди действующих ЭСФ (валютный экспорт исключён; документы без ИНН / ПИНФЛ вынесены отдельно)",
+  noid: "Документы 1С, где у контрагента не указан ИНН / ПИНФЛ - в сверку не входят, пока не заполнены",
   pending: "Действующие ЭСФ, ожидающие подписи партнёра (в сверку включены)",
   inval: "ЭСФ со статусом Отменено / Отказано / Недействительный (в сверку не входят)",
   imp: "Документы в валюте - в сверку не входят (экспорт)"
@@ -11155,7 +11155,7 @@ function rzXCols(tab) {
     sumdiff: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма в ЭСФ", r => r.total, N, 20], ["Сумма в 1С", r => r.c.sum, N, 20], ["Разница", r => r.total - r.c.sum, N, 20], ["Документ 1С", r => r.c.doc, T, 20], ["Примечание", r => r.note, T, 46], ["Что исправить в 1С", r => "Исправить сумму в 1С на " + rcFmtSum(r.total), "t", 44]],
     datediff: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата ЭСФ", r => r.d, D, 14], ["Дата в 1С", r => r.c.d, D, 14], ["Сумма с НДС", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 20], ["Что исправить в 1С", r => "Исправить дату в 1С на " + rcFmtDate(r.d), "t", 44]],
     only1c: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["ИНН / ПИНФЛ", r => r.inn || r.pin, T, 17], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Сумма", r => r.sum, N, 20], ["ЭСФ (1С)", r => r.esf, T, 14], ["Что исправить в 1С", r => "Нет в реестре: проверить / исправить в 1С", "t", 44]],
-    noesf: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Сумма", r => r.sum, N, 20], ["ЭСФ (1С)", r => r.esf, T, 16], ["Есть в реестре", r => r.inReg ? "Да" : "Нет", T, 14]],
+    noid: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Сумма", r => r.sum, N, 20], ["Что исправить в 1С", r => "Указать ИНН / ПИНФЛ контрагента", T, 40]],
     pending: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20], ["Статус", r => r.status, T, 26]],
     inval: [["Покупатель", r => r.name, T, 38], ["№ ЭСФ", r => r.noRaw, T, 14], ["Дата", r => r.d, D, 12], ["Сумма с НДС", r => r.total, N, 20], ["Статус", r => r.status, T, 20], ["Тип", r => r.type, T, 16], ["Причина / примечание", r => r.comment, T, 60]],
     imp: [["Документ 1С", r => r.doc, T, 20], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 38], ["Договор", r => r.contract, T, 28], ["Валюта", r => r.cur, T, 10], ["Сумма в валюте", r => r.sum, N, 20]]
