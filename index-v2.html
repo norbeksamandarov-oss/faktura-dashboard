@@ -10760,10 +10760,104 @@ async function rcExport() {
   const btn = document.getElementById("rcExportBtn"), old = btn.innerHTML;
   btn.classList.add("busy"); btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Готовим файл…";
   await rcWait(600);
-  try { rcExportNow(); btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово"; await rcWait(1200); } catch (e) { rcErr("Не удалось сформировать Excel"); }
+  try { await rcExportNow(); btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово"; await rcWait(1200); } catch (e) { rcErr("Не удалось сформировать Excel"); }
   btn.innerHTML = old; btn.classList.remove("busy");
 }
-function rcExportNow() {
+function rcLoadExcelJS() {
+  if (window.ExcelJS) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const el = document.createElement("script");
+    el.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+    el.onload = res; el.onerror = () => rej(new Error("exceljs"));
+    document.head.appendChild(el);
+  });
+}
+const RC_NOTES = {
+  missing: "Счета-фактуры из налогового реестра, которых нет в 1С",
+  numdiff: "Найдены по ИНН и сумме, но номер в 1С записан иначе",
+  sumdiff: "Номер совпал, но суммы отличаются",
+  datediff: "Совпали по номеру и сумме, но даты отличаются",
+  only1c: "Лишние: документы 1С без пары в налоговом реестре (корпоративная карта и валютный импорт исключены)",
+  dup: "Один и тот же счёт-фактура внесён в 1С несколько раз",
+  card: "В 1С проведено как «Корпоративная карта» без ИНН и номера ЭСФ - найдено по сумме",
+  imp: "Документы в валюте - в сверку не входят (импорт)"
+};
+function rcXCols(tab) {
+  const N = "n", D = "d", T = "t";
+  const map = {
+    missing: [["Продавец", r => r.name, T, 42], ["ИНН / ПИНФЛ", r => r.id, T, 17], ["Номер СФ", r => r.noRaw, T, 24], ["Дата", r => r.d, D, 12], ["Сумма", r => r.total, N, 20]],
+    numdiff: [["Продавец", r => r.name, T, 42], ["Номер в реестре", r => r.noRaw, T, 26], ["Номер в 1С", r => r.c.noIn, T, 22], ["Дата", r => r.d, D, 12], ["Сумма", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 16]],
+    sumdiff: [["Продавец", r => r.name, T, 42], ["Номер СФ", r => r.noRaw, T, 24], ["Дата", r => r.d, D, 12], ["Сумма в реестре", r => r.total, N, 20], ["Сумма в 1С", r => r.c.sum, N, 20], ["Разница", r => r.total - r.c.sum, N, 20], ["Документ 1С", r => r.c.doc, T, 16]],
+    datediff: [["Продавец", r => r.name, T, 42], ["Номер СФ", r => r.noRaw, T, 24], ["Дата в реестре", r => r.d, D, 15], ["Дата в 1С", r => r.c.d, D, 15], ["Сумма", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 16]],
+    card: [["Продавец", r => r.name, T, 42], ["Номер СФ", r => r.noRaw, T, 24], ["Дата", r => r.d, D, 12], ["Сумма", r => r.total, N, 20], ["Документ 1С", r => r.c.doc, T, 16]],
+    only1c: [["Документ 1С", r => r.doc, T, 16], ["Дата", r => r.d, D, 12], ["ИНН / ПИНФЛ", r => r.id, T, 17], ["Контрагент", r => r.name, T, 42], ["Договор", r => r.contract, T, 28], ["№ вх.", r => r.noIn, T, 22], ["Сумма", r => r.sum, N, 20], ["Комментарий", r => r.comment, T, 30]],
+    dup: [["Документ 1С", r => r.doc, T, 16], ["Дата", r => r.d, D, 12], ["ИНН / ПИНФЛ", r => r.id, T, 17], ["Контрагент", r => r.name, T, 42], ["№ вх.", r => r.noIn, T, 22], ["Сумма", r => r.sum, N, 20]],
+    imp: [["Документ 1С", r => r.doc, T, 16], ["Дата", r => r.d, D, 12], ["Контрагент", r => r.name, T, 42], ["Договор", r => r.contract, T, 28], ["Валюта", r => r.cur, T, 10], ["Сумма в валюте", r => r.sum, N, 20], ["Комментарий", r => r.comment, T, 30]]
+  };
+  return map[tab];
+}
+async function rcExportNow() {
+  const R = RC.res;
+  let wb;
+  try { await rcLoadExcelJS(); } catch (e) { return rcExportPlain(); }
+  wb = new ExcelJS.Workbook(); wb.creator = "CRB Controlling System"; wb.created = new Date();
+  const NAVY = "FF1F2A55", LINE = "FFD9DCE8", ZEBRA = "FFF6F7FB", RED = "FFC0392B", GREEN = "FF0E8F63", MUTED = "FF6B7189";
+  const font = (o) => Object.assign({ name: "Calibri", size: 11, color: { argb: "FF1B1F33" } }, o || {});
+  const border = { top: { style: "thin", color: { argb: LINE } }, bottom: { style: "thin", color: { argb: LINE } }, left: { style: "thin", color: { argb: LINE } }, right: { style: "thin", color: { argb: LINE } } };
+  const stamp = new Date().toLocaleString("ru-RU", { dateStyle: "long", timeStyle: "short" });
+  // --- Итог ---
+  const ws0 = wb.addWorksheet("Итог", { views: [{ showGridLines: false }], properties: { tabColor: { argb: NAVY } } });
+  ws0.columns = [{ width: 46 }, { width: 16 }];
+  ws0.mergeCells("A1:B1"); const t = ws0.getCell("A1"); t.value = "Сверка поступлений"; t.font = font({ size: 20, bold: true, color: { argb: NAVY } }); ws0.getRow(1).height = 32;
+  ws0.getCell("A2").value = RC.org; ws0.getCell("A2").font = font({ size: 12, bold: true });
+  ws0.getCell("A3").value = "Сформировано: " + stamp; ws0.getCell("A3").font = font({ size: 10, color: { argb: MUTED } });
+  const head = (r, a, b) => { [["A", a], ["B", b]].forEach(([c, v], i) => { const x = ws0.getCell(c + r); x.value = v; x.font = font({ bold: true, color: { argb: "FFFFFFFF" } }); x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; x.alignment = { horizontal: i ? "right" : "left", vertical: "middle", indent: 1 }; }); ws0.getRow(r).height = 22; };
+  const line = (r, a, b, bad) => { const x = ws0.getCell("A" + r), y = ws0.getCell("B" + r); x.value = a; y.value = b; x.font = font(); y.font = font({ bold: true, color: bad === undefined ? undefined : { argb: bad ? RED : GREEN } }); x.border = y.border = border; x.alignment = { indent: 1, vertical: "middle" }; y.alignment = { horizontal: "right", vertical: "middle" }; y.numFmt = "#,##0"; ws0.getRow(r).height = 20; };
+  head(5, "Показатель", "Кол-во");
+  line(6, "Счетов-фактур в налоговом реестре", R.total); line(7, "Документов в 1С (в сумах)", R.cs.length); line(8, "Найдено в 1С", R.found);
+  head(10, "Расхождения", "Кол-во");
+  let rr = 11; RC_TABS.forEach(tb => { const n = R.cats[tb[0]].length; line(rr++, tb[1], n, tb[0] === "card" || tb[0] === "imp" ? undefined : n > 0); });
+  ws0.pageSetup = { orientation: "portrait", fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+  // --- вкладки с данными ---
+  RC_TABS.forEach(tb => {
+    const rows = R.cats[tb[0]]; if (!rows.length) return;
+    const cols = rcXCols(tb[0]); const bad = tb[2];
+    const ws = wb.addWorksheet(tb[1].replace(/[\\\/\?\*\[\]:]/g, "").slice(0, 31), { views: [{ state: "frozen", ySplit: 4, showGridLines: false }], properties: { tabColor: { argb: bad ? RED : "FF8A94B8" } } });
+    ws.columns = cols.map(c => ({ width: c[3] }));
+    ws.mergeCells(1, 1, 1, cols.length); const n1 = ws.getCell(1, 1); n1.value = RC.org + " - " + tb[1] + " (" + rows.length + ")"; n1.font = font({ size: 14, bold: true, color: { argb: NAVY } }); ws.getRow(1).height = 24;
+    ws.mergeCells(2, 1, 2, cols.length); const n2 = ws.getCell(2, 1); n2.value = RC_NOTES[tb[0]]; n2.font = font({ size: 10, italic: true, color: { argb: MUTED } });
+    const hr = ws.getRow(4); hr.height = 24;
+    cols.forEach((c, i) => { const x = hr.getCell(i + 1); x.value = c[0]; x.font = font({ bold: true, color: { argb: "FFFFFFFF" } }); x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; x.alignment = { horizontal: c[2] === "n" ? "right" : (c[2] === "d" ? "center" : "left"), vertical: "middle", wrapText: true, indent: c[2] === "n" ? 0 : 1 }; x.border = border; });
+    rows.forEach((r, ri) => {
+      const row = ws.getRow(5 + ri); row.height = 19;
+      cols.forEach((c, i) => {
+        const x = row.getCell(i + 1); let v = c[1](r);
+        if (c[2] === "n") { v = (v == null || isNaN(v)) ? null : Math.round(v * 100) / 100; x.numFmt = "#,##0.00"; x.alignment = { horizontal: "right", vertical: "middle" }; if (c[0] === "Разница" && v) x.font = font({ bold: true, color: { argb: RED } }); else x.font = font(); }
+        else if (c[2] === "d") { v = v || null; x.numFmt = "dd.mm.yyyy"; x.alignment = { horizontal: "center", vertical: "middle" }; x.font = font(); }
+        else { v = v == null ? "" : String(v); x.alignment = { horizontal: "left", vertical: "middle", indent: 1 }; x.font = font(); }
+        x.value = v; x.border = border;
+        if (ri % 2) x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: ZEBRA } };
+      });
+    });
+    const sumCol = cols.findIndex(c => c[2] === "n" && /^Сумма( в реестре)?$/.test(c[0]));
+    if (sumCol >= 0) {
+      const tr = ws.getRow(5 + rows.length + 1); tr.height = 22;
+      const lab = tr.getCell(1); lab.value = "Итого"; lab.font = font({ bold: true });
+      const tot = tr.getCell(sumCol + 1); tot.value = Math.round(rows.reduce((a, r) => a + (cols[sumCol][1](r) || 0), 0) * 100) / 100; tot.numFmt = "#,##0.00"; tot.font = font({ bold: true }); tot.alignment = { horizontal: "right", vertical: "middle" };
+      for (let i = 1; i <= cols.length; i++) { const x = tr.getCell(i); x.border = { top: { style: "medium", color: { argb: NAVY } } }; }
+    }
+    ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4 + rows.length, column: cols.length } };
+    ws.pageSetup = { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: "4:4" };
+  });
+  const buf = await wb.xlsx.writeBuffer();
+  const d = new Date(), p2 = n => String(n).padStart(2, "0");
+  const orgName = RC.org.replace(/["'«»]/g, "").replace(/[\\\/:*?<>|]+/g, " ").replace(/\s+/g, " ").trim();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+  a.download = "Сверка поступлений - " + orgName + " - " + d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) + ".xlsx";
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function rcExportPlain() {
   const wb = XLSX.utils.book_new(); const R = RC.res;
   const sum = [["Сверка поступлений"], ["Организация", RC.org], ["В налоговом реестре", R.total], ["В 1С", R.cs.length], ["Найдено в 1С", R.found], []];
   RC_TABS.forEach(t => sum.push([t[1], R.cats[t[0]].length]));
@@ -10771,8 +10865,7 @@ function rcExportNow() {
   RC_TABS.forEach(t => {
     const cols = rcCols(t[0]);
     const aoa = [cols.map(c => c[0])].concat(R.cats[t[0]].map(r => cols.map(c => c[1](r))));
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = cols.map(() => ({ wch: 22 }));
+    const ws = XLSX.utils.aoa_to_sheet(aoa); ws["!cols"] = cols.map(() => ({ wch: 22 }));
     XLSX.utils.book_append_sheet(wb, ws, t[1].slice(0, 31));
   });
   XLSX.writeFile(wb, "Сверка_поступлений.xlsx");
