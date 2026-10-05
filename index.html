@@ -4838,7 +4838,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <h3 id="rnTitle">Новая запись</h3>
     <label class="rn-nc-toggle"><input type="checkbox" id="rnfNo" onchange="rnToggleNo()"> <span>Используем помещение без договора аренды</span></label>
     <div class="rn-grid">
-      <label class="rn-f rn-w2" data-l="Организация">Организация<input type="text" id="rnfOrg" list="rnOrgList" autocomplete="off"><datalist id="rnOrgList"></datalist></label>
+      <label class="rn-f rn-w2" data-l="Организация">Организация<select id="rnfOrg"><option value="" disabled hidden>Выберите</option></select></label>
       <label class="rn-f" data-l="Бренд">Бренд<input type="text" id="rnfBrand"></label>
       <label class="rn-f" data-l="Локация">Локация<input type="text" id="rnfLocation"></label>
       <label class="rn-f rn-w2" data-l="Адрес">Адрес<input type="text" id="rnfAddress"></label>
@@ -6143,7 +6143,7 @@ async function rnLoad() {
   document.getElementById("rnLoading").style.display = "flex";
   try {
     const d = await apiCall("getRentals", {});
-    RN.rows = d.rows || [];
+    RN.rows = (d.rows || []).map(r => Object.assign(r, { org: canonicalBuyer(r.org) || r.org }));
     document.getElementById("rnLoading").style.display = "none";
     document.getElementById("rnWrap").style.display = "";
     rnRender(true);
@@ -6167,7 +6167,6 @@ function rnRender(anim) {
     sel.innerHTML = '<option value="">Все организации</option>' + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
     sel.value = orgs.includes(cur) ? cur : "";
   }
-  document.getElementById("rnOrgList").innerHTML = orgs.map(o => `<option value="${escapeHtml(o)}">`).join("");
   const lsel = document.getElementById("rnLocFilter");
   const locs = [...new Set(RN.rows.map(r => (r.location || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ru"));
   if (lsel.options.length - 1 !== locs.length) {
@@ -6222,7 +6221,11 @@ function rnOpen(rowIndex) {
   RN.editing = r ? r.rowIndex : null;
   document.getElementById("rnTitle").textContent = r ? "Изменить запись" : "Новая запись";
   const set = (id, v) => { document.getElementById(id).value = v || ""; };
-  set("rnfOrg", r ? r.org : document.getElementById("rnOrgFilter").value); set("rnfBrand", r && r.brand); set("rnfLocation", r && r.location);
+  const os = document.getElementById("rnfOrg");
+  const want = r ? r.org : document.getElementById("rnOrgFilter").value;
+  os.innerHTML = '<option value="" disabled hidden>Выберите</option>' + ORG_GROUPS.map(g => `<option value="${escapeHtml(g.canonical)}">${escapeHtml(g.canonical)}</option>`).join("") +
+    (want && !ORG_GROUPS.some(g => g.canonical === want) ? `<option value="${escapeHtml(want)}">${escapeHtml(want)}</option>` : "");
+  set("rnfOrg", want); set("rnfBrand", r && r.brand); set("rnfLocation", r && r.location);
   set("rnfAddress", r && r.address); set("rnfTenant", r && r.tenant); set("rnfPtype", r && r.ptype); set("rnfUtil", r && r.utilities);
   set("rnfContract", r && r.contract); set("rnfEnd", r ? rnDate(r.endDate) : ""); set("rnfArea", r && r.area); set("rnfSum", r && r.sum);
   document.getElementById("rnfNo").checked = !!(r && r.noContract);
