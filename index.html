@@ -2581,6 +2581,10 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-tab:hover{color:var(--text)}
 .rc-tab.on{color:var(--text);border-bottom-color:#6a58ee}
 .rc-tabs{overflow-x:auto}.rc-tab{white-space:nowrap}
+.bn-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));column-gap:28px;margin:14px 0 4px}
+.bn-file{display:flex;align-items:center;gap:16px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*40ms)}
+.bn-acc{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.02em}.bn-per,.bn-n{color:var(--muted);font-variant-numeric:tabular-nums}
+.bn-x{margin-left:auto;background:transparent;border:0;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;transition:color .2s}.bn-x:hover{color:var(--red-fg)}
 .rc-tab.soon{opacity:.4;cursor:default}.rc-tab.soon i{font-style:normal;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-left:4px;color:var(--muted)}
 @keyframes rcTabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .rc-tabin{animation:rcTabIn .35s ease both}
@@ -2617,19 +2621,19 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-chk path{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18;stroke-dashoffset:18;animation:rcDraw .35s .25s ease-out forwards}
 .rc-busy.done .rc-bar i{width:100%;animation:rcDone .4s ease-out;transform-origin:left;background:linear-gradient(90deg,#00b478,#00d4a0)}
 .rc-busy.done #rcBusyT{color:var(--green-fg);font-weight:700}
-#rcSummary>div,#rzSummary>div{animation:rcRise .6s cubic-bezier(.2,.8,.2,1) both,rcRing .9s ease-out .5s 1;transition:transform .25s,box-shadow .25s}
-#rcSummary>div:hover,#rzSummary>div:hover{transform:translateY(-4px)}
+#rcSummary>div,#rzSummary>div,#bnSummary>div{animation:rcRise .6s cubic-bezier(.2,.8,.2,1) both,rcRing .9s ease-out .5s 1;transition:transform .25s,box-shadow .25s}
+#rcSummary>div:hover,#rzSummary>div:hover,#bnSummary>div:hover{transform:translateY(-4px)}
 .rc-rt b{animation:rcPop .4s cubic-bezier(.2,.9,.3,1.3) both}
-#rcSummary>div:nth-child(2),#rzSummary>div:nth-child(2){animation-delay:.06s}#rcSummary>div:nth-child(3),#rzSummary>div:nth-child(3){animation-delay:.12s}
-#rcSummary>div:nth-child(4),#rzSummary>div:nth-child(4){animation-delay:.18s}#rcSummary>div:nth-child(5),#rzSummary>div:nth-child(5){animation-delay:.24s}#rcSummary>div:nth-child(6),#rzSummary>div:nth-child(6){animation-delay:.3s}
+#rcSummary>div:nth-child(2),#rzSummary>div:nth-child(2),#bnSummary>div:nth-child(2){animation-delay:.06s}#rcSummary>div:nth-child(3),#rzSummary>div:nth-child(3),#bnSummary>div:nth-child(3){animation-delay:.12s}
+#rcSummary>div:nth-child(4),#rzSummary>div:nth-child(4),#bnSummary>div:nth-child(4){animation-delay:.18s}#rcSummary>div:nth-child(5),#rzSummary>div:nth-child(5),#bnSummary>div:nth-child(5){animation-delay:.24s}#rcSummary>div:nth-child(6),#rzSummary>div:nth-child(6),#bnSummary>div:nth-child(6){animation-delay:.3s}
 .rc-orgrow,.rc-restabs,.rc-search,.rc-rules{animation:rcRise .5s ease both}
 .rc-rt{position:relative;border-bottom-color:transparent!important}
 .rc-rt::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,#4f7dff,#8a52ff);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .rc-rt.on::after{transform:scaleX(1)}
-#rcTable tbody tr,#rzTable tbody tr{animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*22ms)}
+#rcTable tbody tr,#rzTable tbody tr,#bnTable tbody tr{animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*22ms)}
 .rc-btn.busy{pointer-events:none;opacity:.85}
 .rc-btn.busy i{display:inline-block;animation:rcSpin .7s linear infinite}
-@media (prefers-reduced-motion:reduce){.rc-rt b,#rcSummary>div,#rzSummary>div,#rzTable tbody tr,.rc-orgrow,.rc-restabs,.rc-search,.rc-rules,#rcTable tbody tr,.rc-drop.ok,.rc-chk,.rc-chk path{animation:none!important}.rc-chk path{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.rc-rt b,#rcSummary>div,#rzSummary>div,#bnSummary>div,#rzTable tbody tr,#bnTable tbody tr,.rc-orgrow,.rc-restabs,.rc-search,.rc-rules,#rcTable tbody tr,.rc-drop.ok,.rc-chk,.rc-chk path{animation:none!important}.rc-chk path{stroke-dashoffset:0}}
 .rc-orgrow{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .rc-orgrow label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .rc-orgrow select{background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--text);max-width:320px}
@@ -2647,8 +2651,8 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-search{display:flex;align-items:center;gap:14px;margin-top:14px}
 .rc-search input{flex:0 1 360px;background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font:inherit;font-size:13.5px;color:var(--text)}
 .rc-search span{font-size:12.5px;color:var(--muted)}
-#rcTable td.rc-num,#rzTable td.rc-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-#rcTable td.rc-neg,#rzTable td.rc-neg{color:var(--red-fg);font-weight:700}
+#rcTable td.rc-num,#rzTable td.rc-num,#bnTable td.rc-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#rcTable td.rc-neg,#rzTable td.rc-neg,#bnTable td.rc-neg{color:var(--red-fg);font-weight:700}
 .rc-rules{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);line-height:1.6}
 @keyframes vzaIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes vzaGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -4345,7 +4349,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <div class="rc-tabs" id="rcTabs">
       <button type="button" class="rc-tab on" data-t="recv" onclick="rcSwitchTab('recv')">Поступления</button>
       <button type="button" class="rc-tab" data-t="real" onclick="rcSwitchTab('real')">Реализация</button>
-      <button type="button" class="rc-tab soon" data-t="bank" disabled>Банк <i>скоро</i></button>
+      <button type="button" class="rc-tab" data-t="bank" onclick="rcSwitchTab('bank')">Банк</button>
       <button type="button" class="rc-tab soon" data-t="chek" disabled>Чеки <i>скоро</i></button>
       <button type="button" class="rc-tab soon" data-t="nds" disabled>НДС <i>скоро</i></button>
       <button type="button" class="rc-tab soon" data-t="loan" disabled>Займы <i>скоро</i></button>
@@ -4434,6 +4438,35 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div id="rzSearchRow" class="rc-search" style="display:none;"><input type="text" id="rzSearch" placeholder="Поиск по покупателю, номеру, ИНН…" oninput="rzRenderTable()"><span id="rzCount"></span></div>
       <div class="table-wrap" style="margin-top:8px;"><table class="invoices" id="rzTable" style="display:none;"><thead></thead><tbody></tbody></table></div>
       <div id="rzRules" class="rc-rules" style="display:none;"></div>
+    </div>
+    <div class="panel" id="bnPanel" style="display:none;">
+      <p class="analytics-note" style="margin:0 0 18px;">Загрузите выписки банков (можно сразу все) и список банковских документов из 1С за тот же период. Сверка идёт по дням и по каждому счёту: приход и расход в банке и в 1С. Выписка - эталон.</p>
+      <div class="rc-drops">
+        <div class="rc-drop" id="bnDropV" onclick="document.getElementById('bnFileV').click()">
+          <div class="rc-drop-t">Выписки банков<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
+          <div class="rc-drop-s" id="bnMetaV">Excel выписок банков, можно сразу несколько файлов. Перетащите файлы сюда или нажмите</div>
+          <input type="file" id="bnFileV" accept=".xlsx,.xls" multiple hidden onchange="bnPick('vyp', this)">
+        </div>
+        <div class="rc-drop" id="bnDrop1c" onclick="document.getElementById('bnFile1c').click()">
+          <div class="rc-drop-t">Банковские документы 1С<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
+          <div class="rc-drop-s" id="bnMeta1c">Список банковских документов из 1С за период: Дата, Поступление, Списание, Организация, Банковский счёт. Перетащите файл сюда или нажмите</div>
+          <input type="file" id="bnFile1c" accept=".xlsx,.xls,.csv" hidden onchange="bnPick('c1', this)">
+        </div>
+      </div>
+      <div id="bnFiles" class="bn-files" style="display:none;"></div>
+      <div id="bnErr" class="rc-err"></div>
+      <div id="bnBusy" class="rc-busy" style="display:none;"><div class="rc-bar"><i></i></div><span id="bnBusyT">Сверяем…</span></div>
+      <div id="bnActs" class="rc-orgrow" style="display:none;">
+        <span class="rc-actions">
+          <button type="button" class="login-submit-btn rc-btn" id="bnExportBtn" onclick="bnExport()"><i class='ti ti-download' aria-hidden='true'></i> Скачать Excel</button>
+          <button type="button" class="rc-btn-ghost" onclick="bnClear()"><i class='ti ti-trash' aria-hidden='true'></i> Очистить</button>
+        </span>
+      </div>
+      <div id="bnSummary" class="analytics-summary" style="display:none;margin-top:18px;"></div>
+      <div id="bnTabsRes" class="rc-restabs" style="display:none;"></div>
+      <div id="bnSearchRow" class="rc-search" style="display:none;"><input type="text" id="bnSearch" placeholder="Поиск по организации, счёту, дате…" oninput="bnRenderTable()"><span id="bnCount"></span></div>
+      <div class="table-wrap" style="margin-top:8px;"><table class="invoices" id="bnTable" style="display:none;"><thead></thead><tbody></tbody></table></div>
+      <div id="bnRules" class="rc-rules" style="display:none;"></div>
     </div>
     </section>
 
@@ -10477,9 +10510,9 @@ function renderReconcileResults(results) {
 const RC = { tax: null, c1: null, orgs: [], res: null, tab: "missing", org: "" };
 function rcSwitchTab(t) {
   document.querySelectorAll("#rcTabs .rc-tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
-  document.getElementById("rcRecvPanel").style.display = t === "recv" ? "" : "none";
-  document.getElementById("rzPanel").style.display = t === "real" ? "" : "none";
-  const pn = document.getElementById(t === "real" ? "rzPanel" : "rcRecvPanel");
+  const ids = { recv: "rcRecvPanel", real: "rzPanel", bank: "bnPanel" };
+  Object.keys(ids).forEach(k => { document.getElementById(ids[k]).style.display = k === t ? "" : "none"; });
+  const pn = document.getElementById(ids[t]);
   pn.classList.remove("rc-tabin"); void pn.offsetWidth; pn.classList.add("rc-tabin");
 }
 function rcShowTabForRole() {}
@@ -10886,18 +10919,18 @@ async function rcWriteWorkbook(X) {
       const row = ws.getRow(5 + ri); row.height = 19;
       cols.forEach((c, i) => {
         const x = row.getCell(i + 1); let v = c[1](r);
-        if (c[2] === "n") { v = (v == null || isNaN(v)) ? null : Math.round(v * 100) / 100; x.numFmt = "#,##0.00"; x.alignment = { horizontal: "right", vertical: "middle" }; if (c[0] === "Разница" && v) x.font = font({ bold: true, color: { argb: RED } }); else x.font = font(); }
+        if (c[2] === "n") { v = (v == null || isNaN(v)) ? null : Math.round(v * 100) / 100; x.numFmt = "#,##0.00"; x.alignment = { horizontal: "right", vertical: "middle" }; if (/^Разница/.test(c[0]) && v) x.font = font({ bold: true, color: { argb: RED } }); else x.font = font(); }
         else if (c[2] === "d") { v = v || null; x.numFmt = "dd.mm.yyyy"; x.alignment = { horizontal: "center", vertical: "middle" }; x.font = font(); }
         else { v = v == null ? "" : String(v); x.alignment = { horizontal: "left", vertical: "middle", indent: 1 }; x.font = font(); }
         x.value = v; x.border = border;
         if (ri % 2) x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: ZEBRA } };
       });
     });
-    const sumCol = cols.findIndex(c => c[2] === "n" && /^Сумма( в реестре| с НДС)?$/.test(c[0]));
-    if (sumCol >= 0) {
+    const sumIdx = cols.map((c, i) => (c[2] === "n" && (/^Сумма( в реестре| с НДС)?$/.test(c[0]) || c[4] === true)) ? i : -1).filter(i => i >= 0);
+    if (sumIdx.length) {
       const tr = ws.getRow(5 + rows.length + 1); tr.height = 22;
       const lab = tr.getCell(1); lab.value = "Итого"; lab.font = font({ bold: true });
-      const tot = tr.getCell(sumCol + 1); tot.value = Math.round(rows.reduce((a, r) => a + (cols[sumCol][1](r) || 0), 0) * 100) / 100; tot.numFmt = "#,##0.00"; tot.font = font({ bold: true }); tot.alignment = { horizontal: "right", vertical: "middle" };
+      sumIdx.forEach(si => { const tot = tr.getCell(si + 1); tot.value = Math.round(rows.reduce((a, r) => a + (cols[si][1](r) || 0), 0) * 100) / 100; tot.numFmt = "#,##0.00"; tot.font = font({ bold: true }); tot.alignment = { horizontal: "right", vertical: "middle" }; });
       for (let i = 1; i <= cols.length; i++) { const x = tr.getCell(i); x.border = { top: { style: "medium", color: { argb: NAVY } } }; }
     }
     ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4 + rows.length, column: cols.length } };
@@ -11190,6 +11223,326 @@ function rzClear() {
     el.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) rzLoad(kind, f); });
   };
   bind("rzDropTax", "tax"); bind("rzDrop1c", "c1");
+})();
+
+/* ===== Сверка банка (выписки банков ↔ 1С), по дням и счетам ===== */
+const BN = { vyp: [], c1: null, res: null, tab: "diff" };
+const BN_MONTHS = { "января": 1, "февраля": 2, "марта": 3, "апреля": 4, "мая": 5, "июня": 6, "июля": 7, "августа": 8, "сентября": 9, "октября": 10, "ноября": 11, "декабря": 12 };
+function bnErr(msg) {
+  const e = document.getElementById("bnErr"); e.textContent = msg || "";
+  if (msg) { e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); }
+}
+function bnBusy(on, t, done) {
+  const b = document.getElementById("bnBusy"); b.style.display = on ? "flex" : "none"; b.classList.toggle("done", !!done);
+  if (t) document.getElementById("bnBusyT").textContent = t;
+}
+function bnDay(v) {
+  if (v == null || v === "") return null;
+  const p = n => String(n).padStart(2, "0");
+  if (v instanceof Date) return v.getUTCFullYear() + "-" + p(v.getUTCMonth() + 1) + "-" + p(v.getUTCDate());
+  if (typeof v === "number") { if (v < 20000 || v > 80000) return null; return bnDay(new Date(Math.round((v - 25569) * 86400000))); }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})\.(\d{2})\.(\d{4})/); if (m) return m[3] + "-" + m[2] + "-" + p(m[1]);
+  m = s.match(/^(\d{1,2})\.(\d{2})\.(\d{2})(?!\d)/); if (m) return "20" + m[3] + "-" + m[2] + "-" + p(m[1]);
+  return null;
+}
+function bnFmtDay(k) { return k ? k.slice(8, 10) + "." + k.slice(5, 7) + "." + k.slice(0, 4) : ""; }
+function bnNum(v) {
+  if (typeof v === "number") return v;
+  let s = String(v == null ? "" : v).replace(/[\s ]/g, "");
+  if (!s || s === "-") return 0;
+  const c = s.lastIndexOf(","), d = s.lastIndexOf(".");
+  if (c >= 0 && d >= 0) { if (c > d) s = s.replace(/\./g, "").replace(",", "."); else s = s.replace(/,/g, ""); }
+  else if (c >= 0) { s = (s.split(",").length === 2 && /,\d{1,2}$/.test(s)) ? s.replace(",", ".") : s.replace(/,/g, ""); }
+  const n = parseFloat(s); return isNaN(n) ? 0 : n;
+}
+function bnAcc(s) { const m = String(s == null ? "" : s).match(/(?<!\d)(\d{20})(?!\d)/); return m ? m[1] : null; }
+function bnIsFx(acc) { return !!acc && acc.slice(5, 8) !== "000"; }
+function bnPeriod(text) {
+  let m = text.match(/(?:за период|период выписки)\s*с\s*(\d{1,2}\.\d{2}\.\d{4})\s*по\s*(\d{1,2}\.\d{2}\.\d{4})/i);
+  if (m) return [bnDay(m[1]), bnDay(m[2])];
+  m = text.match(/с\s*(\d{1,2})\s+([а-яё]+)\s+(\d{4})\s*г?\.?\s*по\s*(\d{1,2})\s+([а-яё]+)\s+(\d{4})/i);
+  if (m && BN_MONTHS[m[2].toLowerCase()] && BN_MONTHS[m[5].toLowerCase()]) {
+    const p = n => String(n).padStart(2, "0");
+    return [m[3] + "-" + p(BN_MONTHS[m[2].toLowerCase()]) + "-" + p(m[1]), m[6] + "-" + p(BN_MONTHS[m[5].toLowerCase()]) + "-" + p(m[4])];
+  }
+  return null;
+}
+const bnNorm = c => String(c == null ? "" : c).replace(/\s+/g, " ").trim().toLowerCase();
+function bnParseRows(rows) {
+  const ops = []; let P = null, acc = null, per = null;
+  const topText = rows.slice(0, 16).map(r => r.map(c => String(c == null ? "" : c)).join(" ")).join(" \n ");
+  per = bnPeriod(topText);
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i], lab = r.map(bnNorm);
+    const di = lab.indexOf("дебет"), ci = lab.indexOf("кредит");
+    if (di >= 0 && ci >= 0) {
+      P = { deb: di, cre: ci, dp: -1, dop: -1, payer: lab.indexOf("счет плательщика"), recv: lab.indexOf("счет получателя") };
+      lab.forEach((x, j) => { if (P.dp < 0 && (x === "дата" || /^дата проводки/.test(x) || /^дата\/время/.test(x))) P.dp = j; if (P.dop < 0 && /^дата опер/.test(x)) P.dop = j; });
+      continue;
+    }
+    if (!P || P.dp < 0) {
+      const a = r.map(c => typeof c === "string" ? bnAcc(c) : null).find(Boolean); if (a && !acc) acc = a;
+      continue;
+    }
+    const dkey = bnDay(r[P.dp]);
+    const txt = String(r[P.dp] == null ? "" : r[P.dp]).trim();
+    const okDate = dkey && /^\d{1,2}\.\d{2}\.\d{2,4}/.test(txt) || (typeof r[P.dp] === "number" && dkey);
+    const db = bnNum(r[P.deb]), cr = bnNum(r[P.cre]);
+    if (!okDate || (!db && !cr)) {
+      const a = r.map(c => typeof c === "string" && /^\s*\D{0,3}\d{20}\s*$/.test(c) ? bnAcc(c) : null).find(Boolean);
+      if (a) acc = a;
+      continue;
+    }
+    let oacc = acc;
+    if (!oacc) oacc = bnAcc(cr ? r[P.recv] : r[P.payer]);
+    ops.push({ d: (P.dop >= 0 && bnDay(r[P.dop])) || dkey, db, cr, acc: oacc });
+  }
+  return { ops, acc, per };
+}
+function bnParseHtml(text) {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  const rows = []; doc.querySelectorAll("tr").forEach(tr => { const cells = Array.from(tr.children).map(c => (c.textContent || "").replace(/ /g, " ").trim()); if (cells.length >= 6) rows.push(cells); });
+  const flat = (doc.body ? doc.body.textContent : text).replace(/ /g, " ");
+  const head = [[flat.slice(0, 1500)]];
+  const res = bnParseRows(head.concat(rows));
+  if (!res.acc) { const m = flat.match(/(?<!\d)(\d{20})(?!\d)/); if (m) { res.acc = m[1]; res.ops.forEach(o => { if (!o.acc) o.acc = m[1]; }); } }
+  else res.ops.forEach(o => { if (!o.acc) o.acc = res.acc; });
+  if (!res.per) res.per = bnPeriod(flat);
+  return res;
+}
+async function bnReadVyp(file) {
+  const buf = await file.arrayBuffer();
+  const head = new TextDecoder("latin1").decode(new Uint8Array(buf.slice(0, 600))).toLowerCase();
+  let r;
+  if (/<(table|html|meta)/.test(head)) {
+    let text; try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); } catch (e) { text = new TextDecoder("windows-1251").decode(buf); }
+    r = bnParseHtml(text);
+  } else {
+    const wb = XLSX.read(buf, { type: "array" }); const ws = wb.Sheets[wb.SheetNames[0]];
+    r = bnParseRows(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" }));
+  }
+  r.ops.forEach(o => { if (!o.acc) o.acc = r.acc; });
+  const bad = r.ops.filter(o => !o.acc).length;
+  if (!r.ops.length) throw new Error("В файле «" + file.name + "» не найдено операций. Проверьте, что это выписка банка (с колонками Дебет и Кредит).");
+  if (bad) throw new Error("В файле «" + file.name + "» не удалось определить номер счёта.");
+  const ds = r.ops.map(o => o.d).sort();
+  if (!r.per) r.per = [ds[0], ds[ds.length - 1]];
+  r.name = file.name;
+  return r;
+}
+function bnParse1c(rows) {
+  const hi = rows.findIndex(r => { const l = r.map(bnNorm); return l.includes("поступление") && l.includes("списание") && l.includes("банковский счет"); });
+  if (hi < 0) throw new Error("В файле 1С не найдены колонки «Дата», «Поступление», «Списание», «Банковский счет». Нужен список банковских документов из 1С.");
+  const l = rows[hi].map(bnNorm), col = n => l.indexOf(n);
+  const cD = col("дата"), cIn = col("поступление"), cOut = col("списание"), cOrg = col("организация"), cAcc = col("банковский счет");
+  const out = []; let skipped = 0;
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i], d = bnDay(r[cD]); if (!d) continue;
+    const accTxt = String(r[cAcc] == null ? "" : r[cAcc]), acc = bnAcc(accTxt);
+    const pin = bnNum(r[cIn]), pout = bnNum(r[cOut]);
+    if (!acc) { if (pin || pout) skipped++; continue; }
+    out.push({ d, acc, org: String(r[cOrg] || "").trim(), bank: accTxt.replace(acc, "").replace(/^[\s,\-в]+|[\s,\-]+$/g, "").replace(/\s+/g, " ").trim(), inn: pin, out: pout });
+  }
+  if (!out.length) throw new Error("В файле 1С нет документов с банковским счётом.");
+  out.skipped = skipped; return out;
+}
+async function bnPick(kind, input) {
+  const files = Array.from(input.files || []); input.value = ""; if (files.length) await bnLoad(kind, files);
+}
+async function bnLoad(kind, files) {
+  bnErr("");
+  try {
+    bnBusy(true, "Читаем файл" + (files.length > 1 ? "ы…" : "…"));
+    if (kind === "c1") {
+      const rows = await rcReadRows(files[0]); BN.c1 = bnParse1c(rows); BN.c1name = files[0].name;
+      const d = document.getElementById("bnDrop1c"); d.classList.remove("ok"); void d.offsetWidth; d.classList.add("ok");
+      document.getElementById("bnMeta1c").textContent = files[0].name + " · " + BN.c1.length + " документов";
+    } else {
+      for (const f of files) {
+        const r = await bnReadVyp(f);
+        BN.vyp = BN.vyp.filter(x => x.name !== f.name); BN.vyp.push(r);
+      }
+      const d = document.getElementById("bnDropV"); d.classList.remove("ok"); void d.offsetWidth; d.classList.add("ok");
+      bnShowFiles();
+    }
+  } catch (e) { bnBusy(false); bnErr(e.message || "Не удалось прочитать файл"); bnShowFiles(); return; }
+  bnBusy(false);
+  if (BN.vyp.length && BN.c1) await bnStart();
+}
+function bnShowFiles() {
+  const box = document.getElementById("bnFiles");
+  document.getElementById("bnMetaV").textContent = BN.vyp.length ? "Загружено выписок: " + BN.vyp.length + ". Можно добавить ещё" : "Excel выписок банков, можно сразу несколько файлов. Перетащите файлы сюда или нажмите";
+  box.innerHTML = BN.vyp.map((v, i) => `<div class="bn-file" style="--i:${i}"><span class="bn-acc">${escapeHtml(v.acc || (v.ops[0] && v.ops[0].acc) || "")}</span><span class="bn-per">${bnFmtDay(v.per[0])} - ${bnFmtDay(v.per[1])}</span><span class="bn-n">${v.ops.length} оп.</span><button type="button" class="bn-x" title="Убрать" onclick="bnRemove(${i})">&times;</button></div>`).join("");
+  box.style.display = BN.vyp.length ? "" : "none";
+}
+async function bnRemove(i) {
+  BN.vyp.splice(i, 1); bnShowFiles();
+  if (BN.vyp.length && BN.c1) { await bnStart(); } else { BN.res = null; ["bnSummary", "bnTabsRes", "bnSearchRow", "bnTable", "bnRules", "bnActs"].forEach(id => { document.getElementById(id).style.display = "none"; }); }
+}
+async function bnStart() {
+  bnBusy(true, "Читаем выписки…"); await rcWait(450);
+  bnBusy(true, "Сверяем обороты по дням…"); await rcWait(650);
+  bnRun();
+  bnBusy(true, "Готово", true); await rcWait(900); bnBusy(false);
+  try { apiCall("auditNote", { tag: "RECONCILE_BANK", note: "vyp=" + BN.vyp.length + "; 1c=" + BN.c1.length }).catch(() => {}); } catch (e) {}
+}
+function bnMatch() {
+  const c1 = BN.c1, round = x => Math.round(x * 100) / 100;
+  const days1 = c1.map(x => x.d).sort(), lo1 = days1[0], hi1 = days1[days1.length - 1];
+  const C = {}, info = {};
+  c1.forEach(x => {
+    const k = x.acc + "|" + x.d; (C[k] = C[k] || { i: 0, o: 0 }); C[k].i += x.inn; C[k].o += x.out;
+    const a = (info[x.acc] = info[x.acc] || { org: {}, bank: {}, n: 0, i: 0, o: 0 });
+    a.org[x.org] = (a.org[x.org] || 0) + 1; if (x.bank) a.bank[x.bank] = (a.bank[x.bank] || 0) + 1; a.n++; a.i += x.inn; a.o += x.out;
+  });
+  const top = o => Object.keys(o).sort((a, b) => o[b] - o[a])[0] || "";
+  // операции по счетам (несколько файлов одного счёта объединяются)
+  const accs = {};
+  BN.vyp.forEach(v => {
+    v.ops.forEach(o => {
+      const a = (accs[o.acc] = accs[o.acc] || { acc: o.acc, per: [v.per[0], v.per[1]], days: {}, files: new Set() });
+      a.files.add(v.name); if (v.per[0] < a.per[0]) a.per[0] = v.per[0]; if (v.per[1] > a.per[1]) a.per[1] = v.per[1];
+      const d = (a.days[o.d] = a.days[o.d] || { i: 0, o: 0 }); d.i += o.cr; d.o += o.db;
+    });
+  });
+  const all = [], accRows = [], nopair = [], fx = [], nowyp = [];
+  Object.values(accs).forEach(a => {
+    const inf = info[a.acc];
+    if (!inf) { const t = Object.values(a.days).reduce((s, d) => ({ i: s.i + d.i, o: s.o + d.o }), { i: 0, o: 0 }); nopair.push({ acc: a.acc, per: a.per, i: t.i, o: t.o, files: Array.from(a.files).join(", ") }); return; }
+    if (bnIsFx(a.acc)) { return; }
+    const from = a.per[0] > lo1 ? a.per[0] : lo1, to = a.per[1] < hi1 ? a.per[1] : hi1;
+    const org = top(inf.org), bank = top(inf.bank);
+    const row = { acc: a.acc, org, bank, from, to, bi: 0, ci: 0, bo: 0, co: 0, days: 0, bad: 0 };
+    if (from > to) { row.skip = true; accRows.push(row); return; }
+    for (let t = Date.parse(from + "T00:00:00Z"); t <= Date.parse(to + "T00:00:00Z"); t += 86400000) {
+      const k = new Date(t).toISOString().slice(0, 10), b = a.days[k] || { i: 0, o: 0 }, c = C[a.acc + "|" + k] || { i: 0, o: 0 };
+      const r = { acc: a.acc, org, bank, d: k, bi: round(b.i), ci: round(c.i), di: round(b.i - c.i), bo: round(b.o), co: round(c.o), dout: round(b.o - c.o) };
+      r.bad = Math.abs(r.di) > 0.5 || Math.abs(r.dout) > 0.5;
+      row.bi += r.bi; row.ci += r.ci; row.bo += r.bo; row.co += r.co; row.days++; if (r.bad) row.bad++;
+      if (r.bi || r.ci || r.bo || r.co) all.push(r);
+    }
+    ["bi", "ci", "bo", "co"].forEach(f => { row[f] = round(row[f]); }); row.di = round(row.bi - row.ci); row.dout = round(row.bo - row.co);
+    accRows.push(row);
+  });
+  const key = (a, b) => a.acc < b.acc ? -1 : a.acc > b.acc ? 1 : (a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
+  all.sort(key); accRows.sort((a, b) => a.org < b.org ? -1 : a.org > b.org ? 1 : (a.acc < b.acc ? -1 : 1));
+  const have = new Set(Object.keys(accs));
+  Object.keys(info).forEach(acc => {
+    const inf = info[acc], org = top(inf.org), bank = top(inf.bank);
+    if (bnIsFx(acc)) fx.push({ acc, org, bank, n: inf.n, i: round(inf.i), o: round(inf.o) });
+    else if (!have.has(acc)) nowyp.push({ acc, org, bank, n: inf.n, i: round(inf.i), o: round(inf.o) });
+  });
+  return { all, accRows, nopair, fx, nowyp, cats: { diff: all.filter(r => r.bad), acc: accRows, all, nopair, nowyp, fx }, lo: lo1, hi: hi1, skipped: c1.skipped || 0, days: accRows.reduce((s, r) => s + r.days, 0), bad: all.filter(r => r.bad).length };
+}
+
+const BN_TABS = [
+  ["diff", "Расхождения по дням", true], ["acc", "По счетам", false], ["all", "Все дни", false, true],
+  ["nopair", "Счёт не найден в 1С", true], ["nowyp", "1С без выписки", false, true], ["fx", "Валютные счета", false, true]
+];
+function bnRun() {
+  BN.res = bnMatch(); const R = BN.res;
+  const tile = (v, l, bad, ic) => `<div><span class="sum-icon"><i class='ti ti-${ic}' aria-hidden='true'></i></span><div><div class="num"${bad ? ' style="color:var(--red-fg)"' : ""}>${v}</div><div class="lbl">${l}</div></div></div>`;
+  const sm = document.getElementById("bnSummary");
+  sm.innerHTML = tile(R.accRows.filter(r => !r.skip).length, "Счетов сверено", false, "building-bank") + tile(R.days, "Дней сверено", false, "calendar-event") +
+    tile(R.bad, "Дней с расхождением", R.bad > 0, "alert-triangle") + tile(R.accRows.filter(r => r.bad).length, "Счетов с расхождением", R.accRows.some(r => r.bad), "list-details") +
+    tile(R.nopair.length, "Счёт не найден в 1С", R.nopair.length > 0, "circle-x");
+  sm.style.display = ""; rcCountUp(sm);
+  const first = BN_TABS.find(t => !t[3] && R.cats[t[0]].length) || BN_TABS[1]; BN.tab = first[0];
+  bnRenderTabs(); document.getElementById("bnSearchRow").style.display = ""; document.getElementById("bnSearch").value = ""; bnRenderTable();
+  document.getElementById("bnActs").style.display = "flex";
+  const rules = document.getElementById("bnRules"); rules.style.display = "";
+  rules.innerHTML = "Выписка банка - эталон, 1С сверяется с ней. Сравниваются суммы за день по каждому счёту: приход в банке (Кредит) с «Поступление» в 1С, расход в банке (Дебет) со «Списание» в 1С. " +
+    "Период каждой выписки ограничен периодом выгрузки 1С (" + bnFmtDay(R.lo) + " - " + bnFmtDay(R.hi) + "). Счета объединяются по номеру счёта, название банка в 1С не важно. Допуск 0,50 сум. " +
+    "Валютные счета в сверку не входят." + (R.skipped ? " Документов 1С без банковского счёта (например, корпоративная карта): " + R.skipped + ", в сверку не входят." : "");
+}
+function bnRenderTabs() {
+  const R = BN.res, box = document.getElementById("bnTabsRes");
+  box.innerHTML = BN_TABS.map(t => { const n = R.cats[t[0]].length; return `<button type="button" class="rc-rt${BN.tab === t[0] ? " on" : ""}${t[2] && n ? " bad" : ""}${n ? "" : " zero"}" onclick="bnPickTab('${t[0]}')">${t[1]}<b>${n}</b></button>`; }).join("");
+  box.style.display = "flex";
+}
+function bnPickTab(t) { BN.tab = t; bnRenderTabs(); bnRenderTable(); }
+function bnCols(tab) {
+  const S = f => r => rcFmtSum(f(r)), D = r => bnFmtDay(r.d);
+  const day = [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Дата", D],
+    ["Банк: приход", S(r => r.bi), "n", 20, true], ["1С: приход", S(r => r.ci), "n", 20, true], ["Разница прихода", S(r => r.di), "neg", 20, true],
+    ["Банк: расход", S(r => r.bo), "n", 20, true], ["1С: расход", S(r => r.co), "n", 20, true], ["Разница расхода", S(r => r.dout), "neg", 20, true]];
+  const map = {
+    diff: day, all: day,
+    acc: [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Период сверки", r => r.skip ? "вне периода 1С" : bnFmtDay(r.from) + " - " + bnFmtDay(r.to)],
+      ["Банк: приход", S(r => r.bi), "n"], ["1С: приход", S(r => r.ci), "n"], ["Разница прихода", S(r => r.di), "neg"], ["Банк: расход", S(r => r.bo), "n"], ["1С: расход", S(r => r.co), "n"], ["Разница расхода", S(r => r.dout), "neg"],
+      ["Дней", r => r.days], ["Дней с расхождением", r => r.bad]],
+    nopair: [["Счёт", r => r.acc], ["Период выписки", r => bnFmtDay(r.per[0]) + " - " + bnFmtDay(r.per[1])], ["Приход (Кредит)", S(r => r.i), "n"], ["Расход (Дебет)", S(r => r.o), "n"], ["Файл", r => r.files]],
+    nowyp: [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Документов 1С", r => r.n], ["Поступление", S(r => r.i), "n"], ["Списание", S(r => r.o), "n"]],
+    fx: [["Организация", r => r.org], ["Банк (по 1С)", r => r.bank], ["Счёт", r => r.acc], ["Документов 1С", r => r.n], ["Поступление (в валюте)", S(r => r.i), "n"], ["Списание (в валюте)", S(r => r.o), "n"]]
+  };
+  return map[tab];
+}
+function bnRenderTable() {
+  if (!BN.res) return;
+  const rowsAll = BN.res.cats[BN.tab], cols = bnCols(BN.tab);
+  const q = (document.getElementById("bnSearch").value || "").trim().toLowerCase();
+  const rows = q ? rowsAll.filter(r => cols.some(c => String(c[1](r) || "").toLowerCase().indexOf(q) >= 0)) : rowsAll;
+  const t = document.getElementById("bnTable");
+  t.querySelector("thead").innerHTML = "<tr><th>№</th>" + cols.map(c => `<th${c[2] ? ' style="text-align:right"' : ""}>${c[0]}</th>`).join("") + "</tr>";
+  t.querySelector("tbody").innerHTML = rows.length
+    ? rows.map((r, i) => `<tr style="--i:${Math.min(i, 24)}"><td>` + (i + 1) + "</td>" + cols.map(c => { const v = c[1](r); let cls = c[2] === "n" ? "rc-num" : c[2] === "neg" ? "rc-num" + (/[1-9]/.test(String(v)) ? " rc-neg" : "") : ""; return `<td${cls ? ` class="${cls}"` : ""}>${escapeHtml(String(v == null ? "" : v))}</td>`; }).join("") + "</tr>").join("")
+    : `<tr><td colspan="${cols.length + 1}" style="color:var(--muted)">${rowsAll.length ? "Ничего не найдено" : "Расхождений нет"}</td></tr>`;
+  t.style.display = "";
+  document.getElementById("bnCount").textContent = rows.length + (rows.length !== rowsAll.length ? " из " + rowsAll.length : "") + " строк";
+}
+const BN_NOTES = {
+  diff: "Дни, в которых обороты по счёту в выписке банка и в 1С не совпадают. Откройте этот день по счёту в 1С и найдите документ",
+  acc: "Итоги по каждому счёту за период сверки",
+  all: "Все дни с движением по счетам (в том числе совпавшие)",
+  nopair: "Счета из выписок, по которым в выгрузке 1С нет документов",
+  nowyp: "Счета, по которым в 1С есть документы, но выписка не загружена",
+  fx: "Валютные счета - в сверку не входят"
+};
+function bnXCols(tab) {
+  const N = "n", T = "t", D = "d";
+  const day = [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Дата", r => r.d ? new Date(r.d + "T00:00:00Z") : null, D, 12],
+    ["Банк: приход", r => r.bi, N, 20, true], ["1С: приход", r => r.ci, N, 20, true], ["Разница прихода", r => r.di, N, 20, true],
+    ["Банк: расход", r => r.bo, N, 20, true], ["1С: расход", r => r.co, N, 20, true], ["Разница расхода", r => r.dout, N, 20, true]];
+  const map = {
+    diff: day, all: day,
+    acc: [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Период сверки", r => r.skip ? "вне периода 1С" : bnFmtDay(r.from) + " - " + bnFmtDay(r.to), T, 24],
+      ["Банк: приход", r => r.bi, N, 20, true], ["1С: приход", r => r.ci, N, 20, true], ["Разница прихода", r => r.di, N, 20, true], ["Банк: расход", r => r.bo, N, 20, true], ["1С: расход", r => r.co, N, 20, true], ["Разница расхода", r => r.dout, N, 20, true],
+      ["Дней", r => r.days, T, 8], ["Дней с расхождением", r => r.bad, T, 12]],
+    nopair: [["Счёт", r => r.acc, T, 24], ["Период выписки", r => bnFmtDay(r.per[0]) + " - " + bnFmtDay(r.per[1]), T, 24], ["Приход (Кредит)", r => r.i, N, 20, true], ["Расход (Дебет)", r => r.o, N, 20, true], ["Файл", r => r.files, T, 40]],
+    nowyp: [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Документов 1С", r => r.n, T, 14], ["Поступление", r => r.i, N, 20, true], ["Списание", r => r.o, N, 20, true]],
+    fx: [["Организация", r => r.org, T, 30], ["Банк (по 1С)", r => r.bank, T, 32], ["Счёт", r => r.acc, T, 24], ["Документов 1С", r => r.n, T, 14], ["Поступление (в валюте)", r => r.i, N, 20, true], ["Списание (в валюте)", r => r.o, N, 20, true]]
+  };
+  return map[tab];
+}
+async function bnExport() {
+  if (!BN.res) return;
+  const btn = document.getElementById("bnExportBtn"), old = btn.innerHTML;
+  btn.classList.add("busy"); btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Готовим файл…"; await rcWait(600);
+  const R = BN.res;
+  try {
+    await rcWriteWorkbook({ res: R, org: "Сверка банка", tabs: BN_TABS, xcols: bnXCols, notes: BN_NOTES, title: "Сверка банка", plain: () => bnErr("Не удалось сформировать Excel"),
+      summary: [["Счетов сверено", R.accRows.filter(r => !r.skip).length], ["Дней сверено", R.days], ["Дней с расхождением", R.bad], ["Период 1С", bnFmtDay(R.lo) + " - " + bnFmtDay(R.hi)]] });
+    btn.classList.remove("busy"); btn.classList.add("okk"); btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово"; await rcWait(1300);
+  } catch (e) { bnErr("Не удалось сформировать Excel"); }
+  btn.classList.remove("busy", "okk"); btn.innerHTML = old;
+}
+function bnClear() {
+  BN.vyp = []; BN.c1 = null; BN.res = null;
+  ["bnDropV", "bnDrop1c"].forEach(id => document.getElementById(id).classList.remove("ok"));
+  document.getElementById("bnMeta1c").textContent = "Список банковских документов из 1С за период: Дата, Поступление, Списание, Организация, Банковский счёт. Перетащите файл сюда или нажмите";
+  bnShowFiles();
+  ["bnSummary", "bnTabsRes", "bnSearchRow", "bnTable", "bnRules", "bnActs"].forEach(id => { document.getElementById(id).style.display = "none"; });
+  bnErr("");
+}
+(function bnInitDnD() {
+  const bind = (id, kind) => {
+    const el = document.getElementById(id); if (!el) return;
+    ["dragenter", "dragover"].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.add("over"); }));
+    ["dragleave", "drop"].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.remove("over"); }));
+    el.addEventListener("drop", e => { const f = e.dataTransfer && Array.from(e.dataTransfer.files); if (f && f.length) bnLoad(kind, f); });
+  };
+  bind("bnDropV", "vyp"); bind("bnDrop1c", "c1");
 })();
 
 function renderHistoryTable() {
