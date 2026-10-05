@@ -2823,7 +2823,7 @@ html[data-brand] .rank-toggle-btn{margin-top:10px;width:100%;border:1px dashed v
 html[data-brand] .rank-toggle-btn:hover{background:rgba(91,141,255,.16)!important}
 /* login issiqlik xaritasi */
 html #loginHeat{overflow-x:auto;padding:2px 0 6px}
-html .hm{display:grid;grid-template-columns:minmax(210px,1.5fr) repeat(7,minmax(74px,1fr));gap:4px;min-width:900px}
+html .hm{display:grid;grid-template-columns:minmax(210px,1.5fr) repeat(8,minmax(74px,1fr));gap:4px;min-width:960px}
 html .hm .hh{font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:6px 8px;text-align:center}
 html .hm .hh:first-child{text-align:left}
 html .hm .who{display:flex;gap:10px;align-items:center;padding:6px 8px;min-width:0}
@@ -3333,7 +3333,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="panel" id="loginStatsPanel" style="display:none; margin-bottom:16px;">
         <h2><i class='ti ti-shield-lock' aria-hidden='true'></i> По логинам dashboard <span class="sub">за выбранный период выше</span></h2>
         <table class="emp-table" id="loginStatsTable">
-          <thead><tr><th>№</th><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th><th>Договоров</th><th>Доверенностей</th><th>Счёт-фактур</th><th>Заказ-нарядов</th><th>Других запросов</th></tr></thead>
+          <thead><tr><th>№</th><th>Логин</th><th>Имя</th><th>Счетов</th><th>Сумма</th><th>Договоров</th><th>Доверенностей</th><th>Счёт-фактур</th><th>Заказ-нарядов</th><th>Банк</th><th>Других запросов</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -8280,8 +8280,8 @@ async function renderLoginStatsPanel() {
     if (document.documentElement.getAttribute("data-brand") === "crb") {
       let host = document.getElementById("loginHeat");
       if (!host) { host = document.createElement("div"); host.id = "loginHeat"; document.getElementById("loginStatsTable").insertAdjacentElement("afterend", host); }
-      const keys = ["invoiceCount", "invoiceSum", "dogovorCount", "doverennostCount", "realschetCount", "zakaznaryadCount", "otherreqCount"];
-      const heads = ["Счетов", "Сумма", "Договоров", "Доверенностей", "Счёт-фактур", "Заказ-нарядов", "Других запросов"];
+      const keys = ["invoiceCount", "invoiceSum", "dogovorCount", "doverennostCount", "realschetCount", "zakaznaryadCount", "bankCount", "otherreqCount"];
+      const heads = ["Счетов", "Сумма", "Договоров", "Доверенностей", "Счёт-фактур", "Заказ-нарядов", "Банк", "Других запросов"];
       const mx = keys.map(k => Math.max(0, ...rows.map(u => u[k] || 0)));
       const ini2 = (n) => { const p = String(n || "?").replace(/[^A-Za-zА-Яа-я0-9 ]/g, " ").trim().split(/\s+/); return ((p[0] || "?")[0] + (p[1] ? p[1][0] : (p[0] || "")[1] || "")).toUpperCase(); };
       const hh = (n) => { let h = 0; for (let c = 0; c < n.length; c++) h = (h * 31 + n.charCodeAt(c)) | 0; return Math.abs(h); };
@@ -8312,8 +8312,9 @@ async function renderLoginStatsPanel() {
         <td>${u.doverennostCount || 0}</td>
         <td>${u.realschetCount || 0}</td>
         <td>${u.zakaznaryadCount || 0}</td>
+        <td>${u.bankCount || 0}</td>
         <td>${u.otherreqCount || 0}</td>
-      </tr>`).join("") || `<tr><td colspan="10" style="color:var(--muted)">Нет данных</td></tr>`;
+      </tr>`).join("") || `<tr><td colspan="11" style="color:var(--muted)">Нет данных</td></tr>`;
   } catch (e) {
     console.warn("Не удалось загрузить статистику по логинам:", e.message);
   }
