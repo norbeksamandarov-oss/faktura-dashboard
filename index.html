@@ -6559,6 +6559,11 @@ async function onLoggedIn(forcePasswordChange) {
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
+    // Yengil "status kuzatuvchi": faqat счета-фактуры (A:L) ni har 4 soniyada
+    // tekshiradi; status/ответственный/отправка o'zgarsa - darhol to'liq yangilaydi.
+    if (window.__fastPollTimer) clearInterval(window.__fastPollTimer);
+    window.__fastPollTimer = setInterval(fastStatusPoll, 4000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) fastStatusPoll(); });
   }
 
   // "Зарплата" so'rovlari maxfiy bo'lgani uchun UMUMIY 3-soniyalik
@@ -7112,6 +7117,24 @@ document.addEventListener("click", (e) => {
   const it = e.target.closest && e.target.closest("#sidebarNav .nav-item[data-section]");
   if (it && !it.classList.contains("nav-parent")) mNavToggle(false);
 });
+
+
+let __fastPollBusy = false, __fastPollSig = null;
+async function fastStatusPoll() {
+  if (__fastPollBusy || isLoading || uiActionInFlight || document.hidden || !authToken) return;
+  __fastPollBusy = true;
+  try {
+    const [rows] = await sheetsGetBatch([`'${SHEET_INVOICES}'!A2:L5000`]);
+    const sig = rows.map(r => (r[0]||"") + "|" + (r[9]||"") + "|" + (r[10]||"") + "|" + (r[11]||"")).join("\n");
+    if (__fastPollSig === null) { __fastPollSig = sig; return; }
+    if (sig !== __fastPollSig) {
+      await loadAllData(true);
+      // baseline faqat yuklash o'tgandan keyin yangilanadi
+      if (!isLoading) __fastPollSig = sig;
+    }
+  } catch (e) { /* jim: keyingi urinishda qayta */ }
+  finally { __fastPollBusy = false; }
+}
 
 async function loadAllData(silent) {
   if (isLoading) return; // не накладываем параллельные запросы друг на друга
