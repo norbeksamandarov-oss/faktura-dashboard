@@ -2360,6 +2360,51 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .modal-card.shake{animation:crmShake .45s}
 .mc-ok{display:inline-block;animation:crmPop .4s cubic-bezier(.34,1.8,.64,1)}
 @keyframes crmPop{from{transform:scale(0)}to{transform:scale(1)}}
+/* ===== Аренда ===== */
+#section-rental .rn-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0 0 18px}
+#section-rental .rn-st{border:1px solid var(--border);border-radius:14px;padding:12px 16px}
+#section-rental .rn-st b{display:block;font-size:22px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+#section-rental .rn-st span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+#section-rental .rn-bar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+#section-rental .rn-bar input{flex:1 1 260px;min-width:0}
+#section-rental .rn-bar select{flex:0 1 240px;min-width:0}
+#section-rental .rn-add{display:inline-flex;gap:6px;align-items:center}
+.rn-loading{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:10px;padding:14px 0}
+.rn-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--navy-light,#5b8dff);animation:spin .8s linear infinite;display:inline-block}
+.rn-table .rn-r{text-align:right}
+.rn-table td.rn-r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rn-table .rn-gh td{font-weight:700;background:var(--chip-bg);border-top:1px solid var(--border)}
+.rn-table .rn-gh .rn-gs{color:var(--muted);font-weight:500;font-size:12px;margin-left:10px}
+.rn-table .rn-addr{max-width:260px;font-size:12px;color:var(--muted)}
+.rn-table .rn-none td{color:var(--muted);font-size:12px;font-style:italic}
+.rn-table tr.rn-in{animation:rnIn .35s ease both}
+.rn-table tr.rn-out{animation:rnOut .3s ease forwards}
+@keyframes rnIn{from{opacity:0;transform:translateY(6px)}}
+@keyframes rnOut{to{opacity:0;transform:translateX(24px)}}
+.rn-end.warn{color:#d98a00;font-weight:600}.rn-end.bad{color:#d92d20;font-weight:600}
+.rn-ac{white-space:nowrap}.rn-ac button{background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted)}
+.rn-ac button:hover{color:var(--text)}.rn-ac .rn-del:hover{color:#d92d20}
+.rn-ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:90;background:rgba(12,16,34,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .25s;padding:16px}
+.rn-ov.open{opacity:1}
+.rn-card{position:relative;overflow:hidden;width:min(640px,100%);max-height:92vh;overflow-y:auto;border-radius:22px;background:var(--card,var(--bg,#fff));color:var(--text);border:1px solid var(--border);padding:24px;transform:translateY(16px) scale(.96);opacity:0;transition:transform .38s cubic-bezier(.34,1.45,.64,1),opacity .25s}
+.rn-ov.open .rn-card{transform:none;opacity:1}
+.rn-card.shake{animation:crmShake .42s}
+.rn-card h3{margin:0 0 16px;font-size:17px}
+.rn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rn-f{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;min-width:0}
+.rn-f input,.rn-f select{width:100%;box-sizing:border-box;font-size:14px;text-transform:none;letter-spacing:0}
+.rn-w2{grid-column:1/-1}
+.rn-err{min-height:18px;margin-top:10px;font-size:13px;color:#d92d20}
+.rn-act{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+.rn-b{border-radius:12px;padding:10px 18px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;min-width:110px;display:inline-flex;justify-content:center;align-items:center;gap:8px;transition:transform .1s}
+.rn-b:active{transform:scale(.96)}
+.rn-pri{border-color:transparent;background:linear-gradient(135deg,#4F6BFF,#8F6EFF);color:#fff}
+.rn-pri:disabled{opacity:.9;cursor:progress}
+.rn-pri.ok{background:#1f9d62}
+.rn-bar-busy{position:absolute;left:0;right:0;top:0;height:3px;opacity:0;background:linear-gradient(90deg,transparent,#8F6EFF,transparent);background-size:50% 100%;background-repeat:no-repeat}
+.rn-card.busy .rn-bar-busy{opacity:1;animation:crmBar 1.05s linear infinite}
+.rn-card.busy input,.rn-card.busy select{pointer-events:none;opacity:.6}
+@media(max-width:640px){.rn-grid{grid-template-columns:1fr}}
 /* ===== Экран входа: Controlling System (редакционный стиль) ===== */
 #loginScreen{--l-bg:#05060b;--l-bg2:#0b0d19;--l-fg:#f2f3fb;--l-mut:#8a91b8;--l-bd:rgba(160,170,255,.2);--l-acc:#7f86ff;--l-acc2:#b690ff;--l-glow:rgba(110,90,255,.34);--l-red:#ff9a90;--l-ink:#f2f3fb;--l-onink:#07080f;background:var(--l-bg2)!important;align-items:stretch!important;justify-content:stretch!important}
 :root:not([data-theme="dark"]) #loginScreen{--l-bg:#f3f4f9;--l-bg2:#eceef8;--l-fg:#10142b;--l-mut:#6a7190;--l-bd:rgba(30,40,100,.16);--l-acc:#4a52ff;--l-acc2:#9a6bff;--l-glow:rgba(110,100,255,.26);--l-red:#c0392b;--l-ink:#10142b;--l-onink:#fff}
@@ -3165,6 +3210,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
       <button class="nav-item" data-section="taxes" onclick="showSection('taxes')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h1"/><path d="M14 11h1"/></svg></span><span class="nav-label">Налоги</span></button>
+      <button class="nav-item" data-section="rental" onclick="showSection('rental')"><span class="nav-icon"><i class='ti ti-building-store' aria-hidden='true'></i></span><span class="nav-label">Аренда</span></button>
       <button class="nav-item nav-group-toggle" id="vzaimoraschetyToggle" onclick="toggleNavGroup('vzaimoraschetyToggle','vzaimoraschetySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
         <span class="nav-label">Взаиморасчёты</span>
@@ -4301,6 +4347,25 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </div>
     </section>
 
+    <section id="section-rental" class="content-section">
+    <div class="panel">
+      <h2>Аренда <span class="sub">помещения, сданные в аренду - видно только администраторам</span></h2>
+      <div class="rn-stats" id="rnStats"></div>
+      <div class="rn-bar">
+        <input type="text" id="rnSearch" placeholder="Поиск: контрагент, договор, адрес, локация" oninput="rnRender()">
+        <select id="rnOrgFilter" onchange="rnRender()"><option value="">Все организации</option></select>
+        <button class="rn-add" onclick="rnOpen()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button>
+      </div>
+      <div id="rnLoading" class="rn-loading"><span class="rn-spin"></span> Загрузка...</div>
+      <div class="table-wrap" id="rnWrap" style="display:none;">
+        <table class="invoices rn-table">
+          <thead><tr><th>№</th><th>Бренд</th><th>Локация</th><th>Адрес</th><th>Контрагент</th><th>Тип</th><th>Договор</th><th>Срок до</th><th class="rn-r">Площадь, м²</th><th>Коммуналка</th><th class="rn-r">Сумма</th><th></th></tr></thead>
+          <tbody id="rnBody"></tbody>
+        </table>
+      </div>
+    </div>
+    </section>
+
     <section id="section-plan" class="content-section">
     <div class="panel">
       <h2>План контроля <span class="sub">личный план — виден только вам</span></h2>
@@ -4738,6 +4803,31 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
   </div>
 </div>
 
+
+<div id="rnModal" class="rn-ov">
+  <div class="rn-card" id="rnCard">
+    <div class="rn-bar-busy"></div>
+    <h3 id="rnTitle">Новая запись</h3>
+    <div class="rn-grid">
+      <label class="rn-f rn-w2">Организация<input type="text" id="rnfOrg" list="rnOrgList" autocomplete="off"><datalist id="rnOrgList"></datalist></label>
+      <label class="rn-f">Бренд<input type="text" id="rnfBrand"></label>
+      <label class="rn-f">Локация<input type="text" id="rnfLocation"></label>
+      <label class="rn-f rn-w2">Адрес<input type="text" id="rnfAddress"></label>
+      <label class="rn-f rn-w2">Контрагент<input type="text" id="rnfTenant"></label>
+      <label class="rn-f">Тип лица<select id="rnfPtype"><option value=""></option><option value="физ">физ</option><option value="юр">юр</option></select></label>
+      <label class="rn-f">Коммуналка<select id="rnfUtil"><option value=""></option><option value="орг">орг</option><option value="конт">конт</option></select></label>
+      <label class="rn-f rn-w2">Договор<input type="text" id="rnfContract" placeholder="№ 13/01 05.01.2026"></label>
+      <label class="rn-f">Срок до<input type="date" id="rnfEnd"></label>
+      <label class="rn-f">Площадь, м²<input type="text" inputmode="decimal" id="rnfArea"></label>
+      <label class="rn-f rn-w2">Сумма<input type="text" inputmode="decimal" id="rnfSum"></label>
+    </div>
+    <div class="rn-err" id="rnErr"></div>
+    <div class="rn-act">
+      <button class="rn-b" onclick="rnClose()">Отмена</button>
+      <button class="rn-b rn-pri" id="rnSave" onclick="rnSave()"><span class="rn-bt">Сохранить</span></button>
+    </div>
+  </div>
+</div>
 
 <div id="announcementModal" class="modal-overlay">
   <div class="modal-card">
@@ -6007,6 +6097,125 @@ const NAV_GROUPS = [
   { toggleId: "vzaimoraschetyToggle", subgroupId: "vzaimoraschetySubgroup", sections: VZAIMORASCHETY_SECTIONS },
 ];
 
+
+/* ============================================================
+   АРЕНДА (только admin)
+   ============================================================ */
+let RN = { rows: [], editing: null, busy: false };
+const rnNum = v => { const n = parseFloat(String(v == null ? "" : v).replace(/\s/g, "").replace(",", ".")); return isFinite(n) ? n : 0; };
+const rnFmt = n => Number(n).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+function rnDate(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); return m ? `${m[3]}.${m[2]}.${m[1]}` : (iso || ""); }
+function rnEndCls(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); if (!m) return "";
+  const d = (new Date(+m[1], +m[2] - 1, +m[3]) - new Date().setHours(0, 0, 0, 0)) / 864e5;
+  return d < 0 ? "bad" : d <= 30 ? "warn" : "";
+}
+async function rnLoad() {
+  document.getElementById("rnLoading").style.display = "flex";
+  try {
+    const d = await apiCall("getRentals", {});
+    RN.rows = d.rows || [];
+    document.getElementById("rnLoading").style.display = "none";
+    document.getElementById("rnWrap").style.display = "";
+    rnRender(true);
+  } catch (e) {
+    document.getElementById("rnLoading").innerHTML = "Не удалось загрузить: " + escapeHtml(e.message);
+  }
+}
+function rnIsEmpty(r) { return !(r.tenant || r.contract || rnNum(r.sum) || rnNum(r.area)); }
+function rnRender(anim) {
+  const q = (document.getElementById("rnSearch").value || "").trim().toLowerCase();
+  const sel = document.getElementById("rnOrgFilter");
+  const orgs = [...new Set(RN.rows.map(r => r.org))];
+  if (sel.options.length - 1 !== orgs.length) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Все организации</option>' + orgs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    sel.value = orgs.includes(cur) ? cur : "";
+  }
+  document.getElementById("rnOrgList").innerHTML = orgs.map(o => `<option value="${escapeHtml(o)}">`).join("");
+  const of = sel.value;
+  const rows = RN.rows.filter(r => (!of || r.org === of) &&
+    (!q || [r.org, r.brand, r.location, r.address, r.tenant, r.contract].join(" ").toLowerCase().includes(q)));
+  const real = rows.filter(r => !rnIsEmpty(r));
+  document.getElementById("rnStats").innerHTML =
+    `<div class="rn-st"><b>${real.length}</b><span>Договоров</span></div>` +
+    `<div class="rn-st"><b>${rnFmt(real.reduce((a, r) => a + rnNum(r.area), 0))}</b><span>Площадь, м²</span></div>` +
+    `<div class="rn-st"><b>${rnFmt(real.reduce((a, r) => a + rnNum(r.sum), 0))}</b><span>Сумма</span></div>`;
+  const groups = new Map();
+  rows.forEach(r => { if (!groups.has(r.org)) groups.set(r.org, []); groups.get(r.org).push(r); });
+  let html = "", n = 0, delay = 0;
+  groups.forEach((list, org) => {
+    const rr = list.filter(r => !rnIsEmpty(r));
+    html += `<tr class="rn-gh"><td colspan="12">${escapeHtml(org)}<span class="rn-gs">${rr.length ? rr.length + " дог. · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.area), 0)) + " м² · " + rnFmt(rr.reduce((a, r) => a + rnNum(r.sum), 0)) : "аренды нет"}</span></td></tr>`;
+    list.forEach(r => {
+      const ac = `<td class="rn-ac"><button onclick="rnOpen(${r.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="rnDelete(${r.rowIndex}, this)" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td>`;
+      const cls = anim ? ` class="rn-in" style="animation-delay:${Math.min(delay++, 20) * 20}ms"` : "";
+      if (rnIsEmpty(r)) {
+        html += `<tr data-rn="${r.rowIndex}"${cls.replace('class="rn-in"', 'class="rn-none rn-in"') || ' class="rn-none"'}><td></td><td>${escapeHtml(r.brand)}</td><td colspan="9">Нет договоров аренды</td>${ac}</tr>`;
+        return;
+      }
+      const ec = rnEndCls(r.endDate);
+      html += `<tr data-rn="${r.rowIndex}"${cls}><td style="color:var(--muted);">${++n}</td><td>${escapeHtml(r.brand)}</td><td>${escapeHtml(r.location)}</td>` +
+        `<td class="rn-addr">${escapeHtml(r.address)}</td><td>${escapeHtml(r.tenant)}</td><td>${escapeHtml(r.ptype)}</td><td>${escapeHtml(r.contract)}</td>` +
+        `<td><span class="rn-end ${ec}">${escapeHtml(rnDate(r.endDate)) || "—"}</span></td>` +
+        `<td class="rn-r">${r.area ? rnFmt(rnNum(r.area)) : ""}</td><td>${escapeHtml(r.utilities)}</td><td class="rn-r">${r.sum ? rnFmt(rnNum(r.sum)) : ""}</td>${ac}</tr>`;
+    });
+  });
+  document.getElementById("rnBody").innerHTML = html || `<tr><td colspan="12" style="color:var(--muted);">Ничего не найдено</td></tr>`;
+}
+function rnOpen(rowIndex) {
+  const r = rowIndex ? RN.rows.find(x => x.rowIndex === rowIndex) : null;
+  RN.editing = r ? r.rowIndex : null;
+  document.getElementById("rnTitle").textContent = r ? "Изменить запись" : "Новая запись";
+  const set = (id, v) => { document.getElementById(id).value = v || ""; };
+  set("rnfOrg", r ? r.org : document.getElementById("rnOrgFilter").value); set("rnfBrand", r && r.brand); set("rnfLocation", r && r.location);
+  set("rnfAddress", r && r.address); set("rnfTenant", r && r.tenant); set("rnfPtype", r && r.ptype); set("rnfUtil", r && r.utilities);
+  set("rnfContract", r && r.contract); set("rnfEnd", r && /^\d{4}-\d{2}-\d{2}$/.test(r.endDate) ? r.endDate : ""); set("rnfArea", r && r.area); set("rnfSum", r && r.sum);
+  document.getElementById("rnErr").textContent = "";
+  const ov = document.getElementById("rnModal");
+  ov.style.display = "flex"; requestAnimationFrame(() => ov.classList.add("open"));
+}
+function rnClose() {
+  if (RN.busy) return;
+  const ov = document.getElementById("rnModal"); ov.classList.remove("open");
+  setTimeout(() => { if (!ov.classList.contains("open")) ov.style.display = "none"; }, 280);
+}
+async function rnSave() {
+  if (RN.busy) return;
+  const g = id => document.getElementById(id).value.trim();
+  const card = document.getElementById("rnCard"), btn = document.getElementById("rnSave"), err = document.getElementById("rnErr");
+  const fail = msg => { err.textContent = msg; card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
+  if (!g("rnfOrg")) return fail("Укажите организацию");
+  RN.busy = true; card.classList.add("busy"); btn.disabled = true;
+  btn.innerHTML = '<span class="rn-spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4)"></span><span class="rn-bt">Сохраняем...</span>';
+  try {
+    await apiCall("saveRental", { rowIndex: RN.editing, org: g("rnfOrg"), brand: g("rnfBrand"), location: g("rnfLocation"), address: g("rnfAddress"),
+      tenant: g("rnfTenant"), ptype: g("rnfPtype"), contract: g("rnfContract"), endDate: g("rnfEnd"), area: g("rnfArea"), utilities: g("rnfUtil"), sum: g("rnfSum") });
+    btn.classList.add("ok"); btn.innerHTML = '<i class="ti ti-check mc-ok" aria-hidden="true"></i><span class="rn-bt">Сохранено</span>';
+    await new Promise(r => setTimeout(r, 650));
+    RN.busy = false; card.classList.remove("busy"); rnClose();
+    await rnLoad();
+  } catch (e) {
+    RN.busy = false; card.classList.remove("busy"); fail("Не удалось сохранить: " + e.message);
+  } finally {
+    RN.busy = false; btn.disabled = false; btn.classList.remove("ok"); btn.innerHTML = '<span class="rn-bt">Сохранить</span>';
+  }
+}
+async function rnDelete(rowIndex, btnEl) {
+  if (!await uiConfirm("Удалить эту запись об аренде?")) return;
+  const tr = btnEl.closest("tr"); btnEl.disabled = true;
+  btnEl.innerHTML = '<span class="rn-spin"></span>';
+  try {
+    await apiCall("deleteRental", { rowIndex });
+    tr.classList.add("rn-out");
+    await new Promise(r => setTimeout(r, 300));
+    await rnLoad();
+  } catch (e) {
+    btnEl.disabled = false; btnEl.innerHTML = '<i class="ti ti-trash" aria-hidden="true"></i>';
+    tr.classList.add("rn-in"); alert("Не удалось удалить: " + e.message);
+  }
+}
+
 function showSection(name) {
   document.querySelectorAll(".content-section").forEach(el => el.classList.remove("active"));
   const target = document.getElementById("section-" + name);
@@ -6072,6 +6281,9 @@ function showSection(name) {
   }
   if (name === "plan" && currentRole === "admin") {
     planLoad();
+  }
+  if (name === "rental" && currentRole === "admin") {
+    rnLoad();
   }
   if (name === "approvers" && currentRole === "admin") {
     loadApproverSheet();
@@ -6713,7 +6925,7 @@ syncThemeButtonLabel();
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="plan"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="approvers"], .nav-item[data-section="plan"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
