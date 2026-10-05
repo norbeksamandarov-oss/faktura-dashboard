@@ -10634,7 +10634,7 @@ function rcMatch(c1all, src) {
 }
 const RC_TABS = [
   ["missing", "Нет в 1С", true], ["numdiff", "Другой номер", false], ["sumdiff", "Сумма отличается", true],
-  ["datediff", "Другая дата", false], ["only1c", "Только в 1С", false], ["dup", "Дубли в 1С", true], ["card", "Корп. карта", false], ["imp", "Импорт (валюта)", false]
+  ["datediff", "Другая дата", false], ["only1c", "Лишние в 1С", true], ["dup", "Дубли в 1С", true], ["card", "Корп. карта", false], ["imp", "Импорт (валюта)", false]
 ];
 function rcRun(org) {
   RC.org = org;
@@ -10644,7 +10644,7 @@ function rcRun(org) {
   const sm = document.getElementById("rcSummary");
   sm.innerHTML = tile(R.total, "В налоговом реестре", false, "file-text") + tile(R.cs.length, "В 1С (организация)", false, "database") + tile(R.found, "Найдено в 1С", false, "circle-check") +
     tile(R.cats.missing.length, "Нет в 1С", R.cats.missing.length > 0, "circle-x") + tile(R.cats.sumdiff.length, "Сумма отличается", R.cats.sumdiff.length > 0, "alert-triangle") +
-    tile(R.cats.only1c.length, "Только в 1С", false, "arrow-back-up");
+    tile(R.cats.only1c.length, "Лишние в 1С", R.cats.only1c.length > 0, "arrow-back-up");
   sm.style.display = "";
   const first = RC_TABS.find(t => R.cats[t[0]].length) || RC_TABS[0];
   RC.tab = first[0];
@@ -10655,7 +10655,7 @@ function rcRun(org) {
   const rules = document.getElementById("rcRules");
   rules.style.display = "";
   rules.innerHTML = "Как считается: сначала ИНН + номер счёта; затем номер + сумма (допуск 1 сум); затем ИНН + сумма (номер в 1С записан иначе); затем платежи «Корпоративная карта» по сумме. " +
-    "Номера сравниваются без пробелов и ведущих нулей. Платежи корпоративной картой без ЭСФ в «Только в 1С» не попадают" + (R.cardOnly ? " (таких в 1С: " + R.cardOnly + ")" : "") + ". Документы в валюте (USD, RUB, EUR и др., не сум) в сверку не входят - это импорт, они вынесены в отдельную вкладку.";
+    "Номера сравниваются без пробелов и ведущих нулей. «Лишние в 1С» - документы, которых нет в налоговом реестре. Платежи корпоративной картой без ЭСФ и валютный импорт сюда не попадают" + (R.cardOnly ? " (таких в 1С: " + R.cardOnly + ")" : "") + ". Документы в валюте (USD, RUB, EUR и др., не сум) в сверку не входят - это импорт, они вынесены в отдельную вкладку.";
 }
 function rcRenderTabs() {
   const R = RC.res; const box = document.getElementById("rcTabsRes");
