@@ -2398,6 +2398,7 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .rn-f input:focus,.rn-f select:focus{outline:none;border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
 .rn-f{font-weight:700;font-size:10.5px;letter-spacing:.03em}
 .rn-w2{grid-column:1/-1}
+.rn-f.bad{color:#d92d20}.rn-f.bad input,.rn-f.bad select{border-color:#d92d20;box-shadow:0 0 0 3px rgba(217,45,32,.15)}
 .rn-err{min-height:18px;margin-top:10px;font-size:13px;color:#d92d20}
 .rn-act{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
 .rn-b{border-radius:12px;padding:10px 18px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;min-width:110px;display:inline-flex;justify-content:center;align-items:center;gap:8px;transition:transform .1s}
@@ -4822,17 +4823,17 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <div class="rn-bar-busy"></div>
     <h3 id="rnTitle">Новая запись</h3>
     <div class="rn-grid">
-      <label class="rn-f rn-w2">Организация<input type="text" id="rnfOrg" list="rnOrgList" autocomplete="off"><datalist id="rnOrgList"></datalist></label>
-      <label class="rn-f">Бренд<input type="text" id="rnfBrand"></label>
-      <label class="rn-f">Локация<input type="text" id="rnfLocation"></label>
-      <label class="rn-f rn-w2">Адрес<input type="text" id="rnfAddress"></label>
-      <label class="rn-f rn-w2">Контрагент<input type="text" id="rnfTenant"></label>
-      <label class="rn-f">Тип лица<select id="rnfPtype"><option value=""></option><option value="физ">физ</option><option value="юр">юр</option></select></label>
-      <label class="rn-f">Коммуналка<select id="rnfUtil"><option value=""></option><option value="орг">орг</option><option value="конт">конт</option></select></label>
-      <label class="rn-f rn-w2">Договор<input type="text" id="rnfContract" placeholder="№ 13/01 05.01.2026"></label>
-      <label class="rn-f">Срок до<input type="text" id="rnfEnd" inputmode="numeric" maxlength="10" placeholder="дд.мм.гггг"></label>
-      <label class="rn-f">Площадь, м²<input type="text" inputmode="decimal" id="rnfArea"></label>
-      <label class="rn-f rn-w2">Сумма<input type="text" inputmode="decimal" id="rnfSum"></label>
+      <label class="rn-f rn-w2" data-l="Организация">Организация<input type="text" id="rnfOrg" list="rnOrgList" autocomplete="off"><datalist id="rnOrgList"></datalist></label>
+      <label class="rn-f" data-l="Бренд">Бренд<input type="text" id="rnfBrand"></label>
+      <label class="rn-f" data-l="Локация">Локация<input type="text" id="rnfLocation"></label>
+      <label class="rn-f rn-w2" data-l="Адрес">Адрес<input type="text" id="rnfAddress"></label>
+      <label class="rn-f rn-w2" data-l="Контрагент">Контрагент<input type="text" id="rnfTenant"></label>
+      <label class="rn-f" data-l="Тип лица">Тип лица<select id="rnfPtype"><option value="" disabled hidden>Выберите</option><option value="физ">физ</option><option value="юр">юр</option></select></label>
+      <label class="rn-f" data-l="Коммуналка">Коммуналка<select id="rnfUtil"><option value="" disabled hidden>Выберите</option><option value="орг">орг</option><option value="конт">конт</option></select></label>
+      <label class="rn-f rn-w2" data-l="Договор">Договор<input type="text" id="rnfContract" placeholder="№ 13/01 05.01.2026"></label>
+      <label class="rn-f" data-l="Срок до">Срок до<input type="text" id="rnfEnd" inputmode="numeric" maxlength="10" placeholder="дд.мм.гггг"></label>
+      <label class="rn-f" data-l="Площадь, м²">Площадь, м²<input type="text" inputmode="decimal" id="rnfArea"></label>
+      <label class="rn-f rn-w2" data-l="Сумма">Сумма<input type="text" inputmode="decimal" id="rnfSum"></label>
     </div>
     <div class="rn-err" id="rnErr"></div>
     <div class="rn-act">
@@ -6185,6 +6186,7 @@ function rnOpen(rowIndex) {
   set("rnfAddress", r && r.address); set("rnfTenant", r && r.tenant); set("rnfPtype", r && r.ptype); set("rnfUtil", r && r.utilities);
   set("rnfContract", r && r.contract); set("rnfEnd", r ? rnDate(r.endDate) : ""); set("rnfArea", r && r.area); set("rnfSum", r && r.sum);
   document.getElementById("rnErr").textContent = "";
+  document.querySelectorAll("#rnCard .rn-f.bad").forEach(x => x.classList.remove("bad"));
   const ov = document.getElementById("rnModal");
   ov.style.display = "flex"; requestAnimationFrame(() => ov.classList.add("open"));
 }
@@ -6198,13 +6200,15 @@ async function rnSave() {
   const g = id => document.getElementById(id).value.trim();
   const card = document.getElementById("rnCard"), btn = document.getElementById("rnSave"), err = document.getElementById("rnErr");
   const fail = msg => { err.textContent = msg; card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
-  if (!g("rnfOrg")) return fail("Укажите организацию");
-  let endIso = "";
-  if (g("rnfEnd")) {
-    const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(g("rnfEnd"));
-    if (!m || +m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) return fail("Срок: дата в формате дд.мм.гггг");
-    endIso = `${m[3]}-${m[2]}-${m[1]}`;
-  }
+  const ids = ["rnfOrg", "rnfBrand", "rnfLocation", "rnfAddress", "rnfTenant", "rnfPtype", "rnfUtil", "rnfContract", "rnfEnd", "rnfArea", "rnfSum"];
+  card.querySelectorAll(".rn-f.bad").forEach(x => x.classList.remove("bad"));
+  const empty = ids.filter(id => !g(id));
+  empty.forEach(id => document.getElementById(id).closest(".rn-f").classList.add("bad"));
+  if (empty.length) return fail("Заполните все поля: " + empty.map(id => document.getElementById(id).closest(".rn-f").dataset.l).join(", "));
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(g("rnfEnd"));
+  if (!m || +m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) { document.getElementById("rnfEnd").closest(".rn-f").classList.add("bad"); return fail("Срок: дата в формате дд.мм.гггг"); }
+  const endIso = `${m[3]}-${m[2]}-${m[1]}`;
+  if (!(rnNum(g("rnfArea")) > 0) || !(rnNum(g("rnfSum")) > 0)) { ["rnfArea", "rnfSum"].forEach(id => { if (!(rnNum(g(id)) > 0)) document.getElementById(id).closest(".rn-f").classList.add("bad"); }); return fail("Площадь и сумма должны быть числом больше нуля"); }
   RN.busy = true; card.classList.add("busy"); btn.disabled = true;
   btn.innerHTML = '<span class="rn-spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.4)"></span><span class="rn-bt">Сохраняем...</span>';
   try {
