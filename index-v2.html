@@ -10585,7 +10585,8 @@ function rcMatch(c1, src) {
   const isCard = x => x.name.toUpperCase().indexOf("КОРПОРАТИВНАЯ КАРТА") >= 0;
   const res = src.map(r => {
     let hit = -1, k = "";
-    for (const i of (by[r.id + "|" + r.no] || [])) if (!used.has(i)) { hit = i; k = "exact"; break; }
+    const cand = (by[r.id + "|" + r.no] || []).filter(i => !used.has(i));
+    if (cand.length) { hit = cand.find(i => sameSum(cs[i].sum, r.total)); if (hit === undefined) hit = cand[0]; k = "exact"; }
     if (hit < 0) for (const x of cs) { if (used.has(x.i) || x.no !== r.no) continue; if (sameSum(x.sum, r.total)) { hit = x.i; k = "no+sum"; break; } }
     if (hit < 0 && r.id && r.total > 0) for (const x of cs) { if (used.has(x.i) || x.id !== r.id) continue; if (sameSum(x.sum, r.total)) { hit = x.i; k = "id+sum"; break; } }
     if (hit < 0 && r.total > 0) for (const x of cs) { if (used.has(x.i) || !isCard(x)) continue; if (sameSum(x.sum, r.total)) { hit = x.i; k = "card"; break; } }
