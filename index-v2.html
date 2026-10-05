@@ -7891,6 +7891,9 @@ function renderInvoicesTable() {
         ${(classifyStatus(r.status) === "sent" || classifyStatus(r.status) === "pendingboss") && currentRole === "admin" ? `
           <button class="remind-btn recall-btn" title="Отозвать - удалит сообщение из чата (у сотрудника или у руководителя, смотря на каком этапе счёт) и вернёт его в 'Не отправлено' для переназначения." onclick="recallInvoice('${r.id}', this)"><i class='ti ti-trash' aria-hidden='true'></i></button>
         ` : ""}
+        ${classifyStatus(r.status) !== "sent" && classifyStatus(r.status) !== "pendingboss" && currentRole === "admin" ? `
+          <button class="remind-btn recall-btn" title="Удалить счёт из списка" onclick="deleteInvoiceRow(${r.rowIndex}, '${r.id}', this)"><i class='ti ti-trash-x' aria-hidden='true'></i></button>
+        ` : ""}
         ${(classifyStatus(r.status) === "rejected" || classifyStatus(r.status) === "notmine") && currentRole === "admin" ? `
           <button class="remind-btn recall-btn" title="Вернуть в «Не отправлено» - очистит ответственного, затем можно назначить другого и отправить заново" onclick="resetInvoice(${r.rowIndex}, this)"><i class='ti ti-arrow-back-up' aria-hidden='true'></i></button>
         ` : ""}</span></span></td>
@@ -11336,6 +11339,27 @@ async function sendManualReminder(facturaid, btnEl) {
   } catch (e) {
     alert("Не удалось отправить напоминание: " + e.message);
     btnEl.textContent = original;
+    btnEl.disabled = false;
+  }
+}
+
+async function deleteInvoiceRow(rowIndex, id, btnEl) {
+  const r = invoiceRows.find(x => x.id === id);
+  const confirmed = await uiConfirm(
+    "Удалить счёт из списка?\n\n" +
+    (r ? "№ " + r.no + " · " + r.buyer + " · " + r.sum + "\n\n" : "") +
+    "Строка будет удалена полностью. Это действие нельзя отменить (оно запишется в журнал)."
+  );
+  if (!confirmed) return;
+  btnEl.disabled = true;
+  btnEl.innerHTML = "<i class='ti ti-hourglass' aria-hidden='true'></i>";
+  try {
+    await apiCall("deleteInvoice", { rowIndex, id });
+    await loadAllData(true);
+    renderInvoicesTable();
+  } catch (e) {
+    alert("Не удалось удалить: " + e.message);
+    btnEl.innerHTML = "<i class='ti ti-trash-x' aria-hidden='true'></i>";
     btnEl.disabled = false;
   }
 }
