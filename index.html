@@ -2594,6 +2594,35 @@ html .plan-ti:focus{background:var(--sk-glass)!important;box-shadow:0 0 0 3px rg
 .rc-bar{flex:0 0 220px;height:4px;border-radius:4px;background:var(--border);overflow:hidden}
 .rc-bar i{display:block;height:100%;width:40%;border-radius:4px;background:linear-gradient(90deg,#4f7dff,#8a52ff);animation:rcBar 1.1s ease-in-out infinite}
 @keyframes rcBar{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+/* --- анимации сверки поступлений --- */
+@keyframes rcRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes rcPop{0%{transform:scale(.3);opacity:0}65%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes rcDraw{to{stroke-dashoffset:0}}
+@keyframes rcGlow{0%{box-shadow:0 0 0 0 rgba(0,180,120,.45)}100%{box-shadow:0 0 0 18px rgba(0,180,120,0)}}
+@keyframes rcSpin{to{transform:rotate(360deg)}}
+@keyframes rcDone{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+.rc-drop{transition:border-color .25s,background .25s,transform .25s,box-shadow .25s}
+.rc-drop:hover{transform:translateY(-2px)}
+.rc-drop.over{transform:scale(1.015);border-color:#6a58ee;background:rgba(106,88,238,.1)}
+.rc-drop.ok{animation:rcGlow .9s ease-out 1}
+.rc-drop.ok .rc-drop-t::after{display:none}
+.rc-chk{display:none;width:20px;height:20px;margin-left:10px;vertical-align:-4px}
+.rc-drop.ok .rc-chk{display:inline-block;animation:rcPop .45s cubic-bezier(.2,.9,.3,1.3) both}
+.rc-chk circle{fill:var(--green-fg)}
+.rc-chk path{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:18;stroke-dashoffset:18;animation:rcDraw .35s .25s ease-out forwards}
+.rc-busy.done .rc-bar i{width:100%;animation:rcDone .4s ease-out;transform-origin:left;background:linear-gradient(90deg,#00b478,#00d4a0)}
+.rc-busy.done #rcBusyT{color:var(--green-fg);font-weight:700}
+#rcSummary>div{animation:rcRise .55s cubic-bezier(.2,.8,.2,1) both}
+#rcSummary>div:nth-child(2){animation-delay:.06s}#rcSummary>div:nth-child(3){animation-delay:.12s}
+#rcSummary>div:nth-child(4){animation-delay:.18s}#rcSummary>div:nth-child(5){animation-delay:.24s}#rcSummary>div:nth-child(6){animation-delay:.3s}
+.rc-orgrow,.rc-restabs,.rc-search,.rc-rules{animation:rcRise .5s ease both}
+.rc-rt{position:relative;border-bottom-color:transparent!important}
+.rc-rt::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,#4f7dff,#8a52ff);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.rc-rt.on::after{transform:scaleX(1)}
+#rcTable tbody tr{animation:rcRise .4s ease both;animation-delay:calc(var(--i,0)*22ms)}
+.rc-btn.busy{pointer-events:none;opacity:.85}
+.rc-btn.busy i{display:inline-block;animation:rcSpin .7s linear infinite}
+@media (prefers-reduced-motion:reduce){#rcSummary>div,.rc-orgrow,.rc-restabs,.rc-search,.rc-rules,#rcTable tbody tr,.rc-drop.ok,.rc-chk,.rc-chk path{animation:none!important}.rc-chk path{stroke-dashoffset:0}}
 .rc-orgrow{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .rc-orgrow label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .rc-orgrow select{background:transparent;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--text);max-width:320px}
@@ -4333,12 +4362,12 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <p class="analytics-note" style="margin:0 0 18px;">Загрузите два файла: налоговый реестр полученных счетов-фактур (CSV) и реестр поступлений из 1С (Excel). Сверка запустится сама, как только оба файла загружены. Файлы нигде не сохраняются - всё считается только у вас в браузере.</p>
       <div class="rc-drops">
         <div class="rc-drop" id="rcDropTax" onclick="document.getElementById('rcFileTax').click()">
-          <div class="rc-drop-t">Налоговый реестр</div>
+          <div class="rc-drop-t">Налоговый реестр<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
           <div class="rc-drop-s" id="rcMetaTax">CSV с сайта налоговой (полученные счета-фактуры). Перетащите файл сюда или нажмите</div>
           <input type="file" id="rcFileTax" accept=".csv,.txt,.xlsx,.xls" hidden onchange="rcPickFile('tax', this)">
         </div>
         <div class="rc-drop" id="rcDrop1c" onclick="document.getElementById('rcFile1c').click()">
-          <div class="rc-drop-t">Реестр 1С</div>
+          <div class="rc-drop-t">Реестр 1С<svg class="rc-chk" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10"/><path d="M5.5 10.5l3 3 6-6.5"/></svg></div>
           <div class="rc-drop-s" id="rcMeta1c">Excel из 1С: поступления за период (с колонкой «Организация»). Перетащите файл сюда или нажмите</div>
           <input type="file" id="rcFile1c" accept=".xlsx,.xls,.csv" hidden onchange="rcPickFile('c1', this)">
         </div>
@@ -10407,9 +10436,21 @@ function rcErr(msg) {
   e.textContent = msg || "";
   if (msg) { e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); }
 }
-function rcBusy(on, t) {
-  document.getElementById("rcBusy").style.display = on ? "flex" : "none";
+function rcBusy(on, t, done) {
+  const b = document.getElementById("rcBusy");
+  b.style.display = on ? "flex" : "none";
+  b.classList.toggle("done", !!done);
   if (t) document.getElementById("rcBusyT").textContent = t;
+}
+const rcWait = ms => new Promise(r => setTimeout(r, ms));
+function rcCountUp(root) {
+  root.querySelectorAll(".num").forEach(el => {
+    const to = parseInt(el.textContent, 10); if (isNaN(to) || to < 2) return;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t0 = performance.now(), dur = 800;
+    const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = to; };
+    el.textContent = 0; requestAnimationFrame(step);
+  });
 }
 function rcNN(x) {
   let s = String(x == null ? "" : x).trim().toUpperCase().replace(/\s+/g, "");
@@ -10538,7 +10579,7 @@ async function rcLoad(kind, file) {
     rcBusy(true, "Читаем файл…");
     const rows = await rcReadRows(file);
     if (kind === "tax") RC.tax = rcParseTax(rows); else RC.c1 = rcParse1c(rows);
-    drop.classList.add("ok");
+    drop.classList.remove("ok"); void drop.offsetWidth; drop.classList.add("ok");
     meta.textContent = file.name + " · " + (kind === "tax" ? RC.tax.length : RC.c1.length) + " строк";
   } catch (e) {
     if (kind === "tax") RC.tax = null; else RC.c1 = null;
@@ -10555,8 +10596,10 @@ function rcWords(s) {
   return String(s || "").toUpperCase().replace(/[^A-ZА-Я0-9]+/g, " ").split(" ").filter(w => w.length >= 3 && !stop[w]);
 }
 async function rcStart() {
-  rcBusy(true, "Сверяем…");
-  await new Promise(r => setTimeout(r, 450));
+  rcBusy(true, "Читаем документы…");
+  await rcWait(450);
+  rcBusy(true, "Сопоставляем " + RC.tax.length + " счетов-фактур с 1С…");
+  await rcWait(650);
   const cnt = {}; RC.c1.forEach(r => { cnt[r.org] = (cnt[r.org] || 0) + 1; });
   RC.orgs = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
   const bc = {}; RC.tax.forEach(r => { if (r.buyer) bc[r.buyer] = (bc[r.buyer] || 0) + 1; });
@@ -10575,6 +10618,8 @@ async function rcStart() {
     : "Не удалось определить автоматически - выберите организацию";
   document.getElementById("rcOrgRow").style.display = "flex";
   rcRun(best);
+  rcBusy(true, "Готово", true);
+  await rcWait(900);
   rcBusy(false);
   try { apiCall("auditNote", { tag: "RECONCILE_RECV", note: "org=" + best + "; tax=" + RC.tax.length + "; 1c=" + RC.c1.length }).catch(() => {}); } catch (e) {}
 }
@@ -10646,6 +10691,7 @@ function rcRun(org) {
     tile(R.cats.missing.length, "Нет в 1С", R.cats.missing.length > 0, "circle-x") + tile(R.cats.sumdiff.length, "Сумма отличается", R.cats.sumdiff.length > 0, "alert-triangle") +
     tile(R.cats.only1c.length, "Лишние в 1С", R.cats.only1c.length > 0, "arrow-back-up");
   sm.style.display = "";
+  rcCountUp(sm);
   const first = RC_TABS.find(t => R.cats[t[0]].length) || RC_TABS[0];
   RC.tab = first[0];
   rcRenderTabs();
@@ -10695,7 +10741,7 @@ function rcRenderTable() {
   const t = document.getElementById("rcTable");
   t.querySelector("thead").innerHTML = "<tr><th>№</th>" + cols.map(c => `<th${c[2] ? ' style="text-align:right"' : ""}>${c[0]}</th>`).join("") + "</tr>";
   t.querySelector("tbody").innerHTML = rows.length
-    ? rows.map((r, i) => "<tr><td>" + (i + 1) + "</td>" + cols.map(c => {
+    ? rows.map((r, i) => `<tr style="--i:${Math.min(i, 24)}"><td>` + (i + 1) + "</td>" + cols.map(c => {
       const v = c[1](r); const cls = c[2] === "n" ? "rc-num" : c[2] === "neg" ? "rc-num rc-neg" : "";
       return `<td${cls ? ` class="${cls}"` : ""}>${escapeHtml(String(v == null ? "" : v))}</td>`;
     }).join("") + "</tr>").join("")
@@ -10703,8 +10749,15 @@ function rcRenderTable() {
   t.style.display = "";
   document.getElementById("rcCount").textContent = rows.length + (rows.length !== all ? " из " + all : "") + " строк";
 }
-function rcExport() {
+async function rcExport() {
   if (!RC.res) return;
+  const btn = document.getElementById("rcExportBtn"), old = btn.innerHTML;
+  btn.classList.add("busy"); btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true'></i> Готовим файл…";
+  await rcWait(600);
+  try { rcExportNow(); btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово"; await rcWait(1200); } catch (e) { rcErr("Не удалось сформировать Excel"); }
+  btn.innerHTML = old; btn.classList.remove("busy");
+}
+function rcExportNow() {
   const wb = XLSX.utils.book_new(); const R = RC.res;
   const sum = [["Сверка поступлений"], ["Организация", RC.org], ["В налоговом реестре", R.total], ["В 1С", R.cs.length], ["Найдено в 1С", R.found], []];
   RC_TABS.forEach(t => sum.push([t[1], R.cats[t[0]].length]));
