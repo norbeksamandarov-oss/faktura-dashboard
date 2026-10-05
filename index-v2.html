@@ -4305,12 +4305,8 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </section>
 
     <section id="section-reconcile" class="content-section">
-    <h2 class="sec-title">Сверка с 1С <span class="sub">принятые счета и поступления</span></h2>
-    <div class="rc-tabs" id="rcTabs">
-      <button type="button" class="rc-tab on" data-t="acc" onclick="rcSwitchTab('acc')">Принятые счета</button>
-      <button type="button" class="rc-tab" id="rcTabRecv" data-t="recv" onclick="rcSwitchTab('recv')" style="display:none;">Поступления</button>
-    </div>
-    <div class="panel" id="rcAccPanel">
+    <h2 class="sec-title">Сверка с 1С <span class="sub">налоговый реестр и 1С</span></h2>
+    <div class="panel" id="rcAccPanel" style="display:none;">
       <p class="analytics-note" style="margin:0 0 16px;">Загрузите файл, выгруженный из 1С (Excel). Сверка сопоставит каждый ПРИНЯТЫЙ счёт-фактуру по 4 признакам: ИНН + Сумма + Номер счёта + Дата. Файл нигде не сохраняется - обработка происходит только у вас в браузере.</p>
 
       <div class="reconcile-upload">
@@ -4333,7 +4329,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         </table>
       </div>
     </div>
-    <div class="panel" id="rcRecvPanel" style="display:none;">
+    <div class="panel" id="rcRecvPanel">
       <p class="analytics-note" style="margin:0 0 18px;">Загрузите два файла: налоговый реестр полученных счетов-фактур (CSV) и реестр поступлений из 1С (Excel). Сверка запустится сама, как только оба файла загружены. Файлы нигде не сохраняются - всё считается только у вас в браузере.</p>
       <div class="rc-drops">
         <div class="rc-drop" id="rcDropTax" onclick="document.getElementById('rcFileTax').click()">
@@ -10404,15 +10400,8 @@ function renderReconcileResults(results) {
 
 /* ===== Сверка поступлений (налоговый реестр ↔ 1С), всё в браузере ===== */
 const RC = { tax: null, c1: null, orgs: [], res: null, tab: "missing", org: "" };
-function rcSwitchTab(t) {
-  document.querySelectorAll("#rcTabs .rc-tab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
-  document.getElementById("rcAccPanel").style.display = t === "acc" ? "" : "none";
-  document.getElementById("rcRecvPanel").style.display = t === "recv" ? "" : "none";
-}
-function rcShowTabForRole() {
-  const b = document.getElementById("rcTabRecv");
-  if (b) b.style.display = (typeof currentRole !== "undefined" && currentRole === "admin") ? "" : "none";
-}
+function rcSwitchTab() {}
+function rcShowTabForRole() {}
 function rcErr(msg) {
   const e = document.getElementById("rcErr");
   e.textContent = msg || "";
