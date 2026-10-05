@@ -4366,6 +4366,10 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
           <select id="rnOrgFilter" onchange="rnRender()"><option value="">Все организации</option></select>
         </div>
         <div class="filter-field">
+          <label>Локация</label>
+          <select id="rnLocFilter" onchange="rnRender()"><option value="">Все локации</option></select>
+        </div>
+        <div class="filter-field">
           <label>&nbsp;</label>
           <button id="rnAddBtn" onclick="rnOpen()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button>
         </div>
@@ -6147,8 +6151,15 @@ function rnRender(anim) {
     sel.value = orgs.includes(cur) ? cur : "";
   }
   document.getElementById("rnOrgList").innerHTML = orgs.map(o => `<option value="${escapeHtml(o)}">`).join("");
-  const of = sel.value;
-  const rows = RN.rows.filter(r => (!of || r.org === of) &&
+  const lsel = document.getElementById("rnLocFilter");
+  const locs = [...new Set(RN.rows.map(r => (r.location || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ru"));
+  if (lsel.options.length - 1 !== locs.length) {
+    const lc = lsel.value;
+    lsel.innerHTML = '<option value="">Все локации</option>' + locs.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+    lsel.value = locs.includes(lc) ? lc : "";
+  }
+  const of = sel.value, lf = lsel.value;
+  const rows = RN.rows.filter(r => (!of || r.org === of) && (!lf || (r.location || "").trim() === lf) &&
     (!q || [r.org, r.brand, r.location, r.address, r.tenant, r.contract].join(" ").toLowerCase().includes(q)));
   const real = rows.filter(r => !rnIsEmpty(r));
   document.getElementById("rnStats").innerHTML =
@@ -13454,7 +13465,7 @@ async function recallInvoice(facturaid, btnEl) {
       ['analyticsPeriodFrom','analyticsPeriodTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
       var s=document.getElementById('analyticsOrgFilter');if(s&&!s.__q){s.__q=1;selectField(s)}
       ['auditLogFrom','auditLogTo','taxDateFrom','taxDateTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
-      ['vzaOrg','vzaDept','salaryPeriodFilter','salaryOrgFilter','salaryPositionFilter','salaryTypeFilter','taxOrgFilter','gtdCurrencyFilter','approversTypeSelect','approverNewOrg','rnOrgFilter'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;selectField(el)}});
+      ['vzaOrg','vzaDept','salaryPeriodFilter','salaryOrgFilter','salaryPositionFilter','salaryTypeFilter','taxOrgFilter','gtdCurrencyFilter','approversTypeSelect','approverNewOrg','rnOrgFilter','rnLocFilter'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;selectField(el)}});
       ['dateFrom','dateTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
       ['dogovorOrgFilter', 'dogovorApproverFilter', 'dogovorStatusFilter', 'dogovorRealOrgFilter', 'dogovorRealApproverFilter', 'dogovorRealStatusFilter', 'doverennostOrgFilter', 'doverennostApproverFilter', 'doverennostStatusFilter', 'bankOrgFilter', 'bankApproverFilter', 'bankStatusFilter', 'realschetOrgFilter', 'realschetApproverFilter', 'realschetStatusFilter', 'zakaznaryadOrgFilter', 'zakaznaryadApproverFilter', 'zakaznaryadStatusFilter', 'otherreqPostOrgFilter', 'otherreqPostApproverFilter', 'otherreqPostStatusFilter', 'otherreqRealOrgFilter', 'otherreqRealApproverFilter', 'otherreqRealStatusFilter', 'bankTypeFilter'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;selectField(el)}});
       ['buyerFilter','departmentFilter','statusFilter','daysFilter','didoxFilter'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;selectField(el)}});
