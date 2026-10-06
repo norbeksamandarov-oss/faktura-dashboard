@@ -6395,6 +6395,7 @@ async function kpLoad(month) {
   document.getElementById("kpBody").style.display = "none";
   try {
     const d = await apiCall("getKpiState", { month: month || KP.month || "" });
+    d.brandModels = {}; (d.models || []).forEach(m => { (d.brandModels[m.brand] = d.brandModels[m.brand] || []).push(m.model); });
     KP.d = d; KP.month = d.month;
     document.getElementById("kpLoading").style.display = "none";
     document.getElementById("kpBody").style.display = "";
@@ -6467,15 +6468,31 @@ function kpHtmlSales(anim) {
 function kpHtmlSettings() {
   const d = KP.d;
   const ob = d.orgBrands.map(x => `<tr><td>${escapeHtml(kpOrg(x.org))}</td><td>${escapeHtml(x.brand)}</td><td class="rn-ac"><button onclick="kpOrgBrandForm(${x.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="kpDeleteRow('deleteKpiOrgBrand', ${x.rowIndex})" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join("");
-  const rt = d.rates.slice().sort((a, b) => a.brand.localeCompare(b.brand, "ru") || b.from.localeCompare(a.from)).map(x => `<tr><td>${escapeHtml(x.brand)}</td><td class="rn-r">${rnFmt(x.amount)}</td><td>${kpDate(x.from)}</td><td class="rn-ac"><button onclick="kpRateForm(${x.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="kpDeleteRow('deleteKpiRate', ${x.rowIndex})" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join("");
+  const rt = d.rates.slice().sort((a, b) => a.brand.localeCompare(b.brand, "ru") || b.from.localeCompare(a.from)).map(x => `<tr><td>${escapeHtml(x.brand)}</td><td>${x.model ? escapeHtml(x.model) : `<span style="color:var(--muted)">все модели</span>`}</td><td class="rn-r">${rnFmt(x.amount)}</td><td>${kpDate(x.from)}</td><td class="rn-ac"><button onclick="kpRateForm(${x.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="kpDeleteRow('deleteKpiRate', ${x.rowIndex})" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join("");
+  const md = (d.models || []).slice().sort((a, b) => a.brand.localeCompare(b.brand, "ru") || a.model.localeCompare(b.model, "ru")).map(x => `<tr><td>${escapeHtml(x.brand)}</td><td>${escapeHtml(x.model)}</td><td class="rn-ac"><button onclick="kpModelForm(${x.rowIndex})" title="Изменить"><i class="ti ti-pencil" aria-hidden="true"></i></button><button class="rn-del" onclick="kpDeleteRow('deleteKpiModel', ${x.rowIndex})" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join("");
   return `<div class="kp-sub"><span>Организация и бренд</span><button class="kp-add" onclick="kpOrgBrandForm()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button></div>` +
     `<p class="analytics-note" style="margin:0 0 10px;">Если у организации один бренд, он подставляется в продажу автоматически. Если несколько, бренд выбирается из этого списка.</p>` +
     `<div class="table-wrap"><table class="invoices rn-table"><thead><tr><th>Организация</th><th>Бренд</th><th></th></tr></thead><tbody>${ob || `<tr><td colspan="3" style="color:var(--muted);">Пока пусто</td></tr>`}</tbody></table></div>` +
+    `<div class="kp-sub"><span>Модели брендов</span><button class="kp-add" onclick="kpModelForm()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button></div>` +
+    `<p class="analytics-note" style="margin:0 0 10px;">Например, бренд BYD: Chazor, Yuan Up, Song Plus Champion. Модель выбирается в продаже и может иметь свою ставку.</p>` +
+    `<div class="table-wrap"><table class="invoices rn-table"><thead><tr><th>Бренд</th><th>Модель</th><th></th></tr></thead><tbody>${md || `<tr><td colspan="3" style="color:var(--muted);">Пока пусто</td></tr>`}</tbody></table></div>` +
     `<div class="kp-sub"><span>Ставки KPI за одну продажу</span><button class="kp-add" onclick="kpRateForm()"><i class='ti ti-plus' aria-hidden='true'></i> Добавить</button></div>` +
     `<p class="analytics-note" style="margin:0 0 10px;">Продажа считается по ставке, действовавшей на дату продажи. Изменение ставки не затрагивает закрытые месяцы.</p>` +
-    `<div class="table-wrap"><table class="invoices rn-table"><thead><tr><th>Бренд</th><th class="rn-r">Сумма</th><th>Действует с</th><th></th></tr></thead><tbody>${rt || `<tr><td colspan="4" style="color:var(--muted);">Пока пусто</td></tr>`}</tbody></table></div>`;
+    `<div class="table-wrap"><table class="invoices rn-table"><thead><tr><th>Бренд</th><th>Модель</th><th class="rn-r">Сумма</th><th>Действует с</th><th></th></tr></thead><tbody>${rt || `<tr><td colspan="5" style="color:var(--muted);">Пока пусто</td></tr>`}</tbody></table></div>`;
 }
 /* --- универсальная форма --- */
+function kpSelOpts(f, curBrand) {
+  const o = f.dep ? ((f.map || {})[curBrand] || []) : (f.options || []);
+  return o;
+}
+function kpSelHtml(f, v, brandVal) {
+  const opts = kpSelOpts(f, brandVal !== undefined ? brandVal : (f.dep ? ((KP.cfg.fields.find(x => x.id === f.dep) || {}).value || "") : ""));
+  const has = f.blank ? true : opts.includes(v);
+  const txt = v && opts.includes(v) ? v : (f.blank || "Выберите");
+  const empty = f.dep && !opts.length ? "У этого бренда нет моделей: добавьте их в настройках" : (f.empty || "Нет вариантов");
+  const first = f.blank ? `<button type="button" class="${v ? "" : "sel"}" data-v="" onclick="kpDdPick('${f.id}',this)">${escapeHtml(f.blank)}</button>` : "";
+  return `<select id="kpf_${f.id}" style="display:none">${f.blank ? `<option value=""${v && opts.includes(v) ? "" : " selected"}>${escapeHtml(f.blank)}</option>` : `<option value="" disabled hidden${opts.includes(v) ? "" : " selected"}>Выберите</option>`}${opts.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${v && opts.includes(v) ? "" : (f.blank ? "" : " ph")}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(txt)}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${first}${opts.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || `<em>${escapeHtml(empty)}</em>`}</div>`;
+}
 function kpDdToggle(id) {
   const l = document.getElementById("kpl_" + id), b = document.getElementById("kpd_" + id);
   const open = !l.classList.contains("open");
@@ -6490,6 +6507,8 @@ function kpDdPick(id, el) {
   l.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === el));
   l.classList.remove("open");
   const f = b.closest(".rn-f"); if (f) f.classList.remove("bad");
+  KP.cfg.fields.forEach(g => { if (g.dep === id) { g.value = ""; const w = document.getElementById("kpw_" + g.id); if (w) w.innerHTML = kpSelHtml(g, "", el.dataset.v); } });
+  const me = KP.cfg.fields.find(g => g.id === id); if (me) me.value = el.dataset.v;
 }
 function kpOpen(cfg) {
   KP.cfg = cfg;
@@ -6499,7 +6518,7 @@ function kpOpen(cfg) {
   document.getElementById("kpFields").innerHTML = cfg.fields.map(f => {
     const v = f.value == null ? "" : f.value;
     let ctl;
-    if (f.type === "select") ctl = `<select id="kpf_${f.id}" style="display:none"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${f.options.includes(v) ? "" : " ph"}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(f.options.includes(v) ? v : "Выберите")}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${f.options.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || `<em>${escapeHtml(f.empty || "Нет вариантов")}</em>`}</div>`;
+    if (f.type === "select") ctl = `<div id="kpw_${f.id}">${kpSelHtml(f, v)}</div>`;
     else if (f.type === "brand") ctl = `<input type="text" id="kpf_${f.id}" value="${escapeHtml(v)}" placeholder="Например: Hyundai" autocomplete="off">` + (f.options.length ? `<div class="kp-chips">${f.options.map(o => `<button type="button" onclick="document.getElementById('kpf_${f.id}').value=this.textContent;this.closest('.rn-f').classList.remove('bad')">${escapeHtml(o)}</button>`).join("")}</div>` : `<div class="kp-note">Бренды пока не заведены: впишите название. Оно сохранится вместе со ставкой.</div>`);
         else ctl = `<input type="${f.type === "date" ? "date" : "text"}" id="kpf_${f.id}" value="${escapeHtml(v)}"${f.ph ? ` placeholder="${escapeHtml(f.ph)}"` : ""}${f.inputmode ? ` inputmode="${f.inputmode}"` : ""}${f.max ? ` maxlength="${f.max}"` : ""} autocomplete="off">`;
     return `<label class="rn-f${f.w2 ? " rn-w2" : ""}" data-l="${escapeHtml(f.label)}">${escapeHtml(f.label)}${ctl}</label>`;
@@ -6542,7 +6561,7 @@ function kpEditSale(rowIndex) {
   const brands = allowed.length ? allowed : KP.d.brands;
   kpOpen({ title: "Продажа: " + kpDate(s.date), hint: `${kpOrg(s.org)} · ${s.kontragent}`, fields: [
     { id: "brand", label: "Бренд", type: "select", options: brands, value: s.brand, req: true, w2: true },
-    { id: "model", label: "Модель", type: "text", value: s.model },
+    { id: "model", label: "Модель", type: "select", dep: "brand", map: KP.d.brandModels, blank: "Не указана", value: s.model },
     { id: "vin", label: "VIN", type: "text", value: s.vin, ph: "17 символов", max: 17 },
     { id: "manager", label: "Менеджер", type: "select", options: KP.d.employees, value: s.manager, req: true, w2: true } ],
     submit: v => apiCall("saveKpiSale", { rowIndex, brand: v.brand, model: v.model, vin: v.vin, manager: v.manager }) });
@@ -6580,13 +6599,21 @@ function kpOrgBrandForm(rowIndex) {
     { id: "brand", label: "Бренд", type: "text", value: x && x.brand, req: true, w2: true, ph: "Например: Hyundai" } ],
     submit: v => apiCall("saveKpiOrgBrand", { rowIndex: x ? x.rowIndex : null, org: v.org, brand: v.brand }) });
 }
+function kpModelForm(rowIndex) {
+  const x = rowIndex ? KP.d.models.find(r => r.rowIndex === rowIndex) : null;
+  kpOpen({ title: x ? "Изменить модель" : "Новая модель", fields: [
+    { id: "brand", label: "Бренд", type: "select", options: KP.d.brands, value: x && x.brand, req: true, w2: true, empty: "Сначала добавьте бренд в блоке «Организация и бренд»" },
+    { id: "model", label: "Модель", type: "text", value: x && x.model, req: true, w2: true, ph: "Например: Song Plus Champion" } ],
+    submit: v => apiCall("saveKpiModel", { rowIndex: x ? x.rowIndex : null, brand: v.brand, model: v.model }) });
+}
 function kpRateForm(rowIndex) {
   const x = rowIndex ? KP.d.rates.find(r => r.rowIndex === rowIndex) : null;
-  kpOpen({ title: x ? "Изменить ставку" : "Новая ставка", hint: "Сумма KPI за одну проданную машину этого бренда.", fields: [
+  kpOpen({ title: x ? "Изменить ставку" : "Новая ставка", hint: "Сумма KPI за одну проданную машину. Ставка модели главнее общей ставки бренда.", fields: [
     { id: "brand", label: "Бренд", type: "select", options: KP.d.brands, value: x && x.brand, req: true, w2: true, empty: "Сначала добавьте бренд в блоке «Организация и бренд»" },
+    { id: "model", label: "Модель", type: "select", dep: "brand", map: KP.d.brandModels, blank: "Все модели бренда", value: x && x.model, w2: true },
     { id: "amount", label: "Сумма", type: "text", value: x ? String(x.amount) : "", req: true, inputmode: "decimal" },
     { id: "from", label: "Действует с", type: "date", value: x ? x.from : "", req: true } ],
-    submit: v => apiCall("saveKpiRate", { rowIndex: x ? x.rowIndex : null, brand: v.brand, amount: v.amount, from: v.from }) });
+    submit: v => apiCall("saveKpiRate", { rowIndex: x ? x.rowIndex : null, brand: v.brand, model: v.model, amount: v.amount, from: v.from }) });
 }
 async function kpDeleteRow(action, rowIndex) {
   if (!await uiConfirm("Удалить эту запись?")) return;
