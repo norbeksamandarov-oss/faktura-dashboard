@@ -4175,7 +4175,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <section id="section-positions" class="content-section">
     <div class="panel">
       <h2>Позиции HYUNDAI <span class="sub">организационная схема и открытые вакансии</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст (сохраняются в браузере автоматически).</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст. Сохраняется автоматически; кнопка «Сохранить» внизу сохраняет принудительно и проверяет запись на сервере.</p>
 
       <style>
         #section-positions .pz-stage{position:relative;padding-top:4px;font-family:'Manrope',sans-serif;animation:pzFadeIn .5s ease both;}
@@ -4267,7 +4267,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <section id="section-positionsb" class="content-section">
     <div class="panel">
       <h2>Позиции OTT BEDACHI <span class="sub">организационная схема и открытые вакансии</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст (сохраняются в браузере автоматически).</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Схема сотрудников с доступом к панели. Названия позиций и ФИО редактируются нажатием на текст. Сохраняется автоматически; кнопка «Сохранить» внизу сохраняет принудительно и проверяет запись на сервере.</p>
 
       <style>
         #section-positionsb .pz-stage{position:relative;padding-top:4px;font-family:'Manrope',sans-serif;animation:pzFadeIn .5s ease both;}
@@ -13943,13 +13943,14 @@ const pzFactory = function initPositionsChart(P, K){
     pzSaveTimer = setTimeout(pzSaveNow, 300);
   }
 
-  async function pzSaveNow(){
+  async function pzSaveNow(force){
     clearTimeout(pzSaveTimer); pzSaveTimer = null;
-    if (pzSaving) { pzScheduleSave(); return; }
+    if (pzSaving) { if (!force) { pzScheduleSave(); return false; } await new Promise(r => setTimeout(r, 700)); }
     const json = JSON.stringify(pzState);
-    if (json === pzLastSavedJson) return;
+    if (json === pzLastSavedJson && !force) return true;
     pzSaving = true;
     pzIndicator('saving');
+    let ok = false;
     try {
       await apiCall('savePositions', { state: json, key: K });
       // проверка: читаем обратно с сервера и сравниваем
@@ -13957,15 +13958,50 @@ const pzFactory = function initPositionsChart(P, K){
       if (!back || back.state !== json) throw new Error('сервер вернул старые данные (сохранение не применилось)');
       pzLastSavedJson = json;
       pzIndicator('ok');
+      ok = true;
     } catch(e) {
       console.warn('Не удалось сохранить "Позиции":', e.message);
       pzIndicator('err', e.message);
-      setTimeout(pzSaveNow, 3000);
+      if (!force) setTimeout(pzSaveNow, 3000);
+      pzLastError = e.message;
     } finally {
       pzSaving = false;
     }
     // пока сохраняли, могли изменить ещё что-то
-    if (JSON.stringify(pzState) !== pzLastSavedJson && !pzSaveTimer) pzScheduleSave();
+    if (ok && JSON.stringify(pzState) !== pzLastSavedJson && !pzSaveTimer) pzScheduleSave();
+    return ok;
+  }
+
+  let pzLastError = '';
+  function pzMakeSaveButton(){
+    const total = document.getElementById(P + 'StatTotal');
+    const box = total && total.closest('.pz-summary');
+    if (!box || box.querySelector('.pz-savebtn')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'pz-savebtn';
+    btn.style.cssText = 'margin-left:auto;display:inline-flex;align-items:center;gap:9px;border:0;border-radius:10px;padding:11px 22px;font:inherit;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4f7dff,#7a3cff);cursor:pointer;transition:transform .15s,box-shadow .2s,background .3s;box-shadow:0 6px 18px rgba(79,125,255,.35);';
+    const set = (html) => { btn.innerHTML = html; };
+    set('<span>Сохранить</span>');
+    btn.onclick = async () => {
+      if (btn.disabled) return;
+      btn.disabled = true; btn.style.opacity = '.85';
+      set('<span class="pz-spinner" style="width:14px;height:14px;border-color:rgba(255,255,255,.4);border-top-color:#fff"></span><span>Сохраняем...</span>');
+      const ok = await pzSaveNow(true);
+      if (ok) {
+        btn.style.background = '#0f9d58';
+        set('<span style="font-size:16px">&#10003;</span><span>Сохранено</span>');
+      } else {
+        btn.style.background = '#e11d48';
+        btn.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}], {duration:400});
+        set('<span>Не сохранено, повторить</span>');
+      }
+      setTimeout(() => {
+        btn.disabled = false; btn.style.opacity = '1';
+        btn.style.background = 'linear-gradient(135deg,#4f7dff,#7a3cff)';
+        set('<span>Сохранить</span>');
+      }, ok ? 1600 : 2500);
+    };
+    box.appendChild(btn);
   }
 
   // node._pzRef - объект {role,name} внутри pzState, который этот node представляет.
@@ -14129,6 +14165,7 @@ const pzFactory = function initPositionsChart(P, K){
     pzLastSavedJson = JSON.stringify(pzState);
     if (loadingEl) loadingEl.style.display = 'none';
     pzRender();
+    pzMakeSaveButton();
 
     // Если данных ещё не было на сервере вообще - сохраняем значения по
     // умолчанию сразу, чтобы все админы видели одно и то же с первого раза.
