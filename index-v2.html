@@ -14004,6 +14004,67 @@ const pzFactory = function initPositionsChart(P, K){
     box.appendChild(btn);
   }
 
+  // ---- перетаскивание позиций (смена иерархии) ----
+  if (!document.getElementById('pzDndStyle')) {
+    const st = document.createElement('style'); st.id = 'pzDndStyle';
+    st.textContent = '.pz-grip{position:absolute;top:2px;right:4px;width:16px;height:16px;line-height:16px;text-align:center;font-size:12px;color:#9aa3b8;cursor:grab;opacity:0;transition:opacity .15s;user-select:none;border-radius:4px}' +
+      '.pz-node:hover .pz-grip{opacity:1}.pz-grip:hover{color:#2563EB;background:#eef3ff}' +
+      '.pz-node.pz-dragging{opacity:.35}.pz-node.pz-over{outline:2px dashed #2563EB;outline-offset:2px;background:#eef3ff}' +
+      '.pz-kids.pz-over-wrap{outline:2px dashed #2563EB;outline-offset:3px;border-radius:10px}';
+    document.head.appendChild(st);
+  }
+  let pzDrag = null;
+  function pzDropMove(src, dst, after){
+    const G = pzState.groups;
+    if (src.type === 'senior' && dst.type === 'senior') {
+      if (src.gi === dst.gi) return false;
+      const t = G[src.gi]; G[src.gi] = G[dst.gi]; G[dst.gi] = t; return true;
+    }
+    if (src.type === 'kid') {
+      const from = G[src.gi].kids; const ref = from[src.ki]; if (!ref) return false;
+      let to, at;
+      if (dst.type === 'kid') { to = G[dst.gi].kids; at = dst.ki + (after ? 1 : 0); }
+      else if (dst.type === 'senior' || dst.type === 'kids') { to = G[dst.gi].kids; at = to.length; }
+      else return false;
+      from.splice(src.ki, 1);
+      if (from === to && src.ki < at) at--;
+      to.splice(at, 0, ref);
+      return true;
+    }
+    return false;
+  }
+  function pzAttachDnD(node, meta){
+    node._pz = meta;
+    const grip = document.createElement('div');
+    grip.className = 'pz-grip'; grip.textContent = '\u22EE\u22EE'; grip.title = 'Перетащить позицию';
+    grip.addEventListener('mousedown', () => { node.draggable = true; });
+    grip.addEventListener('mouseup', () => { node.draggable = false; });
+    node.appendChild(grip);
+    node.addEventListener('dragstart', (e) => {
+      pzDrag = meta; node.classList.add('pz-dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'pz'); } catch(_) {}
+    });
+    node.addEventListener('dragend', () => { node.draggable = false; node.classList.remove('pz-dragging'); pzDrag = null;
+      document.querySelectorAll('#' + P + 'Chart .pz-over, #' + P + 'Chart .pz-over-wrap').forEach(x => x.classList.remove('pz-over', 'pz-over-wrap')); });
+    const ok = () => pzDrag && ((pzDrag.type === 'senior' && meta.type === 'senior') || (pzDrag.type === 'kid' && (meta.type === 'kid' || meta.type === 'senior')));
+    node.addEventListener('dragover', (e) => { if (!ok()) return; e.preventDefault(); e.stopPropagation(); node.classList.add('pz-over'); });
+    node.addEventListener('dragleave', () => node.classList.remove('pz-over'));
+    node.addEventListener('drop', (e) => {
+      if (!ok()) return; e.preventDefault(); e.stopPropagation(); node.classList.remove('pz-over');
+      const r = node.getBoundingClientRect();
+      const after = (e.clientY - r.top) > r.height / 2 || (e.clientX - r.left) > r.width * 0.75;
+      if (pzDropMove(pzDrag, meta, after)) { pzDrag = null; pzRender(); pzScheduleSave(); }
+    });
+  }
+  function pzAttachKidsDrop(wrap, gi){
+    wrap.addEventListener('dragover', (e) => { if (pzDrag && pzDrag.type === 'kid') { e.preventDefault(); wrap.classList.add('pz-over-wrap'); } });
+    wrap.addEventListener('dragleave', (e) => { if (!wrap.contains(e.relatedTarget)) wrap.classList.remove('pz-over-wrap'); });
+    wrap.addEventListener('drop', (e) => {
+      if (!pzDrag || pzDrag.type !== 'kid') return; e.preventDefault(); wrap.classList.remove('pz-over-wrap');
+      if (pzDropMove(pzDrag, {type:'kids', gi}, true)) { pzDrag = null; pzRender(); pzScheduleSave(); }
+    });
+  }
+
   // node._pzRef - объект {role,name} внутри pzState, который этот node представляет.
   function pzMakeNode(stateRef, extraClass, onRemove){
     const node = document.createElement('div');
@@ -14021,9 +14082,8 @@ const pzFactory = function initPositionsChart(P, K){
         const idx = arr.indexOf(node._pzRef);
         if (idx > -1) arr.splice(idx, 1);
       }
-      node.remove();
+      pzRender();
       pzScheduleSave();
-      pzUpdateStats();
     };
     node.appendChild(x);
 
@@ -14126,7 +14186,7 @@ const pzFactory = function initPositionsChart(P, K){
       const col = document.createElement('div');
       col.className = 'pz-group';
       if (g.senior) {
-        col.appendChild(pzMakeNode(g.senior, '', () => { g.senior = null; }));
+        const sn = pzMakeNode(g.senior, '', () => { g.senior = null; }); pzAttachDnD(sn, {type:'senior', gi}); col.appendChild(sn);
       } else {
         hidden.push({label: 'Старший бухгалтер ' + (gi + 1), restore: () => { g.senior = {role:'Старший бухгалтер ' + (gi + 1), name:''}; }});
       }
@@ -14134,7 +14194,8 @@ const pzFactory = function initPositionsChart(P, K){
       const kidsWrap = document.createElement('div');
       kidsWrap.className = 'pz-kids';
       kidsWrap._pzKidsArray = g.kids;
-      g.kids.forEach(k => kidsWrap.appendChild(pzMakeNode(k)));
+      g.kids.forEach((k, ki) => { const kn = pzMakeNode(k); pzAttachDnD(kn, {type:'kid', gi, ki}); kidsWrap.appendChild(kn); });
+      pzAttachKidsDrop(kidsWrap, gi);
 
       const addBtn = document.createElement('button');
       addBtn.className = 'pz-add-btn';
@@ -14143,10 +14204,8 @@ const pzFactory = function initPositionsChart(P, K){
       addBtn.onclick = () => {
         const newRef = {role:'Новая позиция', name:''};
         g.kids.push(newRef);
-        const newNode = pzMakeNode(newRef);
-        kidsWrap.insertBefore(newNode, addBtn);
+        pzRender();
         pzScheduleSave();
-        pzUpdateStats();
       };
       kidsWrap.appendChild(addBtn);
 
