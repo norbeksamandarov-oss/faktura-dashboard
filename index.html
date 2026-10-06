@@ -6499,7 +6499,7 @@ function kpOpen(cfg) {
   document.getElementById("kpFields").innerHTML = cfg.fields.map(f => {
     const v = f.value == null ? "" : f.value;
     let ctl;
-    if (f.type === "select") ctl = `<select id="kpf_${f.id}" style="display:none"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${f.options.includes(v) ? "" : " ph"}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(f.options.includes(v) ? v : "Выберите")}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${f.options.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || '<em>Нет вариантов</em>'}</div>`;
+    if (f.type === "select") ctl = `<select id="kpf_${f.id}" style="display:none"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${f.options.includes(v) ? "" : " ph"}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(f.options.includes(v) ? v : "Выберите")}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${f.options.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || `<em>${escapeHtml(f.empty || "Нет вариантов")}</em>`}</div>`;
     else if (f.type === "brand") ctl = `<input type="text" id="kpf_${f.id}" value="${escapeHtml(v)}" placeholder="Например: Hyundai" autocomplete="off">` + (f.options.length ? `<div class="kp-chips">${f.options.map(o => `<button type="button" onclick="document.getElementById('kpf_${f.id}').value=this.textContent;this.closest('.rn-f').classList.remove('bad')">${escapeHtml(o)}</button>`).join("")}</div>` : `<div class="kp-note">Бренды пока не заведены: впишите название. Оно сохранится вместе со ставкой.</div>`);
         else ctl = `<input type="${f.type === "date" ? "date" : "text"}" id="kpf_${f.id}" value="${escapeHtml(v)}"${f.ph ? ` placeholder="${escapeHtml(f.ph)}"` : ""}${f.inputmode ? ` inputmode="${f.inputmode}"` : ""}${f.max ? ` maxlength="${f.max}"` : ""} autocomplete="off">`;
     return `<label class="rn-f${f.w2 ? " rn-w2" : ""}" data-l="${escapeHtml(f.label)}">${escapeHtml(f.label)}${ctl}</label>`;
@@ -6577,13 +6577,13 @@ function kpOrgBrandForm(rowIndex) {
   const x = rowIndex ? KP.d.orgBrands.find(r => r.rowIndex === rowIndex) : null;
   kpOpen({ title: x ? "Изменить связку" : "Организация и бренд", fields: [
     { id: "org", label: "Организация", type: "select", options: KP.d.orgs, value: x && x.org, req: true, w2: true },
-    { id: "brand", label: "Бренд", type: "brand", options: KP.d.brands, value: x && x.brand, req: true, w2: true } ],
+    { id: "brand", label: "Бренд", type: "text", value: x && x.brand, req: true, w2: true, ph: "Например: Hyundai" } ],
     submit: v => apiCall("saveKpiOrgBrand", { rowIndex: x ? x.rowIndex : null, org: v.org, brand: v.brand }) });
 }
 function kpRateForm(rowIndex) {
   const x = rowIndex ? KP.d.rates.find(r => r.rowIndex === rowIndex) : null;
   kpOpen({ title: x ? "Изменить ставку" : "Новая ставка", hint: "Сумма KPI за одну проданную машину этого бренда.", fields: [
-    { id: "brand", label: "Бренд", type: "brand", options: KP.d.brands, value: x && x.brand, req: true, w2: true },
+    { id: "brand", label: "Бренд", type: "select", options: KP.d.brands, value: x && x.brand, req: true, w2: true, empty: "Сначала добавьте бренд в блоке «Организация и бренд»" },
     { id: "amount", label: "Сумма", type: "text", value: x ? String(x.amount) : "", req: true, inputmode: "decimal" },
     { id: "from", label: "Действует с", type: "date", value: x ? x.from : "", req: true } ],
     submit: v => apiCall("saveKpiRate", { rowIndex: x ? x.rowIndex : null, brand: v.brand, amount: v.amount, from: v.from }) });
