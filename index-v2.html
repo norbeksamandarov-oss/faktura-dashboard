@@ -5835,12 +5835,14 @@ const CRM = { ctx: null, files: [], busy: false };
 function crmRender() {
   const txt = document.getElementById("crmText").value.trim();
   const has = CRM.files.length > 0;
-  const mode = has ? "ok" : (txt ? "nt" : "em");
+  const isAdm = currentRole === "admin";
+  const mode = has ? "ok" : (txt ? "nt" : (isAdm ? "ad" : "em"));
   const ic = document.getElementById("crmIc"), st = document.getElementById("crmSt"), go = document.getElementById("crmGo"), dz = document.getElementById("crmDz"), ls = document.getElementById("crmFiles");
-  ic.className = "crm-ic" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
-  ic.innerHTML = mode === "ok" ? "<i class='ti ti-circle-check' aria-hidden='true'></i>" : mode === "nt" ? "<i class='ti ti-message-2' aria-hidden='true'></i>" : "<i class='ti ti-alert-circle' aria-hidden='true'></i>";
-  st.className = "crm-st" + (mode === "ok" ? " ok" : mode === "nt" ? " nt" : "");
-  st.textContent = mode === "ok" ? "Станет: Выполнено" : mode === "nt" ? "Станет: Закрыто (см. комментарий)" : "Добавьте файл или текст";
+  const soft = mode === "nt" || mode === "ad";
+  ic.className = "crm-ic" + (mode === "ok" ? " ok" : soft ? " nt" : "");
+  ic.innerHTML = mode === "ok" ? "<i class='ti ti-circle-check' aria-hidden='true'></i>" : soft ? "<i class='ti ti-message-2' aria-hidden='true'></i>" : "<i class='ti ti-alert-circle' aria-hidden='true'></i>";
+  st.className = "crm-st" + (mode === "ok" ? " ok" : soft ? " nt" : "");
+  st.textContent = mode === "ok" ? "Станет: Выполнено" : (mode === "nt" || mode === "ad") ? (isAdm ? "Станет: Закрыто администратором" : "Станет: Закрыто (см. комментарий)") : "Добавьте файл или текст";
   go.textContent = mode === "ok" ? "Выполнено" : mode === "nt" ? "Закрыть с ответом" : "Закрыть";
   go.disabled = mode === "em" || CRM.busy; go.classList.toggle("ok", mode === "ok");
   dz.className = "crm-dz" + (has ? " has" : "");
@@ -5894,7 +5896,7 @@ async function crmSubmit() {
     if (n) params.files = await Promise.all(CRM.files.map(async f => ({ name: f.name, b64: await crmReadB64(f) })));
     const res = await apiCall("adminCloseRequest", params);
     const row = rowsArray.find(r => r.rowIndex === rowIndex);
-    if (row) { row.status = res.status || (hadFiles ? "Выполнено" : "Закрыто (см. комментарий)"); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    if (row) { row.status = res.status || (hadFiles ? "Выполнено" : (currentRole === "admin" ? "Закрыто администратором" : "Закрыто (см. комментарий)")); row.comment = comment; row.doneAt = new Date().toISOString(); }
     // успех: большая галочка, затем плавное закрытие
     card.classList.remove("busy"); card.classList.add("done");
     const ic = document.getElementById("crmIc"); ic.className = "crm-ic ok"; ic.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
