@@ -4254,8 +4254,6 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <div class="pz-stat"><div class="pz-num" id="pzStatTotal">0</div><div class="pz-lbl">Всего позиций</div></div>
         <div class="pz-stat"><div class="pz-num" id="pzStatFilled">0</div><div class="pz-lbl">Занято</div></div>
         <div class="pz-stat pz-vac"><div class="pz-num" id="pzStatVacant">0</div><div class="pz-lbl">Вакансий</div></div>
-        <div class="pz-stat pz-need"><div class="pz-num" id="pzStatNeeded">0</div><div class="pz-lbl">Не хватает до цели</div></div>
-        <div class="pz-target-row">Целевое число позиций: <input type="number" id="pzTargetInput" value="14" min="0"></div>
       </div>
       <div class="pz-hint">Дениз — отдельно, ни у кого в подчинении. Дилфруза — куратор левой и средней групп, не подчиняется ГБ/Заму. Все три «Старший бухгалтер» формально подчиняются Норбеку. Наведите на позицию для удаления (×), «+ позиция» — чтобы добавить.</div>
 
@@ -4348,8 +4346,6 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <div class="pz-stat"><div class="pz-num" id="pzbStatTotal">0</div><div class="pz-lbl">Всего позиций</div></div>
         <div class="pz-stat"><div class="pz-num" id="pzbStatFilled">0</div><div class="pz-lbl">Занято</div></div>
         <div class="pz-stat pz-vac"><div class="pz-num" id="pzbStatVacant">0</div><div class="pz-lbl">Вакансий</div></div>
-        <div class="pz-stat pz-need"><div class="pz-num" id="pzbStatNeeded">0</div><div class="pz-lbl">Не хватает до цели</div></div>
-        <div class="pz-target-row">Целевое число позиций: <input type="number" id="pzbTargetInput" value="14" min="0"></div>
       </div>
       <div class="pz-hint">Дениз — отдельно, ни у кого в подчинении. Дилфруза — куратор левой и средней групп, не подчиняется ГБ/Заму. Все три «Старший бухгалтер» формально подчиняются Норбеку. Наведите на позицию для удаления (×), «+ позиция» — чтобы добавить.</div>
 
@@ -14032,13 +14028,10 @@ async function recallInvoice(facturaid, btnEl) {
       else vacancies.push(roleEl ? roleEl.textContent.trim() : '');
     });
     const vacant = total - filled;
-    const target = parseInt(document.getElementById(P+'TargetInput').value) || 0;
-    const needed = Math.max(target - total, 0);
     document.getElementById(P+'StatTotal').textContent = total;
     document.getElementById(P+'StatFilled').textContent = filled;
     document.getElementById(P+'StatVacant').textContent = vacant;
-    document.getElementById(P+'StatNeeded').textContent = needed;
-    [P+'StatTotal',P+'StatFilled',P+'StatVacant',P+'StatNeeded'].forEach(id => {
+    [P+'StatTotal',P+'StatFilled',P+'StatVacant'].forEach(id => {
       const el = document.getElementById(id);
       el.classList.remove('pz-bump');
       void el.offsetWidth;
@@ -14113,13 +14106,6 @@ async function recallInvoice(facturaid, btnEl) {
       groupsEl.appendChild(col);
     });
 
-    const targetInput = document.getElementById(P+'TargetInput');
-    targetInput.value = pzState.target;
-    targetInput.oninput = () => {
-      pzState.target = parseInt(targetInput.value) || 0;
-      pzUpdateStats();
-      pzScheduleSave();
-    };
     pzUpdateStats();
   }
 
@@ -14283,13 +14269,10 @@ async function recallInvoice(facturaid, btnEl) {
       else vacancies.push(roleEl ? roleEl.textContent.trim() : '');
     });
     const vacant = total - filled;
-    const target = parseInt(document.getElementById(P+'TargetInput').value) || 0;
-    const needed = Math.max(target - total, 0);
     document.getElementById(P+'StatTotal').textContent = total;
     document.getElementById(P+'StatFilled').textContent = filled;
     document.getElementById(P+'StatVacant').textContent = vacant;
-    document.getElementById(P+'StatNeeded').textContent = needed;
-    [P+'StatTotal',P+'StatFilled',P+'StatVacant',P+'StatNeeded'].forEach(id => {
+    [P+'StatTotal',P+'StatFilled',P+'StatVacant'].forEach(id => {
       const el = document.getElementById(id);
       el.classList.remove('pz-bump');
       void el.offsetWidth;
@@ -14364,13 +14347,6 @@ async function recallInvoice(facturaid, btnEl) {
       groupsEl.appendChild(col);
     });
 
-    const targetInput = document.getElementById(P+'TargetInput');
-    targetInput.value = pzState.target;
-    targetInput.oninput = () => {
-      pzState.target = parseInt(targetInput.value) || 0;
-      pzUpdateStats();
-      pzScheduleSave();
-    };
     pzUpdateStats();
   }
 
