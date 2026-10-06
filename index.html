@@ -14005,7 +14005,7 @@ const pzFactory = function initPositionsChart(P, K){
   }
 
   // node._pzRef - объект {role,name} внутри pzState, который этот node представляет.
-  function pzMakeNode(stateRef, extraClass){
+  function pzMakeNode(stateRef, extraClass, onRemove){
     const node = document.createElement('div');
     node.className = 'pz-node' + (extraClass ? ' ' + extraClass : '');
     node._pzRef = stateRef;
@@ -14015,6 +14015,7 @@ const pzFactory = function initPositionsChart(P, K){
     x.textContent = '×';
     x.onclick = (e) => {
       e.stopPropagation();
+      if (onRemove) { onRemove(); pzRender(); pzScheduleSave(); return; }
       const arr = node.parentElement._pzKidsArray;
       if (arr) {
         const idx = arr.indexOf(node._pzRef);
@@ -14106,19 +14107,29 @@ const pzFactory = function initPositionsChart(P, K){
     dilfruzaWrap.innerHTML = '';
     groupsEl.innerHTML = '';
 
-    topCenter.appendChild(pzMakeNode(pzState.sevara, 'pz-top'));
-    const v1 = document.createElement('div'); v1.className = 'pz-vline'; topCenter.appendChild(v1);
-    topCenter.appendChild(pzMakeNode(pzState.norbek, 'pz-top'));
-    const v2 = document.createElement('div'); v2.className = 'pz-vline'; topCenter.appendChild(v2);
+    const TOPS = {
+      sevara: {role:'Главный бухгалтер', name:''}, norbek: {role:'Заместитель главного бухгалтера', name:''},
+      deniz: {role:'Контроллинг и аудит', name:''}, dilfruza: {role:'Финансовый менеджер', name:''}
+    };
+    const hidden = [];
+    const topNode = (key) => pzMakeNode(pzState[key], 'pz-top', () => { pzState[key] = null; });
 
-    denizWrap.appendChild(pzMakeNode(pzState.deniz, 'pz-top'));
+    if (pzState.sevara) { topCenter.appendChild(topNode('sevara')); } else hidden.push({label: TOPS.sevara.role, restore: () => { pzState.sevara = Object.assign({}, TOPS.sevara); }});
+    if (pzState.sevara && pzState.norbek) { const v1 = document.createElement('div'); v1.className = 'pz-vline'; topCenter.appendChild(v1); }
+    if (pzState.norbek) { topCenter.appendChild(topNode('norbek')); } else hidden.push({label: TOPS.norbek.role, restore: () => { pzState.norbek = Object.assign({}, TOPS.norbek); }});
+    if (pzState.sevara || pzState.norbek) { const v2 = document.createElement('div'); v2.className = 'pz-vline'; topCenter.appendChild(v2); }
 
-    dilfruzaWrap.appendChild(pzMakeNode(pzState.dilfruza, 'pz-top'));
+    if (pzState.deniz) denizWrap.appendChild(topNode('deniz')); else hidden.push({label: TOPS.deniz.role, restore: () => { pzState.deniz = Object.assign({}, TOPS.deniz); }});
+    if (pzState.dilfruza) dilfruzaWrap.appendChild(topNode('dilfruza')); else hidden.push({label: TOPS.dilfruza.role, restore: () => { pzState.dilfruza = Object.assign({}, TOPS.dilfruza); }});
 
-    pzState.groups.forEach(g => {
+    pzState.groups.forEach((g, gi) => {
       const col = document.createElement('div');
       col.className = 'pz-group';
-      col.appendChild(pzMakeNode(g.senior));
+      if (g.senior) {
+        col.appendChild(pzMakeNode(g.senior, '', () => { g.senior = null; }));
+      } else {
+        hidden.push({label: 'Старший бухгалтер ' + (gi + 1), restore: () => { g.senior = {role:'Старший бухгалтер ' + (gi + 1), name:''}; }});
+      }
 
       const kidsWrap = document.createElement('div');
       kidsWrap.className = 'pz-kids';
@@ -14143,6 +14154,24 @@ const pzFactory = function initPositionsChart(P, K){
       groupsEl.appendChild(col);
     });
 
+    // удалённые верхние позиции можно вернуть
+    const chart = document.getElementById(P + 'Chart');
+    const oldRow = chart.parentElement.querySelector('.pz-hidden-row'); if (oldRow) oldRow.remove();
+    if (hidden.length) {
+      const row = document.createElement('div');
+      row.className = 'pz-hidden-row';
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;font-size:11px;color:#6b7385;';
+      row.innerHTML = '<span>Удалённые позиции (нажмите, чтобы вернуть):</span>';
+      hidden.forEach(h => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'pz-add-btn';
+        b.style.cssText = 'grid-column:auto;margin:0;padding:3px 10px;';
+        b.textContent = '+ ' + h.label;
+        b.onclick = () => { h.restore(); pzRender(); pzScheduleSave(); };
+        row.appendChild(b);
+      });
+      chart.insertAdjacentElement('afterend', row);
+    }
     pzUpdateStats();
   }
 
