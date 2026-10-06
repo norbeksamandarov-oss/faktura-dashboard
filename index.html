@@ -3357,10 +3357,8 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="nav-subgroup" id="salarySubgroup">
         <button class="nav-item nav-sub-item" data-section="salaryrequests" onclick="showSection('salaryrequests')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">Заявки</span> <span id="pendingSalaryReqBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="salary" onclick="showSection('salary')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg></span><span class="nav-label">Оклады</span></button>
+      <button class="nav-item nav-sub-item" data-section="kpi" onclick="showSection('kpi')"><span class="nav-icon"><i class='ti ti-chart-bar' aria-hidden='true'></i></span><span class="nav-label">KPI</span></button>
       </div>
-      <button class="nav-item" data-section="kpi" onclick="showSection('kpi')"><span class="nav-icon"><i class='ti ti-chart-bar' aria-hidden='true'></i></span><span class="nav-label">KPI</span></button>
-      <button class="nav-item" data-section="deadlines" onclick="showSection('deadlines')"><span class="nav-icon"><i class='ti ti-calendar-event' aria-hidden='true'></i></span><span class="nav-label">Календарь сроков</span></button>
-      <button class="nav-item" data-section="monthclose" onclick="showSection('monthclose')"><span class="nav-icon"><i class='ti ti-checklist' aria-hidden='true'></i></span><span class="nav-label">Закрытие месяца</span></button>
       <button class="nav-item" data-section="rental" onclick="showSection('rental')"><span class="nav-icon"><i class='ti ti-building-store' aria-hidden='true'></i></span><span class="nav-label">Аренда</span></button>
       <button class="nav-item" data-section="taxes" onclick="showSection('taxes')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h6"/><path d="M9 11h1"/><path d="M14 11h1"/></svg></span><span class="nav-label">Налоги</span></button>
       <div class="nav-group-label">УПРАВЛЕНИЕ</div>
@@ -6209,7 +6207,7 @@ function exportGtdExcel() {
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
 const PERSONAL_SECTIONS = ["requests", "employees", "positions", "users", "writeemp", "suggestions", "approvers"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
-const SALARY_SECTIONS = ["salaryrequests", "salary"];
+const SALARY_SECTIONS = ["salaryrequests", "salary", "kpi"];
 const VZAIMORASCHETY_SECTIONS = ["vz2analitika", "vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2oshibki", "vz2otv"];
 
 /* ===== План контроля (личный, только админ) ===== */
