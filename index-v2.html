@@ -2340,6 +2340,10 @@ html[data-theme=dark] #uiDlg .ud-b.go.red{color:#2a0a0a}
 html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 #uiDlg .ud-card.shake{animation:crmShake .42s ease}
 @media (prefers-reduced-motion:reduce){#uiDlg,#uiDlg *{animation:none!important;transition:none!important}}
+.rs-warn{display:flex;align-items:center;gap:5px;margin-top:5px;padding:3px 8px;border-radius:6px;background:var(--red-bg);color:var(--red-fg);font-size:11.5px;font-weight:600;width:fit-content;cursor:help}
+.rs-vins{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.rs-vin{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+.rs-vin-dup{display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;background:var(--red-bg);color:var(--red-fg);font-weight:600;width:fit-content;cursor:help}
 #section-realschet .close-docs,#section-dogovorreal .close-docs,#section-zakaznaryad .close-docs,#section-otherreqreal .close-docs{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 /* ===== Окна: объявление, контрагент, смена пароля — новый стиль + анимации ===== */
 :is(#announcementModal,#contragentModal,#forcePasswordModal){opacity:0;transition:opacity .25s ease;background:rgba(12,16,34,.55)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -7772,6 +7776,24 @@ async function sendWriteEmp() {
 
 /* ===== Документы, приложенные при закрытии заявки (только «Реализация») ===== */
 let CLOSE_DOCS = {};
+let REAL_DUPES = {};
+function realDupTitle(list) {
+  return list.map(o => `${o.kontragent || "—"} (${o.org || ""}${o.date ? ", " + o.date : ""})`).join("\n");
+}
+function realBuyerWarnHtml(rowIndex) {
+  const e = REAL_DUPES[String(rowIndex)];
+  if (!e || !(e.dupBuyer || []).length) return "";
+  return `<div class="rs-warn" title="${escapeHtml(realDupTitle(e.dupBuyer))}"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Этот покупатель уже в счетах (${e.dupBuyer.length})</div>`;
+}
+function realVinHtml(rowIndex) {
+  const e = REAL_DUPES[String(rowIndex)];
+  if (!e || !(e.vins || []).length) return "";
+  const dupMap = {};
+  (e.dupVin || []).forEach(d => { dupMap[d.vin] = d.others; });
+  return `<div class="rs-vins">` + e.vins.map(v => dupMap[v]
+    ? `<div class="rs-vin rs-vin-dup" title="${escapeHtml("Уже был в: " + realDupTitle(dupMap[v]))}"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${escapeHtml(v)} · один VIN уже в счёте</div>`
+    : `<div class="rs-vin">${escapeHtml(v)}</div>`).join("") + `</div>`;
+}
 function closeDocsHtml(reqType, rowIndex) {
   const list = (CLOSE_DOCS[reqType] || {})[String(rowIndex)] || [];
   if (!list.length) return "";
@@ -7784,6 +7806,7 @@ async function loadCloseDocs() {
   try {
     const res = await apiCall("getCloseDocs", {});
     CLOSE_DOCS = (res && res.docs) || {};
+    try { const d = await apiCall("getRealDupes", {}); REAL_DUPES = (d && d.rows) || {}; } catch (e) { REAL_DUPES = {}; }
     if (typeof renderDogovorRealTable === "function") { renderDogovorRealTable(); renderRealschetTable(); renderZakaznaryadTable(); renderOtherreqRealTable(); }
   } catch (e) { /* старый сервер без getCloseDocs - просто без ссылок */ }
 }
@@ -12933,7 +12956,7 @@ function renderRealschetTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td>${escapeHtml(r.org)}</td>
-      <td style="max-width:220px;">${escapeHtml(r.kontragent)}</td>
+      <td style="max-width:220px;">${escapeHtml(r.kontragent)}${realBuyerWarnHtml(r.rowIndex)}</td>
       <td style="font-size:12px;white-space:nowrap;">${r.innPnfl ? escapeHtml(r.innPnfl) : `<span style="color:var(--muted)">—</span>`}</td>
       <td>${escapeHtml(r.employeeName)}</td>
       <td>${escapeHtml(r.approverName) || `<span style="color:var(--muted)">—</span>`}</td>
@@ -12942,7 +12965,7 @@ function renderRealschetTable() {
       <td style="max-width:220px;font-size:12px;color:var(--muted);">${r.comment ? escapeHtml(r.comment) : "—"}</td>
       <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${r.doneAt ? formatDateDisplay(r.doneAt) : "—"}</td>
       <td>${r.fileUrl ? `<a href="${realschetFileHref(r.fileUrl)}" target="_blank" rel="noopener" class="admin-open-btn"><i class="ti ti-file-text" aria-hidden="true"></i> Договор</a>` : `<span style="color:var(--muted)">—</span>`}</td>
-      <td>${closeDocsHtml("realschet", r.rowIndex) || `<span style="color:var(--muted)">—</span>`}</td>
+      <td>${(closeDocsHtml("realschet", r.rowIndex) + realVinHtml(r.rowIndex)) || `<span style="color:var(--muted)">—</span>`}</td>
       <td>${(currentRole !== "salary" && !DONE_STATUSES.includes(r.status)) ? `<button class="admin-close-btn" onclick="adminCloseRequestRow('realschet', ${r.rowIndex}, realschetRows, renderRealschetTable)"><i class="ti ti-x" aria-hidden="true"></i> Закрыть</button>` : ""}</td>
     </tr>`).join("") || `<tr><td colspan="13" style="color:var(--muted)">Ничего не найдено</td></tr>`;
 }
