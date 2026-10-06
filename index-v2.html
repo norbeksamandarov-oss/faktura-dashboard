@@ -8463,6 +8463,9 @@ function renderAll(silent) {
   // Bu ilgari HAR safar HAMMA jadvalni (jami 800+ счета-фактуры va
   // boshqa yuzlab qatorlarni) qayta qurar edi - aynan shu "qotib qolish"
   // hissining asosiy sababi edi.
+  // Himoya: "tahrirlanmoqda" hisoblagichi 60 soniyadan ortiq (fokus ham, saqlash ham yo'q) tiqilib qolsa - nolga tushiramiz
+  { const ae = document.activeElement; const inResp = ae && ae.classList && ae.classList.contains("resp-input");
+    if (isEditingRow && !inResp) { window.__edStale = window.__edStale || Date.now(); if (Date.now() - window.__edStale > 60000) { isEditingRow = 0; window.__edStale = 0; } } else window.__edStale = 0; }
   if (!(silent && isEditingRow) && (!silent || isSectionActive("section-invoices"))) renderInvoicesTable();
   if (!silent || isSectionActive("section-history")) renderHistoryTable();
   if (!silent || isSectionActive("section-analytics")) renderAnalytics();
@@ -8883,7 +8886,10 @@ function handleRespKeydown(event, inputEl) {
 function handleRespBlur(inputEl) {
   hideRespSuggestions();
   resolveRespInput(inputEl);
-  updateResp(parseInt(inputEl.dataset.rowIndex, 10), inputEl.value, inputEl);
+  const wasEd = inputEl.dataset.ed === "1";
+  inputEl.dataset.ed = "";
+  const done = () => { if (wasEd) isEditingRow = Math.max(0, isEditingRow - 1); };
+  Promise.resolve(updateResp(parseInt(inputEl.dataset.rowIndex, 10), inputEl.value, inputEl)).then(done, done);
 }
 
 function resolveRespInput(inputEl) {
@@ -9097,7 +9103,7 @@ function renderInvoicesTable() {
                value="${escapeHtml(r.resp)}"
                placeholder="Введите имя или @username..."
                autocomplete="off"
-               onfocus="isEditingRow=true; showRespSuggestions(this)"
+               onfocus="if(this.dataset.ed!=='1'){this.dataset.ed='1';isEditingRow++;} showRespSuggestions(this)"
                oninput="showRespSuggestions(this)"
                onkeydown="handleRespKeydown(event, this)"
                onblur="handleRespBlur(this)">
