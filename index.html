@@ -6456,7 +6456,8 @@ function bcName(id) {
 }
 function bcChip(id, k) {
   const nm = bcName(id), single = k === "ADMIN_CHAT_ID";
-  return `<span class="bc-c"${single ? ' style="padding-right:13px"' : ""}>${nm ? escapeHtml(nm) : "Не в списке сотрудников"} <small>${escapeHtml(id)}</small>${single ? "" : `<button type="button" title="Убрать" onclick="bcRemove('${k}','${escapeHtml(id)}')">&times;</button>`}</span>`;
+  const locked = single || ((BC.d.ownerIds || []).includes(String(id)) && !BC.d.canChangeAdmin);
+  return `<span class="bc-c"${locked ? ' style="padding-right:13px"' : ""}${locked && !single ? ' title="Владелец системы: убрать нельзя"' : ""}>${nm ? escapeHtml(nm) : "Не в списке сотрудников"} <small>${escapeHtml(id)}</small>${locked ? "" : `<button type="button" title="Убрать" onclick="bcRemove('${k}','${escapeHtml(id)}')">&times;</button>`}</span>`;
 }
 function bcRender() {
   const d = BC.d; let html = "";
