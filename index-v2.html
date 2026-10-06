@@ -14754,14 +14754,16 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 
 <script id="sbAnimJs">
 (function(){
-  var seen = new Map();            // key -> {text,w,bg,fg,cls}
-  var timer = null, pending = false;
+  var seen = new Map();
+  var pending = false, queue = [], inplace = new Set();
   function txt(el){ return (el.textContent||'').replace(/\s+/g,' ').trim(); }
+  function clsOf(b){ var m = b.className.match(/status-(?!badge)\w+/); return m ? m[0] : ''; }
   function rowKey(b){
+    var tr = b.closest('tr'); if (!tr) return null;
     var sec = b.closest('.content-section'); var sid = sec ? sec.id : '';
-    var tr = b.closest('tr');
-    if (!tr) return null;
-    var tbl = tr.closest('table'); var tid = tbl ? (tbl.id || '') : '';
+    var dr = tr.getAttribute('data-row') || tr.getAttribute('data-id');
+    var td = b.closest('td'); var idx = td ? Array.prototype.indexOf.call(tr.children, td) : -1;
+    if (dr) return sid+'|row:'+dr+'|'+idx;
     var cells = Array.prototype.filter.call(tr.children, function(c){ return !c.querySelector('.status-badge'); });
     var parts = [];
     for (var i=0;i<cells.length && parts.length<3;i++){
@@ -14770,65 +14772,77 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       parts.push(t);
     }
     if (!parts.length) return null;
-    // позиция бейджа в строке (если в таблице несколько статусов)
-    var idx = Array.prototype.indexOf.call(tr.children, b.closest('td'));
-    return sid+'|'+tid+'|'+idx+'|'+parts.join('¦');
+    return sid+'|'+idx+'|'+parts.join('¦');
   }
   function snap(b){
-    var cs = getComputedStyle(b);
-    return {text: txt(b), w: b.getBoundingClientRect().width, bg: cs.backgroundColor, fg: cs.color,
-            cls: (b.className.match(/status-\w+/)||[''])[0]};
+    var cs = getComputedStyle(b), w = b.getBoundingClientRect().width;
+    return {text: txt(b), w: w, bg: cs.backgroundColor, fg: cs.color, cls: clsOf(b)};
   }
   function animate(b, old, now){
-    if (!old.w || !now.w || b.dataset.sbDone === now.text) return;
-    b.dataset.sbDone = now.text;
     var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches; if (reduce) return;
+    if (!now.w) return;
+    var ow = old.w || now.w;
     b.classList.add('sb-run');
     b.style.transition = 'none';
-    b.style.width = old.w + 'px'; b.style.backgroundColor = old.bg; b.style.color = old.fg;
+    b.style.width = ow + 'px'; if (old.bg) b.style.backgroundColor = old.bg; if (old.fg) b.style.color = old.fg;
     void b.offsetWidth;
     b.style.transition = '';
     b.classList.add('sb-in','sb-pop');
-    var rej = /rejected|error|notmine/.test(now.cls);
-    if (rej) b.classList.add('sb-shake');
+    if (/rejected|error|notmine/.test(now.cls)) b.classList.add('sb-shake');
     b.style.width = now.w + 'px'; b.style.backgroundColor = now.bg; b.style.color = now.fg;
     var tr = b.closest('tr'); if (tr){ tr.classList.remove('sb-flash'); void tr.offsetWidth; tr.classList.add('sb-flash'); setTimeout(function(){ tr.classList.remove('sb-flash'); }, 1300); }
-    setTimeout(function(){
+    clearTimeout(b._sbT);
+    b._sbT = setTimeout(function(){
       b.style.width=''; b.style.backgroundColor=''; b.style.color='';
       b.classList.remove('sb-run','sb-in','sb-pop','sb-shake');
+      b._sb = snap(b);
     }, 900);
   }
-  function scan(root){
-    var list = root.querySelectorAll ? root.querySelectorAll('.status-badge') : [];
-    for (var i=0;i<list.length;i++){
-      var b = list[i];
-      if (b.dataset.sbSeen) continue;
-      b.dataset.sbSeen = '1';
-      var key = rowKey(b); if (!key) continue;
-      var visible = b.offsetParent !== null;
-      var now = visible ? snap(b) : {text: txt(b), w: 0, bg:'', fg:'', cls: (b.className.match(/status-\w+/)||[''])[0]};
-      var old = seen.get(key);
-      seen.set(key, now);
-      if (old && visible && old.text && old.text !== now.text) animate(b, old, now);
-    }
+  function scanBadge(b){
+    if (b._sbSeen) return; b._sbSeen = true;
+    var visible = b.offsetParent !== null;
+    var now = visible ? snap(b) : {text: txt(b), w: 0, bg:'', fg:'', cls: clsOf(b)};
+    b._sb = now;
+    var key = rowKey(b); if (!key) return;
+    var old = seen.get(key);
+    seen.set(key, now);
+    if (old && visible && old.text && (old.text !== now.text || old.cls !== now.cls)) animate(b, old, now);
   }
-  var queue = [];
+  function scan(root){
+    if (root.matches && root.matches('.status-badge')) scanBadge(root);
+    var list = root.querySelectorAll ? root.querySelectorAll('.status-badge') : [];
+    for (var i=0;i<list.length;i++) scanBadge(list[i]);
+  }
+  function checkInplace(b){
+    if (!b._sbSeen || !b._sb || b.classList.contains('sb-run')) return;
+    var visible = b.offsetParent !== null; if (!visible) return;
+    var t = txt(b), c = clsOf(b);
+    if (t === b._sb.text && c === b._sb.cls) return;
+    var now = snap(b), old = b._sb; b._sb = now;
+    var key = rowKey(b); if (key) seen.set(key, now);
+    animate(b, old, now);
+  }
   function flush(){
-    pending = false; var q = queue; queue = [];
+    pending = false; var q = queue, ip = inplace; queue = []; inplace = new Set();
     for (var i=0;i<q.length;i++){ if (q[i].isConnected) scan(q[i]); }
+    ip.forEach(function(b){ if (b.isConnected) checkInplace(b); });
   }
   var mo = new MutationObserver(function(muts){
     for (var i=0;i<muts.length;i++){
-      var m = muts[i];
-      if (m.target.closest && m.target.closest('.status-badge')) continue;
+      var m = muts[i], t = m.target;
+      var el = t.nodeType === 1 ? t : t.parentElement;
+      var bd = el && el.closest ? el.closest('.status-badge') : null;
+      if (bd){
+        if (m.type !== 'attributes' || m.attributeName === 'class') inplace.add(bd);
+        continue;
+      }
       for (var j=0;j<m.addedNodes.length;j++){
-        var n = m.addedNodes[j]; if (n.nodeType !== 1) continue;
-        queue.push(n);
+        var n = m.addedNodes[j]; if (n.nodeType !== 1) continue; queue.push(n);
       }
     }
-    if (queue.length && !pending){ pending = true; requestAnimationFrame(flush); }
+    if ((queue.length || inplace.size) && !pending){ pending = true; requestAnimationFrame(flush); }
   });
-  function start(){ mo.observe(document.body, {childList:true, subtree:true}); scan(document.body); }
+  function start(){ mo.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class']}); scan(document.body); }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   window.__sbAnim = {seen: seen};
 })();
