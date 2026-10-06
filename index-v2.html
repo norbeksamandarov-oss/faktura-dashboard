@@ -13925,23 +13925,50 @@ async function recallInvoice(facturaid, btnEl) {
     return !!(chart && document.activeElement && chart.contains(document.activeElement));
   }
 
+  function pzIndicator(state, msg){
+    let el = document.getElementById(P + 'SaveInd');
+    if (!el) {
+      const chart = document.getElementById(P + 'Chart'); if (!chart) return;
+      el = document.createElement('div'); el.id = P + 'SaveInd';
+      el.style.cssText = 'position:absolute;top:-34px;right:0;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;transition:opacity .3s;opacity:0;';
+      chart.parentElement.style.position = chart.parentElement.style.position || 'relative';
+      chart.insertBefore(el, chart.firstChild);
+    }
+    if (state === 'saving') el.innerHTML = '<span class="pz-spinner" style="width:12px;height:12px"></span><span style="color:#6b7385">Сохраняем...</span>';
+    else if (state === 'ok') el.innerHTML = '<span style="color:#0f9d58">&#10003; Сохранено</span>';
+    else el.innerHTML = '<span style="color:#e11d48">Не сохранено: ' + (msg || 'ошибка') + '. Повторяем...</span>';
+    el.style.opacity = '1';
+    clearTimeout(el._t);
+    if (state === 'ok') el._t = setTimeout(() => { el.style.opacity = '0'; }, 2000);
+  }
+
+  function pzIsDirty(){ return !!pzSaveTimer || pzSaving || (pzState && JSON.stringify(pzState) !== pzLastSavedJson); }
+
   function pzScheduleSave(){
     clearTimeout(pzSaveTimer);
-    pzSaveTimer = setTimeout(pzSaveNow, 700);
+    pzSaveTimer = setTimeout(pzSaveNow, 300);
   }
 
   async function pzSaveNow(){
+    clearTimeout(pzSaveTimer); pzSaveTimer = null;
+    if (pzSaving) { pzScheduleSave(); return; }
     const json = JSON.stringify(pzState);
     if (json === pzLastSavedJson) return;
     pzSaving = true;
+    pzIndicator('saving');
     try {
       await apiCall('savePositions', { state: json, key: K });
       pzLastSavedJson = json;
+      pzIndicator('ok');
     } catch(e) {
       console.warn('Не удалось сохранить "Позиции":', e.message);
+      pzIndicator('err', e.message);
+      setTimeout(pzSaveNow, 3000);
     } finally {
       pzSaving = false;
     }
+    // пока сохраняли, могли изменить ещё что-то
+    if (JSON.stringify(pzState) !== pzLastSavedJson && !pzSaveTimer) pzScheduleSave();
   }
 
   // node._pzRef - объект {role,name} внутри pzState, который этот node представляет.
@@ -14120,11 +14147,15 @@ async function recallInvoice(facturaid, btnEl) {
     // умолчанию сразу, чтобы все админы видели одно и то же с первого раза.
     if (!loaded) pzScheduleSave();
 
+    const chartEl = document.getElementById(P + 'Chart');
+    if (chartEl) chartEl.addEventListener('focusout', () => { if (pzIsDirty()) pzSaveNow(); });
+    window.addEventListener('beforeunload', (e) => { if (pzIsDirty()) { e.preventDefault(); e.returnValue = ''; } });
+
     // Периодически подтягиваем изменения от других админов - но НЕ пока
     // пользователь сам сейчас редактирует (иначе стёрли бы его набор текста).
     if (pzPollTimer) clearInterval(pzPollTimer);
     pzPollTimer = setInterval(async () => {
-      if (pzIsEditingNow() || pzSaving) return;
+      if (pzIsEditingNow() || pzIsDirty()) return;
       try {
         const res = await apiCall('getPositions', { key: K });
         if (res && res.state && res.state !== pzLastSavedJson) {
