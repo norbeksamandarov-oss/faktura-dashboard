@@ -2424,6 +2424,14 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .rn-f{display:flex;flex-direction:column;gap:5px;color:var(--muted);text-transform:uppercase;min-width:0}
 .rn-f input,.rn-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);text-transform:none;letter-spacing:0;transition:border-color .15s,box-shadow .15s}
 .rn-f input:focus,.rn-f select:focus{outline:none;border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
+.kp-dd{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font:inherit;font-size:13px;background:var(--card);color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s}
+.kp-dd.ph{color:var(--muted)}.kp-dd i{transition:transform .25s;color:var(--muted)}.kp-dd.open{border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}.kp-dd.open i{transform:rotate(180deg)}
+.rn-f.bad .kp-dd{border-color:#d92d20;box-shadow:0 0 0 3px rgba(217,45,32,.15)}
+.kp-dl{display:none;flex-direction:column;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:11px;background:var(--card);padding:4px;text-transform:none;letter-spacing:0;font-weight:600}
+.kp-dl.open{display:flex;animation:kpDl .22s cubic-bezier(.16,1,.3,1)}
+@keyframes kpDl{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.kp-dl button{border:0;background:transparent;color:var(--text);font:inherit;font-size:13px;text-align:left;padding:9px 10px;border-radius:8px;cursor:pointer}
+.kp-dl button:hover{background:rgba(91,141,255,.16)}.kp-dl button.sel{background:rgba(91,141,255,.24);font-weight:800}.kp-dl em{padding:9px 10px;color:var(--muted);font-size:12.5px;font-style:normal}
 .rn-f{font-weight:700;font-size:10.5px;letter-spacing:.03em}
 .rn-w2{grid-column:1/-1}
 .rn-nc-toggle{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-size:13px;font-weight:600;cursor:pointer}
@@ -6464,6 +6472,21 @@ function kpHtmlSettings() {
     `<div class="table-wrap"><table class="invoices rn-table"><thead><tr><th>Бренд</th><th class="rn-r">Сумма</th><th>Действует с</th><th></th></tr></thead><tbody>${rt || `<tr><td colspan="4" style="color:var(--muted);">Пока пусто</td></tr>`}</tbody></table></div>`;
 }
 /* --- универсальная форма --- */
+function kpDdToggle(id) {
+  const l = document.getElementById("kpl_" + id), b = document.getElementById("kpd_" + id);
+  const open = !l.classList.contains("open");
+  document.querySelectorAll("#kpFields .kp-dl.open").forEach(x => x.classList.remove("open"));
+  document.querySelectorAll("#kpFields .kp-dd.open").forEach(x => x.classList.remove("open"));
+  if (open) { l.classList.add("open"); b.classList.add("open"); }
+}
+function kpDdPick(id, el) {
+  const sel = document.getElementById("kpf_" + id), b = document.getElementById("kpd_" + id), l = document.getElementById("kpl_" + id);
+  sel.value = el.dataset.v;
+  b.querySelector("span").textContent = el.dataset.v; b.classList.remove("ph", "open");
+  l.querySelectorAll("button").forEach(x => x.classList.toggle("sel", x === el));
+  l.classList.remove("open");
+  const f = b.closest(".rn-f"); if (f) f.classList.remove("bad");
+}
 function kpOpen(cfg) {
   KP.cfg = cfg;
   document.getElementById("kpTitle").textContent = cfg.title;
@@ -6472,7 +6495,7 @@ function kpOpen(cfg) {
   document.getElementById("kpFields").innerHTML = cfg.fields.map(f => {
     const v = f.value == null ? "" : f.value;
     let ctl;
-    if (f.type === "select") ctl = `<select id="kpf_${f.id}"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select>`;
+    if (f.type === "select") ctl = `<select id="kpf_${f.id}" style="display:none"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${f.options.includes(v) ? "" : " ph"}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(f.options.includes(v) ? v : "Выберите")}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${f.options.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || '<em>Нет вариантов</em>'}</div>`;
     else ctl = `<input type="${f.type === "date" ? "date" : "text"}" id="kpf_${f.id}" value="${escapeHtml(v)}"${f.ph ? ` placeholder="${escapeHtml(f.ph)}"` : ""}${f.inputmode ? ` inputmode="${f.inputmode}"` : ""}${f.max ? ` maxlength="${f.max}"` : ""} autocomplete="off">`;
     return `<label class="rn-f${f.w2 ? " rn-w2" : ""}" data-l="${escapeHtml(f.label)}">${escapeHtml(f.label)}${ctl}</label>`;
   }).join("");
