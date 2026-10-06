@@ -3277,6 +3277,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
         <span class="nav-label">Персонал</span>
         <span id="pendingRegBadge2" class="nav-badge" style="display:none;"></span>
+        <span id="personalSugBadge" class="nav-badge" style="display:none;"></span>
         <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="nav-subgroup" id="personalSubgroup">
@@ -9541,6 +9542,8 @@ function sugApplyNav(items) {
   const fresh = (items || []).filter(i => (+i.rowIndex || 0) > sugSeenMax()).length;
   const badge = document.getElementById("pendingSuggestionsBadge");
   if (badge) { badge.textContent = fresh; badge.style.display = fresh > 0 ? "inline-block" : "none"; }
+  const gb = document.getElementById("personalSugBadge");
+  if (gb) { gb.textContent = fresh; gb.style.display = fresh > 0 ? "inline-block" : "none"; gb.title = "Новые предложения и жалобы"; }
   const open = !!document.getElementById("section-suggestions")?.classList.contains("active");
   document.querySelectorAll('.nav-item[data-section="suggestions"]').forEach(el => { el.style.display = (fresh > 0 || open) ? "" : "none"; });
   return fresh;
