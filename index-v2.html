@@ -2459,7 +2459,7 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .lg2 .lg2-ln input.login-input:-webkit-autofill,.lg2 .lg2-ln input.login-input:-webkit-autofill:hover,.lg2 .lg2-ln input.login-input:-webkit-autofill:focus,.lg2 .lg2-ln input.login-input:-webkit-autofill:active,.lg2 .lg2-ln input.login-input:autofill{-webkit-text-fill-color:var(--l-fg)!important;color:var(--l-fg)!important;caret-color:var(--l-fg)!important;-webkit-box-shadow:0 0 0 1000px var(--l-bg) inset!important;box-shadow:0 0 0 1000px var(--l-bg) inset!important;background-color:var(--l-bg)!important;background-clip:border-box!important;-webkit-background-clip:border-box!important;border-radius:0!important;transition:background-color 9999s ease-in-out 0s,color 9999s ease-in-out 0s!important}
 .lg2 .lg2-ln i{position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--l-acc),var(--l-acc2));transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.3,.7,.2,1);box-shadow:0 0 14px var(--l-acc)}
 .lg2 .lg2-ln input:focus+i{transform:scaleX(1)}
-.lg2 .lg2-ln input:focus~label,.lg2 .lg2-ln input:not(:placeholder-shown)~label{top:-6px;font-size:11px;letter-spacing:.6px;text-transform:uppercase}
+.lg2 .lg2-ln input:focus~label,.lg2 .lg2-ln input:not(:placeholder-shown)~label,.lg2 .lg2-ln input:-webkit-autofill~label,.lg2 .lg2-ln input:autofill~label,.lg2 .lg2-ln input.has-v~label{top:-6px;font-size:11px;letter-spacing:.6px;text-transform:uppercase}
 .lg2 .lg2-go{margin-top:32px}
 .lg2 .login-submit-btn{width:auto;margin:0;height:52px;padding:0 30px;border:0;border-radius:99px;background:var(--l-ink);color:var(--l-onink);font:inherit;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:10px;position:relative;overflow:hidden;opacity:1;box-shadow:none;transition:transform .1s,box-shadow .3s}
 .lg2 .login-submit-btn:hover{background:var(--l-ink);opacity:1;box-shadow:0 12px 40px -10px var(--l-acc)}
@@ -13965,6 +13965,11 @@ async function recallInvoice(facturaid, btnEl) {
   gd.innerHTML='<defs><linearGradient id="tgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8dff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs>';
   document.body.appendChild(gd);
 })();
+</script>
+<script>
+(function(){var ids=["loginUsername","loginPassword"];function chk(){ids.forEach(function(id){var e=document.getElementById(id);if(!e)return;var f=!!e.value;try{f=f||e.matches(":-webkit-autofill")||e.matches(":autofill")}catch(x){}e.classList.toggle("has-v",f)})}
+ids.forEach(function(id){var e=document.getElementById(id);if(e){e.addEventListener("input",chk);e.addEventListener("change",chk);e.addEventListener("animationstart",chk)}});
+[100,400,1000,2000,4000].forEach(function(t){setTimeout(chk,t)});window.addEventListener("pageshow",chk)})();
 </script>
 </body>
 </html>
