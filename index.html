@@ -2424,6 +2424,10 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 .rn-f{display:flex;flex-direction:column;gap:5px;color:var(--muted);text-transform:uppercase;min-width:0}
 .rn-f input,.rn-f select{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);text-transform:none;letter-spacing:0;transition:border-color .15s,box-shadow .15s}
 .rn-f input:focus,.rn-f select:focus{outline:none;border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}
+.kp-chips{display:flex;flex-wrap:wrap;gap:6px;text-transform:none;letter-spacing:0}
+.kp-chips button{border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.kp-chips button:hover{background:rgba(91,141,255,.16);border-color:var(--navy-light,#5b8dff)}
+.kp-note{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
 .kp-dd{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font:inherit;font-size:13px;background:var(--card);color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s}
 .kp-dd.ph{color:var(--muted)}.kp-dd i{transition:transform .25s;color:var(--muted)}.kp-dd.open{border-color:var(--navy-light,#5b8dff);box-shadow:0 0 0 3px rgba(91,141,255,.2)}.kp-dd.open i{transform:rotate(180deg)}
 .rn-f.bad .kp-dd{border-color:#d92d20;box-shadow:0 0 0 3px rgba(217,45,32,.15)}
@@ -6496,7 +6500,8 @@ function kpOpen(cfg) {
     const v = f.value == null ? "" : f.value;
     let ctl;
     if (f.type === "select") ctl = `<select id="kpf_${f.id}" style="display:none"><option value="" disabled hidden${f.options.includes(v) ? "" : " selected"}>Выберите</option>${f.options.map(o => `<option value="${escapeHtml(o)}"${o === v ? " selected" : ""}>${escapeHtml(o)}</option>`).join("")}</select><button type="button" class="kp-dd${f.options.includes(v) ? "" : " ph"}" id="kpd_${f.id}" onclick="kpDdToggle('${f.id}')"><span>${escapeHtml(f.options.includes(v) ? v : "Выберите")}</span><i class="ti ti-chevron-down" aria-hidden="true"></i></button><div class="kp-dl" id="kpl_${f.id}">${f.options.map(o => `<button type="button" class="${o === v ? "sel" : ""}" data-v="${escapeHtml(o)}" onclick="kpDdPick('${f.id}',this)">${escapeHtml(o)}</button>`).join("") || '<em>Нет вариантов</em>'}</div>`;
-    else ctl = `<input type="${f.type === "date" ? "date" : "text"}" id="kpf_${f.id}" value="${escapeHtml(v)}"${f.ph ? ` placeholder="${escapeHtml(f.ph)}"` : ""}${f.inputmode ? ` inputmode="${f.inputmode}"` : ""}${f.max ? ` maxlength="${f.max}"` : ""} autocomplete="off">`;
+    else if (f.type === "brand") ctl = `<input type="text" id="kpf_${f.id}" value="${escapeHtml(v)}" placeholder="Например: Hyundai" autocomplete="off">` + (f.options.length ? `<div class="kp-chips">${f.options.map(o => `<button type="button" onclick="document.getElementById('kpf_${f.id}').value=this.textContent;this.closest('.rn-f').classList.remove('bad')">${escapeHtml(o)}</button>`).join("")}</div>` : `<div class="kp-note">Бренды пока не заведены: впишите название. Оно сохранится вместе со ставкой.</div>`);
+        else ctl = `<input type="${f.type === "date" ? "date" : "text"}" id="kpf_${f.id}" value="${escapeHtml(v)}"${f.ph ? ` placeholder="${escapeHtml(f.ph)}"` : ""}${f.inputmode ? ` inputmode="${f.inputmode}"` : ""}${f.max ? ` maxlength="${f.max}"` : ""} autocomplete="off">`;
     return `<label class="rn-f${f.w2 ? " rn-w2" : ""}" data-l="${escapeHtml(f.label)}">${escapeHtml(f.label)}${ctl}</label>`;
   }).join("");
   document.getElementById("kpErr").textContent = "";
@@ -6572,13 +6577,13 @@ function kpOrgBrandForm(rowIndex) {
   const x = rowIndex ? KP.d.orgBrands.find(r => r.rowIndex === rowIndex) : null;
   kpOpen({ title: x ? "Изменить связку" : "Организация и бренд", fields: [
     { id: "org", label: "Организация", type: "select", options: KP.d.orgs, value: x && x.org, req: true, w2: true },
-    { id: "brand", label: "Бренд", type: "text", value: x && x.brand, req: true, w2: true, ph: "Например: Hyundai" } ],
+    { id: "brand", label: "Бренд", type: "brand", options: KP.d.brands, value: x && x.brand, req: true, w2: true } ],
     submit: v => apiCall("saveKpiOrgBrand", { rowIndex: x ? x.rowIndex : null, org: v.org, brand: v.brand }) });
 }
 function kpRateForm(rowIndex) {
   const x = rowIndex ? KP.d.rates.find(r => r.rowIndex === rowIndex) : null;
   kpOpen({ title: x ? "Изменить ставку" : "Новая ставка", hint: "Сумма KPI за одну проданную машину этого бренда.", fields: [
-    { id: "brand", label: "Бренд", type: "select", options: KP.d.brands, value: x && x.brand, req: true, w2: true },
+    { id: "brand", label: "Бренд", type: "brand", options: KP.d.brands, value: x && x.brand, req: true, w2: true },
     { id: "amount", label: "Сумма", type: "text", value: x ? String(x.amount) : "", req: true, inputmode: "decimal" },
     { id: "from", label: "Действует с", type: "date", value: x ? x.from : "", req: true } ],
     submit: v => apiCall("saveKpiRate", { rowIndex: x ? x.rowIndex : null, brand: v.brand, amount: v.amount, from: v.from }) });
