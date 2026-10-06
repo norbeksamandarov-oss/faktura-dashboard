@@ -6476,7 +6476,7 @@ function bcRender() {
     const taken = new Set(ids);
     const opts = (d.employees || []).filter(e => !taken.has(e.chatId)).map(e => `<button type="button" onclick="bcAdd('${m.k}','${escapeHtml(e.chatId)}')"><span>${escapeHtml(e.name)}</span><small>${escapeHtml(e.chatId)}</small></button>`).join("") || `<span class="bc-empty" style="padding:9px 11px">Нет доступных сотрудников</span>`;
     html += `<div class="bc-row" id="bcr_${m.k}"><div><div class="bc-t">${escapeHtml(m.t)}</div><div class="bc-d">${escapeHtml(m.d)}</div></div><div>` +
-      `<div class="bc-ch">${chips}<button type="button" class="bc-add" onclick="bcTogglePick('${m.k}')">${m.single ? "Сменить" : "+ Добавить"}</button></div>` +
+      `<div class="bc-ch">${chips}${m.single && !d.canChangeAdmin ? `<span class="bc-empty">менять может только владелец</span>` : `<button type="button" class="bc-add" onclick="bcTogglePick('${m.k}')">${m.single ? "Сменить" : "+ Добавить"}</button>`}</div>` +
       `<div class="bc-pick" id="bcp_${m.k}">${opts}</div><div class="bc-msg" id="bcm_${m.k}"></div></div></div>`;
   });
   document.getElementById("bcBody").innerHTML = html;
