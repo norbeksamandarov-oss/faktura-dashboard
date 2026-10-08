@@ -8081,7 +8081,9 @@ async function sendWriteEmp() {
   }
 
   const btn = document.getElementById("writeempSendBtn");
-  if (btn) btn.disabled = true;
+  const btnOld = btn ? btn.innerHTML : "";
+  if (btn) { btn.disabled = true; btn.classList.add("we-busy"); btn.innerHTML = "<i class='ti ti-loader-2 we-spin' aria-hidden='true'></i> Отправляем…"; }
+  let weOk = false;
   try {
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B13`, chatId);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B14`, text);
@@ -8090,11 +8092,22 @@ async function sendWriteEmp() {
     if (textEl) textEl.value = "";
     if (empInput) empInput.value = "";
     writeempSelectedChatId = "";
+    weOk = true;
     if (successEl) successEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
   } catch (e) {
-    if (errorEl) errorEl.textContent = "Не удалось отправить: " + e.message;
+    if (errorEl) { errorEl.textContent = "Не удалось отправить: " + e.message; errorEl.classList.remove("we-shake"); void errorEl.offsetWidth; errorEl.classList.add("we-shake"); }
+    if (btn) { btn.classList.remove("we-busy"); btn.classList.add("we-shake"); setTimeout(() => btn.classList.remove("we-shake"), 450); }
   } finally {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      if (weOk) {
+        btn.classList.remove("we-busy"); btn.classList.add("we-done");
+        btn.innerHTML = "<i class='ti ti-circle-check we-pop' aria-hidden='true'></i> Отправлено";
+        await new Promise(r => setTimeout(r, 1500));
+        btn.classList.remove("we-done");
+      }
+      btn.innerHTML = btnOld; btn.disabled = false; btn.classList.remove("we-busy");
+    }
+    if (successEl && weOk) { successEl.style.animation = "none"; void successEl.offsetWidth; successEl.style.animation = "ucUp .4s ease both"; }
   }
 }
 
@@ -15429,6 +15442,11 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 </script>
 <style id="ucCss">
 .nav-item[data-section="approvers"],.nav-item[data-section="botcfg"],.nav-item[data-section="plan"]{display:none!important}
+#writeempSendBtn.we-busy{opacity:.85;pointer-events:none}
+#writeempSendBtn .we-spin{display:inline-block;animation:rcSpin .7s linear infinite}
+#writeempSendBtn.we-done{background:var(--green-fg)!important;color:#07090f!important}
+#writeempSendBtn .we-pop{display:inline-block;animation:ucPop .4s cubic-bezier(.2,1.6,.4,1)}
+#writeempSendBtn.we-shake,#writeempError.we-shake{animation:ucShake .4s}
 #ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
 #ucOv.on{display:flex;animation:ucFade .25s ease both}
 @keyframes ucFade{from{opacity:0}to{opacity:1}}
