@@ -3423,6 +3423,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <button class="nav-item nav-sub-item" data-section="writeemp" onclick="showSection('writeemp')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="nav-label">Написать сотруднику</span></button>
         <button class="nav-item nav-sub-item" data-section="suggestions" onclick="showSection('suggestions')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span class="nav-label">Предложения и жалобы</span> <span id="pendingSuggestionsBadge" class="nav-badge" style="display:none;"></span></button>
         <button class="nav-item nav-sub-item" data-section="approvers" onclick="showSection('approvers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 11 2 2 4-4"/></svg></span><span class="nav-label">Ответственные</span></button>
+        <button class="nav-item nav-sub-item" data-section="approval" onclick="showSection('approval')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m17 11 2 2 4-4"/></svg></span><span class="nav-label">Согласование</span></button>
       </div>
       <button class="nav-item" data-section="plan" onclick="showSection('plan')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><span class="nav-label">План контроля</span></button>
       <button class="nav-item" data-section="features" onclick="showSection('features')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg></span><span class="nav-label">Функции</span></button>
@@ -4550,6 +4551,19 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
           <tbody></tbody>
         </table>
       </div>
+    </div>
+    </section>
+
+    <section id="section-approval" class="content-section">
+    <div class="panel">
+      <h2>Согласование <span class="sub">кто согласует запросы по каждому типу и организации</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Выберите сотрудника, чтобы посмотреть и изменить, по каким типам запросов и организациям он согласует. Новое назначение добавляется кнопкой справа.</p>
+      <div class="toolbar" style="margin-bottom:14px;justify-content:space-between;">
+        <div class="filter-field" style="flex:1;max-width:340px;"><label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label><input type="text" id="apvSearch" placeholder="Имя или ID" oninput="apvRender()"></div>
+        <button class="login-submit-btn" style="width:auto;padding:12px 22px;" onclick="ucOpen(null,'approval')">+ Добавить согласующего</button>
+      </div>
+      <div id="apvLoad" style="color:var(--muted);font-size:13px;">Загрузка...</div>
+      <div class="table-wrap" id="apvWrap" style="display:none;"><table class="invoices"><thead><tr><th>№</th><th>Сотрудник</th><th>Telegram ID</th><th>Назначений</th><th>Типы</th><th></th></tr></thead><tbody id="apvBody"></tbody></table></div>
     </div>
     </section>
 
@@ -6404,7 +6418,7 @@ function exportGtdExcel() {
 }
 
 const POSTUPLENIYA_SECTIONS = ["invoices", "dogovor", "doverennost", "otherreqpost"];
-const PERSONAL_SECTIONS = ["requests", "employees", "positions", "positionsb", "users", "writeemp", "suggestions", "approvers"];
+const PERSONAL_SECTIONS = ["requests", "employees", "positions", "positionsb", "users", "writeemp", "suggestions", "approvers", "approval"];
 const REALIZATSIYA_SECTIONS = ["realschet", "zakaznaryad", "dogovorreal", "otherreqreal"];
 const SALARY_SECTIONS = ["salaryrequests", "salary", "kpi"];
 const VZAIMORASCHETY_SECTIONS = ["vz2analitika", "vz2postavshiki", "vz2pokupateli", "vz2podotchetniki", "vz2oshibki", "vz2otv"];
@@ -7179,6 +7193,9 @@ function showSection(name) {
   if (name === "approvers" && currentRole === "admin") {
     loadApproverSheet();
   }
+  if (name === "approval" && currentRole === "admin") {
+    apvLoad();
+  }
   if (name === "gtdimport") {
     loadGtdItems();
   }
@@ -7817,7 +7834,7 @@ function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const _rsb = document.getElementById("rsTabBtn"); if (_rsb) _rsb.style.display = isAdmin ? "" : "none";
   const isSalaryOnly = role === "salary";
-  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
+  document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="approval"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
     .forEach(el => { el.style.display = (isAdmin || isSalaryOnly) ? "" : "none"; });
@@ -7834,7 +7851,7 @@ function applyRolePermissions(role) {
   if (empNote) empNote.style.display = isAdmin ? "" : "none";
   if (!isAdmin) {
     const active = document.querySelector(".nav-item.active");
-    if (active && ["requests", "users", "features", "taxes", "positions", "positionsb", "approvers", "plan"].includes(active.dataset.section)) {
+    if (active && ["requests", "users", "features", "taxes", "positions", "positionsb", "approvers", "approval", "plan"].includes(active.dataset.section)) {
       showSection("analytics");
     }
   }
@@ -15411,7 +15428,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 })();
 </script>
 <style id="ucCss">
-.nav-item[data-section="approvers"],.nav-item[data-section="plan"]{display:none!important}
+.nav-item[data-section="approvers"],.nav-item[data-section="botcfg"],.nav-item[data-section="plan"]{display:none!important}
 #ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
 #ucOv.on{display:flex;animation:ucFade .25s ease both}
 @keyframes ucFade{from{opacity:0}to{opacity:1}}
@@ -15498,15 +15515,16 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     orgs().forEach(function(o){ TYPES.forEach(function(t){ var r=mineRow(t[0],o); if(r && r.active) UC.chk[key(t[0],o)]=true; }); });
     UC.orig=Object.assign({},UC.chk);
   }
-  window.ucOpen=async function(user){
+  window.ucOpen=async function(user,mode,pre){
     ensureDom();
-    UC={user:user||null, busy:false, rows:{}, lists:{}, listsOrig:{}, chk:{}, orig:{}, id:user&&user.chatId?String(user.chatId):'', nameAuto:false, emps:[]};
+    mode=mode||'user'; pre=pre||{};
+    UC={mode:mode,user:user||null, busy:false, rows:{}, lists:{}, listsOrig:{}, chk:{}, orig:{}, id:user&&user.chatId?String(user.chatId):(pre.chatId?String(pre.chatId):''), pre:pre, nameAuto:false, emps:[]};
     $('ucOv').classList.add('on'); document.body.style.overflow='hidden';
     $('ucBox').innerHTML='<div class="uc-h"><h3>'+(user?esc(user.name||user.username):'Новый сотрудник')+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-load"><div class="rc-bar" style="max-width:260px;margin:0 auto 12px;"><i></i></div>Загружаем доступы…</div>';
     try{
-      var res=await Promise.all([apiCall('getBotSettings',{})].concat(TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); })));
+      var res=await Promise.all([apiCall('getBotSettings',{})].concat(mode==='approval'?TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); }):[]));
       var bs=res[0]; UC.emps=bs.employees||[]; UC.lists=bs.lists||{};
-      TYPES.forEach(function(t,i){ UC.rows[t[0]]=(res[i+1]&&res[i+1].rows)||[]; });
+      if(mode==='approval') TYPES.forEach(function(t,i){ UC.rows[t[0]]=(res[i+1]&&res[i+1].rows)||[]; });
     }catch(e){ $('ucBox').innerHTML='<div class="uc-h"><h3>Ошибка</h3><button class="uc-x" onclick="ucClose()">&times;</button></div><div class="uc-load" style="color:var(--red-fg)">Не удалось загрузить: '+esc(e.message)+'</div>'; return; }
     initChecks(); ucRender();
     if(UC.id) ucLookup(true);
@@ -15514,11 +15532,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
   window.ucClose=function(){ var o=$('ucOv'); if(o) o.classList.remove('on'); document.body.style.overflow=''; UC=null; };
   function snapLists(){ UC.listsOrig={}; listMeta().forEach(function(m){ UC.listsOrig[m.k]=(UC.lists[m.k]||[]).indexOf(UC.id)>=0; }); UC.listOn=Object.assign({},UC.listsOrig); }
   function ucRender(){
-    var u=UC.user, isNew=!u;
+    var u=UC.user, isNew=!u && UC.mode==='user';
     snapLists();
-    var h='<div class="uc-h"><h3>'+(isNew?'Новый сотрудник':esc(u.name||u.username))+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-b">';
-    h+='<div class="uc-s"><p class="uc-st">Аккаунт</p><div class="uc-g">';
-    if(isNew){
+    var ap=UC.mode==='approval';
+    var h='<div class="uc-h"><h3>'+(ap?(UC.pre.name||'Согласующий'):(isNew?'Новый сотрудник':esc(u.name||u.username)))+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-b">';
+    h+='<div class="uc-s"><p class="uc-st">'+(ap?'Сотрудник':'Аккаунт')+'</p><div class="uc-g">';
+    if(ap){ } else if(isNew){
       h+='<div class="uc-f"><label>Логин</label><input id="ucLogin" autocomplete="off" placeholder="например: shaxrux"></div>';
       h+='<div class="uc-f"><label>Пароль (мин. 4 символа)</label><input id="ucPass" autocomplete="off"></div>';
       h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">employee (обычный)</option><option value="admin">admin (полный доступ)</option><option value="salary">salary (только Зарплата)</option></select></div>';
@@ -15526,12 +15545,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
     }
     h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
-    h+='<div class="uc-f"><label>Имя (для согласований)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):'')+'" oninput="this.dataset.m=1"></div>';
+    h+='<div class="uc-f"><label>Имя (для согласований)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):(UC.pre.name||''))+'" oninput="this.dataset.m=1"></div>';
     h+='</div></div>';
-    h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
-    listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
-    h+='</div></div>';
-    h+='<div class="uc-s"><p class="uc-st">Согласование <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
+    if(!ap){ h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
+      listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
+      h+='</div></div>'; }
+    if(ap) h+='<div class="uc-s"><p class="uc-st">Согласование <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
     h+='</div><div class="uc-bar" id="ucBar"><b></b></div><div class="uc-err" id="ucErr"></div><div class="uc-ft"><div class="uc-sum" id="ucSum"></div><button type="button" class="uc-btn" id="ucGo" onclick="ucSave()"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>'+(isNew?'Создать и выдать доступы':'Сохранить')+'</span></button></div>';
     $('ucBox').innerHTML=h; ucCounts();
   }
@@ -15560,7 +15579,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     if($('ucApCnt')) $('ucApCnt').textContent=n+' назначений';
     if($('ucBotCnt')) $('ucBotCnt').textContent=bc+' из '+Object.keys(UC.listOn).length;
     var d=plan(); var parts=[];
-    if(!UC.user) parts.push('создать аккаунт');
+    if(!UC.user && UC.mode==='user') parts.push('создать аккаунт');
     if(d.add) parts.push('добавить: '+d.add); if(d.rep) parts.push('заменить: '+d.rep); if(d.del) parts.push('убрать: '+d.del);
     if(d.lists) parts.push('списков бота: '+d.lists);
     if($('ucSum')) $('ucSum').textContent=parts.length?('Будет: '+parts.join(', ')):'Изменений нет';
@@ -15593,8 +15612,8 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
   function prog(p){ var b=$('ucBar'); b.style.display='block'; b.firstChild.style.width=p+'%'; }
   window.ucSave=async function(){
     if(UC.busy) return; err('');
-    var isNew=!UC.user, name=$('ucName').value.trim(), id=UC.id;
-    var login=isNew?$('ucLogin').value.trim():'', pass=isNew?$('ucPass').value:'', role=isNew?$('ucRole').value:UC.user.role;
+    var isNew=!UC.user && UC.mode==='user', name=$('ucName').value.trim(), id=UC.id;
+    var login=isNew?$('ucLogin').value.trim():'', pass=isNew?$('ucPass').value:'', role=isNew?$('ucRole').value:(UC.user?UC.user.role:'');
     if(isNew && (!login||!pass)) return err('Введите логин и пароль');
     if(isNew && pass.length<4) return err('Пароль слишком короткий (минимум 4 символа)');
     var d=plan();
@@ -15629,8 +15648,9 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       for(var r=0;r<d.repL.length;r++){ await sv(d.repL[r],d.repL[r].row,true); tick(); }
       for(var q=0;q<d.delL.length;q++){ await apiCall('deleteApproverSheetRow',{sheetKey:d.delL[q].t,rowIndex:d.delL[q].row.rowIndex}); tick(); }
       prog(100); btn.classList.remove('busy'); btn.classList.add('done'); btn.querySelector('span').textContent='Готово'; await wait(1100);
-      ucClose();
-      if(typeof renderUsersManage==='function') renderUsersManage();
+      var UC_MODE=UC.mode; ucClose();
+      if(typeof renderUsersManage==='function' && UC_MODE==='user') renderUsersManage();
+      if(UC_MODE==='approval' && typeof apvLoad==='function') apvLoad();
       try{ _empNameCache=null; }catch(e){}
       try{ if(typeof BC!=='undefined') BC.d=null; }catch(e){}
     }catch(e){
@@ -15638,6 +15658,30 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       err('Не удалось: '+e.message+(isNew?' (если аккаунт уже создан, откройте его кнопкой «Доступы» и повторите)':'')); $('ucBar').style.display='none';
     }
   };
+
+  /* ===== Раздел «Согласование»: список согласующих ===== */
+  var APV={rows:[]};
+  var TYPE_NAMES={invoices:'Счёт-фактура',dogovor:'Договор',doverennost:'Доверенность',bank:'Банк',otherreqPost:'Другой (пост.)',realschet:'Реал. счёт',dogovorReal:'Реал. договор',zakaznaryad:'Заказ-наряд',otherreqReal:'Другой (реал.)'};
+  window.apvLoad=async function(){
+    var ld=$('apvLoad'), wr=$('apvWrap'); if(!ld) return;
+    ld.style.display='block'; ld.textContent='Загрузка...'; wr.style.display='none';
+    try{
+      var res=await Promise.all(TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); }));
+      var by={};
+      res.forEach(function(r,i){ (r.rows||[]).forEach(function(x){ var id=String(x.chatId||'').trim(); if(!id||!x.active) return;
+        var e=by[id]=by[id]||{id:id,name:x.name||id,n:0,types:{}}; e.n++; e.types[TYPES[i][0]]=1; }); });
+      APV.rows=Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+      ld.style.display='none'; wr.style.display=''; apvRender();
+    }catch(e){ ld.textContent='Ошибка: '+e.message; }
+  };
+  window.apvRender=function(){
+    var q=(($('apvSearch')||{}).value||'').trim().toLowerCase();
+    var list=APV.rows.filter(function(r){ return !q || (r.name+' '+r.id).toLowerCase().indexOf(q)>=0; });
+    $('apvBody').innerHTML=list.map(function(r,i){
+      return '<tr><td style="color:var(--muted)">'+(i+1)+'</td><td><strong>'+esc(r.name)+'</strong></td><td>'+esc(r.id)+'</td><td>'+r.n+'</td><td style="font-size:12px;color:var(--muted)">'+Object.keys(r.types).map(function(k){ return TYPE_NAMES[k]; }).join(', ')+'</td><td><button class="emp-delete-btn" style="background:var(--ice-soft);color:var(--navy-text);border-color:var(--border);" onclick="apvEdit(\''+r.id+'\')"><i class="ti ti-adjustments" aria-hidden="true"></i> Изменить</button></td></tr>';
+    }).join('')||'<tr><td colspan="6" style="color:var(--muted)">Ничего не найдено</td></tr>';
+  };
+  window.apvEdit=function(id){ var r=APV.rows.filter(function(x){ return x.id===id; })[0]; ucOpen(null,'approval',{chatId:id,name:r&&r.name}); };
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && UC && !UC.busy) ucClose(); });
 })();
 </script>
