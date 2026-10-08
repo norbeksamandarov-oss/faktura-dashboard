@@ -5305,7 +5305,7 @@ const SHEET_CONTROL = "Управление"; // "Bot ishga tushdi" tugmasi shu 
 // oraliqni ancha oshirdik - Cloudflare Tunnel orqali ishlayotgani uchun
 // ham har bir so'rov qimmatroq (tarmoq orqali uzoqroq yo'l bosadi).
 const AUTO_REFRESH_MS = 25000; // авто-обновление каждые 25 секунд
-const SALARY_BADGE_POLL_MS = 12000; // Зарплата so'rovlari SONI uchun - kamroq tez-tez, chunki alohida maxfiy so'rov
+const SALARY_BADGE_POLL_MS = 30000; // Зарплата so'rovlari SONI uchun - kamroq tez-tez, chunki alohida maxfiy so'rov
 
 /* Индексы столбцов на листе "Счета-фактуры" (0-based) */
 const COL = {
@@ -5436,6 +5436,7 @@ let salaryBadgeTimer = null;
 // turadi - shunda bo'limga kirganda boshqa jadvallar kabi DARHOL
 // tayyor turadi, "Загрузка..." kutilmaydi.
 async function pollSalaryRequestsBadge() {
+  if (document.hidden) return;
   if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   const groupBadge = document.getElementById("salaryReqNavBadge");
   const subBadge = document.getElementById("pendingSalaryReqBadge");
@@ -5465,6 +5466,7 @@ async function pollSalaryRequestsBadge() {
 }
 
 async function pollSalaryDataBackground() {
+  if (document.hidden) return;
   if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   try {
     const data = await apiCall("getSalaryData", {});
@@ -7636,7 +7638,7 @@ async function onLoggedIn(forcePasswordChange) {
     // Yengil "status kuzatuvchi": faqat счета-фактуры (A:L) ni har 4 soniyada
     // tekshiradi; status/ответственный/отправка o'zgarsa - darhol to'liq yangilaydi.
     if (window.__fastPollTimer) clearInterval(window.__fastPollTimer);
-    window.__fastPollTimer = setInterval(fastStatusPoll, 4000);
+    window.__fastPollTimer = setInterval(fastStatusPoll, 5000);
     document.addEventListener("visibilitychange", () => { if (!document.hidden) fastStatusPoll(); });
   }
 
@@ -8348,8 +8350,22 @@ async function fastStatusPoll() {
   if (__fastPollBusy || isLoading || uiActionInFlight || document.hidden || !authToken) return;
   __fastPollBusy = true;
   try {
-    const [rows] = await sheetsGetBatch([`'${SHEET_INVOICES}'!A2:L5000`]);
-    const sig = rows.map(r => (r[0]||"") + "|" + (r[9]||"") + "|" + (r[10]||"") + "|" + (r[11]||"")).join("\n");
+    let sig;
+    if (window.__noSheetVersion) {
+      const [rows] = await sheetsGetBatch([`'${SHEET_INVOICES}'!A2:L5000`]);
+      sig = rows.map(r => (r[0]||"") + "|" + (r[9]||"") + "|" + (r[10]||"") + "|" + (r[11]||"")).join("\n");
+    } else {
+      try {
+        // Yengil tekshiruv: faqat versiya (qatorlar soni + oxirgi o'zgarish), butun jadval emas
+        const v = await apiCall("getSheetVersion", { sheet: SHEET_INVOICES });
+        if (!v || typeof v.version !== "string") throw new Error("no version");
+        sig = "v:" + v.version;
+      } catch (e) {
+        if (/AUTH/i.test(String(e && e.message))) throw e;
+        window.__noSheetVersion = true; // eski server - avvalgi usulga qaytamiz
+        return;
+      }
+    }
     if (__fastPollSig === null) { __fastPollSig = sig; return; }
     if (sig !== __fastPollSig) {
       await loadAllData(true);
@@ -8361,6 +8377,7 @@ async function fastStatusPoll() {
 }
 
 async function loadAllData(silent) {
+  if (silent && document.hidden) return; // tab ko'rinmayapti - fon yangilanishi shart emas
   if (isLoading) return; // не накладываем параллельные запросы друг на друга
   if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   isLoading = true;
@@ -10201,6 +10218,7 @@ function sugApplyNav(items) {
   return fresh;
 }
 async function pollSuggestionsBackground() {
+  if (document.hidden) return;
   if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   const badge = document.getElementById("pendingSuggestionsBadge");
   try {
@@ -10694,6 +10712,7 @@ let gtdBadgeTimer = null;
 let suggestionsBadgeTimer = null;
 
 async function pollGtdBackground() {
+  if (document.hidden) return;
   if (uiActionInFlight) return; // admin hozir biror amalni bajaryapti - unga xalaqit bermaymiz
   try {
     const data = await apiCall("getGtdItems", {});
@@ -11023,6 +11042,7 @@ function vz2UpdateErrorIndicators() {
 }
 
 async function pollVz2ErrorsBackground() {
+  if (document.hidden) return;
   if (uiActionInFlight) return;
   try {
     await ensureVz2Data(true);
