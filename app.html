@@ -1090,11 +1090,111 @@
     },
   };
 
+  // ------------------------------------------------------------
+  // Договоры на согласование (маршрут: Приложение № 2)
+  // ------------------------------------------------------------
+  function ctEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]; }); }
+  SECTIONS.contracts = {
+    icon: "ti-file-certificate", label: "Договоры", title: "Договоры на согласование",
+    render: function () {
+      var card = makeCard();
+      var h = document.createElement("div"); h.className = "step-label"; h.textContent = "Новый договор на согласование";
+      card.appendChild(h);
+      var deptWrap = document.createElement("div"); deptWrap.className = "field";
+      deptWrap.innerHTML = "<label>1. Подразделение инициатора</label><select class='ct-dept'><option value=''>Загрузка...</option></select>";
+      card.appendChild(deptWrap);
+      var sel = deptWrap.querySelector("select");
+      sel.style.cssText = "width:100%;padding:12px;border-radius:12px;background:inherit;color:inherit;border:1px solid rgba(255,255,255,.14);font:inherit";
+      callApi("miniAppContractDepartments", { chatId: getChatId() }).then(function (r) {
+        var d = r.departments || [];
+        sel.innerHTML = "<option value=''>" + (d.length ? "Выберите подразделение" : "Подразделения не настроены") + "</option>" +
+          d.map(function (x) { return "<option>" + ctEsc(x) + "</option>"; }).join("");
+      }).catch(function (e) { sel.innerHTML = "<option value=''>Ошибка загрузки</option>"; toast(e.message, "err"); });
+      var cp = makeField(card, "2. Контрагент", "input", { placeholder: "Например: ООО «Kadi Agency»" }); cp.type = "text";
+      var subj = makeField(card, "3. Предмет договора", "textarea", { placeholder: "Кратко: что, на какой срок" });
+      var fSz = makeFileDrop(card, "4. Служебная записка (обязательно)");
+      var fCt = makeFileDrop(card, "5. Проект договора (обязательно)");
+      var fKp = makeFileDrop(card, "6. Коммерческое предложение (если есть)");
+      var btn = makeSubmitBtn(card, "Отправить на согласование");
+      btn.onclick = function () {
+        if (!sel.value) { toast("Выберите подразделение", "err"); return; }
+        if (!cp.value.trim() || !subj.value.trim()) { toast("Заполните контрагента и предмет", "err"); return; }
+        if (!fSz.getFiles().length || !fCt.getFiles().length) { toast("Приложите служебную записку и проект договора", "err"); return; }
+        withBusy(btn, async function () {
+          var files = [];
+          var plan = [["sz", fSz], ["contract", fCt], ["kp", fKp]];
+          for (var i = 0; i < plan.length; i++) {
+            var fl = plan[i][1].getFiles();
+            for (var j = 0; j < fl.length; j++) {
+              var up = await uploadFile(fl[j]);
+              files.push({ kind: plan[i][0], name: up.name, url: up.url });
+            }
+          }
+          var res = await callApi("miniAppSubmitContract", {
+            chatId: getChatId(), dept: sel.value, counterparty: cp.value.trim(), subject: subj.value.trim(), files: files,
+          });
+          toast("Договор № " + res.id + " отправлен на согласование", "ok");
+          content.innerHTML = ""; SECTIONS.contracts.render();
+        });
+      };
+
+      var list = document.createElement("div"); list.className = "card";
+      list.innerHTML = "<div class='step-label'>Мои договоры</div><div class='ct-mine'>Загрузка...</div>";
+      content.appendChild(list);
+      var box = list.querySelector(".ct-mine");
+      callApi("miniAppMyContracts", { chatId: getChatId() }).then(function (r) {
+        var items = r.contracts || [];
+        if (!items.length) { box.textContent = "Пока нет договоров"; return; }
+        box.innerHTML = "";
+        items.forEach(function (c) {
+          var d = document.createElement("div");
+          d.style.cssText = "padding:12px 0;border-top:1px solid rgba(255,255,255,.08)";
+          var st = c.status === "На согласовании" ? "Этап " + c.stage + " из 5: " + c.stageName : c.status;
+          var wait = (c.status === "На согласовании" && c.pending && c.pending.length) ? "<div style='opacity:.7;font-size:13px;margin-top:2px'>Ожидается: " + c.pending.map(function (p) { return ctEsc(p.pos); }).join(", ") + "</div>" : "";
+          d.innerHTML = "<div><b>№ " + c.id + "</b> · " + ctEsc(c.counterparty) + "</div><div style='opacity:.75;font-size:13px;margin-top:2px'>" + ctEsc(st) + "</div>" + wait +
+            (c.status === "Возвращён" ? "<div style='color:#ff7a7a;font-size:13px;margin-top:6px'>" + ctEsc(c.comment) + "</div>" : "");
+          if (c.status === "Возвращён") {
+            var b = document.createElement("button"); b.className = "submit-btn"; b.style.marginTop = "10px"; b.textContent = "Исправить и отправить заново";
+            b.onclick = function () { ctResubmit(c); };
+            d.appendChild(b);
+          }
+          box.appendChild(d);
+        });
+      }).catch(function (e) { box.textContent = "Ошибка: " + e.message; });
+    },
+  };
+  function ctResubmit(c) {
+    content.innerHTML = "";
+    var card = makeCard();
+    var h = document.createElement("div"); h.className = "step-label"; h.textContent = "Договор № " + c.id + ": доработка";
+    card.appendChild(h);
+    var note = document.createElement("div"); note.style.cssText = "color:#ff7a7a;font-size:13px;margin-bottom:10px"; note.textContent = c.comment;
+    card.appendChild(note);
+    var fSz = makeFileDrop(card, "Новая служебная записка (если меняли)");
+    var fCt = makeFileDrop(card, "Новый проект договора (если меняли)");
+    var fKp = makeFileDrop(card, "Новое КП (если меняли)");
+    var cm = makeField(card, "Комментарий (что исправлено)", "textarea", { placeholder: "Необязательно" });
+    var btn = makeSubmitBtn(card, "Отправить заново");
+    btn.onclick = function () {
+      withBusy(btn, async function () {
+        var files = [], plan = [["sz", fSz], ["contract", fCt], ["kp", fKp]];
+        for (var i = 0; i < plan.length; i++) {
+          var fl = plan[i][1].getFiles();
+          for (var j = 0; j < fl.length; j++) { var up = await uploadFile(fl[j]); files.push({ kind: plan[i][0], name: up.name, url: up.url }); }
+        }
+        await callApi("miniAppResubmitContract", { chatId: getChatId(), id: c.id, files: files, comment: cm.value.trim() });
+        toast("Договор отправлен заново", "ok");
+        content.innerHTML = ""; SECTIONS.contracts.render();
+      });
+    };
+  }
+
   var TOP_MENU = [
     { type: "cat", key: "postupleniya" },
     { type: "cat", key: "realizatsiya" },
     { type: "sec", key: "bank" },
     { type: "sec", key: "salary" },
+    { type: "sec", key: "contracts" },
     { type: "sec", key: "myrequests" },
     { type: "sec", key: "suggestion" },
   ];
@@ -1109,6 +1209,7 @@
     salary: "#30D158",
     suggestion: "#FFB800",
     myrequests: "#5E9BFF",
+    contracts: "#FF6B6B",
   };
 
   // ------------------------------------------------------------
@@ -1122,7 +1223,7 @@
 
   var SUBS = {
     postupleniya: "Договор, доверенность", realizatsiya: "Счёт-фактура, заказ-наряд",
-    bank: "Платёжные вопросы", myrequests: "Статус и история", salary: "Расчётный лист", suggestion: "Напишите нам напрямую",
+    bank: "Платёжные вопросы", contracts: "Маршрут согласования", myrequests: "Статус и история", salary: "Расчётный лист", suggestion: "Напишите нам напрямую",
     dogovor: "Запрос по договору", doverennost: "Оформить доверенность", realschet: "На автомобиль",
     zakaznaryad: "По сервису и запчастям", otherreq_post: "Если ничего не подошло", otherreq_real: "Если ничего не подошло",
   };

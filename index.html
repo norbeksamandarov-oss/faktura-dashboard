@@ -3406,6 +3406,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
         <button class="nav-item nav-sub-item" data-section="vz2otv" onclick="showSection('vz2otv')"><span class="nav-icon"><i class='ti ti-address-book' aria-hidden='true'></i></span><span class="nav-label">Ответственные</span></button>
       </div>
       <button class="nav-item" data-section="reconcile" onclick="showSection('reconcile')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg></span><span class="nav-label">Сверка с 1С</span></button>
+      <button class="nav-item" data-section="contracts" onclick="showSection('contracts')"><span class="nav-icon"><i class='ti ti-file-certificate' aria-hidden='true'></i></span><span class="nav-label">Договоры</span><span id="ctNavBadge" class="nav-badge" style="display:none;"></span></button>
       <button class="nav-item" data-section="suppliers" onclick="showSection('suppliers')"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span><span class="nav-label">Контрагенты</span></button>
       <button class="nav-item nav-group-toggle" id="salaryToggle" onclick="toggleNavGroup('salaryToggle','salarySubgroup')">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.4 0 1.4-1.3 2.5-3 2.5s-3-1.1-3-2.5"/></svg></span>
@@ -4436,6 +4437,22 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </div>
     </section>
 
+    <section id="section-contracts" class="content-section">
+    <div class="panel">
+      <h2>Договоры на согласование <span class="sub">маршрут: руководитель, бухгалтерия, юрист, директора, генеральный директор</span></h2>
+      <div class="ct-tabs" id="ctTabs"></div>
+      <div id="ctList" class="ct-list"></div>
+    </div>
+    <div class="panel" id="ctRegPanel" style="display:none;margin-top:16px;">
+      <h2>Согласующие по должностям <span class="sub">кто какую должность занимает</span></h2>
+      <p class="analytics-note" style="margin:0 0 14px;">Договор идёт по должностям, а не по людям. Здесь указывается, кто сейчас занимает должность: Telegram ID (для кнопок в боте) и логин в дашборде (для решения здесь). Для руководителя подразделения укажите подразделение - оно появится в списке выбора у инициатора.</p>
+      <div id="ctRegRows"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="ct-btn" onclick="ctRegAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Добавить строку</button>
+        <button class="ct-btn ct-primary" id="ctRegSaveBtn" onclick="ctRegSave(this)"><span class="ct-lbl"><i class="ti ti-device-floppy" aria-hidden="true"></i> Сохранить</span></button>
+      </div>
+    </div>
+    </section>
     <section id="section-writeemp" class="content-section">
     <div class="panel">
       <h2>Написать сотруднику <span class="sub">прямое сообщение через Telegram-бота</span></h2>
@@ -7149,6 +7166,7 @@ function showSection(name) {
     }
   });
 
+  if (name === "contracts" && (currentRole === "admin" || currentRole === "approver")) ctOpen();
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
@@ -7694,8 +7712,11 @@ async function onLoggedIn(forcePasswordChange) {
   // (счета, договорlar va h.k.) yuklanmasin, faqat Зарплата.
   if (currentRole === "salary") {
     await loadSalary();
+  } else if (currentRole === "approver") {
+    await loadContracts(false);
   } else {
     await loadAllData(false);
+    loadContracts(true);
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
@@ -7728,7 +7749,7 @@ async function onLoggedIn(forcePasswordChange) {
   // qo'shilmaydi (o'zining alohida fon jarayonida ishlaydi), lekin
   // endi rol tekshiruvisiz (faqat maxsus "Расчётный бухгалтер" rolidan
   // tashqari - u baribir boshqa hech qanday bo'limni ko'rmaydi).
-  if (currentRole !== "salary") {
+  if (currentRole !== "salary" && currentRole !== "approver") {
     await pollGtdBackground();
     if (gtdBadgeTimer) clearInterval(gtdBadgeTimer);
     gtdBadgeTimer = setInterval(pollGtdBackground, SALARY_BADGE_POLL_MS);
@@ -7854,6 +7875,8 @@ function applyRolePermissions(role) {
   const isAdmin = role === "admin";
   const _rsb = document.getElementById("rsTabBtn"); if (_rsb) _rsb.style.display = isAdmin ? "" : "none";
   const isSalaryOnly = role === "salary";
+  const isApprover = role === "approver";
+  document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(el => { el.style.display = (isAdmin || isApprover) ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="approval"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
@@ -7884,6 +7907,13 @@ function applyRolePermissions(role) {
       el.style.display = keep ? "" : "none";
     });
     showSection("salaryrequests");
+  }
+  // Согласующий договоров (role: "approver") - видит ТОЛЬКО раздел «Договоры».
+  if (isApprover) {
+    document.querySelectorAll(".nav-item").forEach(el => {
+      el.style.display = el.dataset.section === "contracts" ? "" : "none";
+    });
+    showSection("contracts");
   }
 }
 
@@ -15677,7 +15707,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     if(ap){ } else if(isNew){
       h+='<div class="uc-f"><label>Логин</label><input id="ucLogin" autocomplete="off" placeholder="например: shaxrux"></div>';
       h+='<div class="uc-f"><label>Пароль (мин. 4 символа)</label><input id="ucPass" autocomplete="off"></div>';
-      h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">employee (обычный)</option><option value="admin">admin (полный доступ)</option><option value="salary">salary (только Зарплата)</option></select></div>';
+      h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">employee (обычный)</option><option value="admin">admin (полный доступ)</option><option value="salary">salary (только Зарплата)</option><option value="approver">approver (только Договоры)</option></select></div>';
     } else {
       h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
     }
@@ -15845,6 +15875,207 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
   };
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && UC && !UC.busy) ucClose(); });
 })();
+</script>
+<style>
+.ct-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
+.ct-tab{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;transition:all .2s}
+.ct-tab:hover{color:var(--text)}
+.ct-tab.on{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
+.ct-tab b{margin-left:6px;font-weight:600;opacity:.8}
+.ct-list{display:flex;flex-direction:column;gap:12px}
+.ct-empty{color:var(--muted);padding:28px 0;text-align:center}
+.ct-card{border:1px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--card);animation:ctIn .35s ease both;transition:border-color .2s}
+.ct-card.mine{border-color:var(--navy-text)}
+@keyframes ctIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ct-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ct-no{font-weight:700;color:var(--navy-text)}
+.ct-cp{font-weight:600;font-size:15px}
+.ct-badge{margin-left:auto;font-size:12px;padding:3px 10px;border-radius:999px;background:var(--gray-bg);color:var(--gray-fg)}
+.ct-badge.work{background:var(--amber-bg);color:var(--amber-fg)}
+.ct-badge.back{background:var(--red-bg);color:var(--red-fg)}
+.ct-badge.done{background:var(--green-bg);color:var(--green-fg)}
+.ct-meta{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.5}
+.ct-subj{margin-top:8px;font-size:14px;line-height:1.5}
+.ct-steps{display:flex;gap:4px;margin:14px 0 6px}
+.ct-step{flex:1;min-width:0}
+.ct-bar{height:5px;border-radius:3px;background:var(--gray-bg);transition:background .4s}
+.ct-step.done .ct-bar{background:var(--green-fg)}
+.ct-step.cur .ct-bar{background:var(--amber-fg)}
+.ct-step.bad .ct-bar{background:var(--red-fg)}
+.ct-step span{display:block;font-size:11px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-step.cur span,.ct-step.done span{color:var(--text)}
+.ct-wait{font-size:13px;margin-top:6px;color:var(--muted)}
+.ct-wait b{color:var(--text);font-weight:600}
+.ct-over{color:var(--red-fg);font-weight:600}
+.ct-files{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ct-file{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text);text-decoration:none}
+.ct-file:hover{border-color:var(--navy-text)}
+.ct-reason{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--red-bg);color:var(--red-fg);font-size:13px}
+.ct-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ct-btn{display:inline-flex;gap:6px;align-items:center;justify-content:center;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:10px;padding:9px 16px;font:inherit;font-size:13px;cursor:pointer;position:relative;transition:transform .15s,background .2s,border-color .2s}
+.ct-btn:hover{border-color:var(--navy-text)}
+.ct-btn:active{transform:scale(.97)}
+.ct-primary{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
+.ct-yes{background:var(--green-fg);color:#fff;border-color:var(--green-fg)}
+.ct-no2{color:var(--red-fg);border-color:var(--red-fg)}
+.ct-btn.busy{pointer-events:none;opacity:.85}
+.ct-btn.busy .ct-lbl{visibility:hidden}
+.ct-btn.busy::after{content:"";position:absolute;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.ct-btn.ok{background:var(--green-fg);color:#fff;border-color:var(--green-fg)}
+.ct-btn.shake{animation:ctShake .4s}
+@keyframes ctShake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.ct-hist{margin-top:10px;border-top:1px solid var(--border);padding-top:10px;font-size:12px;color:var(--muted);display:none}
+.ct-hist.open{display:block}
+.ct-hist div{padding:2px 0}
+.ct-link{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;padding:0;margin-top:10px;text-decoration:underline}
+.ct-reg{display:grid;grid-template-columns:1.3fr 1.1fr 1.1fr .9fr .9fr auto;gap:8px;margin-bottom:8px}
+.ct-reg input,.ct-reg select{min-width:0;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px}
+@media (max-width:900px){.ct-reg{grid-template-columns:1fr 1fr}}
+</style>
+<script>
+var CT = { list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
+var CT_STEPS = ["Инициатор", "Руководитель", "Кросс-функц.", "Директора", "Ген. директор"];
+function ctDate(s) { return s && s.length >= 10 ? s.slice(8, 10) + "." + s.slice(5, 7) + "." + s.slice(0, 4) : ""; }
+async function loadContracts(silent) {
+  try {
+    var d = await apiCall("contractList", {});
+    CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin;
+    var rp = document.getElementById("ctRegPanel");
+    if (rp) rp.style.display = CT.isAdmin ? "" : "none";
+    ctRender();
+    var n = CT.list.filter(function (c) { return c.myPending && c.myPending.length; }).length;
+    var b = document.getElementById("ctNavBadge");
+    if (b) { b.textContent = n || ""; b.style.display = n ? "" : "none"; }
+  } catch (e) {
+    if (!silent) document.getElementById("ctList").innerHTML = '<div class="ct-empty">' + escapeHtml(e.message) + "</div>";
+  }
+}
+function ctFilterList() {
+  var f = CT.filter;
+  return CT.list.filter(function (c) {
+    if (f === "mine") return c.myPending && c.myPending.length;
+    if (f === "work") return c.status === "На согласовании";
+    if (f === "back") return c.status === "Возвращён";
+    if (f === "done") return c.status === "Утверждён";
+    return true;
+  });
+}
+function ctRender() {
+  var cnt = {
+    mine: CT.list.filter(function (c) { return c.myPending && c.myPending.length; }).length,
+    work: CT.list.filter(function (c) { return c.status === "На согласовании"; }).length,
+    back: CT.list.filter(function (c) { return c.status === "Возвращён"; }).length,
+    done: CT.list.filter(function (c) { return c.status === "Утверждён"; }).length,
+    all: CT.list.length
+  };
+  var tabs = [["mine", "Мне на решение"], ["work", "На согласовании"], ["back", "Возвращены"], ["done", "Утверждены"], ["all", "Все"]];
+  document.getElementById("ctTabs").innerHTML = tabs.map(function (t) {
+    return '<button class="ct-tab' + (CT.filter === t[0] ? " on" : "") + '" onclick="ctSetFilter(\'' + t[0] + '\')">' + t[1] + "<b>" + cnt[t[0]] + "</b></button>";
+  }).join("");
+  var items = ctFilterList();
+  var box = document.getElementById("ctList");
+  if (!items.length) { box.innerHTML = '<div class="ct-empty">Здесь пока пусто</div>'; return; }
+  box.innerHTML = items.map(ctCard).join("");
+}
+function ctSetFilter(f) { CT.filter = f; ctRender(); }
+function ctCard(c) {
+  var cls = c.status === "Утверждён" ? "done" : c.status === "Возвращён" ? "back" : "work";
+  var steps = CT_STEPS.map(function (nm, i) {
+    var n = i + 1, st = "";
+    if (c.status === "Утверждён" || n < c.stage) st = "done";
+    else if (c.status === "Возвращён" && n === 1) st = "bad";
+    else if (n === c.stage && c.status === "На согласовании") st = "cur";
+    return '<div class="ct-step ' + st + '"><div class="ct-bar"></div><span>' + nm + "</span></div>";
+  }).join("");
+  var wait = "";
+  if (c.status === "На согласовании") {
+    wait = '<div class="ct-wait">Ожидается: ' + c.pending.map(function (p) { return "<b>" + escapeHtml(p.pos) + "</b>" + (p.names.length ? " (" + escapeHtml(p.names.join(", ")) + ")" : ""); }).join(", ") +
+      (c.done.length ? " · согласовали: " + c.done.map(function (p) { return escapeHtml(p.pos); }).join(", ") : "") +
+      (c.due ? ' · срок до ' + ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</div>";
+  }
+  var files = (c.files || []).map(function (f) {
+    var k = { sz: "Служебная записка", contract: "Проект договора", kp: "КП" }[f.kind] || "Файл";
+    return '<a class="ct-file" target="_blank" rel="noopener" href="' + escapeHtml(f.url) + '"><i class="ti ti-paperclip" aria-hidden="true"></i>' + k + ": " + escapeHtml(f.name) + "</a>";
+  }).join("");
+  var acts = "";
+  (c.myPending || []).forEach(function (k) {
+    var pos = (c.pending.filter(function (p) { return p.key === k; })[0] || {}).pos || k;
+    acts += '<button class="ct-btn ct-yes" onclick="ctDecide(' + c.id + ",'" + k + "',true,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-check\" aria-hidden=\"true\"></i> Согласовать (" + escapeHtml(pos) + ')</span></button>' +
+      '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button>";
+  });
+  var hist = (c.history || []).map(function (h) {
+    return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>";
+  }).join("");
+  return '<div class="ct-card' + (acts ? " mine" : "") + '" id="ctc' + c.id + '">' +
+    '<div class="ct-head"><span class="ct-no">№ ' + c.id + '</span><span class="ct-cp">' + escapeHtml(c.counterparty) + '</span><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
+    '<div class="ct-meta">' + escapeHtml(c.dept) + " · инициатор: " + escapeHtml(c.initiator) + " · подан " + escapeHtml(c.created) + "</div>" +
+    '<div class="ct-subj">' + escapeHtml(c.subject) + "</div>" +
+    '<div class="ct-steps">' + steps + "</div>" + wait +
+    (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
+    (files ? '<div class="ct-files">' + files + "</div>" : "") +
+    (acts ? '<div class="ct-acts">' + acts + "</div>" : "") +
+    '<button class="ct-link" onclick="ctToggleHist(' + c.id + ')">История</button><div class="ct-hist' + (CT.hist[c.id] ? " open" : "") + '" id="cth' + c.id + '">' + hist + "</div></div>";
+}
+function ctToggleHist(id) { CT.hist[id] = !CT.hist[id]; var e = document.getElementById("cth" + id); if (e) e.classList.toggle("open", !!CT.hist[id]); }
+async function ctDecide(id, key, approve, btn) {
+  var comment = "";
+  if (!approve) {
+    comment = await uiPrompt("Договор № " + id + ": укажите причину отклонения. Он вернётся инициатору.", "");
+    if (!comment || !comment.trim()) return;
+  } else if (!(await uiConfirm("Согласовать договор № " + id + "?"))) return;
+  btn.classList.add("busy");
+  try {
+    await apiCall("contractDecide", { id: id, key: key, approve: approve, comment: comment });
+    btn.classList.remove("busy");
+    if (approve) btn.classList.add("ok");
+    await new Promise(function (r) { setTimeout(r, 700); });
+    await loadContracts(true);
+  } catch (e) {
+    btn.classList.remove("busy");
+    btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
+}
+async function ctRegLoad() {
+  try {
+    var d = await apiCall("contractRegistryGet", {});
+    CT.reg = d.rows || []; CT.pos = d.positions || {};
+    if (!CT.reg.length) Object.keys(CT.pos).forEach(function (k) { CT.reg.push({ key: k, dept: "", name: "", chat: "", login: "" }); });
+    ctRegRender();
+  } catch (e) { uiAlert(e.message); }
+}
+function ctRegRender() {
+  var opts = Object.keys(CT.pos).map(function (k) { return '<option value="' + k + '">' + escapeHtml(CT.pos[k]) + "</option>"; }).join("");
+  document.getElementById("ctRegRows").innerHTML = CT.reg.map(function (r, i) {
+    return '<div class="ct-reg"><select onchange="CT.reg[' + i + '].key=this.value;ctRegRender()">' + opts.replace('value="' + r.key + '"', 'value="' + r.key + '" selected') + "</select>" +
+      '<input placeholder="Подразделение" value="' + escapeHtml(r.dept) + '"' + (r.key === "HEAD" ? "" : " disabled") + ' oninput="CT.reg[' + i + '].dept=this.value">' +
+      '<input placeholder="Имя" value="' + escapeHtml(r.name) + '" oninput="CT.reg[' + i + '].name=this.value">' +
+      '<input placeholder="Telegram ID" inputmode="numeric" value="' + escapeHtml(r.chat) + '" oninput="CT.reg[' + i + '].chat=this.value">' +
+      '<input placeholder="Логин в дашборде" value="' + escapeHtml(r.login) + '" oninput="CT.reg[' + i + '].login=this.value">' +
+      '<button class="ct-btn" onclick="CT.reg.splice(' + i + ',1);ctRegRender()" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></div>';
+  }).join("");
+}
+function ctRegAdd() { CT.reg.push({ key: "HEAD", dept: "", name: "", chat: "", login: "" }); ctRegRender(); }
+async function ctRegSave(btn) {
+  btn.classList.add("busy");
+  try {
+    await apiCall("contractRegistrySave", { rows: CT.reg });
+    btn.classList.remove("busy"); btn.classList.add("ok");
+    await ctRegLoad();
+    setTimeout(function () { btn.classList.remove("ok"); }, 1200);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
+}
+function ctOpen() {
+  loadContracts();
+  if (CT.isAdmin || currentRole === "admin") ctRegLoad();
+  if (CT.timer) clearInterval(CT.timer);
+  CT.timer = setInterval(function () { if (document.getElementById("section-contracts").classList.contains("active")) loadContracts(true); }, 15000);
+}
 </script>
 </body>
 </html>
