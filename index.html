@@ -15326,26 +15326,66 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
         '<td class="rs-n"'+(Math.abs(r.diff)>1?' style="color:#d64545;font-weight:700"':'')+'>'+(r.st==='ok'?'':fmt(r.diff))+'</td></tr>';
     }).join('') || '<tr><td colspan="9" style="color:var(--muted)">Ничего не найдено</td></tr>';
   };
+  async function rsStyled(R){
+    await rcLoadExcelJS();
+    var wb=new ExcelJS.Workbook(); wb.creator='CRB Controlling System'; wb.created=new Date();
+    var NAVY='FF1F2A55',LINE='FFD9DCE8',ZEBRA='FFF6F7FB',RED='FFC0392B',GREEN='FF0E8F63',MUTED='FF6B7189';
+    var font=function(o){ return Object.assign({name:'Calibri',size:11,color:{argb:'FF1B1F33'}},o||{}); };
+    var bd={top:{style:'thin',color:{argb:LINE}},bottom:{style:'thin',color:{argb:LINE}},left:{style:'thin',color:{argb:LINE}},right:{style:'thin',color:{argb:LINE}}};
+    var fill=function(c){ return {type:'pattern',pattern:'solid',fgColor:{argb:c}}; };
+    var stamp=new Date().toLocaleString('ru-RU',{dateStyle:'long',timeStyle:'short'});
+    var ws0=wb.addWorksheet('Итог',{views:[{showGridLines:false}],properties:{tabColor:{argb:NAVY}}});
+    ws0.columns=[{width:46},{width:22}];
+    ws0.mergeCells('A1:B1'); var t=ws0.getCell('A1'); t.value='Сверка: Восстановление'; t.font=font({size:20,bold:true,color:{argb:NAVY}}); ws0.getRow(1).height=32;
+    ws0.getCell('A2').value='Сформировано: '+stamp; ws0.getCell('A2').font=font({size:10,color:{argb:MUTED}});
+    var head=function(r,x,y){ [['A',x],['B',y]].forEach(function(p,i){ var c=ws0.getCell(p[0]+r); c.value=p[1]; c.font=font({bold:true,color:{argb:'FFFFFFFF'}}); c.fill=fill(NAVY); c.alignment={horizontal:i?'right':'left',vertical:'middle',indent:1}; }); ws0.getRow(r).height=22; };
+    var ln=function(r,x,y,col,fmtc){ var a=ws0.getCell('A'+r), b=ws0.getCell('B'+r); a.value=x; b.value=y; a.font=font(); b.font=font({bold:true,color:col?{argb:col}:undefined}); a.border=b.border=bd; a.alignment={indent:1,vertical:'middle'}; b.alignment={horizontal:'right',vertical:'middle'}; b.numFmt=fmtc||'#,##0'; ws0.getRow(r).height=20; };
+    head(4,'Показатель','Значение');
+    ln(5,'Контрагентов в налоговом',R.nT); ln(6,'Контрагентов в 1С',R.nC);
+    ln(7,'Сумма по налоговому',Math.round(R.sumT*100)/100,null,'#,##0.00'); ln(8,'Сумма по 1С',Math.round(R.sumC*100)/100,null,'#,##0.00');
+    ln(9,'Разница общая',Math.round((R.sumT-R.sumC)*100)/100,Math.abs(R.sumT-R.sumC)>1?RED:GREEN,'#,##0.00');
+    head(11,'Результат сверки','Кол-во');
+    var cats=[['sum','Расхождение по сумме',1],['tax','Только в налоговом',1],['c1','Только в 1С',1],['amt','Совпала только сумма (проверить)',1],['name','Совпало по ФИО и сумме',0],['ok','Совпало',0]];
+    cats.forEach(function(c,i){ var n=R.cnt[c[0]]; ln(12+i,c[1],n,c[2]?(n>0?RED:GREEN):null); });
+    ws0.pageSetup={orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0};
+    var cols=[['№',6,'c'],['Статус',24,'t'],['ИНН (налог)',16,'t'],['Контрагент (налог)',40,'t'],['Сумма (налог)',20,'n'],['ИНН (1С)',16,'t'],['Контрагент (1С)',40,'t'],['Сумма (1С)',20,'n'],['Разница',20,'n']];
+    var notes={sum:'ИНН совпал, но суммы отличаются',tax:'Есть в налоговом, в 1С не найдено',c1:'Есть в 1С, в налоговом не найдено',amt:'ИНН/ФИО не совпали, но сумма одинаковая - проверьте вручную',name:'ИНН разный, но ФИО и сумма совпали',ok:'ИНН и сумма совпали'};
+    cats.forEach(function(cg){
+      var rows=R.rows.filter(function(r){return r.st===cg[0];}); if(!rows.length) return;
+      var ws=wb.addWorksheet(cg[1].replace(/[\\\/\?\*\[\]:]/g,'').slice(0,31),{views:[{state:'frozen',ySplit:4,showGridLines:false}],properties:{tabColor:{argb:cg[2]?RED:'FF8A94B8'}}});
+      ws.columns=cols.map(function(c){return {width:c[1]};});
+      ws.mergeCells(1,1,1,cols.length); var n1=ws.getCell(1,1); n1.value=cg[1]+' ('+rows.length+')'; n1.font=font({size:14,bold:true,color:{argb:NAVY}}); ws.getRow(1).height=24;
+      ws.mergeCells(2,1,2,cols.length); var n2=ws.getCell(2,1); n2.value=notes[cg[0]]; n2.font=font({size:10,italic:true,color:{argb:MUTED}});
+      var hr=ws.getRow(4); hr.height=24;
+      cols.forEach(function(c,i){ var x=hr.getCell(i+1); x.value=c[0]; x.font=font({bold:true,color:{argb:'FFFFFFFF'}}); x.fill=fill(NAVY); x.border=bd; x.alignment={horizontal:c[2]==='n'?'right':(c[2]==='c'?'center':'left'),vertical:'middle',wrapText:true,indent:c[2]==='t'?1:0}; });
+      var sT=0,sC=0,sD=0;
+      rows.forEach(function(r,ri){
+        var row=ws.getRow(5+ri); row.height=19;
+        var vals=[ri+1,ST[r.st],r.t?r.t.inn:'',r.t?r.t.name:'',r.t?Math.round(r.t.sum*100)/100:null,r.c?r.c.inn:'',r.c?r.c.name:'',r.c?Math.round(r.c.sum*100)/100:null,r.st==='ok'?0:Math.round(r.diff*100)/100];
+        if(r.t) sT+=r.t.sum; if(r.c) sC+=r.c.sum; if(r.st!=='ok') sD+=r.diff;
+        cols.forEach(function(c,i){ var x=row.getCell(i+1); x.value=vals[i]; x.border=bd; x.font=font();
+          if(c[2]==='n'){ x.numFmt='#,##0.00'; x.alignment={horizontal:'right',vertical:'middle'}; if(i===8&&vals[i]) x.font=font({bold:true,color:{argb:RED}}); }
+          else if(c[2]==='c'){ x.alignment={horizontal:'center',vertical:'middle'}; x.font=font({color:{argb:MUTED}}); }
+          else x.alignment={horizontal:'left',vertical:'middle',indent:1};
+          if(ri%2) x.fill=fill(ZEBRA); });
+      });
+      var tr=ws.getRow(5+rows.length+1); tr.height=22; var lb=tr.getCell(2); lb.value='Итого'; lb.font=font({bold:true});
+      [[4,sT],[7,sC],[8,sD]].forEach(function(p){ var x=tr.getCell(p[0]+1); x.value=Math.round(p[1]*100)/100; x.numFmt='#,##0.00'; x.font=font({bold:true}); x.alignment={horizontal:'right',vertical:'middle'}; });
+      for(var i=1;i<=cols.length;i++) tr.getCell(i).border={top:{style:'medium',color:{argb:NAVY}}};
+      ws.autoFilter={from:{row:4,column:1},to:{row:4+rows.length,column:cols.length}};
+      ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'4:4'};
+    });
+    var buf=await wb.xlsx.writeBuffer(); var d=new Date(), p2=function(n){return String(n).padStart(2,'0');};
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download='Сверка Восстановление - '+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'.xlsx';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }
   window.rsExport=async function(){
     var R=RS.res; if(!R) return;
     var btn=$('rsExportBtn'), old=btn.innerHTML;
     btn.classList.add('busy'); btn.innerHTML="<i class='ti ti-loader-2' aria-hidden='true'></i> Готовим файл…"; await wait(500);
-    try{
-      var wb=XLSX.utils.book_new();
-      var head=['Статус','ИНН (налог)','Контрагент (налог)','Сумма (налог)','ИНН (1С)','Контрагент (1С)','Сумма (1С)','Разница'];
-      var line=function(r){ return [ST[r.st], r.t?r.t.inn:'', r.t?r.t.name:'', r.t?r.t.sum:'', r.c?r.c.inn:'', r.c?r.c.name:'', r.c?r.c.sum:'', r.st==='ok'?0:r.diff]; };
-      var summary=[['Сверка: Восстановление'],['Дата',new Date().toLocaleString('ru-RU')],[],['Показатель','Значение'],
-        ['Контрагентов в налоговом',R.nT],['Контрагентов в 1С',R.nC],['Совпало (по ИНН)',R.cnt.ok],['Совпало по ФИО и сумме',R.cnt.name],['Совпала только сумма (проверить)',R.cnt.amt],
-        ['Расхождение по сумме',R.cnt.sum],['Только в налоговом',R.cnt.tax],['Только в 1С',R.cnt.c1],[],['Сумма по налоговому',R.sumT],['Сумма по 1С',R.sumC],['Разница общая',R.sumT-R.sumC]];
-      var ws0=XLSX.utils.aoa_to_sheet(summary); ws0['!cols']=[{wch:34},{wch:22}]; XLSX.utils.book_append_sheet(wb,ws0,'Итог');
-      [['sum','Расхождение по сумме'],['tax','Только в налоговом'],['c1','Только в 1С'],['amt','Совпала только сумма'],['name','По ФИО и сумме'],['ok','Совпало']].forEach(function(t){
-        var rows=R.rows.filter(function(r){return r.st===t[0];}).map(line);
-        var ws=XLSX.utils.aoa_to_sheet([head].concat(rows)); ws['!cols']=[{wch:24},{wch:16},{wch:40},{wch:18},{wch:16},{wch:40},{wch:18},{wch:18}];
-        XLSX.utils.book_append_sheet(wb,ws,t[1].slice(0,31));
-      });
-      XLSX.writeFile(wb,'Сверка_Восстановление_'+new Date().toISOString().slice(0,10)+'.xlsx');
-      btn.innerHTML="<i class='ti ti-check' aria-hidden='true'></i> Готово"; await wait(1200);
-    }catch(e){ err('Не удалось сформировать Excel'); }
+    try{ await rsStyled(R); btn.innerHTML="<i class='ti ti-check' aria-hidden='true'></i> Готово"; await wait(1200); }
+    catch(e){ console.error(e); err('Не удалось сформировать Excel'); }
     btn.innerHTML=old; btn.classList.remove('busy');
   };
   window.rsClear=function(){
