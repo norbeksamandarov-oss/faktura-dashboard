@@ -4765,7 +4765,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <button type="button" class="rc-tab on" data-t="recv" onclick="rcSwitchTab('recv')">Поступления</button>
       <button type="button" class="rc-tab" data-t="real" onclick="rcSwitchTab('real')">Реализация</button>
       <button type="button" class="rc-tab" data-t="bank" onclick="rcSwitchTab('bank')">Банк</button>
-      <button type="button" class="rc-tab" data-t="rest" onclick="rcSwitchTab('rest')">Восстановление</button>
+      <button type="button" class="rc-tab" id="rsTabBtn" data-t="rest" style="display:none" onclick="rcSwitchTab('rest')">Восстановление</button>
       <button type="button" class="rc-tab soon" data-t="chek" disabled>Чеки <i>скоро</i></button>
       <button type="button" class="rc-tab soon" data-t="nds" disabled>НДС <i>скоро</i></button>
       <button type="button" class="rc-tab soon" data-t="loan" disabled>Займы <i>скоро</i></button>
@@ -7825,6 +7825,7 @@ syncThemeButtonLabel();
 
 function applyRolePermissions(role) {
   const isAdmin = role === "admin";
+  const _rsb = document.getElementById("rsTabBtn"); if (_rsb) _rsb.style.display = isAdmin ? "" : "none";
   const isSalaryOnly = role === "salary";
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
@@ -11948,7 +11949,7 @@ function rcSwitchTab(t) {
   const pn = document.getElementById(ids[t]);
   pn.classList.remove("rc-tabin"); void pn.offsetWidth; pn.classList.add("rc-tabin");
 }
-function rcShowTabForRole() {}
+function rcShowTabForRole() { const b = document.getElementById("rsTabBtn"); if (b) b.style.display = (typeof currentRole !== "undefined" && currentRole === "admin") ? "" : "none"; }
 function rcErr(msg) {
   const e = document.getElementById("rcErr");
   e.textContent = msg || "";
@@ -15235,11 +15236,17 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     return { rows:rows, cnt:cnt, sumT:T.reduce(function(a,x){return a+x.sum;},0), sumC:C.reduce(function(a,x){return a+x.sum;},0), nT:T.length, nC:C.length };
   }
   RS._t = { blocks:blocks, extract:extract, reconcile:reconcile };
+  [['rsDropBoth','both'],['rsDropTax','tax'],['rsDrop1c','c1']].forEach(function(p){
+    var el=$(p[0]); if(!el) return;
+    ['dragenter','dragover'].forEach(function(ev){ el.addEventListener(ev,function(e){ e.preventDefault(); el.classList.add('over'); }); });
+    ['dragleave','drop'].forEach(function(ev){ el.addEventListener(ev,function(e){ e.preventDefault(); el.classList.remove('over'); }); });
+    el.addEventListener('drop',function(e){ e.stopPropagation(); var f=e.dataTransfer&&e.dataTransfer.files[0]; if(f) window.rsPick(p[1],null,f); });
+  });
   var ST={ ok:'Совпало', sum:'Расхождение по сумме', name:'Совпало по ФИО и сумме', amt:'Совпала сумма (проверьте ФИО)', tax:'Только в налоговом', c1:'Только в 1С' };
   // --- загрузка ---
   async function readFile(file){ return await rcReadRows(file); }
-  window.rsPick = async function(kind,input){
-    var file=input.files&&input.files[0]; input.value=''; if(!file) return;
+  window.rsPick = async function(kind,input,dropped){
+    var file=dropped||(input&&input.files&&input.files[0]); if(input) input.value=''; if(!file) return;
     err('');
     var dropId = kind==='both'?'rsDropBoth':(kind==='tax'?'rsDropTax':'rsDrop1c');
     var metaId = kind==='both'?'rsMetaBoth':(kind==='tax'?'rsMetaTax':'rsMeta1c');
