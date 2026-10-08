@@ -2488,7 +2488,12 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 #section-botcfg .bc-add{border:1px dashed var(--border);background:transparent;color:var(--text);font:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:999px;cursor:pointer;transition:border-color .15s,background .15s}
 #section-botcfg .bc-add:hover{border-color:var(--navy-light,#5b8dff);background:rgba(91,141,255,.1)}
 #section-botcfg .bc-empty{color:var(--muted);font-size:13px}
-#section-botcfg .bc-pick{display:none;flex-direction:column;max-height:260px;overflow-y:auto;margin-top:10px;max-width:380px;border:1px solid var(--border);border-radius:12px;background:var(--card);padding:4px}
+#section-botcfg .bc-pick{display:none;flex-direction:column;max-height:300px;overflow-y:auto;margin-top:10px;max-width:380px;border:1px solid var(--border);border-radius:12px;background:var(--card);padding:4px}
+#section-botcfg .bc-q{position:sticky;top:0;z-index:1;margin:2px 2px 6px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font:inherit;font-size:13px;outline:none}
+#section-botcfg .bc-q:focus{border-color:var(--navy-light,#5b8dff)}
+#section-botcfg .bc-list{display:flex;flex-direction:column}
+#section-botcfg .bc-pick button.bc-byid{background:rgba(91,141,255,.12)}
+#section-botcfg .bc-none{padding:9px 11px;color:var(--muted);font-size:13px}
 #section-botcfg .bc-pick.open{display:flex;animation:bcIn .25s cubic-bezier(.16,1,.3,1)}
 #section-botcfg .bc-pick button{border:0;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;text-align:left;padding:9px 11px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;gap:12px}
 #section-botcfg .bc-pick button small{color:var(--muted);font-weight:600}
@@ -6693,14 +6698,40 @@ function bcRender() {
     const opts = (d.employees || []).filter(e => !taken.has(e.chatId)).map(e => `<button type="button" onclick="bcAdd('${m.k}','${escapeHtml(e.chatId)}')"><span>${escapeHtml(e.name)}</span><small>${escapeHtml(e.chatId)}</small></button>`).join("") || `<span class="bc-empty" style="padding:9px 11px">Нет доступных сотрудников</span>`;
     html += `<div class="bc-row" id="bcr_${m.k}"><div><div class="bc-t">${escapeHtml(m.t)}</div><div class="bc-d">${escapeHtml(m.d)}</div></div><div>` +
       `<div class="bc-ch">${chips}${m.single && !d.canChangeAdmin ? `<span class="bc-empty">менять может только владелец</span>` : `<button type="button" class="bc-add" onclick="bcTogglePick('${m.k}')">${m.single ? "Сменить" : "+ Добавить"}</button>`}</div>` +
-      `<div class="bc-pick" id="bcp_${m.k}">${opts}</div><div class="bc-msg" id="bcm_${m.k}"></div></div></div>`;
+      `<div class="bc-pick" id="bcp_${m.k}"><input type="text" class="bc-q" placeholder="Начните вводить имя или ID..." autocomplete="off" oninput="bcFilter('${m.k}')" onkeydown="bcQKey(event,'${m.k}')"><div class="bc-list">${opts}</div><div class="bc-none" style="display:none">Никого не найдено</div></div><div class="bc-msg" id="bcm_${m.k}"></div></div></div>`;
   });
   document.getElementById("bcBody").innerHTML = html;
 }
 function bcTogglePick(k) {
   const el = document.getElementById("bcp_" + k), open = !el.classList.contains("open");
   document.querySelectorAll("#bcBody .bc-pick.open").forEach(x => x.classList.remove("open"));
-  if (open) el.classList.add("open");
+  if (open) { el.classList.add("open"); const q = el.querySelector(".bc-q"); if (q) { q.value = ""; bcFilter(k); setTimeout(() => q.focus(), 30); } }
+}
+function bcFilter(k) {
+  const el = document.getElementById("bcp_" + k); if (!el) return;
+  const q = el.querySelector(".bc-q").value.trim().toLowerCase();
+  const list = el.querySelector(".bc-list");
+  let shown = 0;
+  list.querySelectorAll("button:not(.bc-byid)").forEach(b => {
+    const ok = !q || b.textContent.toLowerCase().includes(q);
+    b.style.display = ok ? "" : "none"; if (ok) shown++;
+  });
+  let byid = list.querySelector(".bc-byid");
+  const exact = /^\d{5,}$/.test(q) && ![...list.querySelectorAll("button:not(.bc-byid) small")].some(x => x.textContent.trim() === q);
+  const taken = ((BC.d.lists[k] || []).concat(BC.d.admin ? [BC.d.admin] : [])).includes(q);
+  if (exact && !taken) {
+    if (!byid) { byid = document.createElement("button"); byid.type = "button"; byid.className = "bc-byid"; list.prepend(byid); }
+    byid.innerHTML = `<span>Добавить по ID</span><small>${escapeHtml(q)}</small>`;
+    byid.onclick = () => bcAdd(k, q);
+    shown++;
+  } else if (byid) byid.remove();
+  el.querySelector(".bc-none").style.display = shown ? "none" : "";
+}
+function bcQKey(ev, k) {
+  if (ev.key !== "Enter") return;
+  ev.preventDefault();
+  const first = [...document.querySelectorAll(`#bcp_${k} .bc-list button`)].find(b => b.style.display !== "none");
+  if (first) first.click();
 }
 async function bcSave(k, rowId, value, onOk) {
   const row = document.getElementById(rowId), msg = document.getElementById("bcm_" + (k || "nums"));
