@@ -2404,6 +2404,20 @@ html[data-theme=dark] #uiDlg .ud-b.go.grn{color:#04261b}
 :is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions .btn-primary:hover{box-shadow:0 8px 20px rgba(79,107,255,.32)}
 :is(#announcementModal,#contragentModal,#forcePasswordModal) .modal-actions .btn-primary:disabled{opacity:.9;cursor:progress}
 #announcementModal textarea,#forcePasswordModal input{border-radius:12px!important}
+#announcementModal .ann-drop{margin-top:10px;border:1.5px dashed var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:border-color .2s,background .2s}
+#announcementModal .ann-drop:hover,#announcementModal .ann-drop.over{border-color:var(--navy-light);background:var(--ice-soft)}
+#announcementModal .ann-drop.has{cursor:default;border-style:solid;padding:10px}
+#announcementModal #annDropIn{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+#announcementModal #annDropIn>i{font-size:24px;color:var(--navy-text)}
+#announcementModal #annDropIn b{display:block;color:var(--text);font-size:13.5px;margin-bottom:2px}
+#announcementModal .ann-prev{display:flex;align-items:center;gap:12px;animation:annIn .35s cubic-bezier(.16,1,.3,1)}
+#announcementModal .ann-prev img,#announcementModal .ann-prev video{width:84px;height:60px;object-fit:cover;border-radius:10px;background:#000;flex:0 0 auto}
+#announcementModal .ann-prev .nm{flex:1;min-width:0;font-size:13px}#announcementModal .ann-prev .nm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#announcementModal .ann-prev .nm span{color:var(--muted);font-size:12px}
+#announcementModal .ann-x{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px}#announcementModal .ann-x:hover{color:var(--text);background:var(--ice-soft)}
+#announcementModal .ann-err{color:var(--red-fg);font-size:12.5px;min-height:0;margin-top:6px}
+@keyframes annIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
 .modal-card.shake{animation:crmShake .45s}
 .mc-ok{display:inline-block;animation:crmPop .4s cubic-bezier(.34,1.8,.64,1)}
 @keyframes crmPop{from{transform:scale(0)}to{transform:scale(1)}}
@@ -5257,6 +5271,11 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <h3><i class='ti ti-speakerphone' aria-hidden='true'></i> Объявление всем сотрудникам</h3>
     <p style="color:var(--muted);font-size:13px;margin:0 0 10px;">Сообщение придёт в Telegram каждому активному сотруднику (не только тем, у кого есть доступ к dashboard).</p>
     <textarea id="announcementText" placeholder="Например: С понедельника меняется срок рассмотрения счетов..."></textarea>
+    <div id="annDrop" class="ann-drop" onclick="if(!ANN.file)document.getElementById('annFile').click()">
+      <input type="file" id="annFile" accept="image/*,video/*" hidden onchange="annPick(this.files[0]);this.value=''">
+      <div id="annDropIn"><i class="ti ti-photo-video" aria-hidden="true"></i><span><b>Прикрепить фото или видео</b>перетащите файл сюда или нажмите · до 50 МБ</span></div>
+    </div>
+    <div id="annErr" class="ann-err"></div>
     <div class="modal-actions">
       <button onclick="closeAnnouncementModal()">Отмена</button>
       <button class="btn-primary" onclick="sendAnnouncement()">Отправить всем</button>
@@ -7891,8 +7910,45 @@ async function triggerStartupNotify() {
    qat'iy nazar) yuborishi mumkin - masalan tizim o'zgarishlari, e'lonlar
    va h.k. haqida. Bot tokeniga bu yerda ham ehtiyoj yo'q - faqat Sheets'ga
    yozamiz, bot buni kuzatib o'zi yuboradi. */
+const ANN = { file: null, url: null };
+function annRender() {
+  const d = document.getElementById("annDrop"), box = document.getElementById("annDropIn");
+  if (ANN.url) URL.revokeObjectURL(ANN.url), ANN.url = null;
+  if (!ANN.file) {
+    d.classList.remove("has");
+    box.className = ""; box.innerHTML = '<i class="ti ti-photo-video" aria-hidden="true"></i><span><b>Прикрепить фото или видео</b>перетащите файл сюда или нажмите · до 50 МБ</span>';
+    return;
+  }
+  const f = ANN.file; ANN.url = URL.createObjectURL(f); d.classList.add("has");
+  const isVid = f.type.startsWith("video/");
+  const mb = (f.size / 1048576).toFixed(f.size > 10485760 ? 0 : 1);
+  box.className = "ann-prev";
+  box.innerHTML = (isVid ? `<video src="${ANN.url}" muted playsinline preload="metadata"></video>` : `<img alt="" src="${ANN.url}">`) +
+    `<div class="nm"><b>${escapeHtml(f.name)}</b><span>${isVid ? "Видео" : "Фото"} · ${mb} МБ</span></div><button type="button" class="ann-x" title="Убрать" onclick="event.stopPropagation();ANN.file=null;annRender()">&times;</button>`;
+}
+function annErr(msg) {
+  const e = document.getElementById("annErr"); e.textContent = msg || "";
+  if (msg) { const c = document.querySelector("#announcementModal .modal-card"); c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); }
+}
+function annPick(f) {
+  annErr("");
+  if (!f) return;
+  if (!/^(image|video)\//.test(f.type)) { annErr("Можно прикрепить только фото или видео"); return; }
+  if (f.size > 50 * 1048576) { annErr("Файл больше 50 МБ - Telegram не примет его от бота"); return; }
+  ANN.file = f; annRender();
+}
+(function annDnD() {
+  const d = document.getElementById("annDrop"); if (!d) return;
+  ["dragenter", "dragover"].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); d.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); d.classList.remove("over"); }));
+  d.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) annPick(f); });
+})();
+function annToBase64(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = () => rej(new Error("Не удалось прочитать файл")); r.readAsDataURL(file); });
+}
 function openAnnouncementModal() {
   document.getElementById("announcementText").value = "";
+  ANN.file = null; annRender(); annErr("");
   const annModal = document.getElementById("announcementModal");
   annModal.style.display = "flex";
   requestAnimationFrame(() => annModal.classList.add("open"));
@@ -7904,8 +7960,9 @@ function closeAnnouncementModal() {
 }
 async function sendAnnouncement() {
   const text = document.getElementById("announcementText").value.trim();
-  if (!text) {
-    alert("Введите текст объявления.");
+  annErr("");
+  if (!text && !ANN.file) {
+    annErr("Введите текст объявления или прикрепите фото/видео.");
     return;
   }
   if (!await uiConfirm("Отправить это сообщение ВСЕМ активным сотрудникам в Telegram?\n\nЭто действие нельзя отменить.")) {
@@ -7917,6 +7974,16 @@ async function sendAnnouncement() {
   annCard.classList.add("busy"); annBtn.disabled = true;
   annBtn.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>Отправляю…`;
   try {
+    let mediaUrl = "", mediaType = "";
+    if (ANN.file) {
+      const f = ANN.file;
+      annBtn.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>Загружаю ${f.type.startsWith("video/") ? "видео" : "фото"}…`;
+      const up = await apiCall("adminUploadMedia", { filename: f.name, mimeType: f.type, base64: await annToBase64(f) });
+      mediaUrl = up.url; mediaType = f.type.startsWith("video/") ? "video" : "photo";
+      annBtn.innerHTML = `<i class="ti ti-loader-2 crm-spin" aria-hidden="true"></i>Отправляю…`;
+    }
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B18`, mediaUrl);
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B19`, mediaType);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B5`, text);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B4`, new Date().toISOString());
     annCard.classList.remove("busy");
@@ -7926,7 +7993,7 @@ async function sendAnnouncement() {
     alert("<i class='ti ti-circle-check' aria-hidden='true'></i> Объявление поставлено в очередь. Бот отправит его всем активным сотрудникам в течение ~8 секунд.");
   } catch (e) {
     annCard.classList.remove("busy"); annCard.classList.remove("shake"); void annCard.offsetWidth; annCard.classList.add("shake");
-    alert("Не удалось отправить объявление: " + e.message);
+    annErr("Не удалось отправить: " + e.message);
   } finally {
     annBtn.disabled = false; annBtn.innerHTML = annLabel;
   }
