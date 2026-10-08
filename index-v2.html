@@ -4439,7 +4439,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <section id="section-writeemp" class="content-section">
     <div class="panel">
       <h2>Написать сотруднику <span class="sub">прямое сообщение через Telegram-бота</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Выберите сотрудника и напишите ему сообщение - бот отправит его в Telegram. После отправки бот один раз спросит вас (в личном чате), не хотите ли вы приложить документ - если да, просто пришлите файл в ответ на его вопрос.</p>
+      <p class="analytics-note" style="margin:0 0 16px;">Выберите сотрудника и напишите ему сообщение - бот отправит его в Telegram. К сообщению можно сразу приложить документ (любой файл до 50 МБ). Если не приложить, бот один раз спросит об этом в вашем личном чате.</p>
 
       <div class="user-create-form" style="position:relative;">
         <input type="text" id="writeempEmployeeInput" class="login-input" style="max-width:260px;"
@@ -4451,6 +4451,10 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
                onblur="handleWriteEmpBlur(this)">
       </div>
       <textarea id="writeempMessageText" placeholder="Текст сообщения..." class="login-input" style="width:100%;max-width:520px;min-height:110px;margin-top:12px;font-family:'Satoshi';resize:vertical;color:var(--text);background:#fff;border:1px solid var(--border);box-shadow:none;"></textarea>
+      <div id="weDrop" class="we-drop" onclick="if(!WE.file)document.getElementById('weFile').click()">
+        <input type="file" id="weFile" hidden onchange="wePick(this.files[0]);this.value=''">
+        <div id="weDropIn"><i class="ti ti-paperclip" aria-hidden="true"></i><span><b>Приложить документ</b>перетащите файл сюда или нажмите · до 50 МБ</span></div>
+      </div>
       <div style="margin-top:12px;">
         <button id="writeempSendBtn" onclick="sendWriteEmp()" class="login-submit-btn" style="width:auto;padding:12px 22px;"><i class='ti ti-pencil' aria-hidden='true'></i> Отправить</button>
       </div>
@@ -8124,6 +8128,33 @@ function resolveWriteEmpInput(inputEl) {
   }
 }
 
+/* ===== «Написать сотруднику»: вложение документа ===== */
+const WE = { file: null };
+function weRender(busy) {
+  const d = document.getElementById("weDrop"), box = document.getElementById("weDropIn");
+  if (!d || !box) return;
+  d.classList.toggle("has", !!WE.file); d.classList.toggle("busy", !!busy);
+  if (!WE.file) { box.innerHTML = `<i class="ti ti-paperclip" aria-hidden="true"></i><span><b>Приложить документ</b>перетащите файл сюда или нажмите · до 50 МБ</span>`; return; }
+  const mb = (WE.file.size / 1048576).toFixed(1);
+  box.innerHTML = `<i class="ti ti-file" aria-hidden="true"></i><span><b>${escapeHtml(WE.file.name)}</b>${mb} МБ</span>` +
+    (busy ? `<i class="ti ti-loader-2 we-spin" aria-hidden="true" style="margin-left:auto"></i>` : `<button type="button" class="we-x" title="Убрать" onclick="event.stopPropagation();WE.file=null;weRender(false)">&times;</button>`);
+}
+function wePick(f) {
+  const errorEl = document.getElementById("writeempError");
+  if (errorEl) errorEl.textContent = "";
+  if (!f) return;
+  if (f.size > 50 * 1048576) {
+    if (errorEl) { errorEl.textContent = "Файл больше 50 МБ - Telegram не примет его от бота"; errorEl.classList.remove("we-shake"); void errorEl.offsetWidth; errorEl.classList.add("we-shake"); }
+    return;
+  }
+  WE.file = f; weRender(false);
+}
+(function weDnD() {
+  const d = document.getElementById("weDrop"); if (!d) return;
+  ["dragenter", "dragover"].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => d.addEventListener(ev, e => { e.preventDefault(); d.classList.remove("over"); }));
+  d.addEventListener("drop", e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) wePick(f); });
+})();
 async function sendWriteEmp() {
   const empInput = document.getElementById("writeempEmployeeInput");
   if (empInput) resolveWriteEmpInput(empInput);
@@ -8149,6 +8180,17 @@ async function sendWriteEmp() {
   if (btn) { btn.disabled = true; btn.classList.add("we-busy"); btn.innerHTML = "<i class='ti ti-loader-2 we-spin' aria-hidden='true'></i> Отправляем…"; }
   let weOk = false;
   try {
+    let weUrl = "", weName = "";
+    if (WE.file) {
+      if (btn) btn.innerHTML = "<i class='ti ti-loader-2 we-spin' aria-hidden='true'></i> Загружаем файл…";
+      weRender(true);
+      const up = await apiCall("empUploadFile", { filename: WE.file.name, mimeType: WE.file.type, base64: await annToBase64(WE.file) });
+      if (up && up.error) throw new Error(up.error);
+      weUrl = (up && up.url) || ""; weName = WE.file.name;
+      if (btn) btn.innerHTML = "<i class='ti ti-loader-2 we-spin' aria-hidden='true'></i> Отправляем…";
+    }
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B20`, weUrl);
+    await sheetsUpdateCell(`'${SHEET_CONTROL}'!B21`, weName);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B13`, chatId);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B14`, text);
     await sheetsUpdateCell(`'${SHEET_CONTROL}'!B17`, currentUsername || "");
@@ -8156,9 +8198,11 @@ async function sendWriteEmp() {
     if (textEl) textEl.value = "";
     if (empInput) empInput.value = "";
     writeempSelectedChatId = "";
+    WE.file = null; weRender(false);
     weOk = true;
     if (successEl) successEl.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i> Сообщение поставлено в очередь, бот отправит его в течение ~8 секунд.";
   } catch (e) {
+    weRender(false);
     if (errorEl) { errorEl.textContent = "Не удалось отправить: " + e.message; errorEl.classList.remove("we-shake"); void errorEl.offsetWidth; errorEl.classList.add("we-shake"); }
     if (btn) { btn.classList.remove("we-busy"); btn.classList.add("we-shake"); setTimeout(() => btn.classList.remove("we-shake"), 450); }
   } finally {
@@ -15511,6 +15555,16 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 #writeempSendBtn.we-done{background:var(--green-fg)!important;color:#07090f!important}
 #writeempSendBtn .we-pop{display:inline-block;animation:ucPop .4s cubic-bezier(.2,1.6,.4,1)}
 #writeempSendBtn.we-shake,#writeempError.we-shake{animation:ucShake .4s}
+.we-drop{margin-top:12px;max-width:520px;border:1px dashed var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .2s,background .2s}
+.we-drop:hover,.we-drop.over{border-color:var(--navy-text);background:rgba(120,140,255,.06)}
+.we-drop.has{border-style:solid;cursor:default}
+.we-drop.busy{opacity:.8;pointer-events:none}
+#weDropIn{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+#weDropIn>i{font-size:22px;color:var(--navy-text)}
+#weDropIn b{display:block;color:var(--text);font-size:13.5px;margin-bottom:2px;word-break:break-all}
+.we-drop .we-spin{display:inline-block;animation:rcSpin .7s linear infinite}
+.we-x{margin-left:auto;background:none;border:0;font-size:22px;line-height:1;color:var(--muted);cursor:pointer}
+.we-x:hover{color:#C0392B}
 #apvBody tr.uc-shake{animation:ucShake .4s}
 #ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
 #ucOv.on{display:flex;animation:ucFade .25s ease both}
