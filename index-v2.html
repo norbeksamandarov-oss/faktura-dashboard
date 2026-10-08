@@ -4556,14 +4556,11 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
 
     <section id="section-approval" class="content-section">
     <div class="panel">
-      <h2>Согласование <span class="sub">кто согласует запросы по каждому типу и организации</span></h2>
-      <p class="analytics-note" style="margin:0 0 16px;">Выберите сотрудника, чтобы посмотреть и изменить, по каким типам запросов и организациям он согласует. Новое назначение добавляется кнопкой справа.</p>
-      <div class="toolbar" style="margin-bottom:14px;justify-content:space-between;">
-        <div class="filter-field" style="flex:1;max-width:340px;"><label><i class='ti ti-search' aria-hidden='true'></i> Поиск</label><input type="text" id="apvSearch" placeholder="Имя или ID" oninput="apvRender()"></div>
-        <button class="login-submit-btn" style="width:auto;padding:12px 22px;" onclick="ucOpen(null,'approval')">+ Добавить согласующего</button>
-      </div>
+      <h2>Согласование <span class="sub">счёт-фактуры: ответственный принимает, руководитель подтверждает</span></h2>
+      <p class="analytics-note" style="margin:0 0 16px;">Сотрудник-ответственный назначается на каждый счёт-фактуру в таблице. Здесь вы задаёте руководителя, который подтверждает решение по организации. Если поле пустое - счёт закрывается после решения сотрудника.</p>
       <div id="apvLoad" style="color:var(--muted);font-size:13px;">Загрузка...</div>
-      <div class="table-wrap" id="apvWrap" style="display:none;"><table class="invoices"><thead><tr><th>№</th><th>Сотрудник</th><th>Telegram ID</th><th>Назначений</th><th>Типы</th><th></th></tr></thead><tbody id="apvBody"></tbody></table></div>
+      <div class="table-wrap" id="apvWrap" style="display:none;"><table class="invoices"><thead><tr><th>Организация</th><th>Руководитель (Telegram ID)</th><th>Имя</th><th style="width:160px;"></th></tr></thead><tbody id="apvBody"></tbody></table></div>
+      <div id="apvErr" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
     </div>
     </section>
 
@@ -15447,6 +15444,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 #writeempSendBtn.we-done{background:var(--green-fg)!important;color:#07090f!important}
 #writeempSendBtn .we-pop{display:inline-block;animation:ucPop .4s cubic-bezier(.2,1.6,.4,1)}
 #writeempSendBtn.we-shake,#writeempError.we-shake{animation:ucShake .4s}
+#apvBody tr.uc-shake{animation:ucShake .4s}
 #ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
 #ucOv.on{display:flex;animation:ucFade .25s ease both}
 @keyframes ucFade{from{opacity:0}to{opacity:1}}
@@ -15510,7 +15508,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 </style>
 <script id="ucJs">
 (function(){
-  var TYPES=[['invoices','Счёт-фактура'],['dogovor','Договор'],['doverennost','Доверенность'],['bank','Банк'],['otherreqPost','Другой (пост.)'],['realschet','Реал. счёт'],['dogovorReal','Реал. договор'],['zakaznaryad','Заказ-наряд'],['otherreqReal','Другой (реал.)']];
+  var TYPES=[['dogovor','Договор'],['doverennost','Доверенность'],['bank','Банк'],['otherreqPost','Другой (пост.)'],['realschet','Реал. счёт'],['dogovorReal','Реал. договор'],['zakaznaryad','Заказ-наряд'],['otherreqReal','Другой (реал.)']];
   var UC=null;
   var $=function(id){ return document.getElementById(id); };
   var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
@@ -15540,9 +15538,9 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     $('ucOv').classList.add('on'); document.body.style.overflow='hidden';
     $('ucBox').innerHTML='<div class="uc-h"><h3>'+(user?esc(user.name||user.username):'Новый сотрудник')+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-load"><div class="rc-bar" style="max-width:260px;margin:0 auto 12px;"><i></i></div>Загружаем доступы…</div>';
     try{
-      var res=await Promise.all([apiCall('getBotSettings',{})].concat(mode==='approval'?TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); }):[]));
+      var res=await Promise.all([apiCall('getBotSettings',{})].concat(TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); })));
       var bs=res[0]; UC.emps=bs.employees||[]; UC.lists=bs.lists||{};
-      if(mode==='approval') TYPES.forEach(function(t,i){ UC.rows[t[0]]=(res[i+1]&&res[i+1].rows)||[]; });
+      TYPES.forEach(function(t,i){ UC.rows[t[0]]=(res[i+1]&&res[i+1].rows)||[]; });
     }catch(e){ $('ucBox').innerHTML='<div class="uc-h"><h3>Ошибка</h3><button class="uc-x" onclick="ucClose()">&times;</button></div><div class="uc-load" style="color:var(--red-fg)">Не удалось загрузить: '+esc(e.message)+'</div>'; return; }
     initChecks(); ucRender();
     if(UC.id) ucLookup(true);
@@ -15563,12 +15561,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
     }
     h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
-    h+='<div class="uc-f"><label>Имя (для согласований)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):(UC.pre.name||''))+'" oninput="this.dataset.m=1"></div>';
+    h+='<div class="uc-f"><label>Имя (для ответственных)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):(UC.pre.name||''))+'" oninput="this.dataset.m=1"></div>';
     h+='</div></div>';
     if(!ap){ h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
       listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
       h+='</div></div>'; }
-    if(ap) h+='<div class="uc-s"><p class="uc-st">Согласование <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
+    h+='<div class="uc-s"><p class="uc-st">Ответственный <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
     h+='</div><div class="uc-bar" id="ucBar"><b></b></div><div class="uc-err" id="ucErr"></div><div class="uc-ft"><div class="uc-sum" id="ucSum"></div><button type="button" class="uc-btn" id="ucGo" onclick="ucSave()"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>'+(isNew?'Создать и выдать доступы':'Сохранить')+'</span></button></div>';
     $('ucBox').innerHTML=h; ucCounts();
   }
@@ -15637,7 +15635,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     var d=plan();
     var needId=d.add||d.rep||d.lists||(!isNew && id!==String(UC.user.chatId||''));
     if((d.add||d.rep||d.lists) && !/^\d{5,}$/.test(id)) return err('Для доступов укажите Telegram ID сотрудника');
-    if((d.add||d.rep) && !name) return err('Укажите имя - оно запишется в согласования');
+    if((d.add||d.rep) && !name) return err('Укажите имя - оно запишется в ответственные');
     if(d.rep){
       var tl=d.repL.slice(0,8).map(function(x){ var tn=TYPES.filter(function(t){return t[0]===x.t;})[0][1]; return tn+' / '+x.o+' (сейчас: '+x.prev+')'; }).join('\n');
       if(!await uiConfirm('Будет заменён действующий ответственный ('+d.rep+'):\n'+tl+(d.rep>8?'\n…':'')+'\nПродолжить?')) return;
@@ -15668,7 +15666,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       prog(100); btn.classList.remove('busy'); btn.classList.add('done'); btn.querySelector('span').textContent='Готово'; await wait(1100);
       var UC_MODE=UC.mode; ucClose();
       if(typeof renderUsersManage==='function' && UC_MODE==='user') renderUsersManage();
-      if(UC_MODE==='approval' && typeof apvLoad==='function') apvLoad();
+      
       try{ _empNameCache=null; }catch(e){}
       try{ if(typeof BC!=='undefined') BC.d=null; }catch(e){}
     }catch(e){
@@ -15677,29 +15675,53 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     }
   };
 
-  /* ===== Раздел «Согласование»: список согласующих ===== */
-  var APV={rows:[]};
-  var TYPE_NAMES={invoices:'Счёт-фактура',dogovor:'Договор',doverennost:'Доверенность',bank:'Банк',otherreqPost:'Другой (пост.)',realschet:'Реал. счёт',dogovorReal:'Реал. договор',zakaznaryad:'Заказ-наряд',otherreqReal:'Другой (реал.)'};
+  /* ===== Раздел «Согласование»: руководитель по организации (счёт-фактуры) ===== */
+  var APV={rows:[],emps:[]};
+  function apvRowFor(o){ var lo=o.toLowerCase(); for(var i=0;i<APV.rows.length;i++){ if(String(APV.rows[i].org).trim().toLowerCase()===lo) return APV.rows[i]; } return null; }
   window.apvLoad=async function(){
     var ld=$('apvLoad'), wr=$('apvWrap'); if(!ld) return;
-    ld.style.display='block'; ld.textContent='Загрузка...'; wr.style.display='none';
+    ld.style.display='block'; ld.textContent='Загрузка...'; wr.style.display='none'; $('apvErr').textContent='';
     try{
-      var res=await Promise.all(TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); }));
-      var by={};
-      res.forEach(function(r,i){ (r.rows||[]).forEach(function(x){ var id=String(x.chatId||'').trim(); if(!id||!x.active) return;
-        var e=by[id]=by[id]||{id:id,name:x.name||id,n:0,types:{}}; e.n++; e.types[TYPES[i][0]]=1; }); });
-      APV.rows=Object.keys(by).map(function(k){ return by[k]; }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+      var r=await Promise.all([apiCall('getApproverSheetRows',{sheetKey:'invoices'}),apiCall('getBotSettings',{})]);
+      APV.rows=(r[0]&&r[0].rows)||[]; APV.emps=(r[1]&&r[1].employees)||[];
       ld.style.display='none'; wr.style.display=''; apvRender();
     }catch(e){ ld.textContent='Ошибка: '+e.message; }
   };
   window.apvRender=function(){
-    var q=(($('apvSearch')||{}).value||'').trim().toLowerCase();
-    var list=APV.rows.filter(function(r){ return !q || (r.name+' '+r.id).toLowerCase().indexOf(q)>=0; });
-    $('apvBody').innerHTML=list.map(function(r,i){
-      return '<tr><td style="color:var(--muted)">'+(i+1)+'</td><td><strong>'+esc(r.name)+'</strong></td><td>'+esc(r.id)+'</td><td>'+r.n+'</td><td style="font-size:12px;color:var(--muted)">'+Object.keys(r.types).map(function(k){ return TYPE_NAMES[k]; }).join(', ')+'</td><td><button class="emp-delete-btn" style="background:var(--ice-soft);color:var(--navy-text);border-color:var(--border);" onclick="apvEdit(\''+r.id+'\')"><i class="ti ti-adjustments" aria-hidden="true"></i> Изменить</button></td></tr>';
-    }).join('')||'<tr><td colspan="6" style="color:var(--muted)">Ничего не найдено</td></tr>';
+    $('apvBody').innerHTML=orgs().map(function(o,i){
+      var r=apvRowFor(o)||{};
+      return '<tr data-i="'+i+'"><td><strong>'+esc(o)+'</strong></td><td><input class="apv-id" inputmode="numeric" autocomplete="off" value="'+esc(r.chatId||'')+'" oninput="apvLookup('+i+')" style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;"></td><td><input class="apv-nm" autocomplete="off" value="'+esc(r.name||'')+'" oninput="this.dataset.m=1" style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;"></td><td style="white-space:nowrap;"><button type="button" class="uc-btn" style="padding:8px 16px;font-size:13px;" onclick="apvSave('+i+',this)"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>Сохранить</span></button> <button type="button" class="uc-link" onclick="apvClear('+i+',this)" title="Убрать руководителя"><i class="ti ti-x"></i></button></td></tr>';
+    }).join('');
   };
-  window.apvEdit=function(id){ var r=APV.rows.filter(function(x){ return x.id===id; })[0]; ucOpen(null,'approval',{chatId:id,name:r&&r.name}); };
+  window.apvLookup=function(i){
+    var tr=document.querySelector('#apvBody tr[data-i="'+i+'"]'), id=tr.querySelector('.apv-id'), nm=tr.querySelector('.apv-nm');
+    id.value=id.value.replace(/\D/g,''); var v=id.value;
+    if(!/^\d{5,}$/.test(v)) return;
+    var e=APV.emps.filter(function(x){ return String(x.chatId)===v; })[0];
+    if(e){ nm.value=e.name; nm.dataset.m=''; nm.style.outline=''; } else { nm.style.outline='1px dashed #C0392B'; nm.placeholder='ID не найден - введите имя'; }
+  };
+  function apvFlash(btn,state){
+    btn.classList.remove('busy','done'); if(state) btn.classList.add(state);
+    btn.querySelector('span').textContent=state==='busy'?'Сохраняем…':state==='done'?'Готово':'Сохранить';
+  }
+  window.apvSave=async function(i,btn){
+    var o=orgs()[i], tr=btn.closest('tr'), id=tr.querySelector('.apv-id').value.trim(), nm=tr.querySelector('.apv-nm').value.trim(), err=$('apvErr'); err.textContent='';
+    if(!/^\d{5,}$/.test(id)||!nm){ err.textContent='Укажите Telegram ID и имя руководителя ('+o+')'; tr.classList.remove('uc-shake'); void tr.offsetWidth; tr.classList.add('uc-shake'); return; }
+    btn.disabled=true; apvFlash(btn,'busy');
+    try{
+      var r=apvRowFor(o);
+      var res=await apiCall('saveApproverSheetRow',{sheetKey:'invoices',org:o,chatId:id,name:nm,active:true,comment:r?(r.comment||''):'',rowIndex:r?r.rowIndex:undefined});
+      if(r){ r.chatId=id; r.name=nm; } else APV.rows.push({rowIndex:res&&res.rowIndex,org:o,chatId:id,name:nm,active:true,comment:''});
+      apvFlash(btn,'done'); await wait(1100);
+    }catch(e){ err.textContent='Не удалось сохранить: '+e.message; tr.classList.remove('uc-shake'); void tr.offsetWidth; tr.classList.add('uc-shake'); }
+    apvFlash(btn,''); btn.disabled=false;
+  };
+  window.apvClear=async function(i,btn){
+    var o=orgs()[i], r=apvRowFor(o); if(!r) return;
+    if(!await uiConfirm('Убрать руководителя по организации «'+o+'»? Счета будут закрываться сразу после решения сотрудника.')) return;
+    try{ await apiCall('deleteApproverSheetRow',{sheetKey:'invoices',rowIndex:r.rowIndex}); await apvLoad(); }
+    catch(e){ $('apvErr').textContent='Не удалось убрать: '+e.message; }
+  };
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && UC && !UC.busy) ucClose(); });
 })();
 </script>
