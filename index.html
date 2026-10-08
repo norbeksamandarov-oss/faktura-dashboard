@@ -14883,7 +14883,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 
 <script id="sbAnimJs">
 (function(){
-  var seen = new Map();
+  var seen = new Map(), ambiguous = new Set(), batchKeys = null, FRESH = 45000;
   var pending = false, queue = [], inplace = new Set();
   function txt(el){ return (el.textContent||'').replace(/\s+/g,' ').trim(); }
   function clsOf(b){ var m = b.className.match(/status-(?!badge)\w+/); return m ? m[0] : ''; }
@@ -14933,9 +14933,15 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     var now = visible ? snap(b) : {text: txt(b), w: 0, bg:'', fg:'', cls: clsOf(b)};
     b._sb = now;
     var key = rowKey(b); if (!key) return;
+    // Bir xil kalit bir necha qatorda (bir xil matnli qatorlar) - noaniq: animatsiya qilmaymiz
+    if (ambiguous.has(key)) return;
+    if (batchKeys){ if (batchKeys.has(key)){ ambiguous.add(key); seen.delete(key); return; } batchKeys.add(key); }
     var old = seen.get(key);
+    now.t = Date.now();
     seen.set(key, now);
-    if (old && visible && old.text && (old.text !== now.text || old.cls !== now.cls)) animate(b, old, now);
+    // Faqat YANGI o'zgarish (so'nggi 45 soniyada ko'rilgan holatdan) animatsiya qilinadi -
+    // jadval ochilganda eski o'zgarishlar "o'ynab ketmaydi".
+    if (old && visible && old.text && old.t && (Date.now() - old.t) < FRESH && (old.text !== now.text || old.cls !== now.cls)) animate(b, old, now);
   }
   function scan(root){
     if (root.matches && root.matches('.status-badge')) scanBadge(root);
@@ -14948,12 +14954,14 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     var t = txt(b), c = clsOf(b);
     if (t === b._sb.text && c === b._sb.cls) return;
     var now = snap(b), old = b._sb; b._sb = now;
-    var key = rowKey(b); if (key) seen.set(key, now);
+    var key = rowKey(b); if (key && !ambiguous.has(key)){ now.t = Date.now(); seen.set(key, now); }
     animate(b, old, now);
   }
   function flush(){
     pending = false; var q = queue, ip = inplace; queue = []; inplace = new Set();
+    batchKeys = new Set();
     for (var i=0;i<q.length;i++){ if (q[i].isConnected) scan(q[i]); }
+    batchKeys = null;
     ip.forEach(function(b){ if (b.isConnected) checkInplace(b); });
   }
   var mo = new MutationObserver(function(muts){
@@ -14971,7 +14979,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     }
     if ((queue.length || inplace.size) && !pending){ pending = true; requestAnimationFrame(flush); }
   });
-  function start(){ mo.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class']}); scan(document.body); }
+  function start(){ mo.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['class']}); batchKeys = new Set(); scan(document.body); batchKeys = null; }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   window.__sbAnim = {seen: seen};
 })();
