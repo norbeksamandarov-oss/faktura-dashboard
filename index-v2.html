@@ -4443,15 +4443,6 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="ct-tabs" id="ctTabs"></div>
       <div id="ctList" class="ct-list"></div>
     </div>
-    <div class="panel" id="ctRegPanel" style="display:none;margin-top:16px;">
-      <h2>Согласующие по должностям <span class="sub">кто какую должность занимает</span></h2>
-      <p class="analytics-note" style="margin:0 0 14px;">Договор идёт по должностям, а не по людям. Здесь указывается, кто сейчас занимает должность: Telegram ID (для кнопок в боте) и логин в дашборде (для решения здесь). Для руководителя подразделения укажите подразделение - оно появится в списке выбора у инициатора.</p>
-      <div id="ctRegRows"></div>
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
-        <button class="ct-btn" onclick="ctRegAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Добавить строку</button>
-        <button class="ct-btn ct-primary" id="ctRegSaveBtn" onclick="ctRegSave(this)"><span class="ct-lbl"><i class="ti ti-device-floppy" aria-hidden="true"></i> Сохранить</span></button>
-      </div>
-    </div>
     </section>
     <section id="section-writeemp" class="content-section">
     <div class="panel">
@@ -4596,6 +4587,15 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div id="apvLoad" style="color:var(--muted);font-size:13px;">Загрузка...</div>
       <div class="table-wrap" id="apvWrap" style="display:none;"><table class="invoices"><thead><tr><th>Организация</th><th>Руководитель (Telegram ID)</th><th>Имя</th><th style="width:160px;"></th></tr></thead><tbody id="apvBody"></tbody></table></div>
       <div id="apvErr" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
+    </div>
+    <div class="panel" id="ctRegPanel" style="margin-top:16px;">
+      <h2>Согласующие договоров <span class="sub">кто какую должность занимает в маршруте договоров</span></h2>
+      <p class="analytics-note" style="margin:0 0 14px;">Договор идёт по должностям, а не по людям. Здесь указывается, кто сейчас занимает должность: Telegram ID (для кнопок в боте) и логин в дашборде (для решения здесь). Для руководителя подразделения укажите подразделение - оно появится в списке выбора у инициатора.</p>
+      <div id="ctRegRows"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="ct-btn" onclick="ctRegAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Добавить строку</button>
+        <button class="ct-btn ct-primary" id="ctRegSaveBtn" onclick="ctRegSave(this)"><span class="ct-lbl"><i class="ti ti-device-floppy" aria-hidden="true"></i> Сохранить</span></button>
+      </div>
     </div>
     </section>
 
@@ -7166,6 +7166,7 @@ function showSection(name) {
     }
   });
 
+  if (name === "approval" && currentRole === "admin") ctRegLoad();
   if (name === "contracts" && (currentRole === "admin" || currentRole === "approver")) ctOpen();
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
@@ -15940,8 +15941,6 @@ async function loadContracts(silent) {
   try {
     var d = await apiCall("contractList", {});
     CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin;
-    var rp = document.getElementById("ctRegPanel");
-    if (rp) rp.style.display = CT.isAdmin ? "" : "none";
     ctRender();
     var n = CT.list.filter(function (c) { return c.myPending && c.myPending.length; }).length;
     var b = document.getElementById("ctNavBadge");
@@ -16072,7 +16071,6 @@ async function ctRegSave(btn) {
 }
 function ctOpen() {
   loadContracts();
-  if (CT.isAdmin || currentRole === "admin") ctRegLoad();
   if (CT.timer) clearInterval(CT.timer);
   CT.timer = setInterval(function () { if (document.getElementById("section-contracts").classList.contains("active")) loadContracts(true); }, 15000);
 }
