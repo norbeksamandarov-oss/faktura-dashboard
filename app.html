@@ -1094,6 +1094,12 @@
   // Договоры на согласование (маршрут: Приложение № 2)
   // ------------------------------------------------------------
   function ctEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]; }); }
+  function ctConfirmBox(card) {
+    var w = document.createElement("label"); w.style.cssText = "display:flex;gap:10px;align-items:flex-start;margin:14px 0;font-size:14px;line-height:1.4;cursor:pointer";
+    w.innerHTML = "<input type='checkbox' style='margin-top:3px;width:18px;height:18px'><span>Подтверждаю: я проверил документы, договор готов к согласованию</span>";
+    card.appendChild(w);
+    return w.querySelector("input");
+  }
   SECTIONS.contracts = {
     icon: "ti-file-certificate", label: "Договоры", title: "Договоры на согласование",
     render: function () {
@@ -1150,8 +1156,10 @@
       var fSz = makeFileDrop(card, "4. Служебная записка (обязательно)");
       var fCt = makeFileDrop(card, "5. Проект договора (обязательно)");
       var fKp = makeFileDrop(card, "6. Коммерческое предложение (если есть)");
+      var cf = ctConfirmBox(card);
       var btn = makeSubmitBtn(card, "Отправить на согласование");
       btn.onclick = function () {
+        if (!cf.checked) { toast("Подтвердите, что документы проверены", "err"); return; }
         if (!sel.value) { toast("Выберите подразделение", "err"); return; }
         if (!cp.value.trim() || !subj.value.trim()) { toast("Заполните контрагента и предмет", "err"); return; }
         if (!fSz.getFiles().length || !fCt.getFiles().length) { toast("Приложите служебную записку и проект договора", "err"); return; }
@@ -1166,7 +1174,7 @@
             }
           }
           var res = await callApi("miniAppSubmitContract", {
-            chatId: getChatId(), dept: sel.value, counterparty: cp.value.trim(), subject: subj.value.trim(), files: files,
+            chatId: getChatId(), confirm: true, dept: sel.value, counterparty: cp.value.trim(), subject: subj.value.trim(), files: files,
           });
           toast("Договор № " + res.id + " отправлен на согласование", "ok");
           content.innerHTML = ""; SECTIONS.contracts.render();
@@ -1209,15 +1217,17 @@
     var fCt = makeFileDrop(card, "Новый проект договора (если меняли)");
     var fKp = makeFileDrop(card, "Новое КП (если меняли)");
     var cm = makeField(card, "Комментарий (что исправлено)", "textarea", { placeholder: "Необязательно" });
+    var cf = ctConfirmBox(card);
     var btn = makeSubmitBtn(card, "Отправить заново");
     btn.onclick = function () {
+      if (!cf.checked) { toast("Подтвердите, что документы проверены", "err"); return; }
       withBusy(btn, async function () {
         var files = [], plan = [["sz", fSz], ["contract", fCt], ["kp", fKp]];
         for (var i = 0; i < plan.length; i++) {
           var fl = plan[i][1].getFiles();
           for (var j = 0; j < fl.length; j++) { var up = await uploadFile(fl[j]); files.push({ kind: plan[i][0], name: up.name, url: up.url }); }
         }
-        await callApi("miniAppResubmitContract", { chatId: getChatId(), id: c.id, files: files, comment: cm.value.trim() });
+        await callApi("miniAppResubmitContract", { chatId: getChatId(), id: c.id, confirm: true, files: files, comment: cm.value.trim() });
         toast("Договор отправлен заново", "ok");
         content.innerHTML = ""; SECTIONS.contracts.render();
       });
