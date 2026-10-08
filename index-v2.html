@@ -15014,7 +15014,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 (function(){
   var el=document.getElementById('docViewer'); if(!el||window.__dv) return; window.__dv=1;
   var body=document.getElementById('dvBody'), load=document.getElementById('dvLoad'), other=document.getElementById('dvOther'), cur=null;
-  function nameOf(href){ try{ var p=decodeURIComponent(href.split('?')[0].split('#')[0]); p=p.substring(p.lastIndexOf('/')+1); var m=p.match(/^(?:req|close)__.*?__([^_].*)$/); return (m?m[1]:p).replace(/^[0-9a-f]{6}__/,''); }catch(e){return 'Документ';} }
+  function nameOf(href){ try{ var p=decodeURIComponent(href.split('?')[0].split('#')[0]); p=p.substring(p.lastIndexOf('/')+1); var m=p.match(/^close__[^_]+(?:_[^_]+)*?__\d+__\d+__(.+)$/)||p.match(/^req__\d+__[0-9a-f]{6}__(.+)$/); return m?m[1]:p; }catch(e){return 'Документ';} }
   function open(href){
     var n=nameOf(href), ext=(n.split('.').pop()||'').toLowerCase();
     document.getElementById('dvTitle').textContent=n;
@@ -15026,7 +15026,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       cur=document.createElement(isImg?'img':'iframe'); if(isImg) cur.className='dv-img'; else cur.setAttribute('title','Документ');
       cur.onload=function(){load.classList.add('off');};
       cur.onerror=function(){load.classList.add('off');other.style.display='flex';};
-      cur.src=href; body.appendChild(cur);
+      cur.src=isPdf?(href.split('#')[0]+'#navpanes=0&view=FitH'):href; body.appendChild(cur);
       setTimeout(function(){load.classList.add('off');},6000);
     } else { load.classList.add('off'); other.style.display='flex'; }
     el.style.display='flex'; requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('open');});});
