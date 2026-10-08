@@ -6233,8 +6233,8 @@ function renderApproverTable() {
         <tr data-row="${r.rowIndex}" style="background:var(--chip-bg);">
           <td style="color:var(--muted);">${idx + 1}</td>
           <td><select id="approverEditOrg-${r.rowIndex}" style="width:100%;padding:5px 6px;">${orgExtra}${orgOptions}</select></td>
-          <td><input type="text" id="approverEditChatId-${r.rowIndex}" value="${escapeHtml(r.chatId)}" style="width:100%;padding:5px 6px;"></td>
-          <td><input type="text" id="approverEditName-${r.rowIndex}" value="${escapeHtml(r.name)}" style="width:100%;padding:5px 6px;"></td>
+          <td><input type="text" id="approverEditChatId-${r.rowIndex}" value="${escapeHtml(r.chatId)}" oninput="approverEditLookup(${r.rowIndex})" style="width:100%;padding:5px 6px;"></td>
+          <td><input type="text" id="approverEditName-${r.rowIndex}" value="${escapeHtml(r.name)}" oninput="this.dataset.manual='1'" style="width:100%;padding:5px 6px;"></td>
           <td><label class="toggle-switch"><input type="checkbox" id="approverEditActive-${r.rowIndex}" ${r.active ? "checked" : ""}><span class="toggle-slider"></span></label></td>
           <td><input type="text" id="approverEditComment-${r.rowIndex}" value="${escapeHtml(r.comment)}" style="width:100%;padding:5px 6px;"></td>
           <td style="white-space:nowrap;">
@@ -6325,6 +6325,16 @@ async function empNameById(id) {
     } catch (e) { _empNameCache = null; return ""; }
   }
   return _empNameCache[String(id)] || "";
+}
+async function approverEditLookup(rowIndex) {
+  const idEl = document.getElementById(`approverEditChatId-${rowIndex}`), nmEl = document.getElementById(`approverEditName-${rowIndex}`);
+  if (!idEl || !nmEl) return;
+  const id = idEl.value.trim();
+  if (!/^\d{5,}$/.test(id)) return;
+  const name = await empNameById(id);
+  if (idEl.value.trim() !== id) return;
+  if (name) { nmEl.value = name; nmEl.dataset.manual = ""; nmEl.style.outline = ""; }
+  else { nmEl.style.outline = "1px dashed #C0392B"; nmEl.title = "Этот ID не найден в списке сотрудников - введите имя вручную"; nmEl.placeholder = "ID не найден - введите имя"; if (!nmEl.dataset.manual) nmEl.value = ""; }
 }
 async function approverIdLookup() {
   const idEl = document.getElementById("approverNewChatId"), nmEl = document.getElementById("approverNewName");
