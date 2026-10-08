@@ -15389,6 +15389,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 })();
 </script>
 <style id="ucCss">
+.nav-item[data-section="approvers"]{display:none!important}
 #ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
 #ucOv.on{display:flex;animation:ucFade .25s ease both}
 @keyframes ucFade{from{opacity:0}to{opacity:1}}
@@ -15503,12 +15504,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
       h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
     }
     h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
-    h+='<div class="uc-f"><label>Имя (как в «Ответственные»)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):'')+'" oninput="this.dataset.m=1"></div>';
+    h+='<div class="uc-f"><label>Имя (для согласований)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):'')+'" oninput="this.dataset.m=1"></div>';
     h+='</div></div>';
     h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
     listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
     h+='</div></div>';
-    h+='<div class="uc-s"><p class="uc-st">Ответственный <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
+    h+='<div class="uc-s"><p class="uc-st">Согласование <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
     h+='</div><div class="uc-bar" id="ucBar"><b></b></div><div class="uc-err" id="ucErr"></div><div class="uc-ft"><div class="uc-sum" id="ucSum"></div><button type="button" class="uc-btn" id="ucGo" onclick="ucSave()"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>'+(isNew?'Создать и выдать доступы':'Сохранить')+'</span></button></div>';
     $('ucBox').innerHTML=h; ucCounts();
   }
@@ -15577,7 +15578,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     var d=plan();
     var needId=d.add||d.rep||d.lists||(!isNew && id!==String(UC.user.chatId||''));
     if((d.add||d.rep||d.lists) && !/^\d{5,}$/.test(id)) return err('Для доступов укажите Telegram ID сотрудника');
-    if((d.add||d.rep) && !name) return err('Укажите имя - оно запишется в «Ответственные»');
+    if((d.add||d.rep) && !name) return err('Укажите имя - оно запишется в согласования');
     if(d.rep){
       var tl=d.repL.slice(0,8).map(function(x){ var tn=TYPES.filter(function(t){return t[0]===x.t;})[0][1]; return tn+' / '+x.o+' (сейчас: '+x.prev+')'; }).join('\n');
       if(!await uiConfirm('Будет заменён действующий ответственный ('+d.rep+'):\n'+tl+(d.rep>8?'\n…':'')+'\nПродолжить?')) return;
