@@ -4406,17 +4406,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <h2>Пользователи dashboard <span class="sub">логин/пароль для входа</span></h2>
       <p class="analytics-note" style="margin:0 0 16px;">Здесь вы создаёте логин и пароль для каждого сотрудника, который должен заходить в этот dashboard. Роль «admin» даёт полный доступ (включая этот раздел), «employee» - обычный доступ, «salary» - видит ТОЛЬКО раздел «Зарплата» (для расчётного бухгалтера).</p>
 
-      <div class="user-create-form">
-        <input type="text" id="newUserUsername" placeholder="Логин (например: shaxrux)" class="login-input" style="max-width:200px;">
-        <input type="text" id="newUserPassword" placeholder="Пароль (мин. 4 символа)" class="login-input" style="max-width:200px;">
-        <input type="text" id="newUserName" placeholder="Имя (как в Ответственный)" class="login-input" style="max-width:220px;">
-        <select id="newUserRole" class="login-input" style="max-width:160px;">
-          <option value="employee">employee (обычный)</option>
-          <option value="admin">admin (полный доступ)</option>
-          <option value="salary">salary (только Зарплата)</option>
-        </select>
-        <button id="createUserBtn" onclick="handleCreateUser()" class="login-submit-btn" style="width:auto;padding:12px 22px;">+ Создать</button>
-      </div>
+      <div class="user-create-form"><button id="createUserBtn" onclick="ucOpen()" class="login-submit-btn" style="width:auto;padding:12px 22px;">+ Новый сотрудник</button></div>
       <p class="analytics-note" style="margin:8px 0 0;">Колонки «Счетов» и «Сумма» показывают, сколько счетов этот логин лично изменил через dashboard (checkbox, ответственный и т.д.) - на основе журнала «АудитЛог».</p>
       <div id="createUserError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
 
@@ -11556,6 +11546,7 @@ function renderUsersTable() {
         <span style="font-size:11.5px;color:var(--muted);margin-left:6px;">${u.active ? "Активен" : "Деактивирован"}</span>
       </td>
       <td>
+        <button class="emp-delete-btn" style="background:var(--ice-soft);color: var(--navy-text);border-color:var(--border);" onclick="ucOpen(usersListCache[${i}])"><i class='ti ti-adjustments' aria-hidden='true'></i> Доступы</button>
         <button class="emp-delete-btn" style="background:var(--ice-soft);color: var(--navy-text);border-color:var(--border);" onclick="handleResetPassword(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}')"><i class='ti ti-key' aria-hidden='true'></i> Новый пароль</button>
         <button class="emp-delete-btn" onclick="handleDeleteUser(${u.rowIndex}, '${escapeHtml(u.username).replace(/'/g, "\\'")}', this)"><i class='ti ti-trash' aria-hidden='true'></i> Удалить</button>
       </td>
@@ -15395,6 +15386,236 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     $('rsMetaTax').textContent='Файл только с данными налога'; $('rsMeta1c').textContent='Файл только с данными 1С';
     $('rsRes').style.display='none';
   };
+})();
+</script>
+<style id="ucCss">
+#ucOv{position:fixed;inset:0;z-index:9000;background:rgba(5,7,12,.62);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}
+#ucOv.on{display:flex;animation:ucFade .25s ease both}
+@keyframes ucFade{from{opacity:0}to{opacity:1}}
+@keyframes ucUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#ucBox{width:min(980px,100%);background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.45);animation:ucUp .35s cubic-bezier(.16,1,.3,1) both;position:relative}
+#ucBox.shake{animation:ucShake .4s}
+@keyframes ucShake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.uc-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 26px 16px;border-bottom:1px solid var(--border)}
+.uc-h h3{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.uc-x{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.uc-x:hover{color:var(--text);background:var(--ice-soft)}
+.uc-b{padding:6px 26px 4px}
+.uc-s{padding:18px 0;border-bottom:1px solid var(--border)}
+.uc-s:last-child{border-bottom:0}
+.uc-st{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.uc-st i{font-style:normal;background:var(--ice-soft);color:var(--navy-text);border-radius:999px;padding:2px 9px;letter-spacing:0;text-transform:none;font-size:11.5px}
+.uc-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.uc-f label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.uc-f input,.uc-f select{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:14px}
+.uc-f input:focus,.uc-f select:focus{outline:2px solid var(--navy);outline-offset:0}
+.uc-f input[readonly]{opacity:.6}
+.uc-hint{font-size:12px;margin-top:6px;min-height:16px;color:var(--muted)}
+.uc-hint.ok{color:var(--green-fg)}.uc-hint.bad{color:var(--red-fg)}
+.uc-chips{display:flex;flex-wrap:wrap;gap:8px}
+.uc-chip{border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.uc-chip:before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);transition:all .15s}
+.uc-chip.on{background:rgba(52,209,122,.13);border-color:var(--green-fg)}
+.uc-chip.on:before{background:var(--green-fg);border-color:var(--green-fg)}
+.uc-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.uc-tools select{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:13px;max-width:260px}
+.uc-link{background:none;border:0;color:var(--navy-text);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:8px}
+.uc-link:hover{background:var(--ice-soft)}
+.uc-mx{overflow:auto;border:1px solid var(--border);border-radius:14px;max-height:48vh}
+.uc-mx table{border-collapse:collapse;width:100%;font-size:13px}
+.uc-mx th,.uc-mx td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)}
+.uc-mx tr:last-child td{border-bottom:0}
+.uc-mx thead th{position:sticky;top:0;background:var(--card);font-size:11px;color:var(--muted);font-weight:700;cursor:pointer;line-height:1.25;z-index:1}
+.uc-mx thead th:hover{color:var(--text)}
+.uc-mx td:first-child,.uc-mx th:first-child{text-align:left;padding-left:14px;white-space:nowrap;font-weight:700;cursor:pointer}
+.uc-c{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;color:transparent;font-size:15px;padding:0}
+.uc-c:hover{border-color:var(--navy)}
+.uc-c.on{background:var(--green-fg);border-color:var(--green-fg);color:#07090f}
+.uc-c.oth{border-style:dashed;border-color:#d68a1e}
+.uc-c.oth.on{background:#d68a1e;border-color:#d68a1e}
+.uc-legend{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:16px;flex-wrap:wrap}
+.uc-ft{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px 26px 22px;border-top:1px solid var(--border)}
+.uc-sum{font-size:13px;color:var(--muted)}
+.uc-btn{background:var(--green-fg);color:#07090f;border:0;border-radius:12px;padding:12px 26px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,opacity .15s}
+.uc-btn:hover{transform:translateY(-1px)}
+.uc-btn:disabled{opacity:.7;cursor:default;transform:none}
+.uc-btn i{display:none}
+.uc-btn.busy i.sp{display:inline-block;animation:rcSpin .7s linear infinite}
+.uc-btn.done{background:var(--green-fg)}
+.uc-btn.done i.ck{display:inline-block;animation:ucPop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes ucPop{from{transform:scale(0)}to{transform:scale(1)}}
+.uc-bar{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin:0 26px;display:none}
+.uc-bar b{display:block;height:100%;width:0;background:var(--green-fg);transition:width .3s ease}
+.uc-err{color:var(--red-fg);font-size:13px;padding:0 26px 6px;min-height:0}
+.uc-load{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:700px){.uc-b,.uc-h,.uc-ft{padding-left:16px;padding-right:16px}.uc-bar,.uc-err{margin-left:16px;margin-right:16px;padding-left:0;padding-right:0}}
+</style>
+<script id="ucJs">
+(function(){
+  var TYPES=[['invoices','Счёт-фактура'],['dogovor','Договор'],['doverennost','Доверенность'],['bank','Банк'],['otherreqPost','Другой (пост.)'],['realschet','Реал. счёт'],['dogovorReal','Реал. договор'],['zakaznaryad','Заказ-наряд'],['otherreqReal','Другой (реал.)']];
+  var UC=null;
+  var $=function(id){ return document.getElementById(id); };
+  var esc=function(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  var wait=function(ms){ return new Promise(function(r){ setTimeout(r,ms); }); };
+  function orgs(){ return (typeof ORG_GROUPS!=='undefined'?ORG_GROUPS:[]).map(function(g){ return g.canonical; }); }
+  function listMeta(){ return (typeof BC_META!=='undefined'?BC_META:[]).filter(function(m){ return m.k && !m.single; }); }
+  function ensureDom(){
+    if($('ucOv')) return;
+    var d=document.createElement('div'); d.id='ucOv';
+    d.innerHTML='<div id="ucBox"></div>';
+    d.addEventListener('mousedown',function(e){ if(e.target===d && !UC.busy) ucClose(); });
+    document.body.appendChild(d);
+  }
+  function key(t,o){ return t+'|'+o; }
+  function findRow(t,o){ var rows=UC.rows[t]||[]; var lo=String(o).toLowerCase(); for(var i=0;i<rows.length;i++){ if(String(rows[i].org).trim().toLowerCase()===lo) return rows[i]; } return null; }
+  function mineRow(t,o){ var r=findRow(t,o); return r && UC.id && String(r.chatId)===UC.id ? r : null; }
+  function otherRow(t,o){ var r=findRow(t,o); return r && String(r.chatId).trim() && String(r.chatId)!==UC.id ? r : null; }
+  function initChecks(){
+    UC.chk={}; if(!UC.id) return;
+    orgs().forEach(function(o){ TYPES.forEach(function(t){ var r=mineRow(t[0],o); if(r && r.active) UC.chk[key(t[0],o)]=true; }); });
+    UC.orig=Object.assign({},UC.chk);
+  }
+  window.ucOpen=async function(user){
+    ensureDom();
+    UC={user:user||null, busy:false, rows:{}, lists:{}, listsOrig:{}, chk:{}, orig:{}, id:user&&user.chatId?String(user.chatId):'', nameAuto:false, emps:[]};
+    $('ucOv').classList.add('on'); document.body.style.overflow='hidden';
+    $('ucBox').innerHTML='<div class="uc-h"><h3>'+(user?esc(user.name||user.username):'Новый сотрудник')+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-load"><div class="rc-bar" style="max-width:260px;margin:0 auto 12px;"><i></i></div>Загружаем доступы…</div>';
+    try{
+      var res=await Promise.all([apiCall('getBotSettings',{})].concat(TYPES.map(function(t){ return apiCall('getApproverSheetRows',{sheetKey:t[0]}); })));
+      var bs=res[0]; UC.emps=bs.employees||[]; UC.lists=bs.lists||{};
+      TYPES.forEach(function(t,i){ UC.rows[t[0]]=(res[i+1]&&res[i+1].rows)||[]; });
+    }catch(e){ $('ucBox').innerHTML='<div class="uc-h"><h3>Ошибка</h3><button class="uc-x" onclick="ucClose()">&times;</button></div><div class="uc-load" style="color:var(--red-fg)">Не удалось загрузить: '+esc(e.message)+'</div>'; return; }
+    initChecks(); ucRender();
+    if(UC.id) ucLookup(true);
+  };
+  window.ucClose=function(){ var o=$('ucOv'); if(o) o.classList.remove('on'); document.body.style.overflow=''; UC=null; };
+  function snapLists(){ UC.listsOrig={}; listMeta().forEach(function(m){ UC.listsOrig[m.k]=(UC.lists[m.k]||[]).indexOf(UC.id)>=0; }); UC.listOn=Object.assign({},UC.listsOrig); }
+  function ucRender(){
+    var u=UC.user, isNew=!u;
+    snapLists();
+    var h='<div class="uc-h"><h3>'+(isNew?'Новый сотрудник':esc(u.name||u.username))+'</h3><button class="uc-x" onclick="ucClose()" aria-label="Закрыть">&times;</button></div><div class="uc-b">';
+    h+='<div class="uc-s"><p class="uc-st">Аккаунт</p><div class="uc-g">';
+    if(isNew){
+      h+='<div class="uc-f"><label>Логин</label><input id="ucLogin" autocomplete="off" placeholder="например: shaxrux"></div>';
+      h+='<div class="uc-f"><label>Пароль (мин. 4 символа)</label><input id="ucPass" autocomplete="off"></div>';
+      h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">employee (обычный)</option><option value="admin">admin (полный доступ)</option><option value="salary">salary (только Зарплата)</option></select></div>';
+    } else {
+      h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
+    }
+    h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
+    h+='<div class="uc-f"><label>Имя (как в «Ответственные»)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):'')+'" oninput="this.dataset.m=1"></div>';
+    h+='</div></div>';
+    h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
+    listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
+    h+='</div></div>';
+    h+='<div class="uc-s"><p class="uc-st">Ответственный <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
+    h+='</div><div class="uc-bar" id="ucBar"><b></b></div><div class="uc-err" id="ucErr"></div><div class="uc-ft"><div class="uc-sum" id="ucSum"></div><button type="button" class="uc-btn" id="ucGo" onclick="ucSave()"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>'+(isNew?'Создать и выдать доступы':'Сохранить')+'</span></button></div>';
+    $('ucBox').innerHTML=h; ucCounts();
+  }
+  function copyOptions(){
+    var m={}; TYPES.forEach(function(t){ (UC.rows[t[0]]||[]).forEach(function(r){ var id=String(r.chatId||'').trim(); if(id && id!==UC.id && r.active) m[id]=m[id]||(r.name||id); }); });
+    return Object.keys(m).sort(function(a,b){ return m[a].localeCompare(m[b]); }).map(function(id){ return '<option value="'+esc(id)+'">'+esc(m[id])+'</option>'; }).join('');
+  }
+  function cellHtml(t,o){
+    var k=key(t,o), on=!!UC.chk[k], oth=otherRow(t,o);
+    var title=oth?('Сейчас: '+(oth.name||oth.chatId)):'';
+    return '<button type="button" class="uc-c'+(on?' on':'')+(oth?' oth':'')+'" data-k="'+esc(k)+'" title="'+esc(title)+'" onclick="ucCell(this)">&#10003;</button>';
+  }
+  function setCell(k,on){ if(on) UC.chk[k]=true; else delete UC.chk[k]; var b=document.querySelector('.uc-c[data-k="'+k.replace(/"/g,'\\"')+'"]'); if(b) b.classList.toggle('on',on); }
+  window.ucCell=function(b){ var k=b.getAttribute('data-k'); setCell(k,!UC.chk[k]); ucCounts(); };
+  window.ucRow=function(oi){ var o=orgs()[oi]; var all=TYPES.every(function(t){ return UC.chk[key(t[0],o)]; }); TYPES.forEach(function(t){ setCell(key(t[0],o),!all); }); ucCounts(); };
+  window.ucCol=function(ti){ var t=TYPES[ti][0]; var all=orgs().every(function(o){ return UC.chk[key(t,o)]; }); orgs().forEach(function(o){ setCell(key(t,o),!all); }); ucCounts(); };
+  window.ucAll=function(v){ if(v===null) v=!orgs().every(function(o){ return TYPES.every(function(t){ return UC.chk[key(t[0],o)]; }); }); orgs().forEach(function(o){ TYPES.forEach(function(t){ setCell(key(t[0],o),v); }); }); ucCounts(); };
+  window.ucCopyDo=function(){
+    var id=$('ucCopy').value; if(!id) return;
+    orgs().forEach(function(o){ TYPES.forEach(function(t){ var r=findRow(t[0],o); if(r && String(r.chatId)===id && r.active) setCell(key(t[0],o),true); }); });
+    ucCounts();
+  };
+  window.ucList=function(b){ var k=b.getAttribute('data-k'); UC.listOn[k]=!UC.listOn[k]; b.classList.toggle('on',UC.listOn[k]); ucCounts(); };
+  function ucCounts(){
+    var n=Object.keys(UC.chk).length; var bc=Object.keys(UC.listOn).filter(function(k){ return UC.listOn[k]; }).length;
+    if($('ucApCnt')) $('ucApCnt').textContent=n+' назначений';
+    if($('ucBotCnt')) $('ucBotCnt').textContent=bc+' из '+Object.keys(UC.listOn).length;
+    var d=plan(); var parts=[];
+    if(!UC.user) parts.push('создать аккаунт');
+    if(d.add) parts.push('добавить: '+d.add); if(d.rep) parts.push('заменить: '+d.rep); if(d.del) parts.push('убрать: '+d.del);
+    if(d.lists) parts.push('списков бота: '+d.lists);
+    if($('ucSum')) $('ucSum').textContent=parts.length?('Будет: '+parts.join(', ')):'Изменений нет';
+  }
+  function plan(){
+    var add=[],rep=[],del=[],act=[];
+    orgs().forEach(function(o){ TYPES.forEach(function(t){
+      var k=key(t[0],o), want=!!UC.chk[k], had=!!UC.orig[k], mine=mineRow(t[0],o), oth=otherRow(t[0],o);
+      if(want && !had){ if(oth) rep.push({t:t[0],o:o,row:oth,prev:oth.name||oth.chatId}); else if(mine) act.push({t:t[0],o:o,row:mine}); else add.push({t:t[0],o:o}); }
+      else if(!want && had && mine) del.push({t:t[0],o:o,row:mine});
+    }); });
+    var lists=Object.keys(UC.listOn||{}).filter(function(k){ return UC.listOn[k]!==UC.listsOrig[k]; });
+    return {addL:add,repL:rep,delL:del,actL:act,add:add.length+act.length,rep:rep.length,del:del.length,lists:lists.length,listKeys:lists};
+  }
+  window.ucTgInput=function(){ var v=$('ucTg').value.replace(/\D/g,''); if($('ucTg').value!==v) $('ucTg').value=v; UC.id=v; ucLookup(false); };
+  async function ucLookup(initial){
+    var hint=$('ucTgHint'), nm=$('ucName'); if(!hint) return;
+    if(!/^\d{5,}$/.test(UC.id)){ hint.className='uc-hint'; hint.textContent=''; if(!initial && nm.dataset.auto==='1' && !nm.dataset.m){ nm.value=''; nm.dataset.auto=''; } return; }
+    var e=UC.emps.filter(function(x){ return String(x.chatId)===UC.id; })[0];
+    if(e){ hint.className='uc-hint ok'; hint.textContent='Найден: '+e.name; if(!nm.value.trim() || (nm.dataset.auto==='1' && !nm.dataset.m)){ nm.value=e.name; nm.dataset.auto='1'; } }
+    else { hint.className='uc-hint bad'; hint.textContent='Этого ID нет в списке сотрудников бота - введите имя вручную'; }
+    if(!initial){ // перечитываем текущие назначения по новому ID
+      initChecks(); snapLists(); document.querySelectorAll('.uc-c').forEach(function(b){ b.classList.toggle('on',!!UC.chk[b.getAttribute('data-k')]); });
+      document.querySelectorAll('.uc-chip').forEach(function(b){ b.classList.toggle('on',!!UC.listOn[b.getAttribute('data-k')]); });
+      var cs=$('ucCopy'); if(cs) cs.innerHTML='<option value="">Принять дела от…</option>'+copyOptions();
+    }
+    ucCounts();
+  }
+  function err(m){ var e=$('ucErr'); e.textContent=m||''; if(m){ var b=$('ucBox'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); } }
+  function prog(p){ var b=$('ucBar'); b.style.display='block'; b.firstChild.style.width=p+'%'; }
+  window.ucSave=async function(){
+    if(UC.busy) return; err('');
+    var isNew=!UC.user, name=$('ucName').value.trim(), id=UC.id;
+    var login=isNew?$('ucLogin').value.trim():'', pass=isNew?$('ucPass').value:'', role=isNew?$('ucRole').value:UC.user.role;
+    if(isNew && (!login||!pass)) return err('Введите логин и пароль');
+    if(isNew && pass.length<4) return err('Пароль слишком короткий (минимум 4 символа)');
+    var d=plan();
+    var needId=d.add||d.rep||d.lists||(!isNew && id!==String(UC.user.chatId||''));
+    if((d.add||d.rep||d.lists) && !/^\d{5,}$/.test(id)) return err('Для доступов укажите Telegram ID сотрудника');
+    if((d.add||d.rep) && !name) return err('Укажите имя - оно запишется в «Ответственные»');
+    if(d.rep){
+      var tl=d.repL.slice(0,8).map(function(x){ var tn=TYPES.filter(function(t){return t[0]===x.t;})[0][1]; return tn+' / '+x.o+' (сейчас: '+x.prev+')'; }).join('\n');
+      if(!await uiConfirm('Будет заменён действующий ответственный ('+d.rep+'):\n'+tl+(d.rep>8?'\n…':'')+'\nПродолжить?')) return;
+    }
+    UC.busy=true; var btn=$('ucGo'); btn.disabled=true; btn.classList.add('busy'); btn.querySelector('span').textContent='Сохраняем…'; prog(4);
+    var steps=(isNew?2:0)+(id!==String(UC.user&&UC.user.chatId||'')&&id?1:0)+d.lists+d.add+d.rep+d.del; var done=0; var tick=function(){ done++; prog(Math.min(96,8+88*done/Math.max(1,steps))); };
+    try{
+      var rowIndex=UC.user&&UC.user.rowIndex;
+      if(isNew){
+        await apiCall('adminCreateUser',{username:login,password:pass,name:name||login,role:role}); tick();
+        var lu=await apiCall('adminListUsers',{}); var nu=(lu.users||[]).filter(function(x){ return String(x.username).toLowerCase()===login.toLowerCase(); })[0];
+        rowIndex=nu&&nu.rowIndex; tick();
+      }
+      if(id && rowIndex && id!==String(UC.user&&UC.user.chatId||'')){ await apiCall('adminSetUserChatId',{rowIndex:rowIndex,chatId:id}); tick(); }
+      if(d.lists){
+        var fresh=await apiCall('getBotSettings',{});
+        for(var i=0;i<d.listKeys.length;i++){
+          var k=d.listKeys[i], cur=(fresh.lists&&fresh.lists[k]||[]).slice(), has=cur.indexOf(id)>=0;
+          if(UC.listOn[k] && !has) cur.push(id); if(!UC.listOn[k] && has) cur=cur.filter(function(x){ return x!==id; });
+          await apiCall('saveBotSetting',{key:k,value:cur}); tick();
+        }
+      }
+      var sv=function(x,rowRef,active){ return apiCall('saveApproverSheetRow',{sheetKey:x.t,org:x.o,chatId:id,name:name,active:active,comment:rowRef?(rowRef.comment||''):'',rowIndex:rowRef?rowRef.rowIndex:undefined}); };
+      for(var a=0;a<d.addL.length;a++){ await sv(d.addL[a],null,true); tick(); }
+      for(var c=0;c<d.actL.length;c++){ await sv(d.actL[c],d.actL[c].row,true); }
+      for(var r=0;r<d.repL.length;r++){ await sv(d.repL[r],d.repL[r].row,true); tick(); }
+      for(var q=0;q<d.delL.length;q++){ await apiCall('deleteApproverSheetRow',{sheetKey:d.delL[q].t,rowIndex:d.delL[q].row.rowIndex}); tick(); }
+      prog(100); btn.classList.remove('busy'); btn.classList.add('done'); btn.querySelector('span').textContent='Готово'; await wait(1100);
+      ucClose();
+      if(typeof renderUsersManage==='function') renderUsersManage();
+      try{ _empNameCache=null; }catch(e){}
+      try{ if(typeof BC!=='undefined') BC.d=null; }catch(e){}
+    }catch(e){
+      UC.busy=false; btn.disabled=false; btn.classList.remove('busy'); btn.querySelector('span').textContent=isNew?'Создать и выдать доступы':'Сохранить';
+      err('Не удалось: '+e.message+(isNew?' (если аккаунт уже создан, откройте его кнопкой «Доступы» и повторите)':'')); $('ucBar').style.display='none';
+    }
+  };
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && UC && !UC.busy) ucClose(); });
 })();
 </script>
 </body>
