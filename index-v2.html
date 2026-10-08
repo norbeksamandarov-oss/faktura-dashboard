@@ -6088,6 +6088,10 @@ function openCloseReqModal(reqType, rowIndex, rowsArray, renderFn) {
   const card = m.querySelector(".crm-card"); card.classList.remove("busy", "done", "shake");
   document.getElementById("crmTitle").textContent = "Закрыть заявку?";
   document.getElementById("crmSub").textContent = "Сотрудник получит ответ в Telegram.";
+  const sugMode = reqType === "__sug";
+  document.getElementById("crmDz").style.display = sugMode ? "none" : "";
+  document.getElementById("crmFiles").style.display = sugMode ? "none" : "";
+  if (sugMode) { document.getElementById("crmTitle").textContent = "Ответить и закрыть"; document.getElementById("crmSub").textContent = "Ответ уйдёт сотруднику в Telegram анонимно. Без текста - просто закроется."; }
   m.style.display = "flex"; requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add("open")));
   crmRender();
 }
@@ -6102,6 +6106,7 @@ function crmReadB64(file) {
 async function crmSubmit() {
   if (!CRM.ctx || CRM.busy) return;
   const { reqType, rowIndex, rowsArray, renderFn } = CRM.ctx;
+  const isSug = reqType === "__sug";
   const comment = document.getElementById("crmText").value.trim();
   const err = document.getElementById("crmErr"); err.textContent = "";
   const card = document.querySelector("#closeReqModal .crm-card"), go = document.getElementById("crmGo");
@@ -6112,9 +6117,10 @@ async function crmSubmit() {
   try {
     const params = { reqType, rowIndex, comment, v2: true };
     if (n) params.files = await Promise.all(CRM.files.map(async f => ({ name: f.name, b64: await crmReadB64(f) })));
-    const res = await apiCall("adminCloseRequest", params);
+    const res = isSug ? await apiCall("adminReplySuggestion", { rowIndex, comment }) : await apiCall("adminCloseRequest", params);
     const row = rowsArray.find(r => r.rowIndex === rowIndex);
-    if (row) { row.status = res.status || (hadFiles ? "Выполнено" : (currentRole === "admin" ? "Закрыто администратором" : "Закрыто (см. комментарий)")); row.comment = comment; row.doneAt = new Date().toISOString(); }
+    if (isSug && row) row.closed = true;
+    if (row && !isSug) { row.status = res.status || (hadFiles ? "Выполнено" : (currentRole === "admin" ? "Закрыто администратором" : "Закрыто (см. комментарий)")); row.comment = comment; row.doneAt = new Date().toISOString(); }
     // успех: большая галочка, затем плавное закрытие
     card.classList.remove("busy"); card.classList.add("done");
     const ic = document.getElementById("crmIc"); ic.className = "crm-ic ok"; ic.innerHTML = "<i class='ti ti-circle-check' aria-hidden='true'></i>";
@@ -10221,8 +10227,11 @@ function sugRender() {
         <td>${it.comment ? `<span style="color:#1E7A4C;"><i class='ti ti-circle-check' aria-hidden='true'></i> да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
         <td style="text-align:right;white-space:nowrap;">${it.closed
           ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:transparent;border:1px solid var(--border,#555);color:var(--muted);" onclick="sugClose(${it.rowIndex}, true, this)">Открыть</button>`
-          : `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;" onclick="sugClose(${it.rowIndex}, false, this)">Закрыть</button>`}</td>
+          : `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;" onclick="sugReply(${it.rowIndex})">Ответить / Закрыть</button>`}</td>
       </tr>`).join("") || `<tr><td colspan="7" style="color:var(--muted)">${sugShowClosed ? "Пока нет обращений" : "Нет открытых обращений"}</td></tr>`;
+}
+function sugReply(rowIndex) {
+  openCloseReqModal("__sug", rowIndex, sugItems, () => { sugRender(); });
 }
 async function sugClose(rowIndex, reopen, btn) {
   const row = btn.closest("tr");
@@ -10260,7 +10269,7 @@ async function loadSuggestions() {
     sugMarkSeen(items);
     const sub = document.getElementById("suggestionsCountSub");
     if (sub) sub.textContent = `всего: ${items.length} · видно только администраторам`;
-    sugItems = items;
+    sugItems = items.map(it => Object.assign(it, { details: it.text, employeeName: it.employeeName }));
     sugRender();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
