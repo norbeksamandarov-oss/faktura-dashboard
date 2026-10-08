@@ -15349,9 +15349,9 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     cats.forEach(function(c,i){ var n=R.cnt[c[0]]; ln(12+i,c[1],n,c[2]?(n>0?RED:GREEN):null); });
     ws0.pageSetup={orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0};
     var cols=[['№',6,'c'],['Статус',24,'t'],['ИНН (налог)',16,'t'],['Контрагент (налог)',40,'t'],['Сумма (налог)',20,'n'],['ИНН (1С)',16,'t'],['Контрагент (1С)',40,'t'],['Сумма (1С)',20,'n'],['Разница',20,'n']];
-    var notes={sum:'ИНН совпал, но суммы отличаются',tax:'Есть в налоговом, в 1С не найдено',c1:'Есть в 1С, в налоговом не найдено',amt:'ИНН/ФИО не совпали, но сумма одинаковая - проверьте вручную',name:'ИНН разный, но ФИО и сумма совпали',ok:'ИНН и сумма совпали'};
-    cats.forEach(function(cg){
-      var rows=R.rows.filter(function(r){return r.st===cg[0];}); if(!rows.length) return;
+    var notes={all:'Все строки сверки, статус указан в колонке «Статус»',sum:'ИНН совпал, но суммы отличаются',tax:'Есть в налоговом, в 1С не найдено',c1:'Есть в 1С, в налоговом не найдено',amt:'ИНН/ФИО не совпали, но сумма одинаковая - проверьте вручную',name:'ИНН разный, но ФИО и сумма совпали',ok:'ИНН и сумма совпали'};
+    [['all','Все',0]].concat(cats).forEach(function(cg){
+      var rows=cg[0]==='all'?R.rows:R.rows.filter(function(r){return r.st===cg[0];}); if(!rows.length) return;
       var ws=wb.addWorksheet(cg[1].replace(/[\\\/\?\*\[\]:]/g,'').slice(0,31),{views:[{state:'frozen',ySplit:4,showGridLines:false}],properties:{tabColor:{argb:cg[2]?RED:'FF8A94B8'}}});
       ws.columns=cols.map(function(c){return {width:c[1]};});
       ws.mergeCells(1,1,1,cols.length); var n1=ws.getCell(1,1); n1.value=cg[1]+' ('+rows.length+')'; n1.font=font({size:14,bold:true,color:{argb:NAVY}}); ws.getRow(1).height=24;
