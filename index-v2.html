@@ -4601,11 +4601,11 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
           </div>
           <div class="filter-field" style="width:180px;">
             <label>Telegram Chat ID</label>
-            <input type="text" id="approverNewChatId" placeholder="Например 1613809975">
+            <input type="text" id="approverNewChatId" placeholder="Например 1613809975" oninput="approverIdLookup()">
           </div>
           <div class="filter-field" style="width:200px;">
             <label>Имя</label>
-            <input type="text" id="approverNewName" placeholder="Имя Фамилия">
+            <input type="text" id="approverNewName" placeholder="Имя Фамилия" oninput="this.dataset.auto=''">
           </div>
           <div class="filter-field" style="width:220px;">
             <label>Комментарий (необязательно)</label>
@@ -6310,6 +6310,24 @@ async function deleteApproverRow(rowIndex) {
   }
 }
 
+let _empNameCache = null;
+async function empNameById(id) {
+  if (!_empNameCache) {
+    try {
+      const d = (typeof BC !== "undefined" && BC.d && BC.d.employees) ? BC.d : await apiCall("getBotSettings", {});
+      _empNameCache = {}; (d.employees || []).forEach(e => { _empNameCache[String(e.chatId)] = e.name; });
+    } catch (e) { _empNameCache = null; return ""; }
+  }
+  return _empNameCache[String(id)] || "";
+}
+async function approverIdLookup() {
+  const idEl = document.getElementById("approverNewChatId"), nmEl = document.getElementById("approverNewName");
+  const id = idEl.value.trim();
+  if (!/^\d{5,}$/.test(id)) { if (nmEl.dataset.auto === "1") { nmEl.value = ""; nmEl.dataset.auto = ""; } return; }
+  const name = await empNameById(id);
+  if (idEl.value.trim() !== id) return;
+  if (name && (!nmEl.value.trim() || nmEl.dataset.auto === "1")) { nmEl.value = name; nmEl.dataset.auto = "1"; }
+}
 async function addApproverRow() {
   const sheetKey = document.getElementById("approversTypeSelect").value;
   const org = document.getElementById("approverNewOrg").value;
