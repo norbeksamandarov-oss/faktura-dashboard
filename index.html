@@ -14976,5 +14976,73 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
   window.__sbAnim = {seen: seen};
 })();
 </script>
+<style id="dvCss">
+#docViewer{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(6,8,14,.72);backdrop-filter:blur(6px);opacity:0;transition:opacity .22s ease;padding:3vh 3vw}
+#docViewer.open{opacity:1}
+#docViewer .dv-card{width:min(1100px,100%);height:100%;display:flex;flex-direction:column;background:var(--card,#12151d);color:var(--text,#e8ebf2);border:1px solid var(--border,rgba(255,255,255,.12));border-radius:16px;overflow:hidden;transform:translateY(14px) scale(.985);transition:transform .28s cubic-bezier(.16,1,.3,1);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+#docViewer.open .dv-card{transform:none}
+#docViewer .dv-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border,rgba(255,255,255,.1))}
+#docViewer .dv-title{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#docViewer .dv-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border,rgba(255,255,255,.14));background:transparent;color:inherit;font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s}
+#docViewer .dv-btn:hover{background:rgba(91,141,255,.14);border-color:rgba(91,141,255,.5)}
+#docViewer .dv-x{width:34px;height:34px;padding:0;justify-content:center;font-size:18px}
+#docViewer .dv-body{position:relative;flex:1;background:var(--bg,#0b0d13)}
+#docViewer iframe,#docViewer img.dv-img{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;object-fit:contain}
+#docViewer img.dv-img{background:transparent}
+#docViewer .dv-load{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted,#8b93a7);font-size:13px;transition:opacity .25s}
+#docViewer .dv-load.off{opacity:0;pointer-events:none}
+#docViewer .dv-spin{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.14);border-top-color:#5b8dff;animation:dvSpin .8s linear infinite}
+@keyframes dvSpin{to{transform:rotate(360deg)}}
+#docViewer .dv-other{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted,#8b93a7);font-size:14px;text-align:center;padding:20px}
+@media(max-width:700px){#docViewer{padding:0}#docViewer .dv-card{border-radius:0}#docViewer .dv-lbl{display:none}}
+</style>
+<div id="docViewer" role="dialog" aria-modal="true" aria-label="Просмотр документа">
+  <div class="dv-card">
+    <div class="dv-head">
+      <i class="ti ti-file-text" aria-hidden="true"></i>
+      <div class="dv-title" id="dvTitle"></div>
+      <a class="dv-btn" id="dvNew" target="_blank" rel="noopener"><i class="ti ti-external-link" aria-hidden="true"></i><span class="dv-lbl">В новой вкладке</span></a>
+      <button type="button" class="dv-btn dv-x" id="dvClose" aria-label="Закрыть"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="dv-body" id="dvBody">
+      <div class="dv-load" id="dvLoad"><div class="dv-spin"></div><span>Загрузка документа...</span></div>
+      <div class="dv-other" id="dvOther"><i class="ti ti-file-download" style="font-size:34px" aria-hidden="true"></i><span>Этот тип файла нельзя показать здесь</span><a class="dv-btn" id="dvDl" target="_blank" rel="noopener"><i class="ti ti-download" aria-hidden="true"></i> Скачать файл</a></div>
+    </div>
+  </div>
+</div>
+<script id="dvJs">
+(function(){
+  var el=document.getElementById('docViewer'); if(!el||window.__dv) return; window.__dv=1;
+  var body=document.getElementById('dvBody'), load=document.getElementById('dvLoad'), other=document.getElementById('dvOther'), cur=null;
+  function nameOf(href){ try{ var p=decodeURIComponent(href.split('?')[0].split('#')[0]); p=p.substring(p.lastIndexOf('/')+1); var m=p.match(/^(?:req|close)__.*?__([^_].*)$/); return (m?m[1]:p).replace(/^[0-9a-f]{6}__/,''); }catch(e){return 'Документ';} }
+  function open(href){
+    var n=nameOf(href), ext=(n.split('.').pop()||'').toLowerCase();
+    document.getElementById('dvTitle').textContent=n;
+    document.getElementById('dvNew').href=href; document.getElementById('dvDl').href=href;
+    if(cur){cur.remove();cur=null;}
+    other.style.display='none'; load.classList.remove('off');
+    var isImg=/^(png|jpe?g|gif|webp|bmp)$/.test(ext), isPdf=ext==='pdf';
+    if(isPdf||isImg){
+      cur=document.createElement(isImg?'img':'iframe'); if(isImg) cur.className='dv-img'; else cur.setAttribute('title','Документ');
+      cur.onload=function(){load.classList.add('off');};
+      cur.onerror=function(){load.classList.add('off');other.style.display='flex';};
+      cur.src=href; body.appendChild(cur);
+      setTimeout(function(){load.classList.add('off');},6000);
+    } else { load.classList.add('off'); other.style.display='flex'; }
+    el.style.display='flex'; requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('open');});});
+  }
+  function close(){ el.classList.remove('open'); setTimeout(function(){ if(!el.classList.contains('open')){ el.style.display='none'; if(cur){cur.remove();cur=null;} } },260); }
+  document.getElementById('dvClose').onclick=close;
+  el.addEventListener('mousedown',function(e){ if(e.target===el) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&el.classList.contains('open')) close(); });
+  document.addEventListener('click',function(e){
+    if(e.defaultPrevented||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey) return;
+    var a=e.target.closest&&e.target.closest('a[href]'); if(!a) return;
+    var h=a.getAttribute('href')||'';
+    if(h.indexOf('/realschet-docs/')===-1 && h.indexOf('/uploads/')===-1) return;
+    e.preventDefault(); open(a.href);
+  },true);
+})();
+</script>
 </body>
 </html>
