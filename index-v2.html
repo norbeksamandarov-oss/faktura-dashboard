@@ -4457,7 +4457,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="table-wrap">
         <table class="invoices" id="suggestionsTable" style="display:none;">
           <thead>
-            <tr><th>№</th><th>Дата</th><th>Тип</th><th>Текст</th><th>Сотрудник</th><th>Ответ дан</th></tr>
+            <tr><th>№</th><th>Дата</th><th>Тип</th><th>Текст</th><th>Сотрудник</th><th>Ответ дан</th><th style="text-align:right;"><a href="#" id="sugToggleClosed" onclick="sugToggleClosed(event)" style="color:var(--muted);font-weight:400;text-decoration:none;font-size:12px;">показать закрытые</a></th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -10127,7 +10127,7 @@ function sugMarkSeen(items) { try { localStorage.setItem(SUG_SEEN_KEY, String(Ma
 let sugLast = null;
 function sugApplyNav(items) {
   sugLast = items;
-  const fresh = (items || []).filter(i => (+i.rowIndex || 0) > sugSeenMax()).length;
+  const fresh = (items || []).filter(i => !i.closed && (+i.rowIndex || 0) > sugSeenMax()).length;
   const badge = document.getElementById("pendingSuggestionsBadge");
   if (badge) { badge.textContent = fresh; badge.style.display = fresh > 0 ? "inline-block" : "none"; }
   const gb = document.getElementById("personalSugBadge");
@@ -10152,6 +10152,53 @@ async function pollSuggestionsBackground() {
   }
 }
 
+let sugItems = [], sugShowClosed = false;
+function sugToggleClosed(ev) { ev.preventDefault(); sugShowClosed = !sugShowClosed; sugRender(); }
+function sugRender() {
+  const tbody = document.querySelector("#suggestionsTable tbody");
+  const tg = document.getElementById("sugToggleClosed");
+  if (tg) tg.textContent = sugShowClosed ? "скрыть закрытые" : "показать закрытые";
+  const open = sugItems.filter(it => !it.closed).length;
+  const sub = document.getElementById("suggestionsCountSub");
+  if (sub) sub.textContent = `открытых: ${open} · всего: ${sugItems.length} · видно только администраторам`;
+  const list = sugItems.filter(it => sugShowClosed || !it.closed);
+  tbody.innerHTML = list.map((it, i) => `
+      <tr data-sug="${it.rowIndex}" style="${it.closed ? "opacity:.5;" : ""}">
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.date)}</td>
+        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Жалоба" : "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение"}</td>
+        <td style="max-width:400px;font-size:13px;">${escapeHtml(it.text)}</td>
+        <td>${escapeHtml(it.employeeName)}</td>
+        <td>${it.comment ? `<span style="color:#1E7A4C;"><i class='ti ti-circle-check' aria-hidden='true'></i> да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
+        <td style="text-align:right;white-space:nowrap;">${it.closed
+          ? `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;background:transparent;border:1px solid var(--border,#555);color:var(--muted);" onclick="sugClose(${it.rowIndex}, true, this)">Открыть</button>`
+          : `<button class="login-submit-btn" style="width:auto;padding:6px 12px;font-size:12.5px;" onclick="sugClose(${it.rowIndex}, false, this)">Закрыть</button>`}</td>
+      </tr>`).join("") || `<tr><td colspan="7" style="color:var(--muted)">${sugShowClosed ? "Пока нет обращений" : "Нет открытых обращений"}</td></tr>`;
+}
+async function sugClose(rowIndex, reopen, btn) {
+  const row = btn.closest("tr");
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "<i class='ti ti-loader-2' aria-hidden='true' style='animation:spin 1s linear infinite;display:inline-block'></i> ...";
+  uiActionInFlight = true;
+  try {
+    await apiCall("adminCloseSuggestion", { rowIndex, reopen: !!reopen });
+    btn.innerHTML = "<i class='ti ti-check' aria-hidden='true'></i> Готово";
+    row.style.transition = "opacity .35s, transform .35s";
+    row.style.opacity = ".3";
+    await new Promise(r => setTimeout(r, 450));
+    const it = sugItems.find(x => x.rowIndex === rowIndex);
+    if (it) it.closed = !reopen;
+    sugRender();
+  } catch (e) {
+    btn.disabled = false; btn.innerHTML = orig;
+    btn.animate([{transform:"translateX(0)"},{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"translateX(-4px)"},{transform:"translateX(0)"}], {duration:350});
+    alert("Не удалось выполнить: " + e.message);
+  } finally {
+    uiActionInFlight = false;
+  }
+}
+
 async function loadSuggestions() {
   const note = document.getElementById("suggestionsLoadingNote");
   const table = document.getElementById("suggestionsTable");
@@ -10164,15 +10211,8 @@ async function loadSuggestions() {
     sugMarkSeen(items);
     const sub = document.getElementById("suggestionsCountSub");
     if (sub) sub.textContent = `всего: ${items.length} · видно только администраторам`;
-    tbody.innerHTML = items.map((it, i) => `
-      <tr>
-        <td style="color:var(--muted)">${i + 1}</td>
-        <td style="font-size:12px;color:var(--muted);white-space:nowrap;">${formatDateDisplay(it.date)}</td>
-        <td style="white-space:nowrap;">${it.type === "Жалоба" ? "<i class='ti ti-alert-triangle' aria-hidden='true'></i> Жалоба" : "<i class='ti ti-bulb' aria-hidden='true'></i> Предложение"}</td>
-        <td style="max-width:400px;font-size:13px;">${escapeHtml(it.text)}</td>
-        <td>${escapeHtml(it.employeeName)}</td>
-        <td>${it.comment ? `<span style="color:#1E7A4C;"><i class='ti ti-circle-check' aria-hidden='true'></i> да</span>` : `<span style="color:var(--muted)">—</span>`}</td>
-      </tr>`).join("") || `<tr><td colspan="6" style="color:var(--muted)">Пока нет обращений</td></tr>`;
+    sugItems = items;
+    sugRender();
     if (note) note.style.display = "none";
     if (table) table.style.display = "";
   } catch (e) {
