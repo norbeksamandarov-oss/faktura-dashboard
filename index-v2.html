@@ -15158,17 +15158,27 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     return out;
   }
   function extract(rows,b){
-    var list=[];
+    var list=[], n=0;
     rows.forEach(function(r){
-      var id=r[b.inn]; if(!/^\d{5,14}$/.test(String(id==null?'':id).replace(/\s+/g,''))) return;
+      var id=String(r[b.inn]==null?'':r[b.inn]).replace(/\s+/g,'');
       var a=numOf(r[b.amount]); if(a==null) return;
-      list.push({inn:String(id).replace(/\s+/g,''), name:String(r[b.name]==null?'':r[b.name]).replace(/\s+/g,' ').trim(), sum:a});
+      var nm=String(r[b.name]==null?'':r[b.name]).replace(/\s+/g,' ').trim();
+      var real=/^\d{9}$|^\d{14}$/.test(id);
+      var loose=/^\d{5,14}$/.test(id);
+      if(!loose && !real){
+        // нет нормального ИНН (например "Таможня", код 4562): берём строку по названию и сумме
+        if(!nm || /^итого/i.test(nm) || /^(налог|1с|1c)$/i.test(nm)) return;
+        if(id && /^\d+$/.test(id)===false && id.length>20) return;
+        n++; list.push({inn:'', key:'N'+n, name:nm, sum:a}); return;
+      }
+      if(!real){ n++; list.push({inn:'', key:'N'+n, name:nm, sum:a}); return; }
+      list.push({inn:id, key:id, name:nm, sum:a});
     });
     return list;
   }
   function group(list){
     var m={}, order=[];
-    list.forEach(function(x){ if(!m[x.inn]){ m[x.inn]={inn:x.inn,name:x.name,sum:0,cnt:0}; order.push(x.inn); } m[x.inn].sum+=x.sum; m[x.inn].cnt++; });
+    list.forEach(function(x){ var k=x.key||x.inn; if(!m[k]){ m[k]={inn:x.inn,key:k,name:x.name,sum:0,cnt:0}; order.push(k); } m[k].sum+=x.sum; m[k].cnt++; });
     return order.map(function(k){ return m[k]; });
   }
   // --- имена ---
@@ -15192,15 +15202,15 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
   }
   // --- сверка ---
   function reconcile(tax,c1){
-    var T=group(tax), C=group(c1), cmap={}; C.forEach(function(x){ cmap[x.inn]=x; });
+    var T=group(tax), C=group(c1), cmap={}; C.forEach(function(x){ cmap[x.key]=x; });
     var rows=[], usedC={}, restT=[];
     T.forEach(function(t){
-      var c=cmap[t.inn];
-      if(c){ usedC[c.inn]=1; var d=t.sum-c.sum;
+      var c=cmap[t.key];
+      if(c){ usedC[c.key]=1; var d=t.sum-c.sum;
         rows.push({st:Math.abs(d)<=1?'ok':'sum', t:t, c:c, diff:d}); }
       else restT.push(t);
     });
-    var restC=C.filter(function(x){ return !usedC[x.inn]; });
+    var restC=C.filter(function(x){ return !usedC[x.key]; });
     var stillT=[];
     restT.forEach(function(t){
       var idx=-1;
