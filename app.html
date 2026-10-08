@@ -1098,6 +1098,41 @@
     icon: "ti-file-certificate", label: "Договоры", title: "Договоры на согласование",
     render: function () {
       var card = makeCard();
+
+      var inbox = document.createElement("div"); inbox.className = "card"; inbox.style.display = "none";
+      content.insertBefore(inbox, content.firstChild);
+      function loadInbox() {
+        callApi("miniAppContractInbox", { chatId: getChatId() }).then(function (r) {
+          var items = r.contracts || [];
+          if (!items.length) { inbox.style.display = "none"; return; }
+          inbox.style.display = ""; inbox.innerHTML = "<div class='step-label'>Мне на согласование (" + items.length + ")</div>";
+          items.forEach(function (c) {
+            var d = document.createElement("div");
+            d.style.cssText = "padding:12px 0;border-top:1px solid rgba(255,255,255,.08)";
+            var files = (c.files || []).map(function (f) { return "<a target='_blank' href='" + ctEsc(f.url) + "' style='color:#7aa7ff;margin-right:10px;font-size:13px'>" + ctEsc({ sz: "Служебная записка", contract: "Договор", kp: "КП" }[f.kind] || "Файл") + "</a>"; }).join("");
+            d.innerHTML = "<div><b>№ " + c.id + "</b> · " + ctEsc(c.counterparty) + "</div>" +
+              "<div style='opacity:.75;font-size:13px;margin-top:2px'>" + ctEsc(c.dept) + " · " + ctEsc(c.initiator) + "</div>" +
+              "<div style='font-size:14px;margin-top:6px'>" + ctEsc(c.subject) + "</div>" +
+              "<div style='opacity:.75;font-size:13px;margin-top:4px'>Этап " + c.stage + " из 5: " + ctEsc(c.stageName) + (c.due ? " · срок до " + c.due.slice(8, 10) + "." + c.due.slice(5, 7) : "") + (c.overdue ? " · просрочено" : "") + "</div>" +
+              "<div style='margin-top:8px'>" + files + "</div>";
+            var key = c.myPending[0];
+            var row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;margin-top:10px;flex-wrap:wrap";
+            var ok = document.createElement("button"); ok.className = "submit-btn"; ok.style.flex = "1"; ok.textContent = "Согласовать";
+            var no = document.createElement("button"); no.className = "submit-btn"; no.style.cssText = "flex:1;background:#4a1f25"; no.textContent = "Отклонить";
+            var reason = document.createElement("textarea"); reason.rows = 3; reason.placeholder = "Причина отклонения"; reason.style.cssText = "display:none;width:100%;margin-top:8px;padding:10px;border-radius:12px;background:inherit;color:inherit;border:1px solid rgba(255,255,255,.14);font:inherit";
+            var send = document.createElement("button"); send.className = "submit-btn"; send.style.cssText = "display:none;margin-top:8px;background:#4a1f25"; send.textContent = "Отправить отказ";
+            ok.onclick = function () { withBusy(ok, async function () { await callApi("miniAppContractDecide", { chatId: getChatId(), id: c.id, key: key, approve: true }); toast("Согласовано", "ok"); loadInbox(); }); };
+            no.onclick = function () { reason.style.display = ""; send.style.display = ""; reason.focus(); };
+            send.onclick = function () {
+              if (!reason.value.trim()) { toast("Укажите причину", "err"); return; }
+              withBusy(send, async function () { await callApi("miniAppContractDecide", { chatId: getChatId(), id: c.id, key: key, approve: false, comment: reason.value.trim() }); toast("Отклонено, договор возвращён инициатору", "ok"); loadInbox(); });
+            };
+            row.appendChild(ok); row.appendChild(no); d.appendChild(row); d.appendChild(reason); d.appendChild(send);
+            inbox.appendChild(d);
+          });
+        }).catch(function () { inbox.style.display = "none"; });
+      }
+      loadInbox();
       var h = document.createElement("div"); h.className = "step-label"; h.textContent = "Новый договор на согласование";
       card.appendChild(h);
       var deptWrap = document.createElement("div"); deptWrap.className = "field";
