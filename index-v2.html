@@ -15905,6 +15905,10 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-right .ct-init-t{font-size:12px}
 .ct-right .ct-btn{padding:8px 12px;font-size:12px}
 .ct-right .ct-hist{font-size:11px}
+.ct-didox{margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px}
+.ct-didox.ok{border-color:var(--green-fg)}
+.ct-didox b{display:block;color:var(--green-fg)}
+.ct-didox small{display:block;color:var(--muted);font-size:12px}
 .ct-sec-t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}
 .ct-act-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .ct-tl{display:flex;flex-direction:column;gap:0}
@@ -16022,7 +16026,7 @@ async function loadContracts(silent) {
     if (!silent) document.getElementById("ctList").innerHTML = '<div class="ct-empty">' + escapeHtml(e.message) + "</div>";
   }
 }
-CT.f = { q: "", status: "", dept: "", stage: "", mine: false };
+CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false };
 function ctFilterList() {
   var f = CT.f, q = (f.q || "").toLowerCase().trim();
   return CT.list.filter(function (c) {
@@ -16030,6 +16034,8 @@ function ctFilterList() {
     if (f.status && c.status !== f.status) return false;
     if (f.dept && c.dept !== f.dept) return false;
     if (f.stage && String(c.stage) !== f.stage) return false;
+    if (f.didox === "yes" && !c.didox) return false;
+    if (f.didox === "no" && !(c.status === "Утверждён" && !c.didox)) return false;
     if (q) {
       var info = c.info || {};
       var hay = [c.id, c.counterparty, c.initiator, c.dept, c.subject, info.number, info.inn, info.docName].join(" ").toLowerCase();
@@ -16052,17 +16058,23 @@ function ctFiltersBuild() {
     '<input id="ctFq" class="ct-fq" placeholder="Поиск: контрагент, ИНН, номер, инициатор" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">' +
     '<select onchange="CT.f.status=this.value;ctRenderTable()">' + opt("", "Все статусы", f.status) + opt("Ожидает инициатора", "Ожидает инициатора", f.status) + opt("На согласовании", "На согласовании", f.status) + opt("Возвращён", "Возвращён", f.status) + opt("Утверждён", "Утверждён", f.status) + "</select>" +
     '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все этапы", f.stage) + [["2", "Руководитель"], ["3", "Юрист"], ["4", "Бюджет"], ["5", "Главбух"], ["6", "Фин. директор"], ["7", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>" +
+    '<select onchange="CT.f.didox=this.value;ctRenderTable()">' + opt("", "DIDOX: все", f.didox) + opt("no", "Ждут приёма в DIDOX", f.didox) + opt("yes", "Приняты в DIDOX", f.didox) + "</select>" +
     '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все подразделения", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>" +
     '<button class="ct-pill' + (f.mine ? " on" : "") + '" onclick="CT.f.mine=!CT.f.mine;this.classList.toggle(\'on\',CT.f.mine);ctRenderTable()">Мне на решение' + (mineN ? " <b>" + mineN + "</b>" : "") + "</button>" +
-    '<button class="ct-link" onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',mine:false};document.getElementById(\'ctFilters\').dataset.sig=\'\';ctRender()">Сбросить</button>';
+    '<button class="ct-link" onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false};document.getElementById(\'ctFilters\').dataset.sig=\'\';ctRender()">Сбросить</button>';
 }
 function ctRender() { ctFiltersBuild(); ctRenderTable(); }
 function ctRenderTable() {
   var items = ctFilterList();
   var box = document.getElementById("ctList");
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
-  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th></tr></thead><tbody>' +
+  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>DIDOX</th></tr></thead><tbody>' +
     items.map(ctRow).join("") + "</tbody></table></div>";
+}
+function ctDidoxBadge(c) {
+  if (c.didox) return '<span class="ct-badge done">Принят в DIDOX</span>';
+  if (c.status === "Утверждён") return '<span class="ct-badge work">Ждёт DIDOX</span>';
+  return '<span style="color:var(--muted)">-</span>';
 }
 function ctRow(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
@@ -16072,7 +16084,7 @@ function ctRow(c) {
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
   return '<tr class="ct-tr' + (act ? " act" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td><b>' + c.id + "</b></td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
     "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td><span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <span class="ct-dot" title="Требует вашего действия"></span>' : "") + "</td><td>" +
-    (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td></tr>";
+    (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
 }
 function ctUrl(u) {
   u = String(u || "");
@@ -16097,6 +16109,30 @@ function ctActsHtml(c) {
       '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
   }
   return acts;
+}
+function ctDidoxBlock(c) {
+  if (currentRole !== "admin" && currentRole !== "employee") return "";
+  if (c.didox) {
+    return '<div class="ct-didox ok"><div class="ct-sec-t" style="margin-top:0">DIDOX</div><b>Принят в DIDOX</b><small>' + escapeHtml(c.didox.by) + " · " + escapeHtml(c.didox.at) + '</small>' +
+      '<button class="ct-link" onclick="ctDidox(' + c.id + ',false,this)">Снять отметку</button></div>';
+  }
+  if (c.status !== "Утверждён") return "";
+  return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">DIDOX</div><small>Договор утверждён. После приёма в DIDOX поставьте отметку.</small>' +
+    '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctDidox(' + c.id + ',true,this)"><span class="ct-lbl"><i class="ti ti-check" aria-hidden="true"></i> Принято в DIDOX</span></button></div>';
+}
+async function ctDidox(id, on, btn) {
+  if (!on && !(await uiConfirm("Снять отметку «Принято в DIDOX»?"))) return;
+  btn.classList.add("busy");
+  try {
+    await apiCall("contractDidox", { id: id, accepted: on });
+    btn.classList.remove("busy"); btn.classList.add("ok");
+    await loadContracts(true);
+    ctOpenCard(id);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
 }
 function ctTimeline(c) {
   var last = {};
@@ -16178,7 +16214,7 @@ function ctOpenCard(id) {
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
-    ctActsHtml(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
+    ctActsHtml(c) + ctDidoxBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
