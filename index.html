@@ -16064,11 +16064,10 @@ function ctActsHtml(c) {
       '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button></div>";
   });
   if (c.canInitiate) {
-    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Ваш шаг: выберите подразделение и подтвердите отправку на согласование</div>' +
+    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Выберите подразделение и подтвердите. При необходимости поправьте контрагента.</div>' +
       '<select id="ctiD' + c.id + '"><option value="">Подразделение</option>' + (CT.depts || []).map(function (d) { return "<option>" + escapeHtml(d) + "</option>"; }).join("") + "</select>" +
       '<input id="ctiC' + c.id + '" placeholder="Контрагент" value="' + escapeHtml(c.counterparty) + '">' +
       '<input id="ctiS' + c.id + '" placeholder="Предмет договора (необязательно)" value="' + escapeHtml(c.subject) + '">' +
-      '<label class="ct-chk"><input type="checkbox" id="ctiK' + c.id + '"><span>Подтверждаю: документы проверены, договор готов к согласованию</span></label>' +
       '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
   }
   return acts;
@@ -16156,11 +16155,10 @@ function ctCard(c) {
       '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button>";
   });
   if (c.canInitiate) {
-    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Ваш шаг: выберите подразделение и подтвердите отправку на согласование</div>' +
+    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Выберите подразделение и подтвердите. При необходимости поправьте контрагента.</div>' +
       '<select id="ctiD' + c.id + '"><option value="">Подразделение</option>' + (CT.depts || []).map(function (d) { return "<option>" + escapeHtml(d) + "</option>"; }).join("") + "</select>" +
       '<input id="ctiC' + c.id + '" placeholder="Контрагент" value="' + escapeHtml(c.counterparty) + '">' +
       '<input id="ctiS' + c.id + '" placeholder="Предмет договора (необязательно)" value="' + escapeHtml(c.subject) + '">' +
-      '<label class="ct-chk"><input type="checkbox" id="ctiK' + c.id + '"><span>Подтверждаю: документы проверены, договор готов к согласованию</span></label>' +
       '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
   }
   var hist = (c.history || []).map(function (h) {
@@ -16201,8 +16199,8 @@ async function ctDecide(id, key, approve, btn) {
 }
 async function ctInitiate(id, btn) {
   var dept = document.getElementById("ctiD" + id).value, cp = document.getElementById("ctiC" + id).value.trim();
-  var sj = document.getElementById("ctiS" + id).value.trim(), ck = document.getElementById("ctiK" + id).checked;
-  var bad = !dept ? "Выберите подразделение" : !cp ? "Укажите контрагента" : !ck ? "Подтвердите, что документы проверены" : "";
+  var sj = document.getElementById("ctiS" + id).value.trim();
+  var bad = !dept ? "Выберите подразделение" : !cp ? "Укажите контрагента" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   btn.classList.add("busy");
   try {
