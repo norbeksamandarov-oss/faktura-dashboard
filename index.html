@@ -15915,8 +15915,10 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-tl-i.done .ct-tl-d{background:var(--green-fg);border-color:var(--green-fg)}
 .ct-tl-i.cur .ct-tl-d{background:var(--amber-fg);border-color:var(--amber-fg);box-shadow:0 0 0 4px var(--amber-bg)}
 .ct-tl-i.bad .ct-tl-d{background:var(--red-fg);border-color:var(--red-fg)}
-.ct-back{display:inline-flex;gap:6px;align-items:center;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:0 0 12px}
-.ct-back:hover{color:var(--text)}
+.ct-back{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--navy-text);background:transparent;color:var(--navy-text);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:9px 18px;border-radius:10px;margin-bottom:16px;transition:background .15s,color .15s,transform .15s}
+.ct-back i{font-size:17px}
+.ct-back:hover{background:var(--navy-text);color:var(--card)}
+.ct-back:active{transform:scale(.97)}
 .ct-detail.ct-in{animation:ctIn .25s ease both}
 .ct-detail .ct-card{border:0;padding:0;animation:none}
 .ct-detail .ct-cp{font-size:20px}
@@ -16168,7 +16170,7 @@ function ctOpenCard(id) {
     .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
   var d = document.getElementById("ctDetail");
-  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' +
+  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
