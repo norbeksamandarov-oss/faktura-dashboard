@@ -16043,6 +16043,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 @media (max-width:900px){.ct-reg{grid-template-columns:1fr 1fr}}
 /* ===== Адаптивность под экран ноутбука ===== */
 :root{--zm:1.1}
+@media(min-width:861px) and (max-width:2100px){:root{--zm:1}}
 @media(min-width:861px){
   html #app{zoom:var(--zm)}
   html .sidebar:not(.collapsed){max-height:calc((100vh - 32px)/var(--zm))}
@@ -16531,6 +16532,25 @@ function ctOpen() {
   var q=0;
   new MutationObserver(function(){if(q)return;q=setTimeout(function(){q=0;scan()},150)}).observe(document.body,{childList:true,subtree:true});
   scan();
+})();
+</script>
+<script>
+(function(){
+  var MIN=0.55;
+  function fit(w){
+    var t=w.querySelector(':scope > table');if(!t||!t.offsetParent)return;
+    t.style.zoom='';t.style.width='';t.style.minWidth='';
+    var cw=w.clientWidth,need=w.scrollWidth;
+    if(need>cw+1){
+      var z=Math.max(MIN,cw/need*0.995);
+      t.style.zoom=z;t.style.minWidth='0';t.style.width=(cw/z)+'px';
+    }
+  }
+  function all(){document.querySelectorAll('.content-section.active .table-wrap, .content-section.active .auto-scroll').forEach(fit)}
+  var q=0;function later(){if(q)return;q=setTimeout(function(){q=0;all()},120)}
+  window.addEventListener('resize',later);
+  new MutationObserver(later).observe(document.body,{childList:true,subtree:true});
+  all();
 })();
 </script>
 </body>
