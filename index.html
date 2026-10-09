@@ -16144,7 +16144,7 @@ function ctProg(c) {
   return '<div class="ct-prog">' + seg + "</div>";
 }
 function ctRenderTable() {
-  var items = ctFilterList().slice().sort(function (a, b) { return a.id - b.id; });
+  var items = ctFilterList().slice().sort(function (a, b) { return b.id - a.id; });
   var box = document.getElementById("ctList");
   var cnt = document.getElementById("ctCount"); if (cnt) cnt.textContent = items.length + " из " + CT.list.length;
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
