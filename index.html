@@ -16616,28 +16616,33 @@ function ctOpen() {
   }
   function scan(root){(root||document).querySelectorAll('.content-section table').forEach(wrap)}
   var q=0;
-  new MutationObserver(function(){if(q)return;q=setTimeout(function(){q=0;scan()},150)}).observe(document.body,{childList:true,subtree:true});
+  var cax=document.querySelector('.content-area');new MutationObserver(function(){if(q)return;q=setTimeout(function(){q=0;scan()},400)}).observe(cax||document.body,{childList:true,subtree:true});
   scan();
 })();
 </script>
 <script>
 (function(){
   var MIN=0.55;
-  function fit(w){
+  function fit(w,reset){
     var t=w.querySelector(':scope > table');if(!t||!t.offsetParent)return;
-    t.style.zoom='';t.style.width='';t.style.minWidth='';
+    if(reset){t.style.zoom='';t.style.width='';t.style.minWidth=''}
     var cw=w.clientWidth,need=w.scrollWidth;
-    if(need>cw+1){
-      var z=Math.max(MIN,cw/need*0.995);
-      t.style.zoom=z;t.style.minWidth='0';t.style.width=(cw/z)+'px';
-    }
+    if(need<=cw+1)return;
+    var cur=parseFloat(t.style.zoom)||1;
+    var z=Math.max(MIN,cur*cw/need*0.995);
+    if(z>=cur-0.002)return;
+    t.style.zoom=z;t.style.minWidth='0';t.style.width=(cw/z)+'px';
   }
-  function all(){document.querySelectorAll('.content-section.active .table-wrap, .content-section.active .auto-scroll').forEach(fit)}
-  var q=0;function later(){if(q)return;q=setTimeout(function(){q=0;all()},120)}
-  window.addEventListener('resize',later);
-  new MutationObserver(later).observe(document.body,{childList:true,subtree:true});
-  all();
+  function all(reset){document.querySelectorAll('.content-section.active .table-wrap, .content-section.active .auto-scroll').forEach(function(w){fit(w,reset)})}
+  var q=0,rs=0;
+  function later(){if(q)return;q=setTimeout(function(){q=0;all(false)},500)}
+  window.addEventListener('resize',function(){clearTimeout(rs);rs=setTimeout(function(){all(true)},300)});
+  var ca=document.querySelector('.content-area');
+  if(ca)new MutationObserver(later).observe(ca,{childList:true,subtree:true});
+  document.addEventListener('click',later);
+  all(true);
 })();
 </script>
+
 </body>
 </html>
