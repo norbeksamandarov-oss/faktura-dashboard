@@ -4438,12 +4438,12 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </section>
 
     <section id="section-contracts" class="content-section">
-    <div class="panel">
+    <div class="panel" id="ctListPanel">
       <h2>Договоры на согласование <span class="sub">маршрут: руководитель, бухгалтерия, юрист, директора, генеральный директор</span></h2>
       <div class="ct-tabs" id="ctTabs"></div>
       <div id="ctList" class="ct-list"></div>
     </div>
-    <div id="ctModal" class="ct-modal" onclick="if(event.target===this)ctCloseCard()"><div class="ct-modal-in" id="ctModalIn"></div></div>
+    <div id="ctDetail" class="panel ct-detail" style="display:none;"></div>
     </section>
     <section id="section-writeemp" class="content-section">
     <div class="panel">
@@ -15885,6 +15885,11 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-tr:hover{background:var(--gray-bg)}
 .ct-tr.act td:first-child{box-shadow:inset 3px 0 0 var(--navy-text)}
 .ct-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red-fg);margin-left:6px;vertical-align:middle}
+.ct-back{display:inline-flex;gap:6px;align-items:center;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:0 0 12px}
+.ct-back:hover{color:var(--text)}
+.ct-detail.ct-in{animation:ctIn .25s ease both}
+.ct-detail .ct-card{border:0;padding:0;animation:none}
+.ct-detail .ct-cp{font-size:20px}
 .ct-modal{position:fixed;inset:0;background:rgba(5,8,20,.55);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto;z-index:1000}
 .ct-modal.open{display:flex;animation:ctIn .2s ease both}
 .ct-modal-in{position:relative;width:100%;max-width:880px;background:var(--card);color:var(--text);border-radius:16px;padding:8px;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
@@ -16018,10 +16023,21 @@ function ctOpenCard(id) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0];
   if (!c) return;
   CT.openId = id; CT.hist[id] = true;
-  document.getElementById("ctModalIn").innerHTML = '<button class="ct-x" onclick="ctCloseCard()" title="Закрыть">&times;</button>' + ctCard(c);
-  document.getElementById("ctModal").classList.add("open");
+  var d = document.getElementById("ctDetail");
+  var info = c.info || {};
+  var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
+  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' + ctCard(c);
+  document.getElementById("ctListPanel").style.display = "none";
+  d.style.display = "";
+  d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
+  window.scrollTo({ top: 0 });
+  var m = document.querySelector(".main, .content, main"); if (m && m.scrollTo) m.scrollTo({ top: 0 });
 }
-function ctCloseCard() { CT.openId = null; document.getElementById("ctModal").classList.remove("open"); }
+function ctCloseCard() {
+  CT.openId = null;
+  var d = document.getElementById("ctDetail"); if (d) d.style.display = "none";
+  var l = document.getElementById("ctListPanel"); if (l) l.style.display = "";
+}
 function ctSetFilter(f) { CT.filter = f; ctRender(); }
 function ctCard(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
