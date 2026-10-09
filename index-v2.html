@@ -16115,7 +16115,7 @@ function ctRegRender() {
   ctDeptRender();
   var opts = Object.keys(CT.pos).map(function (k) { return '<option value="' + k + '">' + escapeHtml(CT.pos[k]) + "</option>"; }).join("");
   document.getElementById("ctRegRows").innerHTML = CT.reg.map(function (r, i) {
-    var dopts = '<option value="">Подразделение</option>' + (CT.deptList || []).map(function (d) { return "<option" + (d === r.dept ? " selected" : "") + ">" + escapeHtml(d) + "</option>"; }).join("");
+    var dopts = '<option value="">' + (r.key === "HEAD" ? "Выберите подразделение" : "Не нужно (для всех)") + '</option>' + (CT.deptList || []).map(function (d) { return "<option" + (d === r.dept ? " selected" : "") + ">" + escapeHtml(d) + "</option>"; }).join("");
     return '<div class="ct-reg"><select onchange="CT.reg[' + i + '].key=this.value;ctRegRender()">' + opts.replace('value="' + r.key + '"', 'value="' + r.key + '" selected') + "</select>" +
       '<select' + (r.key === "HEAD" ? "" : " disabled") + ' onchange="CT.reg[' + i + '].dept=this.value">' + dopts + "</select>" +
       '<input id="ctrN' + i + '" placeholder="Имя" value="' + escapeHtml(r.name) + '" oninput="CT.reg[' + i + '].name=this.value">' +
