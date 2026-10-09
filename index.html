@@ -15896,6 +15896,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-ftabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .ct-ftab{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
 .ct-ftab.on{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
+.ct-dl{padding:6px 12px;font-size:12px}
 .ct-fopen{margin-left:auto;font-size:12px;color:var(--muted);text-decoration:none}
 .ct-fopen:hover{color:var(--text)}
 .ct-frame{width:100%;height:86vh;min-height:520px;border:1px solid var(--border);border-radius:12px;background:#fff}
@@ -16116,12 +16117,37 @@ function ctFiles(c) {
     var i = fs.findIndex(function (f) { return f.kind === "contract"; });
     if (i !== -1) {
       var orig = fs[i];
-      fs.splice(i, 1, { kind: "contract", name: "с визами", url: v, label: "Договор с визами" }, { kind: "contract", name: orig.name, url: orig.url, label: "Оригинал" });
+      fs.splice(i, 1, { kind: "contract", name: orig.name, url: v, label: "Договор" });
     }
   }
   return fs;
 }
+CT.cur = 0;
+async function ctDownload(id, btn) {
+  var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var f = ctFiles(c)[CT.cur || 0]; if (!f) return;
+  var url = ctUrl(f.url);
+  var info = c.info || {};
+  var base = ("Договор " + (info.number ? "№" + info.number : "№" + c.id) + " " + (c.counterparty || "")).replace(/[\\/:*?"<>|]/g, "").trim().slice(0, 90);
+  btn.classList.add("busy");
+  try {
+    var r = await fetch(url);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    var b = await r.blob();
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(b); a.download = base + ".pdf";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    btn.classList.remove("busy"); btn.classList.add("ok");
+    setTimeout(function () { btn.classList.remove("ok"); }, 1500);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    window.open(url, "_blank");
+  }
+}
 function ctPickFile(id, idx) {
+  CT.cur = idx;
   var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
   var f = ctFiles(c)[idx]; if (!f) return;
   var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url) + CT_PDF_VIEW;
@@ -16131,7 +16157,7 @@ function ctPickFile(id, idx) {
 function ctOpenCard(id) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0];
   if (!c) return;
-  CT.openId = id;
+  CT.openId = id; CT.cur = 0;
   var info = c.info || {};
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
@@ -16145,7 +16171,7 @@ function ctOpenCard(id) {
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' +
     '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
-    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
+    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
     ctActsHtml(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
