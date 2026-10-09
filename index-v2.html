@@ -4441,7 +4441,7 @@ html :is(#section-invoices,#section-contracts,#section-bank,#section-dogovor,#se
     <div id="ctListPanel">
       <div class="stats-row" id="ctKpis"></div>
       <div class="panel">
-        <h2>Договоры <span class="sub" id="ctCount"></span></h2>
+        <h2 style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">Договоры <span class="sub" id="ctCount"></span><button id="ctNewBtn" class="ct-btn ct-primary" style="margin-left:auto;display:none" onclick="ctOpenNew()"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Запустить на согласование</span></button></h2>
         <p class="analytics-note" style="margin:0 0 16px;">Согласование договоров: инициатор, руководитель подразделения, юрист, бюджетный контролёр, главный бухгалтер, финансовый директор, CEO.</p>
         <div class="toolbar" id="ctFilters"></div>
         <div id="ctList" class="ct-list"></div>
@@ -16068,6 +16068,16 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 }
 html .content-area,html .content-section,html .content-section .panel{min-width:0;max-width:100%}
 html .auto-scroll{overflow-x:auto;max-width:100%;scrollbar-width:thin}
+.ct-new{max-width:760px;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.ct-new-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.ct-new-g{grid-template-columns:1fr}}
+.ct-new label.f{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ct-new input,.ct-new select{border:1px solid var(--border);background:var(--sk-glass);color:var(--text);border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;text-transform:none;letter-spacing:0;font-weight:500}
+.ct-drop{display:flex;align-items:center;gap:12px;border:1px dashed var(--navy-text);border-radius:14px;padding:16px;cursor:pointer;font-size:14px;transition:background .2s,border-color .2s}
+.ct-drop:hover,.ct-drop.on{background:var(--ice-soft)}
+.ct-drop input{display:none}
+.ct-drop i{font-size:22px}
+.ct-btn.ok{background:var(--green,#1fa86a);border-color:transparent;color:#fff}
 </style>
 <script>
 var CT = { depts: [], list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
@@ -16076,7 +16086,8 @@ function ctDate(s) { return s && s.length >= 10 ? s.slice(8, 10) + "." + s.slice
 async function loadContracts(silent) {
   try {
     var d = await apiCall("contractList", {});
-    CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin; CT.depts = d.departments || [];
+    CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin; CT.depts = d.departments || []; CT.canCreate = !!d.canCreate;
+    var nb = document.getElementById("ctNewBtn"); if (nb) nb.style.display = CT.canCreate ? "" : "none";
     document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(function (el) { el.style.display = ""; });
     ctRender();
     var n = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
@@ -16425,6 +16436,53 @@ async function ctDecide(id, key, approve, btn) {
   } catch (e) {
     btn.classList.remove("busy");
     btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
+}
+function ctOpenNew() {
+  var d = document.getElementById("ctDetail");
+  var orgs = ["HYUNDAI UZBEKISTAN", "HYUNDAI RM"];
+  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
+    '<div class="ct-ph"><div><div class="ct-eyebrow">Новый договор</div><h2 class="ct-ptitle">Запуск на согласование</h2><div class="ct-psub">Маршрут начнётся с вашей должности, юрист обязателен</div></div></div>' +
+    '<div class="ct-new" id="ctNew">' +
+    '<div class="ct-new-g"><label class="f">Организация<select id="cnOrg"><option value="">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></label>" +
+    '<label class="f">Подразделение<select id="cnDept"><option value="">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></label>" +
+    '<label class="f">Контрагент<input id="cnCp" placeholder="Название контрагента"></label>' +
+    '<label class="f">ИНН<input id="cnInn" placeholder="необязательно" inputmode="numeric"></label>' +
+    '<label class="f">№ договора<input id="cnNum" placeholder="необязательно"></label>' +
+    '<label class="f">Дата договора<input id="cnDate" type="date"></label></div>' +
+    '<label class="f">Предмет договора<input id="cnSubj" placeholder="необязательно"></label>' +
+    '<label class="ct-drop" id="cnDrop"><i class="ti ti-file-type-pdf" aria-hidden="true"></i><span id="cnFileT">Прикрепить PDF договора</span><input type="file" id="cnFile" accept="application/pdf,.pdf" onchange="ctNewFile(this)"></label>' +
+    '<label class="ct-chk"><input type="checkbox" id="cnOk"> Документы проверены, подтверждаю отправку на согласование</label>' +
+    '<div><button class="ct-btn ct-primary" onclick="ctCreate(this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Отправить на согласование</span></button></div></div>';
+  document.getElementById("ctListPanel").style.display = "none";
+  d.style.display = "";
+  d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
+  window.scrollTo({ top: 0 });
+}
+function ctNewFile(inp) {
+  var f = inp.files && inp.files[0];
+  document.getElementById("cnFileT").textContent = f ? f.name : "Прикрепить PDF договора";
+  document.getElementById("cnDrop").classList.toggle("on", !!f);
+}
+async function ctCreate(btn) {
+  function v(id) { return document.getElementById(id).value.trim(); }
+  var f = document.getElementById("cnFile").files[0];
+  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : !v("cnCp") ? "Укажите контрагента" : !f ? "Прикрепите PDF договора" : !document.getElementById("cnOk").checked ? "Подтвердите, что документы проверены" : "";
+  if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
+  if (f.size > 15 * 1024 * 1024) { uiAlert("Файл слишком большой (максимум 15 МБ)"); return; }
+  btn.classList.add("busy");
+  try {
+    var b64 = await new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result).split(",")[1] || ""); }; fr.onerror = function () { rej(new Error("Не удалось прочитать файл")); }; fr.readAsDataURL(f); });
+    var dt = v("cnDate"), dd = dt ? dt.split("-").reverse().join(".") : "";
+    await apiCall("contractCreate", { org: v("cnOrg"), dept: v("cnDept"), counterparty: v("cnCp"), inn: v("cnInn"), number: v("cnNum"), date: dd, subject: v("cnSubj"), filename: f.name, base64: b64, confirm: true });
+    btn.classList.remove("busy"); btn.classList.add("ok");
+    await new Promise(function (r) { setTimeout(r, 900); });
+    ctCloseCard();
+    await loadContracts(true);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.classList.add("shake");
     setTimeout(function () { btn.classList.remove("shake"); }, 500);
     uiAlert(e.message);
   }
