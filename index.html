@@ -16211,7 +16211,7 @@ function ctSb(c, text) {
 }
 function ctRow(c) {
   var info = c.info || {};
-  var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
+  var doc = (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
   var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
   return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
@@ -16335,7 +16335,7 @@ function ctOpenCard(id) {
   CT.openId = id; CT.cur = 0;
   var info = c.info || {};
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
-  var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
+  var doc = (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
   var kinds = { sz: "Служебная записка", contract: "Договор", kp: "КП" };
   var cf = ctFiles(c), f0 = cf[0];
   var tabs = cf.map(function (f, i) { return '<button class="ct-ftab' + (i === 0 ? " on" : "") + '" onclick="ctPickFile(' + id + "," + i + ')">' + escapeHtml(f.label || kinds[f.kind] || "Файл") + "</button>"; }).join("");
@@ -16398,7 +16398,7 @@ function ctCard(c) {
   }).join("");
   return '<div class="ct-card' + (acts ? " mine" : "") + '" id="ctc' + c.id + '">' +
     '<div class="ct-head"><span class="ct-no">№ ' + c.id + '</span><span class="ct-cp">' + escapeHtml(c.counterparty) + '</span><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
-    ((c.info && (c.info.number || c.info.inn)) ? '<div class="ct-doc">' + [c.info.docName, c.info.number ? "№ " + c.info.number + (c.info.date ? " от " + c.info.date : "") : "", c.info.inn ? "ИНН " + c.info.inn : ""].filter(Boolean).map(escapeHtml).join(" · ") + "</div>" : "") +
+    ((c.info && (c.info.number || c.info.inn)) ? '<div class="ct-doc">' + [c.info.number ? "№ " + c.info.number + (c.info.date ? " от " + c.info.date : "") : (c.info.docName || ""), c.info.inn ? "ИНН " + c.info.inn : ""].filter(Boolean).map(escapeHtml).join(" · ") + "</div>" : "") +
     '<div class="ct-meta">' + escapeHtml(c.dept || "подразделение не выбрано") + " · инициатор: " + escapeHtml(c.initiator) + " · подан " + escapeHtml(c.created) + "</div>" +
     '<div class="ct-subj">' + escapeHtml(c.subject) + "</div>" +
     '<div class="ct-steps">' + steps + "</div>" + wait +
