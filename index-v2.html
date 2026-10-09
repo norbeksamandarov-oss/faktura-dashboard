@@ -15905,6 +15905,18 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-right .ct-init-t{font-size:12px}
 .ct-right .ct-btn{padding:8px 12px;font-size:12px}
 .ct-right .ct-hist{font-size:11px}
+.ct-dx{display:inline-flex;gap:8px;align-items:center;cursor:pointer;position:relative;font-size:12px;color:var(--muted)}
+.ct-dx input{position:absolute;opacity:0;width:0;height:0}
+.ct-dx-b{width:20px;height:20px;border-radius:6px;border:1.6px solid var(--border);background:var(--card);display:inline-block;transition:all .2s;position:relative}
+.ct-dx:hover:not(.dis) .ct-dx-b{border-color:var(--green-fg)}
+.ct-dx input:checked + .ct-dx-b{background:var(--green-fg);border-color:var(--green-fg)}
+.ct-dx input:checked + .ct-dx-b::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);animation:ctIn .2s ease both}
+.ct-dx.dis{cursor:default;opacity:.65}
+.ct-dx input:checked ~ span{color:var(--green-fg);font-weight:600}
+.ct-dx-s{display:none;position:absolute;left:2px;top:2px;width:16px;height:16px;border:2px solid var(--green-fg);border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.ct-dx.busy .ct-dx-s{display:block}
+.ct-dx.busy .ct-dx-b{opacity:.4}
+.ct-dx.shake{animation:ctShake .4s}
 .ct-didox{margin-top:16px;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px}
 .ct-didox.ok{border-color:var(--green-fg)}
 .ct-didox b{display:block;color:var(--green-fg)}
@@ -16072,9 +16084,28 @@ function ctRenderTable() {
     items.map(ctRow).join("") + "</tbody></table></div>";
 }
 function ctDidoxBadge(c) {
-  if (c.didox) return '<span class="ct-badge done">Принят в DIDOX</span>';
-  if (c.status === "Утверждён") return '<span class="ct-badge work">Ждёт DIDOX</span>';
-  return '<span style="color:var(--muted)">-</span>';
+  var canEdit = (currentRole === "admin" || currentRole === "employee");
+  var on = !!c.didox, ready = c.status === "Утверждён";
+  var dis = !canEdit || (!on && !ready);
+  var tip = on ? (c.didox.by + " · " + c.didox.at) : (ready ? (canEdit ? "Отметить: принято в DIDOX" : "Ждёт приёма в DIDOX") : "Договор ещё не утверждён");
+  return '<label class="ct-dx' + (dis ? " dis" : "") + '" title="' + escapeHtml(tip) + '" onclick="event.stopPropagation()">' +
+    '<input type="checkbox"' + (on ? " checked" : "") + (dis ? " disabled" : "") + ' onclick="event.stopPropagation()" onchange="ctDidoxToggle(' + c.id + ',this)"><i class="ct-dx-b"></i><i class="ct-dx-s"></i>' +
+    '<span>' + (on ? "Принят" : (ready ? "Ждёт" : "")) + "</span></label>";
+}
+async function ctDidoxToggle(id, el) {
+  var on = el.checked, lab = el.closest("label");
+  if (!on && !(await uiConfirm("Снять отметку «Принято в DIDOX»?"))) { el.checked = true; return; }
+  lab.classList.add("busy"); el.disabled = true;
+  try {
+    await apiCall("contractDidox", { id: id, accepted: on });
+    lab.classList.remove("busy"); lab.classList.add("okk");
+    await loadContracts(true);
+  } catch (e) {
+    lab.classList.remove("busy"); lab.classList.add("shake");
+    el.checked = !on; el.disabled = false;
+    setTimeout(function () { lab.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
 }
 function ctRow(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
