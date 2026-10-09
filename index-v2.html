@@ -7167,7 +7167,7 @@ function showSection(name) {
   });
 
   if (name === "approval" && currentRole === "admin") ctRegLoad();
-  if (name === "contracts" && currentRole !== "salary") ctOpen();
+  if (name === "contracts" && (currentRole === "admin" || currentRole === "approver")) ctOpen();
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
@@ -7717,7 +7717,7 @@ async function onLoggedIn(forcePasswordChange) {
     await loadContracts(false);
   } else {
     await loadAllData(false);
-    loadContracts(true);
+    if (currentRole === "admin") loadContracts(true);
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
@@ -7877,7 +7877,7 @@ function applyRolePermissions(role) {
   const _rsb = document.getElementById("rsTabBtn"); if (_rsb) _rsb.style.display = isAdmin ? "" : "none";
   const isSalaryOnly = role === "salary";
   const isApprover = role === "approver";
-  document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(el => { el.style.display = !isSalaryOnly ? "" : "none"; });
+  document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(el => { el.style.display = (isAdmin || isApprover) ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="approval"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
