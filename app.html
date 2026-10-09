@@ -1119,7 +1119,7 @@
             d.innerHTML = "<div><b>№ " + c.id + "</b> · " + ctEsc(c.counterparty) + "</div>" +
               "<div style='opacity:.75;font-size:13px;margin-top:2px'>" + ctEsc(c.dept) + " · " + ctEsc(c.initiator) + "</div>" +
               "<div style='font-size:14px;margin-top:6px'>" + ctEsc(c.subject) + "</div>" +
-              "<div style='opacity:.75;font-size:13px;margin-top:4px'>Этап " + c.stage + " из 5: " + ctEsc(c.stageName) + (c.due ? " · срок до " + c.due.slice(8, 10) + "." + c.due.slice(5, 7) : "") + (c.overdue ? " · просрочено" : "") + "</div>" +
+              "<div style='opacity:.75;font-size:13px;margin-top:4px'>Этап " + c.stage + " из 7: " + ctEsc(c.stageName) + (c.due ? " · срок до " + c.due.slice(8, 10) + "." + c.due.slice(5, 7) : "") + (c.overdue ? " · просрочено" : "") + "</div>" +
               "<div style='margin-top:8px'>" + files + "</div>";
             var key = c.myPending[0];
             var row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;margin-top:10px;flex-wrap:wrap";
@@ -1192,7 +1192,7 @@
         items.forEach(function (c) {
           var d = document.createElement("div");
           d.style.cssText = "padding:12px 0;border-top:1px solid rgba(255,255,255,.08)";
-          var st = c.status === "На согласовании" ? "Этап " + c.stage + " из 5: " + c.stageName : c.status;
+          var st = c.status === "На согласовании" ? "Этап " + c.stage + " из 7: " + c.stageName : c.status;
           var wait = (c.status === "На согласовании" && c.pending && c.pending.length) ? "<div style='opacity:.7;font-size:13px;margin-top:2px'>Ожидается: " + c.pending.map(function (p) { return ctEsc(p.pos); }).join(", ") + "</div>" : "";
           d.innerHTML = "<div><b>№ " + c.id + "</b> · " + ctEsc(c.counterparty) + "</div><div style='opacity:.75;font-size:13px;margin-top:2px'>" + ctEsc(st) + "</div>" + wait +
             (c.status === "Возвращён" ? "<div style='color:#ff7a7a;font-size:13px;margin-top:6px'>" + ctEsc(c.comment) + "</div>" : "");

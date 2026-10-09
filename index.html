@@ -7167,7 +7167,7 @@ function showSection(name) {
   });
 
   if (name === "approval" && currentRole === "admin") ctRegLoad();
-  if (name === "contracts" && (currentRole === "admin" || currentRole === "approver")) ctOpen();
+  if (name === "contracts" && currentRole !== "salary") ctOpen();
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
@@ -7877,7 +7877,7 @@ function applyRolePermissions(role) {
   const _rsb = document.getElementById("rsTabBtn"); if (_rsb) _rsb.style.display = isAdmin ? "" : "none";
   const isSalaryOnly = role === "salary";
   const isApprover = role === "approver";
-  document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(el => { el.style.display = (isAdmin || isApprover) ? "" : "none"; });
+  document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(el => { el.style.display = !isSalaryOnly ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="requests"], .nav-item[data-section="users"], .nav-item[data-section="suggestions"], .nav-item[data-section="features"], .nav-item[data-section="botcfg"], .nav-item[data-section="taxes"], .nav-item[data-section="positions"], .nav-item[data-section="positionsb"], .nav-item[data-section="approvers"], .nav-item[data-section="approval"], .nav-item[data-section="plan"], .nav-item[data-section="kpi"], .nav-item[data-section="deadlines"], .nav-item[data-section="monthclose"], .nav-item[data-section="rental"], #vzaimoraschetyToggle, .nav-item[data-section="vz2analitika"], .nav-item[data-section="vz2postavshiki"], .nav-item[data-section="vz2pokupateli"], .nav-item[data-section="vz2podotchetniki"], .nav-item[data-section="vz2oshibki"], .nav-item[data-section="vz2otv"]')
     .forEach(el => { el.style.display = isAdmin ? "" : "none"; });
   document.querySelectorAll('.nav-item[data-section="salary"], .nav-item[data-section="salaryrequests"], #salaryToggle')
@@ -15929,20 +15929,24 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-hist.open{display:block}
 .ct-hist div{padding:2px 0}
 .ct-link{background:none;border:0;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;padding:0;margin-top:10px;text-decoration:underline}
+.ct-init{display:flex;flex-direction:column;gap:8px;width:100%;max-width:520px;padding:12px;border:1px dashed var(--navy-text);border-radius:12px}
+.ct-init-t{font-size:13px;font-weight:600}
+.ct-init select,.ct-init input[type=text],.ct-init input:not([type]){border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:9px 10px;font:inherit;font-size:13px}
+.ct-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .ct-reg{display:grid;grid-template-columns:1.3fr 1.1fr 1.1fr .9fr .9fr auto;gap:8px;margin-bottom:8px}
 .ct-reg input,.ct-reg select{min-width:0;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px}
 @media (max-width:900px){.ct-reg{grid-template-columns:1fr 1fr}}
 </style>
 <script>
-var CT = { list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
-var CT_STEPS = ["Инициатор", "Руководитель", "Кросс-функц.", "Директора", "Ген. директор"];
+var CT = { depts: [], list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
+var CT_STEPS = ["Инициатор", "Руководитель", "Юрист", "Бюджет", "Главбух", "Фин. директор", "CEO"];
 function ctDate(s) { return s && s.length >= 10 ? s.slice(8, 10) + "." + s.slice(5, 7) + "." + s.slice(0, 4) : ""; }
 async function loadContracts(silent) {
   try {
     var d = await apiCall("contractList", {});
-    CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin;
+    CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin; CT.depts = d.departments || [];
     ctRender();
-    var n = CT.list.filter(function (c) { return c.myPending && c.myPending.length; }).length;
+    var n = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
     var b = document.getElementById("ctNavBadge");
     if (b) { b.textContent = n || ""; b.style.display = n ? "" : "none"; }
   } catch (e) {
@@ -15952,7 +15956,7 @@ async function loadContracts(silent) {
 function ctFilterList() {
   var f = CT.filter;
   return CT.list.filter(function (c) {
-    if (f === "mine") return c.myPending && c.myPending.length;
+    if (f === "mine") return (c.myPending && c.myPending.length) || c.canInitiate;
     if (f === "work") return c.status === "На согласовании";
     if (f === "back") return c.status === "Возвращён";
     if (f === "done") return c.status === "Утверждён";
@@ -15961,7 +15965,7 @@ function ctFilterList() {
 }
 function ctRender() {
   var cnt = {
-    mine: CT.list.filter(function (c) { return c.myPending && c.myPending.length; }).length,
+    mine: CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length,
     work: CT.list.filter(function (c) { return c.status === "На согласовании"; }).length,
     back: CT.list.filter(function (c) { return c.status === "Возвращён"; }).length,
     done: CT.list.filter(function (c) { return c.status === "Утверждён"; }).length,
@@ -15978,11 +15982,12 @@ function ctRender() {
 }
 function ctSetFilter(f) { CT.filter = f; ctRender(); }
 function ctCard(c) {
-  var cls = c.status === "Утверждён" ? "done" : c.status === "Возвращён" ? "back" : "work";
+  var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var steps = CT_STEPS.map(function (nm, i) {
     var n = i + 1, st = "";
     if (c.status === "Утверждён" || n < c.stage) st = "done";
     else if (c.status === "Возвращён" && n === 1) st = "bad";
+    else if (c.status === "Ожидает инициатора" && n === 1) st = "cur";
     else if (n === c.stage && c.status === "На согласовании") st = "cur";
     return '<div class="ct-step ' + st + '"><div class="ct-bar"></div><span>' + nm + "</span></div>";
   }).join("");
@@ -15993,8 +15998,8 @@ function ctCard(c) {
       (c.due ? ' · срок до ' + ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</div>";
   }
   var files = (c.files || []).map(function (f) {
-    var k = { sz: "Служебная записка", contract: "Проект договора", kp: "КП" }[f.kind] || "Файл";
-    return '<a class="ct-file" target="_blank" rel="noopener" href="' + escapeHtml(f.url) + '"><i class="ti ti-paperclip" aria-hidden="true"></i>' + k + ": " + escapeHtml(f.name) + "</a>";
+    var k = { sz: "Служебная записка", contract: "Открыть договор", kp: "КП" }[f.kind] || "Файл";
+    return '<a class="ct-file" target="_blank" rel="noopener" href="' + escapeHtml(f.url) + '"><i class="ti ti-file-text" aria-hidden="true"></i>' + k + ": " + escapeHtml(f.name) + "</a>";
   }).join("");
   var acts = "";
   (c.myPending || []).forEach(function (k) {
@@ -16002,6 +16007,14 @@ function ctCard(c) {
     acts += '<button class="ct-btn ct-yes" onclick="ctDecide(' + c.id + ",'" + k + "',true,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-check\" aria-hidden=\"true\"></i> Согласовать (" + escapeHtml(pos) + ')</span></button>' +
       '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button>";
   });
+  if (c.canInitiate) {
+    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Ваш шаг: выберите подразделение и подтвердите отправку на согласование</div>' +
+      '<select id="ctiD' + c.id + '"><option value="">Подразделение</option>' + (CT.depts || []).map(function (d) { return "<option>" + escapeHtml(d) + "</option>"; }).join("") + "</select>" +
+      '<input id="ctiC' + c.id + '" placeholder="Контрагент" value="' + escapeHtml(c.counterparty) + '">' +
+      '<input id="ctiS' + c.id + '" placeholder="Предмет договора (необязательно)" value="' + escapeHtml(c.subject) + '">' +
+      '<label class="ct-chk"><input type="checkbox" id="ctiK' + c.id + '"><span>Подтверждаю: документы проверены, договор готов к согласованию</span></label>' +
+      '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
+  }
   var hist = (c.history || []).map(function (h) {
     return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>";
   }).join("");
@@ -16032,6 +16045,23 @@ async function ctDecide(id, key, approve, btn) {
   } catch (e) {
     btn.classList.remove("busy");
     btn.classList.add("shake");
+    setTimeout(function () { btn.classList.remove("shake"); }, 500);
+    uiAlert(e.message);
+  }
+}
+async function ctInitiate(id, btn) {
+  var dept = document.getElementById("ctiD" + id).value, cp = document.getElementById("ctiC" + id).value.trim();
+  var sj = document.getElementById("ctiS" + id).value.trim(), ck = document.getElementById("ctiK" + id).checked;
+  var bad = !dept ? "Выберите подразделение" : !cp ? "Укажите контрагента" : !ck ? "Подтвердите, что документы проверены" : "";
+  if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
+  btn.classList.add("busy");
+  try {
+    await apiCall("contractInitiate", { id: id, dept: dept, counterparty: cp, subject: sj, confirm: true });
+    btn.classList.remove("busy"); btn.classList.add("ok");
+    await new Promise(function (r) { setTimeout(r, 800); });
+    await loadContracts(true);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.classList.add("shake");
     setTimeout(function () { btn.classList.remove("shake"); }, 500);
     uiAlert(e.message);
   }
