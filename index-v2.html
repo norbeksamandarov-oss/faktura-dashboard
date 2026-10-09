@@ -14962,6 +14962,7 @@ pzFactory('pzb', 'bedachi');
       var pop=document.createElement('div');pop.className='qpop qlist';
       var html='';
       Array.prototype.forEach.call(sel.options,function(o,k){
+        if(o.hasAttribute('data-ph'))return;
         var tm=TONE[sel.id]||(/StatusFilter$/.test(sel.id)&&sel.id!=='statusFilter'?TONE.__req:null),tn=tm&&tm[o.value];
         html+='<button type="button" class="qli'+(o.value===''?' all':'')+(tn?' tn t-'+tn[0]:'')+(o.value===sel.value?' sel':'')+'" data-v="'+o.value.replace(/"/g,'&quot;')+'" style="--k:'+k+'"><i>'+(o.value===''?ALL:(tn?tn[1]:(/ApproverFilter$/.test(sel.id)?USR:(sel.id==='buyerFilter'||sel.id==='departmentFilter'||sel.id==='analyticsOrgFilter'||/OrgFilter$/.test(sel.id)||sel.id==='salaryOrgFilter'||sel.id==='taxOrgFilter'?BLD:DOT))))+'</i><span>'+o.text+'</span><em>'+CHK+'</em></button>';
       });
@@ -16452,10 +16453,10 @@ function ctOpenNew() {
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новый договор</div><h2 class="ct-ptitle">Запуск на согласование</h2><div class="ct-psub">Маршрут начнётся с вашей должности, юрист обязателен</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
-    '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
-    '<div class="filter-field"><label>Подразделение</label><select id="cnDept"><option value="">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
+    '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="" data-ph="1">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field"><label>Подразделение</label><select id="cnDept"><option value="" data-ph="1">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
     '<div class="filter-field"><label>Контрагент</label><input id="cnCp" placeholder="Название контрагента"></div>' +
-    '<div class="filter-field"><label>Тип контрагента</label><select id="cnType" onchange="ctNewType()"><option value="">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></div>' +
+    '<div class="filter-field"><label>Тип контрагента</label><select id="cnType" onchange="ctNewType()"><option value="" data-ph="1">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></div>' +
     '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></div>' +
     '<div class="filter-field"><label>№ договора</label><input id="cnNum" placeholder="необязательно"></div>' +
     '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div></div>' +
