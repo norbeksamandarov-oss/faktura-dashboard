@@ -16072,7 +16072,13 @@ html .auto-scroll{overflow-x:auto;max-width:100%;scrollbar-width:thin}
 .ct-new-g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:700px){.ct-new-g{grid-template-columns:1fr}}
 .ct-new label.f{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.ct-new input,.ct-new select{border:1px solid var(--border);background:var(--sk-glass);color:var(--text);border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;text-transform:none;letter-spacing:0;font-weight:500}
+.ct-new .filter-field{min-width:0}
+html #ctNew .toolbar.ct-new-g{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;z-index:40}
+html #ctNew .toolbar.ct-new-g>.filter-field{grid-column:auto!important;width:100%!important;max-width:none!important;min-width:0!important;justify-self:stretch!important;flex:none!important;margin:0!important;box-sizing:border-box}
+html #ctNew .toolbar.ct-new-g .qbtn.qo{min-width:0;width:100%}
+html #ctNew .toolbar.ct-new-g input{width:100%}
+@media(max-width:700px){html #ctNew .toolbar.ct-new-g{display:grid!important;grid-template-columns:1fr!important}}
+.ct-new .filter-field input{width:100%}
 .ct-drop{display:flex;align-items:center;gap:12px;border:1px dashed var(--navy-text);border-radius:14px;padding:16px;cursor:pointer;font-size:14px;transition:background .2s,border-color .2s}
 .ct-drop:hover,.ct-drop.on{background:var(--ice-soft)}
 .ct-drop input{display:none}
@@ -16446,17 +16452,19 @@ function ctOpenNew() {
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новый договор</div><h2 class="ct-ptitle">Запуск на согласование</h2><div class="ct-psub">Маршрут начнётся с вашей должности, юрист обязателен</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
-    '<div class="ct-new-g"><label class="f">Организация<select id="cnOrg"><option value="">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></label>" +
-    '<label class="f">Подразделение<select id="cnDept"><option value="">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></label>" +
-    '<label class="f">Контрагент<input id="cnCp" placeholder="Название контрагента"></label>' +
-    '<label class="f">Тип контрагента<select id="cnType" onchange="ctNewType()"><option value="">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></label>' +
-    '<label class="f"><span id="cnInnL">ИНН / ПИНФЛ</span><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></label>' +
-    '<label class="f">№ договора<input id="cnNum" placeholder="необязательно"></label>' +
-    '<label class="f">Дата договора<input id="cnDate" type="date"></label></div>' +
+    '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field"><label>Подразделение</label><select id="cnDept"><option value="">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field"><label>Контрагент</label><input id="cnCp" placeholder="Название контрагента"></div>' +
+    '<div class="filter-field"><label>Тип контрагента</label><select id="cnType" onchange="ctNewType()"><option value="">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></div>' +
+    '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></div>' +
+    '<div class="filter-field"><label>№ договора</label><input id="cnNum" placeholder="необязательно"></div>' +
+    '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div></div>' +
     '<label class="ct-drop" id="cnDrop"><i class="ti ti-file-type-pdf" aria-hidden="true"></i><span id="cnFileT">Прикрепить PDF договора</span><input type="file" id="cnFile" accept="application/pdf,.pdf" onchange="ctNewFile(this)"></label>' +
     '<label class="ct-chk"><input type="checkbox" id="cnOk"> Документы проверены, подтверждаю отправку на согласование</label>' +
     '<div><button class="ct-btn ct-primary" onclick="ctCreate(this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Отправить на согласование</span></button></div></div>';
   document.getElementById("ctListPanel").style.display = "none";
+  ctEnhance(d);
+  Array.prototype.forEach.call(d.querySelectorAll("#ctNew .toolbar > .filter-field"), function (el) { ["width", "max-width", "flex"].forEach(function (k) { el.style.setProperty(k, k === "flex" ? "none" : (k === "width" ? "100%" : "none"), "important"); }); });
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
   window.scrollTo({ top: 0 });
