@@ -16169,14 +16169,17 @@ async function ctDidoxToggle(id, el) {
     uiAlert(e.message);
   }
 }
+function ctSb(c, text) {
+  var m = { "Утверждён": ["status-accepted", "ti-circle-check"], "На согласовании": ["status-sent", "ti-hourglass"], "Возвращён": ["status-rejected", "ti-arrow-back-up"], "Ожидает инициатора": ["status-new", "ti-user-check"] }[c.status] || ["status-new", "ti-hourglass"];
+  return '<span class="status-badge ' + m[0] + '"><i class="ti ' + m[1] + '" aria-hidden="true"></i> ' + escapeHtml(text || c.status) + "</span>";
+}
 function ctRow(c) {
-  var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var info = c.info || {};
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
   var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
-  return '<tr class="ct-tr' + (act ? " act" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td><b>' + c.id + "</b></td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
-    "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctProg(c) + '<span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + "</td><td>" +
+  return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(doc || "-") + "</td><td><b>" + escapeHtml(c.counterparty) +
+    "</b></td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctProg(c) + ctSb(c, stage) + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + '</td><td style="white-space:nowrap">' +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
 }
 function ctUrl(u) {
@@ -16303,7 +16306,7 @@ function ctOpenCard(id) {
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
   var d = document.getElementById("ctDetail");
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
-    '<div class="ct-ph"><div><div class="ct-eyebrow">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2><div class="ct-psub">' + escapeHtml(c.counterparty) + '</div></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" + ctProg(c) + "<div style=\"height:18px\"></div>" +
+    '<div class="ct-ph"><div><div class="ct-eyebrow">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2><div class="ct-psub">' + escapeHtml(c.counterparty) + '</div></div>' + ctSb(c) + '</div>' + ctProg(c) + '<div style="height:18px"></div>' +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
