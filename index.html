@@ -16055,7 +16055,7 @@ async function loadContracts(silent) {
     if (!silent) document.getElementById("ctList").innerHTML = '<div class="ct-empty">' + escapeHtml(e.message) + "</div>";
   }
 }
-CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false };
+CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false, org: "" };
 function ctFilterList() {
   var f = CT.f, q = (f.q || "").toLowerCase().trim();
   return CT.list.filter(function (c) {
@@ -16063,12 +16063,13 @@ function ctFilterList() {
     if (f.overdue && !c.overdue) return false;
     if (f.status && c.status !== f.status) return false;
     if (f.dept && c.dept !== f.dept) return false;
+    if (f.org && (c.info || {}).org !== f.org) return false;
     if (f.stage && String(c.stage) !== f.stage) return false;
     if (f.didox === "yes" && !c.didox) return false;
     if (f.didox === "no" && !(c.status === "Утверждён" && !c.didox)) return false;
     if (q) {
       var info = c.info || {};
-      var hay = [c.id, c.counterparty, c.initiator, c.dept, c.subject, info.number, info.inn, info.docName].join(" ").toLowerCase();
+      var hay = [c.id, c.counterparty, c.initiator, c.dept, c.subject, info.number, info.inn, info.docName, info.org].join(" ").toLowerCase();
       if (hay.indexOf(q) === -1) return false;
     }
     return true;
@@ -16079,7 +16080,8 @@ function ctFiltersBuild() {
   if (!box) return;
   var depts = []; CT.list.forEach(function (c) { if (c.dept && depts.indexOf(c.dept) === -1) depts.push(c.dept); });
   var mineN = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
-  var sig = depts.join("|") + "#" + mineN + "#" + CT.f.mine;
+  var orgs = []; CT.list.forEach(function (c) { var o = (c.info || {}).org; if (o && orgs.indexOf(o) === -1) orgs.push(o); });
+  var sig = depts.join("|") + "#" + orgs.join("|") + "#" + mineN + "#" + CT.f.mine;
   if (box.dataset.sig === sig && box.innerHTML) return;
   box.dataset.sig = sig;
   var f = CT.f;
@@ -16087,12 +16089,13 @@ function ctFiltersBuild() {
   function fld(ic, lb, inner) { return '<div class="filter-field"><label><i class="ti ' + ic + '" aria-hidden="true"></i> ' + lb + "</label>" + inner + "</div>"; }
   box.innerHTML =
     fld("ti-search", "Поиск", '<input id="ctFq" style="min-width:260px" placeholder="Контрагент, ИНН, номер" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">') +
+    fld("ti-building", "Организация", '<select onchange="CT.f.org=this.value;ctRenderTable()">' + opt("", "Все", f.org) + orgs.map(function (o) { return opt(o, o, f.org); }).join("") + "</select>") +
     fld("ti-tag", "Статус", '<select onchange="CT.f.status=this.value;ctRenderTable()">' + opt("", "Все", f.status) + opt("Ожидает инициатора", "Ожидает инициатора", f.status) + opt("На согласовании", "На согласовании", f.status) + opt("Возвращён", "Возвращён", f.status) + opt("Утверждён", "Утверждён", f.status) + "</select>") +
     fld("ti-route", "Этап", '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все", f.stage) + [["2", "Руководитель"], ["3", "Юрист"], ["4", "Бюджет"], ["5", "Главбух"], ["6", "Фин. директор"], ["7", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>") +
     fld("ti-building-store", "Подразделение", '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>") +
     fld("ti-file-import", "DIDOX", '<select onchange="CT.f.didox=this.value;ctRenderTable()">' + opt("", "Все", f.didox) + opt("no", "Ждут приёма", f.didox) + opt("yes", "Приняты", f.didox) + "</select>") +
     '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f.mine=!CT.f.mine;ctFiltersSig();ctRender()">' + (f.mine ? "Показать все" : "Мне на решение" + (mineN ? " (" + mineN + ")" : "")) + "</button></div>" +
-    '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false,overdue:false};ctFiltersSig();ctRender()"><i class=\'ti ti-x\' aria-hidden=\'true\'></i> Сбросить фильтры</button></div>';
+    '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false,overdue:false,org:\'\'};ctFiltersSig();ctRender()"><i class=\'ti ti-x\' aria-hidden=\'true\'></i> Сбросить фильтры</button></div>';
 }
 function ctFiltersSig() { var b = document.getElementById("ctFilters"); if (b) b.dataset.sig = ""; }
 function ctRender() { ctKpis(); ctFiltersBuild(); ctRenderTable(); }
@@ -16115,7 +16118,7 @@ function ctKpis() {
   }).join("");
 }
 function ctKpiGo(k) {
-  CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false };
+  CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false, org: "" };
   if (k === "mine") CT.f.mine = true;
   else if (k === "work") CT.f.status = "На согласовании";
   else if (k === "over") CT.f.overdue = true;
@@ -16142,7 +16145,7 @@ function ctRenderTable() {
   var box = document.getElementById("ctList");
   var cnt = document.getElementById("ctCount"); if (cnt) cnt.textContent = items.length + " из " + CT.list.length;
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
-  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>DIDOX</th></tr></thead><tbody>' +
+  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Организация</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>DIDOX</th></tr></thead><tbody>' +
     items.map(ctRow).join("") + "</tbody></table></div>";
 }
 function ctDidoxBadge(c) {
@@ -16178,7 +16181,7 @@ function ctRow(c) {
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
   var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
-  return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(doc || "-") + "</td><td><b>" + escapeHtml(c.counterparty) +
+  return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td><b>" + escapeHtml(c.counterparty) +
     "</b></td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctProg(c) + ctSb(c, stage) + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + '</td><td style="white-space:nowrap">' +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
 }
@@ -16301,7 +16304,7 @@ function ctOpenCard(id) {
   var kinds = { sz: "Служебная записка", contract: "Договор", kp: "КП" };
   var cf = ctFiles(c), f0 = cf[0];
   var tabs = cf.map(function (f, i) { return '<button class="ct-ftab' + (i === 0 ? " on" : "") + '" onclick="ctPickFile(' + id + "," + i + ')">' + escapeHtml(f.label || kinds[f.kind] || "Файл") + "</button>"; }).join("");
-  var fields = [["Контрагент", c.counterparty], ["ИНН", info.inn], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created], ["Предмет", c.subject]]
+  var fields = [["Организация", info.org], ["Контрагент", c.counterparty], ["ИНН", info.inn], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created], ["Предмет", c.subject]]
     .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
   var d = document.getElementById("ctDetail");
