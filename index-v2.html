@@ -16044,6 +16044,12 @@ function ctRow(c) {
     "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td><span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <span class="ct-dot" title="Требует вашего действия"></span>' : "") + "</td><td>" +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td></tr>";
 }
+function ctUrl(u) {
+  u = String(u || "");
+  var i = u.indexOf("/uploads/");
+  if (i === -1) return u;
+  return String(API_URL).replace(/\/api\/?$/, "") + u.slice(i);
+}
 var CT_STAGE_KEY = { 2: "HEAD", 3: "LAW", 4: "BUD", 5: "ACC", 6: "FIN", 7: "GD" };
 function ctActsHtml(c) {
   var acts = "";
@@ -16082,8 +16088,8 @@ function ctTimeline(c) {
 function ctPickFile(id, idx) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
   var f = c.files[idx]; if (!f) return;
-  var fr = document.getElementById("ctFrame"); if (fr) fr.src = f.url;
-  var op = document.getElementById("ctFrameOpen"); if (op) op.href = f.url;
+  var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url);
+  var op = document.getElementById("ctFrameOpen"); if (op) op.href = ctUrl(f.url);
   document.querySelectorAll(".ct-ftab").forEach(function (b, i) { b.classList.toggle("on", i === idx); });
 }
 function ctOpenCard(id) {
@@ -16103,7 +16109,7 @@ function ctOpenCard(id) {
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' +
     '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
-    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(f0.url) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(f0.url) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
+    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url)) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
     ctActsHtml(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
@@ -16136,7 +16142,7 @@ function ctCard(c) {
   }
   var files = (c.files || []).map(function (f) {
     var k = { sz: "Служебная записка", contract: "Открыть договор", kp: "КП" }[f.kind] || "Файл";
-    return '<a class="ct-file" target="_blank" rel="noopener" href="' + escapeHtml(f.url) + '"><i class="ti ti-file-text" aria-hidden="true"></i>' + k + ": " + escapeHtml(f.name) + "</a>";
+    return '<a class="ct-file" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f.url)) + '"><i class="ti ti-file-text" aria-hidden="true"></i>' + k + ": " + escapeHtml(f.name) + "</a>";
   }).join("");
   var acts = "";
   (c.myPending || []).forEach(function (k) {
