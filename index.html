@@ -16188,7 +16188,7 @@ function ctProg(c) {
   return '<div class="ct-prog">' + seg + "</div>";
 }
 function ctRenderTable() {
-  var items = ctFilterList();
+  var items = ctFilterList().slice().sort(function (a, b) { return a.id - b.id; });
   var box = document.getElementById("ctList");
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
   box.innerHTML = '<div class="ct-grid ct-gh"><span>№</span><span>Договор</span><span>Подразделение</span><span>Этап</span><span>Срок</span><span>DIDOX</span></div>' +
