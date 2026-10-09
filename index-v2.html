@@ -15885,6 +15885,31 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-tr:hover{background:var(--gray-bg)}
 .ct-tr.act td:first-child{box-shadow:inset 3px 0 0 var(--navy-text)}
 .ct-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red-fg);margin-left:6px;vertical-align:middle}
+.ct-ph{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.ct-ptitle{margin:2px 0 0;font-size:22px;font-weight:600}
+.ct-page{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:start}
+@media (max-width:1000px){.ct-page{grid-template-columns:minmax(0,1fr)}}
+.ct-left,.ct-right{min-width:0}
+.ct-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;margin-bottom:14px}
+.ct-fields span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.ct-fields b{font-weight:600;font-size:14px;word-break:break-word}
+.ct-ftabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.ct-ftab{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+.ct-ftab.on{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
+.ct-fopen{margin-left:auto;font-size:12px;color:var(--muted);text-decoration:none}
+.ct-fopen:hover{color:var(--text)}
+.ct-frame{width:100%;height:78vh;min-height:480px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.ct-sec-t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}
+.ct-act-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ct-tl{display:flex;flex-direction:column;gap:0}
+.ct-tl-i{display:flex;gap:12px;padding:0 0 14px;position:relative;font-size:13px;color:var(--muted)}
+.ct-tl-i:not(:last-child)::before{content:"";position:absolute;left:5px;top:14px;bottom:0;width:1px;background:var(--border)}
+.ct-tl-d{width:11px;height:11px;border-radius:50%;border:2px solid var(--border);background:var(--card);flex:none;margin-top:3px;z-index:1}
+.ct-tl-i b{display:block;font-weight:600;color:var(--text)}
+.ct-tl-i small{display:block;font-size:12px;color:var(--muted)}
+.ct-tl-i.done .ct-tl-d{background:var(--green-fg);border-color:var(--green-fg)}
+.ct-tl-i.cur .ct-tl-d{background:var(--amber-fg);border-color:var(--amber-fg);box-shadow:0 0 0 4px var(--amber-bg)}
+.ct-tl-i.bad .ct-tl-d{background:var(--red-fg);border-color:var(--red-fg)}
 .ct-back{display:inline-flex;gap:6px;align-items:center;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:0 0 12px}
 .ct-back:hover{color:var(--text)}
 .ct-detail.ct-in{animation:ctIn .25s ease both}
@@ -16019,14 +16044,68 @@ function ctRow(c) {
     "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td><span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <span class="ct-dot" title="Требует вашего действия"></span>' : "") + "</td><td>" +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td></tr>";
 }
+var CT_STAGE_KEY = { 2: "HEAD", 3: "LAW", 4: "BUD", 5: "ACC", 6: "FIN", 7: "GD" };
+function ctActsHtml(c) {
+  var acts = "";
+  (c.myPending || []).forEach(function (k) {
+    var pos = (c.pending.filter(function (p) { return p.key === k; })[0] || {}).pos || k;
+    acts += '<div class="ct-act-row"><button class="ct-btn ct-yes" onclick="ctDecide(' + c.id + ",'" + k + "',true,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-check\" aria-hidden=\"true\"></i> Согласовать (" + escapeHtml(pos) + ')</span></button>' +
+      '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button></div>';
+  });
+  if (c.canInitiate) {
+    acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Ваш шаг: выберите подразделение и подтвердите отправку на согласование</div>' +
+      '<select id="ctiD' + c.id + '"><option value="">Подразделение</option>' + (CT.depts || []).map(function (d) { return "<option>" + escapeHtml(d) + "</option>"; }).join("") + "</select>" +
+      '<input id="ctiC' + c.id + '" placeholder="Контрагент" value="' + escapeHtml(c.counterparty) + '">' +
+      '<input id="ctiS' + c.id + '" placeholder="Предмет договора (необязательно)" value="' + escapeHtml(c.subject) + '">' +
+      '<label class="ct-chk"><input type="checkbox" id="ctiK' + c.id + '"><span>Подтверждаю: документы проверены, договор готов к согласованию</span></label>' +
+      '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
+  }
+  return acts;
+}
+function ctTimeline(c) {
+  var last = {};
+  (c.history || []).forEach(function (h) { if (h.key && h.act === "Согласовано") last[h.key] = h; });
+  var pend = {}; (c.pending || []).forEach(function (p) { pend[p.key] = p; });
+  var names = ["Инициатор", "Руководитель подразделения", "Юрист", "Бюджетный контролёр", "Главный бухгалтер", "Финансовый директор", "CEO"];
+  return '<div class="ct-tl">' + names.map(function (nm, i) {
+    var n = i + 1, st = "", sub = "";
+    if (c.status === "Утверждён" || n < c.stage) st = "done";
+    else if (c.status === "Возвращён" && n === 1) st = "bad";
+    else if (n === c.stage && (c.status === "На согласовании" || c.status === "Ожидает инициатора")) st = "cur";
+    var k = CT_STAGE_KEY[n];
+    if (n === 1) { sub = c.initiator; }
+    else if (last[k] && st === "done") sub = last[k].who + " · " + last[k].at;
+    else if (st === "cur" && pend[k]) sub = (pend[k].names.length ? pend[k].names.join(", ") + " · " : "") + "ожидается" + (c.due ? " до " + ctDate(c.due) : "") + (c.overdue ? " (просрочено)" : "");
+    return '<div class="ct-tl-i ' + st + '"><span class="ct-tl-d"></span><div><b>' + escapeHtml(nm) + '</b>' + (sub ? "<small>" + escapeHtml(sub) + "</small>" : "") + "</div></div>";
+  }).join("") + "</div>";
+}
+function ctPickFile(id, idx) {
+  var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var f = c.files[idx]; if (!f) return;
+  var fr = document.getElementById("ctFrame"); if (fr) fr.src = f.url;
+  var op = document.getElementById("ctFrameOpen"); if (op) op.href = f.url;
+  document.querySelectorAll(".ct-ftab").forEach(function (b, i) { b.classList.toggle("on", i === idx); });
+}
 function ctOpenCard(id) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0];
   if (!c) return;
-  CT.openId = id; CT.hist[id] = true;
-  var d = document.getElementById("ctDetail");
+  CT.openId = id;
   var info = c.info || {};
+  var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
-  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' + ctCard(c);
+  var kinds = { sz: "Служебная записка", contract: "Договор", kp: "КП" };
+  var f0 = (c.files || [])[0];
+  var tabs = (c.files || []).map(function (f, i) { return '<button class="ct-ftab' + (i === 0 ? " on" : "") + '" onclick="ctPickFile(' + id + "," + i + ')">' + escapeHtml(kinds[f.kind] || "Файл") + "</button>"; }).join("");
+  var fields = [["Контрагент", c.counterparty], ["ИНН", info.inn], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created], ["Предмет", c.subject]]
+    .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
+  var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
+  var d = document.getElementById("ctDetail");
+  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' +
+    '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
+    '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
+    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(f0.url) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(f0.url) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
+    '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
+    ctActsHtml(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
