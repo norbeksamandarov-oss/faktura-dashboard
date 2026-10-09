@@ -15887,7 +15887,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red-fg);margin-left:6px;vertical-align:middle}
 .ct-ph{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
 .ct-ptitle{margin:2px 0 0;font-size:22px;font-weight:600}
-.ct-page{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:start}
+.ct-page{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
 @media (max-width:1000px){.ct-page{grid-template-columns:minmax(0,1fr)}}
 .ct-left,.ct-right{min-width:0}
 .ct-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;margin-bottom:14px}
@@ -15898,7 +15898,11 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-ftab.on{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
 .ct-fopen{margin-left:auto;font-size:12px;color:var(--muted);text-decoration:none}
 .ct-fopen:hover{color:var(--text)}
-.ct-frame{width:100%;height:78vh;min-height:480px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.ct-frame{width:100%;height:86vh;min-height:520px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.ct-right .ct-init{padding:10px;gap:6px}
+.ct-right .ct-init-t{font-size:12px}
+.ct-right .ct-btn{padding:8px 12px;font-size:12px}
+.ct-right .ct-hist{font-size:11px}
 .ct-sec-t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}
 .ct-act-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .ct-tl{display:flex;flex-direction:column;gap:0}
@@ -16050,6 +16054,7 @@ function ctUrl(u) {
   if (i === -1) return u;
   return String(API_URL).replace(/\/api\/?$/, "") + u.slice(i);
 }
+var CT_PDF_VIEW = "#navpanes=0&toolbar=0&view=FitH";
 var CT_STAGE_KEY = { 2: "HEAD", 3: "LAW", 4: "BUD", 5: "ACC", 6: "FIN", 7: "GD" };
 function ctActsHtml(c) {
   var acts = "";
@@ -16088,7 +16093,7 @@ function ctTimeline(c) {
 function ctPickFile(id, idx) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
   var f = c.files[idx]; if (!f) return;
-  var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url);
+  var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url) + CT_PDF_VIEW;
   var op = document.getElementById("ctFrameOpen"); if (op) op.href = ctUrl(f.url);
   document.querySelectorAll(".ct-ftab").forEach(function (b, i) { b.classList.toggle("on", i === idx); });
 }
@@ -16109,7 +16114,7 @@ function ctOpenCard(id) {
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> К списку договоров</button>' +
     '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
-    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url)) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
+    (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
     ctActsHtml(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
