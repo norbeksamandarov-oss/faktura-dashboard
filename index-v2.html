@@ -4438,12 +4438,17 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     </section>
 
     <section id="section-contracts" class="content-section">
-    <div class="panel" id="ctListPanel">
-      <h2>Договоры на согласование <span class="sub">маршрут: руководитель, бухгалтерия, юрист, директора, генеральный директор</span></h2>
+    <div class="ct-wrap" id="ctListPanel">
+      <div class="ct-hero">
+        <div class="ct-eyebrow">Согласование</div>
+        <h1 class="ct-h1">Договоры</h1>
+        <div class="ct-route"><span>Инициатор</span><i></i><span>Руководитель</span><i></i><span>Юрист</span><i></i><span>Бюджет</span><i></i><span>Главбух</span><i></i><span>Фин. директор</span><i></i><span>CEO</span></div>
+      </div>
+      <div class="ct-kpis" id="ctKpis"></div>
       <div class="ct-filters" id="ctFilters"></div>
       <div id="ctList" class="ct-list"></div>
     </div>
-    <div id="ctDetail" class="panel ct-detail" style="display:none;"></div>
+    <div id="ctDetail" class="ct-wrap ct-detail" style="display:none;"></div>
     </section>
     <section id="section-writeemp" class="content-section">
     <div class="panel">
@@ -15939,6 +15944,71 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-detail.ct-in{animation:ctIn .25s ease both}
 .ct-detail .ct-card{border:0;padding:0;animation:none}
 .ct-detail .ct-cp{font-size:20px}
+.ct-wrap{padding:0;background:transparent;border:0;box-shadow:none}
+.ct-hero{margin:4px 0 22px}
+.ct-eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.ct-h1{margin:6px 0 14px;font-size:44px;line-height:1;font-weight:800;letter-spacing:-.04em;background:linear-gradient(180deg,var(--text) 30%,#6f9bff);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+:root[data-theme="dark"] .ct-h1{background:linear-gradient(180deg,#fff 25%,#8fb0ff);-webkit-background-clip:text;background-clip:text}
+.ct-route{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.ct-route i{width:18px;height:1px;background:var(--border)}
+.ct-route span{padding:3px 0}
+.ct-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:20px}
+@media (max-width:1100px){.ct-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.ct-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ct-h1{font-size:34px}}
+.ct-kpi{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;font:inherit;color:var(--text);cursor:pointer;padding:14px 16px;border-radius:18px;border:1px solid var(--border);background:linear-gradient(160deg,rgba(91,141,255,.10),transparent 55%),var(--sk-glass);box-shadow:0 18px 50px -24px rgba(40,60,120,.35),inset 0 1px 0 rgba(255,255,255,.9);transition:transform .35s cubic-bezier(.34,1.56,.64,1),border-color .25s;animation:ctIn .7s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i,0)*70ms)}
+:root[data-theme="dark"] .ct-kpi{box-shadow:0 24px 60px -26px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.12)}
+.ct-kpi:hover{transform:translateY(-3px);border-color:#6b95ff}
+.ct-kico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:#fff;margin-bottom:8px;background:linear-gradient(145deg,#6b95ff,#7a3cff);box-shadow:0 8px 20px -6px rgba(91,110,255,.7),inset 0 1px 0 rgba(255,255,255,.4)}
+.ct-kico i{font-size:18px}
+.ct-kpi.red .ct-kico{background:linear-gradient(145deg,#ff7a7a,#d93a5a);box-shadow:0 8px 20px -6px rgba(217,58,90,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+.ct-kpi.amber .ct-kico{background:linear-gradient(145deg,#ffc15a,#f0802a);box-shadow:0 8px 20px -6px rgba(240,128,42,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+.ct-kpi.green .ct-kico{background:linear-gradient(145deg,#4fd69a,#1e9a6a);box-shadow:0 8px 20px -6px rgba(30,154,106,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+.ct-kpi.hot{border-color:rgba(107,149,255,.55)}
+.ct-kv{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.ct-kl{font-size:12px;color:var(--muted);font-weight:600}
+.ct-filters{padding:10px;border-radius:16px;border:1px solid var(--border);background:var(--sk-glass);margin:0 0 14px}
+.ct-filters select,.ct-fq{background:transparent;border-radius:999px;padding:8px 14px}
+.ct-list{gap:0}
+.ct-grid{display:grid;grid-template-columns:44px minmax(0,1.6fr) minmax(0,1fr) minmax(0,1.3fr) 120px 96px;gap:16px;align-items:center}
+.ct-gh{padding:0 18px 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.ct-tr{padding:14px 18px;margin-bottom:8px;border-radius:16px;border:1px solid var(--border);background:var(--sk-glass);cursor:pointer;position:relative;transition:transform .3s cubic-bezier(.34,1.56,.64,1),border-color .2s,box-shadow .3s,background .2s;animation:ctIn .6s cubic-bezier(.16,1,.3,1) backwards;animation-delay:calc(var(--i,0)*40ms)}
+.ct-tr:hover{background:var(--sk-glass-hi);border-color:#6b95ff;transform:translateY(-2px);box-shadow:0 16px 40px -22px rgba(60,90,200,.55)}
+.ct-tr.act{border-color:rgba(107,149,255,.6);box-shadow:0 0 0 1px rgba(107,149,255,.25),0 14px 40px -22px rgba(91,110,255,.7)}
+.ct-tr.act td:first-child{box-shadow:none}
+.ct-n{font-size:20px;font-weight:800;letter-spacing:-.03em;color:var(--muted);font-variant-numeric:tabular-nums}
+.ct-main{min-width:0}
+.ct-main b{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-main small{display:block;margin-top:3px;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-dep{font-size:13px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ct-st{display:flex;flex-direction:column;gap:7px;min-width:0}
+.ct-st .ct-badge{margin:0;align-self:flex-start;font-style:normal;font-size:11px}
+.ct-prog{display:flex;gap:3px}
+.ct-prog i{flex:1;height:4px;border-radius:2px;background:var(--gray-bg);transition:background .4s}
+.ct-prog i.done{background:linear-gradient(90deg,#4fd69a,#1e9a6a)}
+.ct-prog i.cur{background:#6b95ff;box-shadow:0 0 10px rgba(107,149,255,.9);animation:ctPulse 1.8s ease-in-out infinite}
+.ct-prog i.bad{background:var(--red-fg)}
+@keyframes ctPulse{50%{opacity:.45}}
+.ct-due{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.ct-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b95ff;box-shadow:0 0 10px #6b95ff;margin-left:6px}
+@media (max-width:900px){
+ .ct-gh{display:none}
+ .ct-grid.ct-tr{grid-template-columns:36px minmax(0,1fr);row-gap:8px}
+ .ct-dep,.ct-st,.ct-due,.ct-dxc{grid-column:2}
+}
+.ct-detail .ct-eyebrow{margin-bottom:4px}
+.ct-ptitle{font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.035em;margin:0}
+.ct-psub{margin-top:6px;font-size:15px;color:var(--muted)}
+.ct-detail .ct-prog i{height:5px}
+.ct-fields{padding:16px 18px;border-radius:18px;border:1px solid var(--border);background:linear-gradient(160deg,rgba(91,141,255,.07),transparent 55%),var(--sk-glass)}
+.ct-fields b{font-size:15px;letter-spacing:-.01em}
+.ct-frame{border-radius:18px;box-shadow:0 30px 70px -34px rgba(30,50,120,.55)}
+.ct-right{padding:16px;border-radius:18px;border:1px solid var(--border);background:var(--sk-glass)}
+.ct-tl-i.cur .ct-tl-d{background:#6b95ff;border-color:#6b95ff;box-shadow:0 0 0 4px rgba(107,149,255,.2),0 0 14px #6b95ff}
+.ct-tl-i.done .ct-tl-d{box-shadow:0 0 10px rgba(30,154,106,.6)}
+.ct-sec-t{letter-spacing:.16em;font-weight:700}
+.ct-pill.on{background:linear-gradient(145deg,#6b95ff,#7a3cff);border-color:transparent;color:#fff}
+.ct-back{border-radius:999px}
+@media (prefers-reduced-motion:reduce){.ct-kpi,.ct-tr,.ct-prog i.cur{animation:none!important}}
 .ct-modal{position:fixed;inset:0;background:rgba(5,8,20,.55);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto;z-index:1000}
 .ct-modal.open{display:flex;animation:ctIn .2s ease both}
 .ct-modal-in{position:relative;width:100%;max-width:880px;background:var(--card);color:var(--text);border-radius:16px;padding:8px;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
@@ -16038,11 +16108,12 @@ async function loadContracts(silent) {
     if (!silent) document.getElementById("ctList").innerHTML = '<div class="ct-empty">' + escapeHtml(e.message) + "</div>";
   }
 }
-CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false };
+CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false };
 function ctFilterList() {
   var f = CT.f, q = (f.q || "").toLowerCase().trim();
   return CT.list.filter(function (c) {
     if (f.mine && !((c.myPending && c.myPending.length) || c.canInitiate)) return false;
+    if (f.overdue && !c.overdue) return false;
     if (f.status && c.status !== f.status) return false;
     if (f.dept && c.dept !== f.dept) return false;
     if (f.stage && String(c.stage) !== f.stage) return false;
@@ -16073,15 +16144,55 @@ function ctFiltersBuild() {
     '<select onchange="CT.f.didox=this.value;ctRenderTable()">' + opt("", "DIDOX: все", f.didox) + opt("no", "Ждут приёма в DIDOX", f.didox) + opt("yes", "Приняты в DIDOX", f.didox) + "</select>" +
     '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все подразделения", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>" +
     '<button class="ct-pill' + (f.mine ? " on" : "") + '" onclick="CT.f.mine=!CT.f.mine;this.classList.toggle(\'on\',CT.f.mine);ctRenderTable()">Мне на решение' + (mineN ? " <b>" + mineN + "</b>" : "") + "</button>" +
-    '<button class="ct-link" onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false};document.getElementById(\'ctFilters\').dataset.sig=\'\';ctRender()">Сбросить</button>';
+    '<button class="ct-link" onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false,overdue:false};document.getElementById(\'ctFilters\').dataset.sig=\'\';ctRender()">Сбросить</button>';
 }
-function ctRender() { ctFiltersBuild(); ctRenderTable(); }
+function ctRender() { ctKpis(); ctFiltersBuild(); ctRenderTable(); }
+function ctIsMine(c) { return !!((c.myPending && c.myPending.length) || c.canInitiate); }
+function ctKpis() {
+  var box = document.getElementById("ctKpis");
+  if (!box) return;
+  var L = CT.list;
+  var d = [
+    ["mine", "ti-bell-ringing", "Мне на решение", L.filter(ctIsMine).length, "hot"],
+    ["work", "ti-route", "На согласовании", L.filter(function (c) { return c.status === "На согласовании"; }).length, ""],
+    ["over", "ti-clock-exclamation", "Просрочено", L.filter(function (c) { return c.overdue; }).length, "red"],
+    ["dx", "ti-file-import", "Ждут DIDOX", L.filter(function (c) { return c.status === "Утверждён" && !c.didox; }).length, "amber"],
+    ["done", "ti-circle-check", "Утверждено", L.filter(function (c) { return c.status === "Утверждён"; }).length, "green"]
+  ];
+  box.innerHTML = d.map(function (x, i) {
+    return '<button class="ct-kpi ' + x[4] + '" style="--i:' + i + '" onclick="ctKpiGo(\'' + x[0] + '\')"><span class="ct-kico"><i class="ti ' + x[1] + '" aria-hidden="true"></i></span>' +
+      '<span class="ct-kv">' + x[3] + '</span><span class="ct-kl">' + x[2] + "</span></button>";
+  }).join("");
+}
+function ctKpiGo(k) {
+  CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue: false };
+  if (k === "mine") CT.f.mine = true;
+  else if (k === "work") CT.f.status = "На согласовании";
+  else if (k === "over") CT.f.overdue = true;
+  else if (k === "dx") { CT.f.status = "Утверждён"; CT.f.didox = "no"; }
+  else if (k === "done") CT.f.status = "Утверждён";
+  var fb = document.getElementById("ctFilters"); if (fb) fb.dataset.sig = "";
+  ctRender();
+}
+function ctProg(c) {
+  var n = 7, done = 0, cur = 0, bad = 0;
+  if (c.status === "Утверждён") done = n;
+  else if (c.status === "На согласовании") { done = Math.max(0, (c.stage || 2) - 1); cur = c.stage || 2; }
+  else if (c.status === "Возвращён") { bad = 1; }
+  else { cur = 1; }
+  var seg = "";
+  for (var i = 1; i <= n; i++) {
+    var k = i <= done ? "done" : i === cur ? "cur" : (bad && i === 1) ? "bad" : "";
+    seg += '<i class="' + k + '"></i>';
+  }
+  return '<div class="ct-prog">' + seg + "</div>";
+}
 function ctRenderTable() {
   var items = ctFilterList();
   var box = document.getElementById("ctList");
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
-  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>DIDOX</th></tr></thead><tbody>' +
-    items.map(ctRow).join("") + "</tbody></table></div>";
+  box.innerHTML = '<div class="ct-grid ct-gh"><span>№</span><span>Договор</span><span>Подразделение</span><span>Этап</span><span>Срок</span><span>DIDOX</span></div>' +
+    items.map(ctRow).join("");
 }
 function ctDidoxBadge(c) {
   var canEdit = (currentRole === "admin" || currentRole === "employee");
@@ -16111,11 +16222,15 @@ function ctRow(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var info = c.info || {};
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
-  var act = ((c.myPending && c.myPending.length) || c.canInitiate);
+  var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
-  return '<tr class="ct-tr' + (act ? " act" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td><b>' + c.id + "</b></td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
-    "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td><span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <span class="ct-dot" title="Требует вашего действия"></span>' : "") + "</td><td>" +
-    (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
+  return '<div class="ct-grid ct-tr' + (act ? " act" : "") + '" style="--i:' + Math.min(c.id % 12, 11) + '" onclick="ctOpenCard(' + c.id + ')">' +
+    '<span class="ct-n">' + c.id + "</span>" +
+    '<span class="ct-main"><b>' + escapeHtml(c.counterparty || "-") + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + "</b><small>" + escapeHtml(doc || "-") + (info.inn ? " · ИНН " + escapeHtml(info.inn) : "") + "</small></span>" +
+    '<span class="ct-dep">' + escapeHtml(c.dept || "-") + "</span>" +
+    '<span class="ct-st">' + ctProg(c) + '<em class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</em></span>" +
+    '<span class="ct-due">' + (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</span>" +
+    '<span class="ct-dxc">' + ctDidoxBadge(c) + "</span></div>";
 }
 function ctUrl(u) {
   u = String(u || "");
@@ -16241,7 +16356,7 @@ function ctOpenCard(id) {
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
   var d = document.getElementById("ctDetail");
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
-    '<div class="ct-ph"><div><div class="ct-no">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
+    '<div class="ct-ph"><div><div class="ct-eyebrow">Договор № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2><div class="ct-psub">' + escapeHtml(c.counterparty) + '</div></div><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" + ctProg(c) + "<div style=\"height:18px\"></div>" +
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">Файл не приложен</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
