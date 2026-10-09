@@ -16050,7 +16050,7 @@ function ctActsHtml(c) {
   (c.myPending || []).forEach(function (k) {
     var pos = (c.pending.filter(function (p) { return p.key === k; })[0] || {}).pos || k;
     acts += '<div class="ct-act-row"><button class="ct-btn ct-yes" onclick="ctDecide(' + c.id + ",'" + k + "',true,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-check\" aria-hidden=\"true\"></i> Согласовать (" + escapeHtml(pos) + ')</span></button>' +
-      '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button></div>';
+      '<button class="ct-btn ct-no2" onclick="ctDecide(' + c.id + ",'" + k + "',false,this)\"><span class=\"ct-lbl\"><i class=\"ti ti-x\" aria-hidden=\"true\"></i> Отклонить</span></button></div>";
   });
   if (c.canInitiate) {
     acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Ваш шаг: выберите подразделение и подтвердите отправку на согласование</div>' +
