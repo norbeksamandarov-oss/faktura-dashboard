@@ -13315,7 +13315,7 @@ function closeContragentModal() {
 
 function renderDogovorTable() {
   const sub = document.getElementById("dogovorCountSub");
-  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "Закрыто (см. комментарий)", "Закрыто администратором"];
+  const DONE_STATUSES = ["Принято", "Отклонено", "Не моё", "На согласовании", "Закрыто (см. комментарий)", "Закрыто администратором"];
   const pendingCount = dogovorRows.filter(r => !DONE_STATUSES.includes(r.status)).length;
   if (sub) sub.textContent = `всего: ${dogovorRows.length} · в ожидании: ${pendingCount}`;
 
@@ -13403,6 +13403,9 @@ function renderDogovorTable() {
     }
     if (r.status === "Принято - ожидает финального PDF") {
       return `<span class="status-badge status-accepted"><i class='ti ti-circle-check' aria-hidden='true'></i> Согласился</span>`;
+    }
+    if (r.status === "На согласовании") {
+      return `<span class="status-badge status-sent"><i class='ti ti-route' aria-hidden='true'></i> На согласовании</span>`;
     }
     if (r.status === "Закрыто (см. комментарий)") {
       return `<span class="status-badge status-closed"><i class='ti ti-mail' aria-hidden='true'></i> Закрыто (см. комментарий)</span>`;
