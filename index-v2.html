@@ -16089,9 +16089,21 @@ function ctTimeline(c) {
     return '<div class="ct-tl-i ' + st + '"><span class="ct-tl-d"></span><div><b>' + escapeHtml(nm) + '</b>' + (sub ? "<small>" + escapeHtml(sub) + "</small>" : "") + "</div></div>";
   }).join("") + "</div>";
 }
+function ctFiles(c) {
+  var fs = (c.files || []).slice();
+  var v = c.info && c.info.visa;
+  if (v) {
+    var i = fs.findIndex(function (f) { return f.kind === "contract"; });
+    if (i !== -1) {
+      var orig = fs[i];
+      fs.splice(i, 1, { kind: "contract", name: "с визами", url: v, label: "Договор с визами" }, { kind: "contract", name: orig.name, url: orig.url, label: "Оригинал" });
+    }
+  }
+  return fs;
+}
 function ctPickFile(id, idx) {
   var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
-  var f = c.files[idx]; if (!f) return;
+  var f = ctFiles(c)[idx]; if (!f) return;
   var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url) + CT_PDF_VIEW;
   var op = document.getElementById("ctFrameOpen"); if (op) op.href = ctUrl(f.url);
   document.querySelectorAll(".ct-ftab").forEach(function (b, i) { b.classList.toggle("on", i === idx); });
@@ -16104,8 +16116,8 @@ function ctOpenCard(id) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
   var kinds = { sz: "Служебная записка", contract: "Договор", kp: "КП" };
-  var f0 = (c.files || [])[0];
-  var tabs = (c.files || []).map(function (f, i) { return '<button class="ct-ftab' + (i === 0 ? " on" : "") + '" onclick="ctPickFile(' + id + "," + i + ')">' + escapeHtml(kinds[f.kind] || "Файл") + "</button>"; }).join("");
+  var cf = ctFiles(c), f0 = cf[0];
+  var tabs = cf.map(function (f, i) { return '<button class="ct-ftab' + (i === 0 ? " on" : "") + '" onclick="ctPickFile(' + id + "," + i + ')">' + escapeHtml(f.label || kinds[f.kind] || "Файл") + "</button>"; }).join("");
   var fields = [["Контрагент", c.counterparty], ["ИНН", info.inn], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created], ["Предмет", c.subject]]
     .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
