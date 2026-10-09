@@ -4443,6 +4443,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
       <div class="ct-tabs" id="ctTabs"></div>
       <div id="ctList" class="ct-list"></div>
     </div>
+    <div id="ctModal" class="ct-modal" onclick="if(event.target===this)ctCloseCard()"><div class="ct-modal-in" id="ctModalIn"></div></div>
     </section>
     <section id="section-writeemp" class="content-section">
     <div class="panel">
@@ -15879,6 +15880,17 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 })();
 </script>
 <style>
+.ct-table{width:100%}
+.ct-tr{cursor:pointer;transition:background .15s}
+.ct-tr:hover{background:var(--gray-bg)}
+.ct-tr.act td:first-child{box-shadow:inset 3px 0 0 var(--navy-text)}
+.ct-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red-fg);margin-left:6px;vertical-align:middle}
+.ct-modal{position:fixed;inset:0;background:rgba(5,8,20,.55);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto;z-index:1000}
+.ct-modal.open{display:flex;animation:ctIn .2s ease both}
+.ct-modal-in{position:relative;width:100%;max-width:880px;background:var(--card);color:var(--text);border-radius:16px;padding:8px;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+.ct-modal-in .ct-card{border:0;animation:none}
+.ct-x{position:absolute;right:12px;top:8px;border:0;background:transparent;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;z-index:1}
+.ct-x:hover{color:var(--text)}
 .ct-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
 .ct-tab{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;transition:all .2s}
 .ct-tab:hover{color:var(--text)}
@@ -15989,8 +16001,27 @@ function ctRender() {
   var items = ctFilterList();
   var box = document.getElementById("ctList");
   if (!items.length) { box.innerHTML = '<div class="ct-empty">Здесь пока пусто</div>'; return; }
-  box.innerHTML = items.map(ctCard).join("");
+  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th></tr></thead><tbody>' +
+    items.map(ctRow).join("") + "</tbody></table></div>";
 }
+function ctRow(c) {
+  var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
+  var info = c.info || {};
+  var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
+  var act = ((c.myPending && c.myPending.length) || c.canInitiate);
+  var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
+  return '<tr class="ct-tr' + (act ? " act" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td><b>' + c.id + "</b></td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
+    "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td><span class="ct-badge ' + cls + '">' + escapeHtml(stage) + "</span>" + (act ? ' <span class="ct-dot" title="Требует вашего действия"></span>' : "") + "</td><td>" +
+    (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td></tr>";
+}
+function ctOpenCard(id) {
+  var c = CT.list.filter(function (x) { return x.id === id; })[0];
+  if (!c) return;
+  CT.openId = id; CT.hist[id] = true;
+  document.getElementById("ctModalIn").innerHTML = '<button class="ct-x" onclick="ctCloseCard()" title="Закрыть">&times;</button>' + ctCard(c);
+  document.getElementById("ctModal").classList.add("open");
+}
+function ctCloseCard() { CT.openId = null; document.getElementById("ctModal").classList.remove("open"); }
 function ctSetFilter(f) { CT.filter = f; ctRender(); }
 function ctCard(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
@@ -16053,6 +16084,7 @@ async function ctDecide(id, key, approve, btn) {
     btn.classList.remove("busy");
     if (approve) btn.classList.add("ok");
     await new Promise(function (r) { setTimeout(r, 700); });
+    ctCloseCard();
     await loadContracts(true);
   } catch (e) {
     btn.classList.remove("busy");
@@ -16071,6 +16103,7 @@ async function ctInitiate(id, btn) {
     await apiCall("contractInitiate", { id: id, dept: dept, counterparty: cp, subject: sj, confirm: true });
     btn.classList.remove("busy"); btn.classList.add("ok");
     await new Promise(function (r) { setTimeout(r, 800); });
+    ctCloseCard();
     await loadContracts(true);
   } catch (e) {
     btn.classList.remove("busy"); btn.classList.add("shake");
