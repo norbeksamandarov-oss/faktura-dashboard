@@ -4591,6 +4591,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <div class="panel" id="ctRegPanel" style="margin-top:16px;">
       <h2>Согласующие договоров <span class="sub">кто какую должность занимает в маршруте договоров</span></h2>
       <p class="analytics-note" style="margin:0 0 14px;">Договор идёт по должностям, а не по людям. Здесь указывается, кто сейчас занимает должность: Telegram ID (для кнопок в боте) и логин в дашборде (для решения здесь). Для руководителя подразделения укажите подразделение - оно появится в списке выбора у инициатора.</p>
+      <div id="ctDeptBox" class="ct-deptbox"></div>
       <div id="ctRegRows"></div>
       <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
         <button class="ct-btn" onclick="ctRegAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Добавить строку</button>
@@ -15934,6 +15935,15 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-init-t{font-size:13px;font-weight:600}
 .ct-init select,.ct-init input[type=text],.ct-init input:not([type]){border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:9px 10px;font:inherit;font-size:13px}
 .ct-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.ct-deptbox{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.ct-dept-t{font-size:13px;font-weight:600;margin-bottom:8px}
+.ct-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ct-chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px}
+.ct-chip button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 6px}
+.ct-chip button:hover{color:var(--red-fg)}
+.ct-dept-add{display:flex;gap:8px;flex-wrap:wrap}
+.ct-dept-add input{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;min-width:220px}
+.ct-found{border-color:var(--green-fg)!important}
 .ct-reg{display:grid;grid-template-columns:1.3fr 1.1fr 1.1fr .9fr .9fr auto;gap:8px;margin-bottom:8px}
 .ct-reg input,.ct-reg select{min-width:0;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px}
 @media (max-width:900px){.ct-reg{grid-template-columns:1fr 1fr}}
@@ -16071,19 +16081,46 @@ async function ctInitiate(id, btn) {
 async function ctRegLoad() {
   try {
     var d = await apiCall("contractRegistryGet", {});
-    CT.reg = d.rows || []; CT.pos = d.positions || {};
+    CT.reg = d.rows || []; CT.pos = d.positions || {}; CT.deptList = d.depts || []; CT.emps = d.employees || [];
     if (!CT.reg.length) Object.keys(CT.pos).forEach(function (k) { CT.reg.push({ key: k, dept: "", name: "", chat: "", login: "" }); });
     ctRegRender();
   } catch (e) { uiAlert(e.message); }
 }
+function ctDeptRender() {
+  var box = document.getElementById("ctDeptBox");
+  if (!box) return;
+  box.innerHTML = '<div class="ct-dept-t">Подразделения</div><div class="ct-chips">' +
+    (CT.deptList || []).map(function (d, i) { return '<span class="ct-chip">' + escapeHtml(d) + '<button title="Удалить" onclick="CT.deptList.splice(' + i + ',1);ctDeptRender();ctRegRender()">&times;</button></span>'; }).join("") +
+    '</div><div class="ct-dept-add"><input id="ctDeptNew" placeholder="Новое подразделение" onkeydown="if(event.key===\'Enter\'){ctDeptAdd();}"><button class="ct-btn" onclick="ctDeptAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Добавить</button></div>';
+}
+function ctDeptAdd() {
+  var inp = document.getElementById("ctDeptNew"), v = (inp.value || "").trim();
+  if (!v) return;
+  if (!CT.deptList.some(function (x) { return x.toLowerCase() === v.toLowerCase(); })) CT.deptList.push(v);
+  ctDeptRender(); ctRegRender();
+  var n = document.getElementById("ctDeptNew"); if (n) n.focus();
+}
+function ctChatInput(i, el) {
+  CT.reg[i].chat = el.value;
+  var id = el.value.replace(/\D/g, "");
+  var e = (CT.emps || []).filter(function (x) { return x.chat === id; })[0];
+  var nm = document.getElementById("ctrN" + i), lg = document.getElementById("ctrL" + i);
+  if (e) {
+    CT.reg[i].name = e.name || CT.reg[i].name; if (nm) nm.value = CT.reg[i].name;
+    if (e.login) { CT.reg[i].login = e.login; if (lg) lg.value = e.login; }
+    el.classList.add("ct-found");
+  } else el.classList.remove("ct-found");
+}
 function ctRegRender() {
+  ctDeptRender();
   var opts = Object.keys(CT.pos).map(function (k) { return '<option value="' + k + '">' + escapeHtml(CT.pos[k]) + "</option>"; }).join("");
   document.getElementById("ctRegRows").innerHTML = CT.reg.map(function (r, i) {
+    var dopts = '<option value="">Подразделение</option>' + (CT.deptList || []).map(function (d) { return "<option" + (d === r.dept ? " selected" : "") + ">" + escapeHtml(d) + "</option>"; }).join("");
     return '<div class="ct-reg"><select onchange="CT.reg[' + i + '].key=this.value;ctRegRender()">' + opts.replace('value="' + r.key + '"', 'value="' + r.key + '" selected') + "</select>" +
-      '<input placeholder="Подразделение" value="' + escapeHtml(r.dept) + '"' + (r.key === "HEAD" ? "" : " disabled") + ' oninput="CT.reg[' + i + '].dept=this.value">' +
-      '<input placeholder="Имя" value="' + escapeHtml(r.name) + '" oninput="CT.reg[' + i + '].name=this.value">' +
-      '<input placeholder="Telegram ID" inputmode="numeric" value="' + escapeHtml(r.chat) + '" oninput="CT.reg[' + i + '].chat=this.value">' +
-      '<input placeholder="Логин в дашборде" value="' + escapeHtml(r.login) + '" oninput="CT.reg[' + i + '].login=this.value">' +
+      '<select' + (r.key === "HEAD" ? "" : " disabled") + ' onchange="CT.reg[' + i + '].dept=this.value">' + dopts + "</select>" +
+      '<input id="ctrN' + i + '" placeholder="Имя" value="' + escapeHtml(r.name) + '" oninput="CT.reg[' + i + '].name=this.value">' +
+      '<input placeholder="Telegram ID" inputmode="numeric" value="' + escapeHtml(r.chat) + '" oninput="ctChatInput(' + i + ',this)">' +
+      '<input id="ctrL' + i + '" placeholder="Логин в дашборде" value="' + escapeHtml(r.login) + '" oninput="CT.reg[' + i + '].login=this.value">' +
       '<button class="ct-btn" onclick="CT.reg.splice(' + i + ',1);ctRegRender()" title="Удалить"><i class="ti ti-trash" aria-hidden="true"></i></button></div>';
   }).join("");
 }
@@ -16091,7 +16128,7 @@ function ctRegAdd() { CT.reg.push({ key: "HEAD", dept: "", name: "", chat: "", l
 async function ctRegSave(btn) {
   btn.classList.add("busy");
   try {
-    await apiCall("contractRegistrySave", { rows: CT.reg });
+    await apiCall("contractRegistrySave", { rows: CT.reg, depts: CT.deptList });
     btn.classList.remove("busy"); btn.classList.add("ok");
     await ctRegLoad();
     setTimeout(function () { btn.classList.remove("ok"); }, 1200);
