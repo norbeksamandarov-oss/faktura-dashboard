@@ -4592,6 +4592,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <div class="panel" id="ctRegPanel" style="margin-top:16px;">
       <h2>Согласующие договоров <span class="sub">кто какую должность занимает в маршруте договоров</span></h2>
       <p class="analytics-note" style="margin:0 0 14px;">Договор идёт по должностям, а не по людям. Здесь указывается, кто сейчас занимает должность: Telegram ID (для кнопок в боте) и логин в дашборде (для решения здесь). Для руководителя подразделения укажите подразделение - оно появится в списке выбора у инициатора.</p>
+      <label class="ct-chk ct-openall"><input type="checkbox" id="ctOpenAll" onchange="ctOpenAllSave(this)"><span>Открыть раздел «Договоры» всем бухгалтерам (только просмотр всех договоров)</span></label>
       <div id="ctDeptBox" class="ct-deptbox"></div>
       <div id="ctRegRows"></div>
       <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
@@ -7169,7 +7170,7 @@ function showSection(name) {
   });
 
   if (name === "approval" && currentRole === "admin") ctRegLoad();
-  if (name === "contracts" && (currentRole === "admin" || currentRole === "approver")) ctOpen();
+  if (name === "contracts" && currentRole !== "salary") ctOpen();
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
@@ -7719,7 +7720,7 @@ async function onLoggedIn(forcePasswordChange) {
     await loadContracts(false);
   } else {
     await loadAllData(false);
-    if (currentRole === "admin") loadContracts(true);
+    if (currentRole === "admin" || currentRole === "employee") loadContracts(true);
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
@@ -15990,6 +15991,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-init-t{font-size:13px;font-weight:600}
 .ct-init select,.ct-init input[type=text],.ct-init input:not([type]){border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:9px 10px;font:inherit;font-size:13px}
 .ct-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
+.ct-openall{margin-bottom:14px;font-size:13px}
 .ct-deptbox{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border)}
 .ct-dept-t{font-size:13px;font-weight:600;margin-bottom:8px}
 .ct-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -16011,6 +16013,7 @@ async function loadContracts(silent) {
   try {
     var d = await apiCall("contractList", {});
     CT.list = d.contracts || []; CT.isAdmin = !!d.isAdmin; CT.depts = d.departments || [];
+    document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(function (el) { el.style.display = ""; });
     ctRender();
     var n = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
     var b = document.getElementById("ctNavBadge");
@@ -16274,10 +16277,17 @@ async function ctInitiate(id, btn) {
     uiAlert(e.message);
   }
 }
+async function ctOpenAllSave(el) {
+  el.disabled = true;
+  try { await apiCall("contractSettings", { openAll: el.checked }); }
+  catch (e) { el.checked = !el.checked; uiAlert(e.message); }
+  el.disabled = false;
+}
 async function ctRegLoad() {
   try {
     var d = await apiCall("contractRegistryGet", {});
     CT.reg = d.rows || []; CT.pos = d.positions || {}; CT.deptList = d.depts || []; CT.emps = d.employees || [];
+    var oa = document.getElementById("ctOpenAll"); if (oa) oa.checked = !!d.openAll;
     if (!CT.reg.length) Object.keys(CT.pos).forEach(function (k) { CT.reg.push({ key: k, dept: "", name: "", chat: "", login: "" }); });
     ctRegRender();
   } catch (e) { uiAlert(e.message); }
