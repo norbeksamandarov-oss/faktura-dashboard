@@ -16081,7 +16081,8 @@ html #ctNew .toolbar.ct-new-g input{width:100%}
 @media(max-width:700px){html #ctNew .toolbar.ct-new-g{display:grid!important;grid-template-columns:1fr!important}}
 .ct-new .filter-field input{width:100%}
 .ct-drop{display:flex;align-items:center;gap:12px;border:1px dashed var(--navy-text);border-radius:14px;padding:16px;cursor:pointer;font-size:14px;transition:background .2s,border-color .2s}
-.ct-drop:hover,.ct-drop.on{background:var(--ice-soft)}
+.ct-drop:hover,.ct-drop.on,.ct-drop.drag{background:var(--ice-soft)}
+.ct-drop.drag{border-style:solid;transform:scale(1.01)}
 .ct-drop input{display:none}
 .ct-drop i{font-size:22px}
 .ct-btn.ok{background:var(--green,#1fa86a);border-color:transparent;color:#fff}
@@ -16460,11 +16461,23 @@ function ctOpenNew() {
     '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></div>' +
     '<div class="filter-field"><label>№ договора</label><input id="cnNum" placeholder="необязательно"></div>' +
     '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div></div>' +
-    '<label class="ct-drop" id="cnDrop"><i class="ti ti-file-type-pdf" aria-hidden="true"></i><span id="cnFileT">Прикрепить PDF договора</span><input type="file" id="cnFile" accept="application/pdf,.pdf" onchange="ctNewFile(this)"></label>' +
+    '<label class="ct-drop" id="cnDrop"><i class="ti ti-file-type-pdf" aria-hidden="true"></i><span id="cnFileT">Перетащите файл сюда или нажмите, чтобы выбрать (PDF, Word)</span><input type="file" id="cnFile" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="ctNewFile(this)"></label>' +
     '<label class="ct-chk"><input type="checkbox" id="cnOk"> Документы проверены, подтверждаю отправку на согласование</label>' +
     '<div><button class="ct-btn ct-primary" onclick="ctCreate(this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Отправить на согласование</span></button></div></div>';
   document.getElementById("ctListPanel").style.display = "none";
   ctEnhance(d);
+  (function () {
+    var dr = document.getElementById("cnDrop"), inp = document.getElementById("cnFile");
+    ["dragenter", "dragover"].forEach(function (ev) { dr.addEventListener(ev, function (e) { e.preventDefault(); dr.classList.add("drag"); }); });
+    ["dragleave", "drop"].forEach(function (ev) { dr.addEventListener(ev, function (e) { e.preventDefault(); dr.classList.remove("drag"); }); });
+    dr.addEventListener("drop", function (e) {
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      if (!/\.(pdf|docx?)$/i.test(f.name)) { uiAlert("Подходят файлы PDF или Word (.doc, .docx)"); return; }
+      try { var dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; } catch (x) { return; }
+      ctNewFile(inp);
+    });
+  })();
   Array.prototype.forEach.call(d.querySelectorAll("#ctNew .toolbar > .filter-field"), function (el) { ["width", "max-width", "flex"].forEach(function (k) { el.style.setProperty(k, k === "flex" ? "none" : (k === "width" ? "100%" : "none"), "important"); }); });
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
@@ -16478,13 +16491,13 @@ function ctNewType() {
 }
 function ctNewFile(inp) {
   var f = inp.files && inp.files[0];
-  document.getElementById("cnFileT").textContent = f ? f.name : "Прикрепить PDF договора";
+  document.getElementById("cnFileT").textContent = f ? f.name : "Перетащите файл сюда или нажмите, чтобы выбрать (PDF, Word)";
   document.getElementById("cnDrop").classList.toggle("on", !!f);
 }
 async function ctCreate(btn) {
   function v(id) { return document.getElementById(id).value.trim(); }
   var f = document.getElementById("cnFile").files[0];
-  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : !v("cnCp") ? "Укажите контрагента" : !v("cnType") ? "Выберите тип контрагента" : !/^\d+$/.test(v("cnInn")) || v("cnInn").length !== (v("cnType") === "Физическое лицо" ? 14 : 9) ? (v("cnType") === "Физическое лицо" ? "ПИНФЛ должен состоять из 14 цифр" : "ИНН должен состоять из 9 цифр") : !f ? "Прикрепите PDF договора" : !document.getElementById("cnOk").checked ? "Подтвердите, что документы проверены" : "";
+  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : !v("cnCp") ? "Укажите контрагента" : !v("cnType") ? "Выберите тип контрагента" : !/^\d+$/.test(v("cnInn")) || v("cnInn").length !== (v("cnType") === "Физическое лицо" ? 14 : 9) ? (v("cnType") === "Физическое лицо" ? "ПИНФЛ должен состоять из 14 цифр" : "ИНН должен состоять из 9 цифр") : !f ? "Прикрепите файл договора" : !document.getElementById("cnOk").checked ? "Подтвердите, что документы проверены" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   if (f.size > 15 * 1024 * 1024) { uiAlert("Файл слишком большой (максимум 15 МБ)"); return; }
   btn.classList.add("busy");
