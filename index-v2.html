@@ -15895,6 +15895,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-badge.work{background:var(--amber-bg);color:var(--amber-fg)}
 .ct-badge.back{background:var(--red-bg);color:var(--red-fg)}
 .ct-badge.done{background:var(--green-bg);color:var(--green-fg)}
+.ct-doc{font-size:13px;margin-top:4px;font-weight:600;color:var(--navy-text)}
 .ct-meta{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.5}
 .ct-subj{margin-top:8px;font-size:14px;line-height:1.5}
 .ct-steps{display:flex;gap:4px;margin:14px 0 6px}
@@ -16020,7 +16021,8 @@ function ctCard(c) {
   }).join("");
   return '<div class="ct-card' + (acts ? " mine" : "") + '" id="ctc' + c.id + '">' +
     '<div class="ct-head"><span class="ct-no">№ ' + c.id + '</span><span class="ct-cp">' + escapeHtml(c.counterparty) + '</span><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
-    '<div class="ct-meta">' + escapeHtml(c.dept) + " · инициатор: " + escapeHtml(c.initiator) + " · подан " + escapeHtml(c.created) + "</div>" +
+    ((c.info && (c.info.number || c.info.inn)) ? '<div class="ct-doc">' + [c.info.docName, c.info.number ? "№ " + c.info.number + (c.info.date ? " от " + c.info.date : "") : "", c.info.inn ? "ИНН " + c.info.inn : ""].filter(Boolean).map(escapeHtml).join(" · ") + "</div>" : "") +
+    '<div class="ct-meta">' + escapeHtml(c.dept || "подразделение не выбрано") + " · инициатор: " + escapeHtml(c.initiator) + " · подан " + escapeHtml(c.created) + "</div>" +
     '<div class="ct-subj">' + escapeHtml(c.subject) + "</div>" +
     '<div class="ct-steps">' + steps + "</div>" + wait +
     (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
