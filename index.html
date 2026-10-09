@@ -14974,6 +14974,7 @@ pzFactory('pzb', 'bedachi');
   }
   document.addEventListener('click',function(e){if(cur&&!e.target.closest('.qpop'))close()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+  window.__selectField=selectField;
   function init(){
     try{
       ['analyticsPeriodFrom','analyticsPeriodTo'].forEach(function(id){var el=document.getElementById(id);if(el&&!el.__q){el.__q=1;dateField(el)}});
@@ -16096,7 +16097,9 @@ function ctFiltersBuild() {
     fld("ti-file-import", "DIDOX", '<select onchange="CT.f.didox=this.value;ctRenderTable()">' + opt("", "Все", f.didox) + opt("no", "Ждут приёма", f.didox) + opt("yes", "Приняты", f.didox) + "</select>") +
     '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f.mine=!CT.f.mine;ctFiltersSig();ctRender()">' + (f.mine ? "Показать все" : "Мне на решение" + (mineN ? " (" + mineN + ")" : "")) + "</button></div>" +
     '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',didox:\'\',mine:false,overdue:false,org:\'\'};ctFiltersSig();ctRender()"><i class=\'ti ti-x\' aria-hidden=\'true\'></i> Сбросить фильтры</button></div>';
+  ctEnhance(box);
 }
+function ctEnhance(box) { if (!window.__selectField) return; Array.prototype.forEach.call(box.querySelectorAll("select"), function (el) { if (!el.__q) { el.__q = 1; try { window.__selectField(el); } catch (e) {} } }); }
 function ctFiltersSig() { var b = document.getElementById("ctFilters"); if (b) b.dataset.sig = ""; }
 function ctRender() { ctKpis(); ctFiltersBuild(); ctRenderTable(); }
 function ctIsMine(c) { return !!((c.myPending && c.myPending.length) || c.canInitiate); }
@@ -16181,8 +16184,8 @@ function ctRow(c) {
   var doc = [info.docName, info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : ""].filter(Boolean).join(" ");
   var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
-  return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td><b>" + escapeHtml(c.counterparty) +
-    "</b></td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctProg(c) + ctSb(c, stage) + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + '</td><td style="white-space:nowrap">' +
+  return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
+    "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctSb(c, stage) + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + '</td><td style="white-space:nowrap">' +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
 }
 function ctUrl(u) {
