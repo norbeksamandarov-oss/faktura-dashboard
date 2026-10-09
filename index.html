@@ -16086,7 +16086,7 @@ function ctFiltersBuild() {
   function opt(v, t, cur) { return '<option value="' + escapeHtml(v) + '"' + (cur === v ? " selected" : "") + ">" + escapeHtml(t) + "</option>"; }
   function fld(ic, lb, inner) { return '<div class="filter-field"><label><i class="ti ' + ic + '" aria-hidden="true"></i> ' + lb + "</label>" + inner + "</div>"; }
   box.innerHTML =
-    fld("ti-search", "Поиск", '<input id="ctFq" placeholder="Контрагент, ИНН, номер, инициатор" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">') +
+    fld("ti-search", "Поиск", '<input id="ctFq" style="min-width:260px" placeholder="Контрагент, ИНН, номер" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">') +
     fld("ti-tag", "Статус", '<select onchange="CT.f.status=this.value;ctRenderTable()">' + opt("", "Все", f.status) + opt("Ожидает инициатора", "Ожидает инициатора", f.status) + opt("На согласовании", "На согласовании", f.status) + opt("Возвращён", "Возвращён", f.status) + opt("Утверждён", "Утверждён", f.status) + "</select>") +
     fld("ti-route", "Этап", '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все", f.stage) + [["2", "Руководитель"], ["3", "Юрист"], ["4", "Бюджет"], ["5", "Главбух"], ["6", "Фин. директор"], ["7", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>") +
     fld("ti-building-store", "Подразделение", '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>") +
