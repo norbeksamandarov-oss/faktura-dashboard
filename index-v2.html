@@ -4440,7 +4440,7 @@ html :is(#section-invoices,#section-bank,#section-dogovor,#section-dogovorreal,#
     <section id="section-contracts" class="content-section">
     <div class="panel" id="ctListPanel">
       <h2>Договоры на согласование <span class="sub">маршрут: руководитель, бухгалтерия, юрист, директора, генеральный директор</span></h2>
-      <div class="ct-tabs" id="ctTabs"></div>
+      <div class="ct-filters" id="ctFilters"></div>
       <div id="ctList" class="ct-list"></div>
     </div>
     <div id="ctDetail" class="panel ct-detail" style="display:none;"></div>
@@ -15925,6 +15925,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .ct-modal-in .ct-card{border:0;animation:none}
 .ct-x{position:absolute;right:12px;top:8px;border:0;background:transparent;color:var(--muted);font-size:26px;cursor:pointer;line-height:1;z-index:1}
 .ct-x:hover{color:var(--text)}
+.ct-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+.ct-filters select,.ct-fq{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;min-width:0}
+.ct-fq{flex:1 1 240px;max-width:340px}
+.ct-pill{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;transition:all .2s}
+.ct-pill.on{background:var(--navy-text);color:var(--card);border-color:var(--navy-text)}
+.ct-pill b{margin-left:4px}
 .ct-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
 .ct-tab{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;transition:all .2s}
 .ct-tab:hover{color:var(--text)}
@@ -16010,31 +16016,45 @@ async function loadContracts(silent) {
     if (!silent) document.getElementById("ctList").innerHTML = '<div class="ct-empty">' + escapeHtml(e.message) + "</div>";
   }
 }
+CT.f = { q: "", status: "", dept: "", stage: "", mine: false };
 function ctFilterList() {
-  var f = CT.filter;
+  var f = CT.f, q = (f.q || "").toLowerCase().trim();
   return CT.list.filter(function (c) {
-    if (f === "mine") return (c.myPending && c.myPending.length) || c.canInitiate;
-    if (f === "work") return c.status === "На согласовании";
-    if (f === "back") return c.status === "Возвращён";
-    if (f === "done") return c.status === "Утверждён";
+    if (f.mine && !((c.myPending && c.myPending.length) || c.canInitiate)) return false;
+    if (f.status && c.status !== f.status) return false;
+    if (f.dept && c.dept !== f.dept) return false;
+    if (f.stage && String(c.stage) !== f.stage) return false;
+    if (q) {
+      var info = c.info || {};
+      var hay = [c.id, c.counterparty, c.initiator, c.dept, c.subject, info.number, info.inn, info.docName].join(" ").toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
     return true;
   });
 }
-function ctRender() {
-  var cnt = {
-    mine: CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length,
-    work: CT.list.filter(function (c) { return c.status === "На согласовании"; }).length,
-    back: CT.list.filter(function (c) { return c.status === "Возвращён"; }).length,
-    done: CT.list.filter(function (c) { return c.status === "Утверждён"; }).length,
-    all: CT.list.length
-  };
-  var tabs = [["mine", "Мне на решение"], ["work", "На согласовании"], ["back", "Возвращены"], ["done", "Утверждены"], ["all", "Все"]];
-  document.getElementById("ctTabs").innerHTML = tabs.map(function (t) {
-    return '<button class="ct-tab' + (CT.filter === t[0] ? " on" : "") + '" onclick="ctSetFilter(\'' + t[0] + '\')">' + t[1] + "<b>" + cnt[t[0]] + "</b></button>";
-  }).join("");
+function ctFiltersBuild() {
+  var box = document.getElementById("ctFilters");
+  if (!box) return;
+  var depts = []; CT.list.forEach(function (c) { if (c.dept && depts.indexOf(c.dept) === -1) depts.push(c.dept); });
+  var mineN = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
+  var sig = depts.join("|") + "#" + mineN;
+  if (box.dataset.sig === sig && box.innerHTML) return;
+  box.dataset.sig = sig;
+  var f = CT.f;
+  function opt(v, t, cur) { return '<option value="' + escapeHtml(v) + '"' + (cur === v ? " selected" : "") + ">" + escapeHtml(t) + "</option>"; }
+  box.innerHTML =
+    '<input id="ctFq" class="ct-fq" placeholder="Поиск: контрагент, ИНН, номер, инициатор" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">' +
+    '<select onchange="CT.f.status=this.value;ctRenderTable()">' + opt("", "Все статусы", f.status) + opt("Ожидает инициатора", "Ожидает инициатора", f.status) + opt("На согласовании", "На согласовании", f.status) + opt("Возвращён", "Возвращён", f.status) + opt("Утверждён", "Утверждён", f.status) + "</select>" +
+    '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все этапы", f.stage) + [["2", "Руководитель"], ["3", "Юрист"], ["4", "Бюджет"], ["5", "Главбух"], ["6", "Фин. директор"], ["7", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>" +
+    '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все подразделения", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>" +
+    '<button class="ct-pill' + (f.mine ? " on" : "") + '" onclick="CT.f.mine=!CT.f.mine;this.classList.toggle(\'on\',CT.f.mine);ctRenderTable()">Мне на решение' + (mineN ? " <b>" + mineN + "</b>" : "") + "</button>" +
+    '<button class="ct-link" onclick="CT.f={q:\'\',status:\'\',dept:\'\',stage:\'\',mine:false};document.getElementById(\'ctFilters\').dataset.sig=\'\';ctRender()">Сбросить</button>';
+}
+function ctRender() { ctFiltersBuild(); ctRenderTable(); }
+function ctRenderTable() {
   var items = ctFilterList();
   var box = document.getElementById("ctList");
-  if (!items.length) { box.innerHTML = '<div class="ct-empty">Здесь пока пусто</div>'; return; }
+  if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
   box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Договор</th><th>Контрагент</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th></tr></thead><tbody>' +
     items.map(ctRow).join("") + "</tbody></table></div>";
 }
@@ -16139,7 +16159,6 @@ function ctCloseCard() {
   var d = document.getElementById("ctDetail"); if (d) d.style.display = "none";
   var l = document.getElementById("ctListPanel"); if (l) l.style.display = "";
 }
-function ctSetFilter(f) { CT.filter = f; ctRender(); }
 function ctCard(c) {
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var steps = CT_STEPS.map(function (nm, i) {
