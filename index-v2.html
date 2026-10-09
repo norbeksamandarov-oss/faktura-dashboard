@@ -16061,6 +16061,12 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 @media(min-width:861px) and (max-width:1500px){
   html .sidebar:not(.collapsed){width:228px}
 }
+@media(min-width:861px) and (max-width:1700px){
+  html .content-section table:not(.invoices) td,html .content-section table:not(.invoices) th{padding-left:6px;padding-right:6px}
+  html .content-section table:not(.invoices){font-size:12px}
+}
+html .content-area,html .content-section,html .content-section .panel{min-width:0;max-width:100%}
+html .auto-scroll{overflow-x:auto;max-width:100%;scrollbar-width:thin}
 </style>
 <script>
 var CT = { depts: [], list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
@@ -16512,6 +16518,20 @@ function ctOpen() {
   if (CT.timer) clearInterval(CT.timer);
   CT.timer = setInterval(function () { if (document.getElementById("section-contracts").classList.contains("active")) loadContracts(true); }, 15000);
 }
+</script>
+<script>
+(function(){
+  function wrap(t){
+    if(t.dataset.asw||t.closest('.table-wrap,.auto-scroll,.chscroll,.tblwrap,#loginHeat'))return;
+    t.dataset.asw='1';
+    var w=document.createElement('div');w.className='auto-scroll';
+    t.parentNode.insertBefore(w,t);w.appendChild(t);
+  }
+  function scan(root){(root||document).querySelectorAll('.content-section table').forEach(wrap)}
+  var q=0;
+  new MutationObserver(function(){if(q)return;q=setTimeout(function(){q=0;scan()},150)}).observe(document.body,{childList:true,subtree:true});
+  scan();
+})();
 </script>
 </body>
 </html>
