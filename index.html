@@ -16239,6 +16239,7 @@ async function ctDidox(id, on, btn) {
 function ctTimeline(c) {
   var last = {};
   (c.history || []).forEach(function (h) { if (h.key && h.act === "Согласовано") last[h.key] = h; });
+  var skip = {}; (c.history || []).forEach(function (h) { if (h.key && h.act === "Пропущено") skip[h.key] = 1; else if (h.key && h.act === "Согласовано") delete skip[h.key]; });
   var pend = {}; (c.pending || []).forEach(function (p) { pend[p.key] = p; });
   var names = ["Инициатор", "Руководитель подразделения", "Юрист", "Бюджетный контролёр", "Главный бухгалтер", "Финансовый директор", "CEO"];
   return '<div class="ct-tl">' + names.map(function (nm, i) {
@@ -16248,6 +16249,7 @@ function ctTimeline(c) {
     else if (n === c.stage && (c.status === "На согласовании" || c.status === "Ожидает инициатора")) st = "cur";
     var k = CT_STAGE_KEY[n];
     if (n === 1) { sub = c.initiator; }
+    else if (skip[k] && st === "done") sub = "пропущено: инициатор выше по маршруту";
     else if (last[k] && st === "done") sub = last[k].who + " · " + last[k].at;
     else if (st === "cur" && pend[k]) sub = (pend[k].names.length ? pend[k].names.join(", ") + " · " : "") + "ожидается" + (c.due ? " до " + ctDate(c.due) : "") + (c.overdue ? " (просрочено)" : "");
     return '<div class="ct-tl-i ' + st + '"><span class="ct-tl-d"></span><div><b>' + escapeHtml(nm) + '</b>' + (sub ? "<small>" + escapeHtml(sub) + "</small>" : "") + "</div></div>";
