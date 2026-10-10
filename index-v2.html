@@ -16129,11 +16129,11 @@ function ctPayBlock(c) {
   }
   if (c.status !== "Утверждён" || !pi) return "";
   var linked = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === c.id && x.status !== "Возвращён"; });
-  var can = CT.canCreate && Number(pi.left) > 0;
+  var can = CT.canCreate && Number(pi.left) > 0 && !!c.didox;
   return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div>' +
     '<small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено: <b>' + ctSumShow(pi.used) + '</b><br>Можно заявить ещё: <b>' + ctSumShow(pi.left) + '</b></small>' +
     (linked.length ? '<div style="margin-top:8px;font-size:12px">' + linked.map(function (x) { return '<a href="#" onclick="event.preventDefault();showSection(\'payments\');ctOpenCard(' + x.id + ')">№ ' + x.id + " · " + escapeHtml(ctSumShow((x.info || {}).sum)) + " · " + escapeHtml(x.status) + "</a>"; }).join("<br>") + "</div>" : "") +
-    (can ? '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>' : (Number(pi.left) <= 0 ? '<small style="display:block;margin-top:8px">Лимит исчерпан</small>' : "")) + "</div>";
+    (can ? '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>' : (!c.didox ? '<small style="display:block;margin-top:8px">Заявку можно создать после приёма договора в DIDOX</small>' : Number(pi.left) <= 0 ? '<small style="display:block;margin-top:8px">Лимит исчерпан</small>' : "")) + "</div>";
 }
 function ctPayFromContract(id) {
   showSection("payments"); ctOpenNewPay(id);
@@ -16556,7 +16556,7 @@ function ctOpenNew() {
 function ctOpenNewPay(preBase) {
   var d = document.getElementById("ctDetail");
   var orgs = ["HYUNDAI UZBEKISTAN", "HYUNDAI RM"];
-  var bases = (CT.all || []).filter(function (c) { return c.kind !== "pay" && c.status === "Утверждён" && !(c.payInfo && Number(c.payInfo.left) <= 0); }).sort(function (a, b) { return b.id - a.id; });
+  var bases = (CT.all || []).filter(function (c) { return c.kind !== "pay" && c.status === "Утверждён" && c.didox && !(c.payInfo && Number(c.payInfo.left) <= 0); }).sort(function (a, b) { return b.id - a.id; });
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новая заявка</div><h2 class="ct-ptitle">Заявка на оплату</h2><div class="ct-psub">Пройдёт тот же маршрут согласования, что и договор</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
