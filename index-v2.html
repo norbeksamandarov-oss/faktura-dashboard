@@ -16121,6 +16121,23 @@ function ctKindUi() {
   var nt = document.getElementById("ctNote"); if (nt) nt.textContent = pay ? "Служебные записки на оплату: инициатор, руководитель подразделения, юрист, бюджетный контролёр, главный бухгалтер, финансовый директор, CEO." : "Согласование договоров: инициатор, руководитель подразделения, юрист, бюджетный контролёр, главный бухгалтер, финансовый директор, CEO.";
   var nl = document.getElementById("ctNewLbl"); if (nl) nl.innerHTML = pay ? '<i class="ti ti-cash-banknote" aria-hidden="true"></i> Новая заявка на оплату' : '<i class="ti ti-send" aria-hidden="true"></i> Запустить на согласование';
 }
+function ctPayBlock(c) {
+  var pi = c.payInfo;
+  if (c.kind === "pay") {
+    if (!pi) return "";
+    return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Лимит по договору</div><small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено всего: <b>' + ctSumShow(pi.used) + '</b><br>Остаток: <b>' + ctSumShow(pi.left) + '</b></small></div>';
+  }
+  if (c.status !== "Утверждён" || !pi) return "";
+  var linked = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === c.id && x.status !== "Возвращён"; });
+  var can = CT.canCreate && Number(pi.left) > 0;
+  return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div>' +
+    '<small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено: <b>' + ctSumShow(pi.used) + '</b><br>Можно заявить ещё: <b>' + ctSumShow(pi.left) + '</b></small>' +
+    (linked.length ? '<div style="margin-top:8px;font-size:12px">' + linked.map(function (x) { return '<a href="#" onclick="event.preventDefault();showSection(\'payments\');ctOpenCard(' + x.id + ')">№ ' + x.id + " · " + escapeHtml(ctSumShow((x.info || {}).sum)) + " · " + escapeHtml(x.status) + "</a>"; }).join("<br>") + "</div>" : "") +
+    (can ? '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>' : (Number(pi.left) <= 0 ? '<small style="display:block;margin-top:8px">Лимит исчерпан</small>' : "")) + "</div>";
+}
+function ctPayFromContract(id) {
+  showSection("payments"); ctOpenNewPay(id);
+}
 function ctNewGo() { if (CT.kind === "pay") ctOpenNewPay(); else ctOpenNew(); }
 async function loadContracts(silent) {
   try {
@@ -16419,7 +16436,7 @@ function ctOpenCard(id) {
     '<div class="ct-page"><div class="ct-left"><div class="ct-fields">' + fields + "</div>" +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" style="' + (isPay ? "display:none" : "") + '" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : '<div class="ct-wait">' + (isPay ? "Документ не приложен" : "Файл не приложен") + '</div>') +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
-    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
+    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
@@ -16536,16 +16553,16 @@ function ctOpenNew() {
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
   window.scrollTo({ top: 0 });
 }
-function ctOpenNewPay() {
+function ctOpenNewPay(preBase) {
   var d = document.getElementById("ctDetail");
   var orgs = ["HYUNDAI UZBEKISTAN", "HYUNDAI RM"];
-  var bases = (CT.all || []).filter(function (c) { return c.kind !== "pay" && c.status === "Утверждён"; }).sort(function (a, b) { return b.id - a.id; });
+  var bases = (CT.all || []).filter(function (c) { return c.kind !== "pay" && c.status === "Утверждён" && !(c.payInfo && Number(c.payInfo.left) <= 0); }).sort(function (a, b) { return b.id - a.id; });
   d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новая заявка</div><h2 class="ct-ptitle">Заявка на оплату</h2><div class="ct-psub">Пройдёт тот же маршрут согласования, что и договор</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
     '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="" data-ph="1">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
     '<div class="filter-field"><label>Подразделение</label><select id="cnDept"><option value="" data-ph="1">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
-    '<div class="filter-field"><label>Основание: договор (необязательно)</label><select id="cnBase" onchange="ctPayBase(this)"><option value="" data-ph="1">Без договора</option>' + bases.map(function (b) { var i = b.info || {}; return '<option value="' + b.id + '">' + escapeHtml("№ " + (i.number || b.id) + " · " + b.counterparty) + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field"><label>Основание: договор (необязательно)</label><select id="cnBase" onchange="ctPayBase(this)"><option value="" data-ph="1">Без договора</option>' + bases.map(function (b) { var i = b.info || {}; return '<option value="' + b.id + '"' + (preBase === b.id ? " selected" : "") + ">" + escapeHtml("№ " + (i.number || b.id) + " · " + b.counterparty) + "</option>"; }).join("") + '</select><div id="cnBaseH" style="font-size:11px;opacity:.7;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>ИНН / ПИНФЛ получателя</label><input id="cnInn" placeholder="9 или 14 цифр" inputmode="numeric" maxlength="14" oninput="ctInnLookup()"><div id="cnInnH" style="font-size:11px;opacity:.6;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>Получатель платежа</label><input id="cnCp" placeholder="Название получателя" oninput="this.dataset.auto=0"></div>' +
     '<div class="filter-field"><label>Сумма</label><input id="cnSum" placeholder="например, 15 000 000" inputmode="decimal" oninput="ctSumFmt(this)"></div>' +
@@ -16559,18 +16576,26 @@ function ctOpenNewPay() {
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
   window.scrollTo({ top: 0 });
+  if (preBase) ctPayBase(document.getElementById("cnBase"));
 }
 function ctPayBase(sel) {
   var b = (CT.all || []).filter(function (c) { return String(c.id) === sel.value; })[0];
+  var h = document.getElementById("cnBaseH");
+  if (h) h.textContent = b && b.payInfo ? "Сумма договора " + ctSumShow(b.payInfo.total) + " · заявлено " + ctSumShow(b.payInfo.used) + " · можно заявить ещё " + ctSumShow(b.payInfo.left) : "";
   if (!b) return;
   var cp = document.getElementById("cnCp"), inn = document.getElementById("cnInn");
   if (!cp.value.trim()) cp.value = b.counterparty;
   if (!inn.value.trim() && b.info && b.info.inn) inn.value = b.info.inn;
 }
+function ctPayOver(baseId, sum) {
+  var b = baseId ? (CT.all || []).filter(function (c) { return String(c.id) === String(baseId); })[0] : null;
+  if (!b || !b.payInfo) return "";
+  return ctSumVal(sum) > Number(b.payInfo.left) ? "Сумма превышает остаток по договору: можно заявить не более " + ctSumShow(b.payInfo.left) : "";
+}
 async function ctPayCreate(btn) {
   function v(id) { return document.getElementById(id).value.trim(); }
   var f = document.getElementById("cnFile").files[0], inn = v("cnInn").replace(/\D/g, "");
-  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : (inn.length !== 9 && inn.length !== 14) ? "ИНН — 9 цифр, ПИНФЛ — 14 цифр" : !v("cnCp") ? "Укажите получателя платежа" : !(ctSumVal(v("cnSum")) > 0) ? "Укажите сумму" : !v("cnPurpose") ? "Укажите назначение платежа" : !document.getElementById("cnOk").checked ? "Подтвердите, что данные проверены" : "";
+  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : (inn.length !== 9 && inn.length !== 14) ? "ИНН — 9 цифр, ПИНФЛ — 14 цифр" : !v("cnCp") ? "Укажите получателя платежа" : !(ctSumVal(v("cnSum")) > 0) ? "Укажите сумму" : !v("cnPurpose") ? "Укажите назначение платежа" : ctPayOver(v("cnBase"), v("cnSum")) ? ctPayOver(v("cnBase"), v("cnSum")) : !document.getElementById("cnOk").checked ? "Подтвердите, что данные проверены" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   if (f && f.size > 15 * 1024 * 1024) { uiAlert("Файл слишком большой (максимум 15 МБ)"); return; }
   btn.classList.add("busy");
