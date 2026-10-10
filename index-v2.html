@@ -7725,6 +7725,9 @@ async function onLoggedIn(forcePasswordChange) {
   } else {
     await loadAllData(false);
     if (currentRole === "admin" || currentRole === "employee") loadContracts(true);
+    // Значок «Договоры» в меню обновляется раз в минуту (пока вкладка открыта), чтобы не пропустить новое
+    if (window._ctBadgeTimer) clearInterval(window._ctBadgeTimer);
+    if (currentRole === "admin" || currentRole === "employee") window._ctBadgeTimer = setInterval(function () { if (!document.hidden) loadContracts(true); }, 60000);
     // Запускаем тихое авто-обновление каждые 3 секунды (без оверлея загрузки)
     if (autoRefreshTimer) clearInterval(autoRefreshTimer);
     autoRefreshTimer = setInterval(() => loadAllData(true), AUTO_REFRESH_MS);
@@ -16098,7 +16101,7 @@ async function loadContracts(silent) {
     var nb = document.getElementById("ctNewBtn"); if (nb) nb.style.display = CT.canCreate ? "" : "none";
     document.querySelectorAll('.nav-item[data-section="contracts"]').forEach(function (el) { el.style.display = ""; });
     ctRender();
-    var n = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
+    var n = CT.list.filter(ctIsMine).length;
     var b = document.getElementById("ctNavBadge");
     if (b) { b.textContent = n || ""; b.style.display = n ? "" : "none"; }
   } catch (e) {
@@ -16109,7 +16112,7 @@ CT.f = { q: "", status: "", dept: "", stage: "", didox: "", mine: false, overdue
 function ctFilterList() {
   var f = CT.f, q = (f.q || "").toLowerCase().trim();
   return CT.list.filter(function (c) {
-    if (f.mine && !((c.myPending && c.myPending.length) || c.canInitiate)) return false;
+    if (f.mine && !ctIsMine(c)) return false;
     if (f.overdue && !c.overdue) return false;
     if (f.status && c.status !== f.status) return false;
     if (f.dept && c.dept !== f.dept) return false;
@@ -16129,7 +16132,7 @@ function ctFiltersBuild() {
   var box = document.getElementById("ctFilters");
   if (!box) return;
   var depts = []; CT.list.forEach(function (c) { if (c.dept && depts.indexOf(c.dept) === -1) depts.push(c.dept); });
-  var mineN = CT.list.filter(function (c) { return (c.myPending && c.myPending.length) || c.canInitiate; }).length;
+  var mineN = CT.list.filter(ctIsMine).length;
   var orgs = []; CT.list.forEach(function (c) { var o = (c.info || {}).org; if (o && orgs.indexOf(o) === -1) orgs.push(o); });
   var sig = depts.join("|") + "#" + orgs.join("|") + "#" + mineN + "#" + CT.f.mine;
   if (box.dataset.sig === sig && box.innerHTML) return;
@@ -16151,7 +16154,7 @@ function ctFiltersBuild() {
 function ctEnhance(box) { if (!window.__selectField) return; Array.prototype.forEach.call(box.querySelectorAll("select"), function (el) { if (!el.__q) { el.__q = 1; try { window.__selectField(el); } catch (e) {} } }); }
 function ctFiltersSig() { var b = document.getElementById("ctFilters"); if (b) b.dataset.sig = ""; }
 function ctRender() { ctKpis(); ctFiltersBuild(); ctRenderTable(); }
-function ctIsMine(c) { return !!((c.myPending && c.myPending.length) || c.canInitiate); }
+function ctIsMine(c) { return !!((c.myPending && c.myPending.length) || c.canInitiate || c.didoxMine); }
 function ctKpis() {
   var box = document.getElementById("ctKpis");
   if (!box) return;
