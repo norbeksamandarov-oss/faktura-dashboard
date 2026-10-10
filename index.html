@@ -16249,7 +16249,7 @@ function ctRenderTable() {
   var cnt = document.getElementById("ctCount"); if (cnt) cnt.textContent = items.length + " из " + CT.list.length;
   if (!items.length) { box.innerHTML = '<div class="ct-empty">' + (CT.list.length ? "Ничего не найдено" : "Здесь пока пусто") + "</div>"; return; }
   var pay = CT.kind === "pay";
-  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Организация</th><th>' + (pay ? "Назначение" : "Договор") + '</th><th>' + (pay ? "Получатель" : "Контрагент") + '</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>' + (pay ? "Сумма" : "DIDOX") + '</th></tr></thead><tbody>' +
+  box.innerHTML = '<div class="table-wrap"><table class="invoices ct-table"><thead><tr><th>№</th><th>Организация</th><th>' + (pay ? "Статья / назначение" : "Договор") + '</th><th>' + (pay ? "Получатель" : "Контрагент") + '</th><th>ИНН</th><th>Подразделение</th><th>Этап</th><th>Срок</th><th>' + (pay ? "Сумма" : "DIDOX") + '</th></tr></thead><tbody>' +
     items.map(ctRow).join("") + "</tbody></table></div>";
 }
 function ctDidoxBadge(c) {
@@ -16282,7 +16282,7 @@ function ctSb(c, text) {
 }
 function ctRow(c) {
   var info = c.info || {};
-  var doc = c.kind === "pay" ? (c.subject || "") : (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
+  var doc = c.kind === "pay" ? ((info.article ? info.article + (info.taxType ? " · " + info.taxType : "") + " · " : "") + (c.subject || "")) : (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
   var act = ctIsMine(c);
   var stage = c.status === "На согласовании" ? c.stage + "/5 · " + c.stageName : c.status;
   return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
@@ -16426,7 +16426,7 @@ function ctOpenCard(id) {
   if (isPay) doc = c.subject || "";
   var baseTxt = isPay && info.base ? "Договор № " + (info.base.number || info.base.id) + " · " + info.base.counterparty : "";
   var fields = (isPay
-    ? [["Организация", info.org], ["Получатель", c.counterparty], ["ИНН / ПИНФЛ", info.inn], ["Сумма", info.sum ? ctSumShow(info.sum) : ""], ["Назначение платежа", c.subject], ["Основание", baseTxt], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created]]
+    ? [["Организация", info.org], ["Получатель", c.counterparty], ["ИНН / ПИНФЛ", info.inn], ["Сумма", info.sum ? ctSumShow(info.sum) : ""], ["Статья", info.article ? info.article + (info.taxType ? " · " + info.taxType : "") : ""], ["Назначение платежа", c.subject], ["Комментарий", info.comment], ["Основание", baseTxt], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created]]
     : [["Организация", info.org], ["Контрагент", c.counterparty], ["Тип контрагента", info.cpType], ["ИНН / ПИНФЛ", info.inn], ["Подразделение", c.dept], ["Инициатор", c.initiator], ["Подан", c.created], ["Предмет", c.subject]])
     .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
@@ -16566,7 +16566,10 @@ function ctOpenNewPay(preBase) {
     '<div class="filter-field"><label>ИНН / ПИНФЛ получателя</label><input id="cnInn" placeholder="9 или 14 цифр" inputmode="numeric" maxlength="14" oninput="ctInnLookup()"><div id="cnInnH" style="font-size:11px;opacity:.6;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>Получатель платежа</label><input id="cnCp" placeholder="Название получателя" oninput="this.dataset.auto=0"></div>' +
     '<div class="filter-field"><label>Сумма</label><input id="cnSum" placeholder="например, 15 000 000" inputmode="decimal" oninput="ctSumFmt(this)"></div>' +
-    '<div class="filter-field"><label>Назначение платежа</label><input id="cnPurpose" placeholder="За что оплата"></div></div>' +
+    '<div class="filter-field"><label>Статья платежа</label><select id="cnArt" onchange="ctPayArt()"><option value="" data-ph="1">Выберите</option>' + CT_PAY_ART.map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field" id="cnTaxF" style="display:none"><label>Вид налога</label><select id="cnTax"><option value="" data-ph="1">Выберите</option>' + CT_PAY_TAX.map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
+    '<div class="filter-field"><label>Назначение платежа</label><input id="cnPurpose" placeholder="За что оплата"></div>' +
+    '<div class="filter-field" id="cnComF" style="display:none"><label>Комментарий (обязательно для «Прочие»)</label><input id="cnCom" placeholder="Почему и за что платёж"></div></div>' +
     '<label class="ct-drop" id="cnDrop"><i class="ti ti-paperclip" aria-hidden="true"></i><span id="cnFileT">Приложить счёт или документ (необязательно): PDF, Word, Excel, изображение</span><input type="file" id="cnFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="ctNewFile(this)"></label>' +
     '<label class="ct-chk"><input type="checkbox" id="cnOk"> Данные проверены, подтверждаю отправку на согласование</label>' +
     '<div><button class="ct-btn ct-primary" onclick="ctPayCreate(this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Отправить на согласование</span></button></div></div>';
@@ -16592,6 +16595,13 @@ function ctPayBase(sel) {
   }
   pick("cnOrg", b.info && b.info.org); pick("cnDept", b.dept);
 }
+var CT_PAY_ART = ["Взаиморасчёты с поставщиком", "Налоги", "Возврат покупателю", "Закупка авто", "Закупка запчастей", "Административные расходы", "Прочие"];
+var CT_PAY_TAX = ["НДС", "НДС нерезидента", "Подоходный налог", "Социальный налог", "ИНПС", "Земельный налог", "Налог на имущество", "Налог на прибыль", "Налог на прибыль нерезидента", "Налог самозанятых", "Пени и штрафы"];
+function ctPayArt() {
+  var a = document.getElementById("cnArt").value;
+  document.getElementById("cnTaxF").style.display = a === "Налоги" ? "" : "none";
+  document.getElementById("cnComF").style.display = a === "Прочие" ? "" : "none";
+}
 function ctPayOver(baseId, sum) {
   var b = baseId ? (CT.all || []).filter(function (c) { return String(c.id) === String(baseId); })[0] : null;
   if (!b || !b.payInfo) return "";
@@ -16600,14 +16610,14 @@ function ctPayOver(baseId, sum) {
 async function ctPayCreate(btn) {
   function v(id) { return document.getElementById(id).value.trim(); }
   var f = document.getElementById("cnFile").files[0], inn = v("cnInn").replace(/\D/g, "");
-  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : (inn.length !== 9 && inn.length !== 14) ? "ИНН — 9 цифр, ПИНФЛ — 14 цифр" : !v("cnCp") ? "Укажите получателя платежа" : !(ctSumVal(v("cnSum")) > 0) ? "Укажите сумму" : !v("cnPurpose") ? "Укажите назначение платежа" : ctPayOver(v("cnBase"), v("cnSum")) ? ctPayOver(v("cnBase"), v("cnSum")) : !document.getElementById("cnOk").checked ? "Подтвердите, что данные проверены" : "";
+  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : (inn.length !== 9 && inn.length !== 14) ? "ИНН — 9 цифр, ПИНФЛ — 14 цифр" : !v("cnCp") ? "Укажите получателя платежа" : !(ctSumVal(v("cnSum")) > 0) ? "Укажите сумму" : !v("cnArt") ? "Выберите статью платежа" : v("cnArt") === "Налоги" && !v("cnTax") ? "Выберите вид налога" : !v("cnPurpose") ? "Укажите назначение платежа" : v("cnArt") === "Прочие" && !v("cnCom") ? "Для статьи «Прочие» укажите комментарий" : ctPayOver(v("cnBase"), v("cnSum")) ? ctPayOver(v("cnBase"), v("cnSum")) : !document.getElementById("cnOk").checked ? "Подтвердите, что данные проверены" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   if (f && f.size > 15 * 1024 * 1024) { uiAlert("Файл слишком большой (максимум 15 МБ)"); return; }
   btn.classList.add("busy");
   try {
     var b64 = "";
     if (f) b64 = await new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result).split(",")[1] || ""); }; fr.onerror = function () { rej(new Error("Не удалось прочитать файл")); }; fr.readAsDataURL(f); });
-    await apiCall("payCreate", { org: v("cnOrg"), dept: v("cnDept"), baseId: v("cnBase"), inn: inn, counterparty: v("cnCp"), sum: v("cnSum"), purpose: v("cnPurpose"), filename: f ? f.name : "", base64: b64, confirm: true });
+    await apiCall("payCreate", { org: v("cnOrg"), dept: v("cnDept"), baseId: v("cnBase"), inn: inn, counterparty: v("cnCp"), sum: v("cnSum"), purpose: v("cnPurpose"), article: v("cnArt"), taxType: v("cnTax"), comment: v("cnCom"), filename: f ? f.name : "", base64: b64, confirm: true });
     btn.classList.remove("busy"); btn.classList.add("ok");
     await new Promise(function (r) { setTimeout(r, 900); });
     ctCloseCard();
