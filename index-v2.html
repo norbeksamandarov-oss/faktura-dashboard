@@ -1953,7 +1953,9 @@ html header.topbar #userInfo.has-av::before{content:"";background:var(--av) cent
 html header.topbar #userInfo::before{background-size:cover}
 html #changePasswordBtn{color:var(--muted)!important}
 html #changePasswordBtn:hover{color:var(--text)!important}
-html .u-av-cell{display:flex;align-items:center;gap:10px}
+html .u-av-cell{display:table-cell;white-space:nowrap}
+html .u-av-cell .u-av{margin-right:10px;vertical-align:middle}
+html .u-av-cell strong{vertical-align:middle}
 html .u-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#2f6bff,#7a3cff);color:#fff;display:inline-grid;place-items:center;font-size:10px;font-weight:800;flex-shrink:0}
 html .u-av::before{content:attr(data-ini)}
 html .u-av.has{background:var(--av) center/cover no-repeat}
