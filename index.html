@@ -16584,8 +16584,13 @@ function ctPayBase(sel) {
   if (h) h.textContent = b && b.payInfo ? "Сумма договора " + ctSumShow(b.payInfo.total) + " · заявлено " + ctSumShow(b.payInfo.used) + " · можно заявить ещё " + ctSumShow(b.payInfo.left) : "";
   if (!b) return;
   var cp = document.getElementById("cnCp"), inn = document.getElementById("cnInn");
-  if (!cp.value.trim()) cp.value = b.counterparty;
-  if (!inn.value.trim() && b.info && b.info.inn) inn.value = b.info.inn;
+  cp.value = b.counterparty; cp.dataset.auto = "0";
+  if (b.info && b.info.inn) inn.value = b.info.inn;
+  function pick(id, val) {
+    var el = document.getElementById(id); if (!el || !val) return;
+    for (var i = 0; i < el.options.length; i++) if (el.options[i].text.trim().toLowerCase() === String(val).trim().toLowerCase()) { el.value = el.options[i].value; return; }
+  }
+  pick("cnOrg", b.info && b.info.org); pick("cnDept", b.dept);
 }
 function ctPayOver(baseId, sum) {
   var b = baseId ? (CT.all || []).filter(function (c) { return String(c.id) === String(baseId); })[0] : null;
