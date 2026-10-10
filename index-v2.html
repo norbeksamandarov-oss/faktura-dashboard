@@ -2706,6 +2706,7 @@ html .content-area{padding-top:6px!important}
 .lg2 .lg2-eye:hover{color:var(--l-fg)}
 .lg2 .lg2-eye .lg2-slash{opacity:1;transition:opacity .2s}.lg2 .lg2-eye.on .lg2-slash{opacity:0}
 .lg2 .lg2-ln input#loginPassword{padding-right:42px}
+.pw-mask{-webkit-text-security:disc;text-security:disc}
 /* ===== Строки таблиц: переключатель, «Удалить», принять/отклонить — единый стиль ===== */
 html .toggle-switch{width:42px;height:24px}
 html .toggle-slider{background:var(--sk-glass);border:1px solid var(--border);border-radius:99px;transition:background .25s,border-color .25s}
@@ -5242,7 +5243,7 @@ html :is(#section-invoices,#section-contracts,#section-bank,#section-dogovor,#se
     <p style="margin:0 0 14px;font-size:13px;color:var(--muted);">Текущий логин: <b id="accCur" style="color:var(--text)"></b></p>
     <div class="rn-grid">
       <label class="rn-f rn-w2" data-l="Новый логин">Новый логин<input type="text" id="accNew" autocomplete="off" maxlength="32" placeholder="латиница, цифры, . _ -"></label>
-      <label class="rn-f rn-w2" data-l="Текущий пароль">Текущий пароль<input type="password" id="accPass" autocomplete="current-password"></label>
+      <label class="rn-f rn-w2" data-l="Текущий пароль">Текущий пароль<input type="text" id="accPass" class="pw-mask" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="none" autocorrect="off" spellcheck="false"></label>
     </div>
     <div class="rn-err" id="accErr"></div>
     <div class="rn-act" style="justify-content:space-between;">
@@ -5342,11 +5343,11 @@ html :is(#section-invoices,#section-contracts,#section-bank,#section-dogovor,#se
     <h3><i class='ti ti-key' aria-hidden='true'></i> Смените пароль</h3>
     <p style="color:var(--muted);font-size:13px;margin:0 0 14px;">Это ваш первый вход (или пароль был сброшен администратором). Пожалуйста, задайте свой собственный пароль, прежде чем продолжить.</p>
     <label for="forceOldPassword" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:0 0 4px;">Текущий (временный) пароль</label>
-    <input type="password" id="forceOldPassword" class="login-input" placeholder="Введите текущий пароль" autocomplete="off" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <input type="text" id="forceOldPassword" class="pw-mask login-input"  placeholder="Введите текущий пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="none" autocorrect="off" spellcheck="false">
     <label for="forceNewPassword" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:12px 0 4px;">Новый пароль (минимум 4 символа)</label>
-    <input type="password" id="forceNewPassword" class="login-input" placeholder="Придумайте новый пароль" autocomplete="new-password" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <input type="text" id="forceNewPassword" class="pw-mask login-input"  placeholder="Придумайте новый пароль" style="color:var(--text);border:1px solid var(--border);background:var(--card);" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="none" autocorrect="off" spellcheck="false">
     <label for="forceNewPassword2" style="display:block;font-size:13px;font-weight:600;color:var(--text);margin:12px 0 4px;">Повторите новый пароль</label>
-    <input type="password" id="forceNewPassword2" class="login-input" placeholder="Введите новый пароль ещё раз" autocomplete="new-password" style="color:var(--text);border:1px solid var(--border);background:var(--card);">
+    <input type="text" id="forceNewPassword2" class="pw-mask login-input"  placeholder="Введите новый пароль ещё раз" style="color:var(--text);border:1px solid var(--border);background:var(--card);" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="none" autocorrect="off" spellcheck="false">
     <div id="forcePasswordError" style="color:#C0392B;font-size:13px;margin-top:8px;"></div>
     <div class="modal-actions">
       <button class="btn-primary" id="forcePasswordSubmitBtn" onclick="submitForcePasswordChange()">Сохранить и продолжить</button>
