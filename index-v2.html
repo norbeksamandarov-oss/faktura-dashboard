@@ -16200,12 +16200,11 @@ function ctPayRelated(c) {
   var bc = ctFind(base.id);
   var sibs = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === base.id; }).sort(function (a, b) { return b.id - a.id; });
   var h = '<div class="ct-sec-t">Заявки по этому договору</div><div class="pz-sib">' + sibs.map(function (x) {
-    return '<a href="#" class="' + (x.id === c.id ? "cur" : "") + '" onclick="event.preventDefault();ctGoCard(' + x.id + ')"><span>№ ' + x.id + '</span><b>' + escapeHtml(ctSumShow((x.info || {}).sum)) + '</b><i>' + escapeHtml(x.status) + "</i></a>";
+    return '<a href="#" class="' + (x.id === c.id ? "cur" : "") + '" onclick="event.preventDefault();' + (x.id === c.id ? "" : "ctGoCard(" + x.id + ")") + '"><span>№ ' + x.id + '</span><b>' + escapeHtml(ctSumShow((x.info || {}).sum)) + '</b><i>' + (x.id === c.id ? "Открыта сейчас" : escapeHtml(x.status)) + "</i></a>";
   }).join("") + "</div>";
   if (bc) {
     h += '<div class="ct-sec-t">Договор № ' + escapeHtml(String((bc.info || {}).number || bc.id)) + ' · ' + escapeHtml(bc.counterparty) + '</div>' +
-      '<a href="#" class="ct-link" onclick="event.preventDefault();ctGoCard(' + bc.id + ')">Открыть договор</a>' +
-      '<div class="ct-sec-t">История согласования договора</div><div class="ct-hist open">' + ctHistHtml(bc.history) + "</div>";
+      '<a href="#" class="ct-link" onclick="event.preventDefault();ctGoCard(' + bc.id + ')">Открыть договор</a>';
   }
   return h;
 }
@@ -16527,7 +16526,7 @@ function ctOpenCard(id) {
     '<div class="ct-page"><div class="ct-left">' + (isPay ? ctPayFields(c) : '<div class="ct-fields">' + fields + "</div>") +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" style="' + (isPay ? "display:none" : "") + '" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : (isPay ? "" : '<div class="ct-wait">Файл не приложен</div>')) +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
-    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">' + (isPay ? "История заявки" : "История") + '</div><div class="ct-hist open">' + hist + "</div>" + (isPay ? ctPayRelated(c) : "") + "</div></div>";
+    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '' + (isPay ? ctPayRelated(c) : '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div>") + "</div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
