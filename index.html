@@ -16257,6 +16257,7 @@ function ctActsHtml(c) {
     acts += '<div class="ct-init" id="cti' + c.id + '"><div class="ct-init-t">Выберите подразделение и подтвердите. При необходимости поправьте контрагента.</div>' +
       '<select id="ctiD' + c.id + '"><option value="">Подразделение</option>' + (CT.depts || []).map(function (d) { return "<option>" + escapeHtml(d) + "</option>"; }).join("") + "</select>" +
       '<input id="ctiC' + c.id + '" placeholder="Контрагент" value="' + escapeHtml(c.counterparty) + '">' +
+      '<input id="ctiM' + c.id + '" placeholder="Сумма договора" inputmode="decimal" oninput="ctSumFmt(this)" value="' + escapeHtml(c.info && c.info.sum ? ctSumShow(c.info.sum) : "") + '">' +
       '<input id="ctiS' + c.id + '" placeholder="Предмет договора (необязательно)" value="' + escapeHtml(c.subject) + '">' +
       '<button class="ct-btn ct-primary" onclick="ctInitiate(' + c.id + ',this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Подтвердить и отправить</span></button></div>';
   }
@@ -16418,7 +16419,7 @@ function ctCard(c) {
   }).join("");
   return '<div class="ct-card' + (acts ? " mine" : "") + '" id="ctc' + c.id + '">' +
     '<div class="ct-head"><span class="ct-no">№ ' + c.id + '</span><span class="ct-cp">' + escapeHtml(c.counterparty) + '</span><span class="ct-badge ' + cls + '">' + escapeHtml(c.status) + "</span></div>" +
-    ((c.info && (c.info.number || c.info.inn)) ? '<div class="ct-doc">' + [c.info.number ? "№ " + c.info.number + (c.info.date ? " от " + c.info.date : "") : (c.info.docName || ""), c.info.inn ? "ИНН " + c.info.inn : ""].filter(Boolean).map(escapeHtml).join(" · ") + "</div>" : "") +
+    ((c.info && (c.info.number || c.info.inn || c.info.sum)) ? '<div class="ct-doc">' + [c.info.number ? "№ " + c.info.number + (c.info.date ? " от " + c.info.date : "") : (c.info.docName || ""), c.info.inn ? "ИНН " + c.info.inn : "", c.info.sum ? "Сумма " + ctSumShow(c.info.sum) : ""].filter(Boolean).map(escapeHtml).join(" · ") + "</div>" : "") +
     '<div class="ct-meta">' + escapeHtml(c.dept || "подразделение не выбрано") + " · инициатор: " + escapeHtml(c.initiator) + " · подан " + escapeHtml(c.created) + "</div>" +
     '<div class="ct-subj">' + escapeHtml(c.subject) + "</div>" +
     '<div class="ct-steps">' + steps + "</div>" + wait +
@@ -16461,7 +16462,8 @@ function ctOpenNew() {
     '<div class="filter-field"><label>Тип контрагента</label><select id="cnType" onchange="ctNewType()"><option value="" data-ph="1">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></div>' +
     '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></div>' +
     '<div class="filter-field"><label>№ договора</label><input id="cnNum" placeholder="необязательно"></div>' +
-    '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div></div>' +
+    '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div>' +
+    '<div class="filter-field"><label>Сумма договора</label><input id="cnSum" placeholder="например, 150 000 000" inputmode="decimal" oninput="ctSumFmt(this)"></div></div>' +
     '<label class="ct-drop" id="cnDrop"><i class="ti ti-file-type-pdf" aria-hidden="true"></i><span id="cnFileT">Перетащите файл сюда или нажмите, чтобы выбрать (PDF, Word)</span><input type="file" id="cnFile" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="ctNewFile(this)"></label>' +
     '<label class="ct-chk"><input type="checkbox" id="cnOk"> Документы проверены, подтверждаю отправку на согласование</label>' +
     '<div><button class="ct-btn ct-primary" onclick="ctCreate(this)"><span class="ct-lbl"><i class="ti ti-send" aria-hidden="true"></i> Отправить на согласование</span></button></div></div>';
@@ -16484,6 +16486,13 @@ function ctOpenNew() {
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
   window.scrollTo({ top: 0 });
 }
+function ctSumShow(v) { var p = String(v || "").split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ") + (p[1] ? "," + (p[1] + "0").slice(0, 2) : ""); }
+function ctSumVal(t) { var n = parseFloat(String(t || "").replace(/[\s\u00a0]/g, "").replace(",", ".")); return isNaN(n) ? 0 : n; }
+function ctSumFmt(el) {
+  var raw = el.value.replace(/[^\d.,]/g, "").replace(/\./g, ","), i = raw.indexOf(",");
+  var w = (i < 0 ? raw : raw.slice(0, i)).replace(/^0+(?=\d)/, ""), f = i < 0 ? "" : raw.slice(i + 1).replace(/,/g, "").slice(0, 2);
+  el.value = w.replace(/\B(?=(\d{3})+(?!\d))/g, " ") + (i < 0 ? "" : "," + f);
+}
 function ctNewType() {
   var t = document.getElementById("cnType").value, i = document.getElementById("cnInn");
   document.getElementById("cnInnL").textContent = t === "Физическое лицо" ? "ПИНФЛ (14 цифр)" : t === "Юридическое лицо" ? "ИНН (9 цифр)" : "ИНН / ПИНФЛ";
@@ -16498,14 +16507,14 @@ function ctNewFile(inp) {
 async function ctCreate(btn) {
   function v(id) { return document.getElementById(id).value.trim(); }
   var f = document.getElementById("cnFile").files[0];
-  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : !v("cnCp") ? "Укажите контрагента" : !v("cnType") ? "Выберите тип контрагента" : !/^\d+$/.test(v("cnInn")) || v("cnInn").length !== (v("cnType") === "Физическое лицо" ? 14 : 9) ? (v("cnType") === "Физическое лицо" ? "ПИНФЛ должен состоять из 14 цифр" : "ИНН должен состоять из 9 цифр") : !f ? "Прикрепите файл договора" : !document.getElementById("cnOk").checked ? "Подтвердите, что документы проверены" : "";
+  var bad = !v("cnOrg") ? "Выберите организацию" : !v("cnDept") ? "Выберите подразделение" : !v("cnCp") ? "Укажите контрагента" : !v("cnType") ? "Выберите тип контрагента" : !(ctSumVal(v("cnSum")) > 0) ? "Укажите сумму договора" : !/^\d+$/.test(v("cnInn")) || v("cnInn").length !== (v("cnType") === "Физическое лицо" ? 14 : 9) ? (v("cnType") === "Физическое лицо" ? "ПИНФЛ должен состоять из 14 цифр" : "ИНН должен состоять из 9 цифр") : !f ? "Прикрепите файл договора" : !document.getElementById("cnOk").checked ? "Подтвердите, что документы проверены" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   if (f.size > 15 * 1024 * 1024) { uiAlert("Файл слишком большой (максимум 15 МБ)"); return; }
   btn.classList.add("busy");
   try {
     var b64 = await new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result).split(",")[1] || ""); }; fr.onerror = function () { rej(new Error("Не удалось прочитать файл")); }; fr.readAsDataURL(f); });
     var dt = v("cnDate"), dd = dt ? dt.split("-").reverse().join(".") : "";
-    await apiCall("contractCreate", { org: v("cnOrg"), dept: v("cnDept"), counterparty: v("cnCp"), inn: v("cnInn"), cpType: v("cnType"), number: v("cnNum"), date: dd, filename: f.name, base64: b64, confirm: true });
+    await apiCall("contractCreate", { org: v("cnOrg"), dept: v("cnDept"), counterparty: v("cnCp"), inn: v("cnInn"), cpType: v("cnType"), sum: v("cnSum"), number: v("cnNum"), date: dd, filename: f.name, base64: b64, confirm: true });
     btn.classList.remove("busy"); btn.classList.add("ok");
     await new Promise(function (r) { setTimeout(r, 900); });
     ctCloseCard();
@@ -16518,12 +16527,12 @@ async function ctCreate(btn) {
 }
 async function ctInitiate(id, btn) {
   var dept = document.getElementById("ctiD" + id).value, cp = document.getElementById("ctiC" + id).value.trim();
-  var sj = document.getElementById("ctiS" + id).value.trim();
-  var bad = !dept ? "Выберите подразделение" : !cp ? "Укажите контрагента" : "";
+  var sj = document.getElementById("ctiS" + id).value.trim(), sm = document.getElementById("ctiM" + id).value.trim();
+  var bad = !dept ? "Выберите подразделение" : !cp ? "Укажите контрагента" : !(ctSumVal(sm) > 0) ? "Укажите сумму договора" : "";
   if (bad) { btn.classList.add("shake"); setTimeout(function () { btn.classList.remove("shake"); }, 500); uiAlert(bad); return; }
   btn.classList.add("busy");
   try {
-    await apiCall("contractInitiate", { id: id, dept: dept, counterparty: cp, subject: sj, confirm: true });
+    await apiCall("contractInitiate", { id: id, dept: dept, counterparty: cp, subject: sj, sum: sm, confirm: true });
     btn.classList.remove("busy"); btn.classList.add("ok");
     await new Promise(function (r) { setTimeout(r, 800); });
     ctCloseCard();
