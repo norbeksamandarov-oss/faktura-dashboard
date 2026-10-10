@@ -2706,6 +2706,9 @@ html .content-area{padding-top:6px!important}
 .lg2 .lg2-eye:hover{color:var(--l-fg)}
 .lg2 .lg2-eye .lg2-slash{opacity:1;transition:opacity .2s}.lg2 .lg2-eye.on .lg2-slash{opacity:0}
 .lg2 .lg2-ln input#loginPassword{padding-right:42px}
+.ct-limit{margin-top:6px;font-size:12px;color:var(--navy-light);line-height:1.4}
+.ct-limit b{font-weight:700}
+.ct-limit.over{color:var(--red-fg)}
 .pw-mask{-webkit-text-security:disc;text-security:disc}
 /* ===== Строки таблиц: переключатель, «Удалить», принять/отклонить — единый стиль ===== */
 html .toggle-switch{width:42px;height:24px}
@@ -16568,7 +16571,7 @@ function ctOpenNewPay(preBase) {
     '<div class="filter-field"><label>Основание: договор (необязательно)</label><select id="cnBase" onchange="ctPayBase(this)"><option value="" data-ph="1">Без договора</option>' + bases.map(function (b) { var i = b.info || {}; return '<option value="' + b.id + '"' + (preBase === b.id ? " selected" : "") + ">" + escapeHtml("№ " + (i.number || b.id) + " · " + b.counterparty) + "</option>"; }).join("") + '</select><div id="cnBaseH" style="font-size:11px;opacity:.7;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>ИНН / ПИНФЛ получателя</label><input id="cnInn" placeholder="9 или 14 цифр" inputmode="numeric" maxlength="14" oninput="ctInnLookup()"><div id="cnInnH" style="font-size:11px;opacity:.6;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>Получатель платежа</label><input id="cnCp" placeholder="Название получателя" oninput="this.dataset.auto=0"></div>' +
-    '<div class="filter-field"><label>Сумма</label><input id="cnSum" placeholder="например, 15 000 000" inputmode="decimal" oninput="ctSumFmt(this)"></div>' +
+    '<div class="filter-field"><label>Сумма</label><input id="cnSum" placeholder="например, 15 000 000" inputmode="decimal" oninput="ctSumFmt(this);ctPaySumHint()"><div id="cnSumH" class="ct-limit" style="display:none"></div></div>' +
     '<div class="filter-field"><label>Статья платежа</label><select id="cnArt" onchange="ctPayArt()"><option value="" data-ph="1">Выберите</option>' + CT_PAY_ART.map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
     '<div class="filter-field" id="cnTaxF" style="display:none"><label>Вид налога</label><select id="cnTax"><option value="" data-ph="1">Выберите</option>' + CT_PAY_TAX.map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
     '<div class="filter-field"><label>Назначение платежа</label><input id="cnPurpose" placeholder="За что оплата"></div>' +
@@ -16587,7 +16590,8 @@ function ctOpenNewPay(preBase) {
 function ctPayBase(sel) {
   var b = (CT.all || []).filter(function (c) { return String(c.id) === sel.value; })[0];
   var h = document.getElementById("cnBaseH");
-  if (h) h.textContent = b && b.payInfo ? "Сумма договора " + ctSumShow(b.payInfo.total) + " · заявлено " + ctSumShow(b.payInfo.used) + " · можно заявить ещё " + ctSumShow(b.payInfo.left) : "";
+  if (h) h.textContent = b && b.payInfo ? "Сумма договора " + ctSumShow(b.payInfo.total) + " · заявлено " + ctSumShow(b.payInfo.used) : "";
+  setTimeout(ctPaySumHint, 0);
   if (!b) return;
   var cp = document.getElementById("cnCp"), inn = document.getElementById("cnInn");
   cp.value = b.counterparty; cp.dataset.auto = "0";
@@ -16604,6 +16608,16 @@ function ctPayArt() {
   var a = document.getElementById("cnArt").value;
   document.getElementById("cnTaxF").style.display = a === "Налоги" ? "" : "none";
   document.getElementById("cnComF").style.display = a === "Прочие" ? "" : "none";
+}
+function ctPaySumHint() {
+  var el = document.getElementById("cnSumH"); if (!el) return;
+  var bs = document.getElementById("cnBase"), b = bs && bs.value ? (CT.all || []).filter(function (c) { return String(c.id) === bs.value; })[0] : null;
+  if (!b || !b.payInfo) { el.style.display = "none"; return; }
+  var left = Number(b.payInfo.left), cur = ctSumVal(document.getElementById("cnSum").value), over = cur > left;
+  el.className = "ct-limit" + (over ? " over" : "");
+  el.style.display = "";
+  el.innerHTML = over ? "Превышает остаток на <b>" + ctSumShow(String(Math.round((cur - left) * 100) / 100)) + "</b>. Можно заявить не более <b>" + ctSumShow(b.payInfo.left) + "</b>"
+    : "Можно заявить ещё: <b>" + ctSumShow(b.payInfo.left) + "</b>" + (cur > 0 ? " · после этой заявки останется <b>" + ctSumShow(String(Math.round((left - cur) * 100) / 100)) + "</b>" : "");
 }
 function ctPayOver(baseId, sum) {
   var b = baseId ? (CT.all || []).filter(function (c) { return String(c.id) === String(baseId); })[0] : null;
