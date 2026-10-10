@@ -11717,7 +11717,7 @@ function renderUsersTable() {
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
-      <td><span style="color: var(--navy-text);font-weight:600;">${escapeHtml(u.role === "employee" ? "employee" : u.role)}</span></td>
+      <td><span style="color: var(--navy-text);font-weight:600;">${escapeHtml(roleLabel(u.role))}</span></td>
       <td>${u.invoiceCount || 0}</td>
       <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
       <td style="font-size:12px;color:var(--muted);">${u.chatId ? escapeHtml(u.chatId) : "не привязан"}</td>
@@ -11730,7 +11730,7 @@ function renderUsersTable() {
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
       <td>${escapeHtml(u.name)}</td>
-      <td>${u.role === "admin" ? '<span style="color: var(--navy-text);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">salary</span>' : "employee")}
+      <td>${u.role === "admin" ? '<span style="color: var(--navy-text);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">' + roleLabel("salary") + '</span>' : escapeHtml(roleLabel(u.role)))}
         ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;"><i class="ti ti-hourglass" aria-hidden="true"></i> ждёт смены пароля</div>' : ""}
       </td>
       <td>${u.invoiceCount || 0}</td>
@@ -13988,6 +13988,8 @@ function formatDateDisplay(s) {
   return s;
 }
 
+var ROLE_LABELS = { employee: "Бухгалтер", approver: "Сотрудник", salary: "Расчётный бухгалтер", admin: "admin" };
+function roleLabel(r) { return ROLE_LABELS[r] || r || ""; }
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
@@ -14954,8 +14956,9 @@ pzFactory('pzb', 'bedachi');
   }
   /* ---- tashkilot ro'yxati ---- */
   function selectField(sel){
-    var field=sel.closest('.filter-field'),box=sel.closest('.period-filter-box,.toolbar')||sel.parentNode;
+    var field=sel.closest('.filter-field,.uc-f'),box=sel.closest('.period-filter-box,.toolbar,#ucBox')||sel.parentNode;
     var btn=document.createElement('button');btn.type='button';btn.className='qbtn qo';
+    if(!field)field=btn;
     sel.classList.add('qhide');sel.tabIndex=-1;sel.parentNode.insertBefore(btn,sel.nextSibling);
     function sync(){var o=sel.options[sel.selectedIndex];btn.className='qbtn qo'+(cur&&cur.btn===btn?' open':'');btn.innerHTML='<span>'+(o?o.text:'Все организации')+'</span>'+CHEV}
     hookValue(sel,sync);sel.addEventListener('change',sync);sync();
@@ -15633,6 +15636,10 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
 .uc-f input,.uc-f select{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-size:14px}
 .uc-f input:focus,.uc-f select:focus{outline:2px solid var(--navy);outline-offset:0}
 .uc-f input[readonly]{opacity:.6}
+.uc-f .qbtn.qo,.uc-tools .qbtn.qo{width:100%;min-width:0;box-sizing:border-box;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;background:transparent}
+.uc-tools .qbtn.qo{width:auto;min-width:200px;max-width:260px;font-size:13px;padding:8px 10px}
+.uc-f .qbtn.qo:hover,.uc-tools .qbtn.qo:hover,.uc-f .qbtn.qo.open,.uc-tools .qbtn.qo.open{border-color:var(--navy-light)}
+#ucBox .qpop{z-index:80}
 .uc-hint{font-size:12px;margin-top:6px;min-height:16px;color:var(--muted)}
 .uc-hint.ok{color:var(--green-fg)}.uc-hint.bad{color:var(--red-fg)}
 .uc-chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -15723,9 +15730,9 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     if(ap){ } else if(isNew){
       h+='<div class="uc-f"><label>Логин</label><input id="ucLogin" autocomplete="off" placeholder="например: shaxrux"></div>';
       h+='<div class="uc-f"><label>Пароль (мин. 4 символа)</label><input id="ucPass" autocomplete="off"></div>';
-      h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">employee (обычный)</option><option value="admin">admin (полный доступ)</option><option value="salary">salary (только Зарплата)</option><option value="approver">approver (только Договоры)</option></select></div>';
+      h+='<div class="uc-f"><label>Роль</label><select id="ucRole"><option value="employee">Бухгалтер</option><option value="admin">admin (полный доступ)</option><option value="salary">Расчётный бухгалтер (только Зарплата)</option><option value="approver">Сотрудник (только Договоры)</option></select></div>';
     } else {
-      h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(u.role)+'"></div>';
+      h+='<div class="uc-f"><label>Логин</label><input readonly value="'+esc(u.username)+'"></div><div class="uc-f"><label>Роль</label><input readonly value="'+esc(roleLabel(u.role))+'"></div>';
     }
     h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
     h+='<div class="uc-f"><label>Имя (для ответственных)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):(UC.pre.name||''))+'" oninput="this.dataset.m=1"></div>';
@@ -15736,6 +15743,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     h+='<div class="uc-s"><p class="uc-st">Ответственный <i id="ucApCnt"></i></p><div class="uc-tools"><select id="ucCopy"><option value="">Принять дела от…</option>'+copyOptions()+'</select><button type="button" class="uc-link" onclick="ucCopyDo()">Перенять</button><button type="button" class="uc-link" onclick="ucAll(true)">Отметить всё</button><button type="button" class="uc-link" onclick="ucAll(false)">Снять всё</button></div><div class="uc-mx"><table><thead><tr><th onclick="ucAll(null)">Организация</th>'+TYPES.map(function(t,i){ return '<th onclick="ucCol('+i+')">'+esc(t[1])+'</th>'; }).join('')+'</tr></thead><tbody>'+orgs().map(function(o,oi){ return '<tr><td onclick="ucRow('+oi+')">'+esc(o)+'</td>'+TYPES.map(function(t,ti){ return '<td>'+cellHtml(t[0],o)+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></div><div class="uc-legend"><span>Зелёная галочка: отвечает этот сотрудник. «Принять дела» забирает назначения у выбранного человека</span><span style="color:#d68a1e">Пунктир: сейчас отвечает другой (при выборе будет заменён)</span></div></div>';
     h+='</div><div class="uc-bar" id="ucBar"><b></b></div><div class="uc-err" id="ucErr"></div><div class="uc-ft"><div class="uc-sum" id="ucSum"></div><button type="button" class="uc-btn" id="ucGo" onclick="ucSave()"><i class="ti ti-loader-2 sp"></i><i class="ti ti-check ck"></i><span>'+(isNew?'Создать и выдать доступы':'Сохранить')+'</span></button></div>';
     $('ucBox').innerHTML=h; ucCounts();
+    ['ucRole','ucCopy'].forEach(function(id){ var el=$(id); if(el&&!el.__q&&window.__selectField){ el.__q=1; try{ window.__selectField(el); }catch(e){} } });
   }
   function copyOptions(){
     var m={}; TYPES.forEach(function(t){ (UC.rows[t[0]]||[]).forEach(function(r){ var id=String(r.chatId||'').trim(); if(id && id!==UC.id && r.active) m[id]=m[id]||(r.name||id); }); });
