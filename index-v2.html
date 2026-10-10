@@ -7173,6 +7173,29 @@ function kpExcel() {
   }
 }
 
+window._navPop = false; window._curNav = null;
+function navPush(card) {
+  try {
+    if (window._navPop || !window._curNav) return;
+    var st = history.state, ns = { sec: window._curNav, card: card || null };
+    if (st && st.crb && st.sec === ns.sec && (st.card || null) === ns.card) return;
+    var data = { crb: 1, sec: ns.sec, card: ns.card };
+    if (!st || !st.crb) history.replaceState(data, ""); else history.pushState(data, "");
+  } catch (e) {}
+}
+function ctBackBtn() {
+  try { if (history.state && history.state.crb && history.state.card) { history.back(); return; } } catch (e) {}
+  ctCloseCard();
+}
+window.addEventListener("popstate", function (e) {
+  var st = e.state;
+  if (!st || !st.crb || typeof authToken === "undefined" || !authToken) return;
+  window._navPop = true;
+  try {
+    showSection(st.sec);
+    if (typeof st.card === "number") ctOpenCard(st.card); else ctCloseCard();
+  } finally { window._navPop = false; }
+});
 function showSection(name) {
   var _navName = name;
   if ((name === "payments" || name === "contracts") && typeof CT !== "undefined") {
@@ -7185,6 +7208,7 @@ function showSection(name) {
     }
   }
   if (name === "payments") name = "contracts";
+  window._curNav = _navName;
   document.querySelectorAll(".content-section").forEach(el => el.classList.remove("active"));
   const target = document.getElementById("section-" + name);
   if (target) target.classList.add("active");
@@ -7209,6 +7233,7 @@ function showSection(name) {
 
   if (name === "approval" && currentRole === "admin") ctRegLoad();
   if (name === "contracts" && currentRole !== "salary") ctOpen();
+  navPush(null);
   if (name === "reconcile") rcShowTabForRole();
   if (name === "users" && currentRole === "admin") {
     renderUsersManage();
@@ -16481,6 +16506,7 @@ function ctOpenCard(id) {
   var c = ctFind(id);
   if (!c) return;
   CT.openId = id; CT.cur = 0;
+  navPush(id);
   var info = c.info || {};
   var cls = c.status === "Утверждён" ? "done" : (c.status === "Возвращён" || c.status === "Ожидает инициатора") ? "back" : "work";
   var doc = (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
@@ -16496,7 +16522,7 @@ function ctOpenCard(id) {
     .filter(function (x) { return x[1]; }).map(function (x) { return "<div><span>" + x[0] + "</span><b>" + escapeHtml(x[1]) + "</b></div>"; }).join("");
   var hist = (c.history || []).map(function (h) { return "<div>" + escapeHtml(h.at) + " · " + escapeHtml(h.who) + " · " + escapeHtml(h.act) + (h.comment ? ": " + escapeHtml(h.comment) : "") + "</div>"; }).join("");
   var d = document.getElementById("ctDetail");
-  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
+  d.innerHTML = '<button class="ct-back" onclick="ctBackBtn()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">' + (isPay ? "Заявка на оплату" : "Договор") + ' № ' + c.id + '</div><h2 class="ct-ptitle">' + escapeHtml(doc || c.counterparty) + '</h2><div class="ct-psub">' + escapeHtml(c.counterparty) + (isPay && info.sum ? " · " + escapeHtml(ctSumShow(info.sum)) : "") + '</div></div>' + ctSb(c) + '</div>' + ctProg(c) + '<div style="height:18px"></div>' +
     '<div class="ct-page"><div class="ct-left">' + (isPay ? ctPayFields(c) : '<div class="ct-fields">' + fields + "</div>") +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" style="' + (isPay ? "display:none" : "") + '" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : (isPay ? "" : '<div class="ct-wait">Файл не приложен</div>')) +
@@ -16583,9 +16609,10 @@ async function ctDecide(id, key, approve, btn) {
   }
 }
 function ctOpenNew() {
+  navPush("new");
   var d = document.getElementById("ctDetail");
   var orgs = ["HYUNDAI UZBEKISTAN", "HYUNDAI RM"];
-  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
+  d.innerHTML = '<button class="ct-back" onclick="ctBackBtn()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новый договор</div><h2 class="ct-ptitle">Запуск на согласование</h2><div class="ct-psub">Маршрут начнётся с вашей должности, юрист обязателен</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
     '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="" data-ph="1">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
@@ -16619,10 +16646,11 @@ function ctOpenNew() {
   window.scrollTo({ top: 0 });
 }
 function ctOpenNewPay(preBase) {
+  navPush("new");
   var d = document.getElementById("ctDetail");
   var orgs = ["HYUNDAI UZBEKISTAN", "HYUNDAI RM"];
   var bases = (CT.all || []).filter(function (c) { return c.kind !== "pay" && c.status === "Утверждён" && c.didox && !(c.payInfo && Number(c.payInfo.left) <= 0); }).sort(function (a, b) { return b.id - a.id; });
-  d.innerHTML = '<button class="ct-back" onclick="ctCloseCard()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
+  d.innerHTML = '<button class="ct-back" onclick="ctBackBtn()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Назад к списку</button>' +
     '<div class="ct-ph"><div><div class="ct-eyebrow">Новая заявка</div><h2 class="ct-ptitle">Заявка на оплату</h2><div class="ct-psub">Пройдёт тот же маршрут согласования, что и договор</div></div></div>' +
     '<div class="ct-new" id="ctNew">' +
     '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="" data-ph="1">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
