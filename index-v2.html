@@ -16644,5 +16644,75 @@ function ctOpen() {
 })();
 </script>
 
+<style>
+.pg-more td{text-align:center!important;padding:18px 8px!important;color:var(--muted);font-size:13px;border-bottom:none!important}
+html table.invoices tbody tr.pg-more,html table.invoices tbody tr.pg-more:hover{background:transparent!important}
+.pg-more .pg-b{font:inherit;color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 28%,transparent);border-radius:999px;padding:7px 18px;margin:0 5px;cursor:pointer;transition:border-color .2s,color .2s,box-shadow .2s}
+.pg-more .pg-b:hover{border-color:var(--accent,#8a5cff);color:var(--text,inherit);box-shadow:0 0 18px color-mix(in srgb,var(--accent,#8a5cff) 35%,transparent)}
+.pg-more .pg-b.busy{pointer-events:none;opacity:.7}
+.pg-more .pg-b.busy::before{content:"";display:inline-block;width:11px;height:11px;margin-right:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-1px;animation:pgSpin .7s linear infinite}
+@keyframes pgSpin{to{transform:rotate(360deg)}}
+</style>
+<script>
+/* Длинные списки: фильтры, поиск и счётчики работают по ВСЕМ строкам (данные целиком в памяти),
+   а в страницу рисуется только первая порция; следующие подгружаются при прокрутке или по кнопке. */
+(function(){
+  var PAGE=50, MIN=70;
+  var SEL='#invoicesBody,#dogovorTable tbody,#dogovorRealTable tbody,#doverennostTable tbody,#bankTable tbody,#realschetTable tbody,#zakaznaryadTable tbody,#otherreqPostTable tbody,#otherreqRealTable tbody,#historyTable tbody,#auditLogTable tbody,#gtdTable tbody,#salaryTable tbody,#vz2otvTable tbody,#rcTable tbody,#rsTable tbody,#rzTable tbody,#bnTable tbody';
+  var d=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
+  if(!d||!d.set||!window.IntersectionObserver)return;
+  var nativeSet=d.set,nativeGet=d.get;
+  function cols(tb){var t=tb.closest('table');var h=t&&t.querySelectorAll('thead tr');var r=h&&h[h.length-1];return (r&&r.children.length)||12}
+  function label(st){return 'Показано '+st.shown+' из '+st.rows.length}
+  function paint(tb,st){
+    var tr=tb.querySelector('tr.pg-more');
+    if(st.shown>=st.rows.length){if(tr)tr.remove();if(st.io)st.io.disconnect();return}
+    if(!tr){
+      tr=document.createElement('tr');tr.className='pg-more';
+      tr.innerHTML='<td colspan="'+cols(tb)+'"><span class="pg-l"></span> <button type="button" class="pg-b" data-a="more">Показать ещё '+PAGE+'</button><button type="button" class="pg-b" data-a="all">Показать все</button></td>';
+      tb.appendChild(tr);
+    }
+    tr.querySelector('.pg-l').textContent=label(st);
+    if(st.io){st.io.unobserve(tr);st.io.observe(tr)}
+  }
+  function more(tb,n){
+    var st=tb._pg;if(!st)return;
+    var tr=tb.querySelector('tr.pg-more');if(!tr)return;
+    var to=Math.min(st.rows.length,st.shown+n);
+    tr.insertAdjacentHTML('beforebegin',st.rows.slice(st.shown,to).join(''));
+    st.shown=to;tb._pgShown=to;
+    paint(tb,st);
+  }
+  Object.defineProperty(HTMLTableSectionElement.prototype,'innerHTML',{
+    configurable:true,enumerable:d.enumerable,
+    get:function(){return nativeGet.call(this)},
+    set:function(v){
+      var tb=this;
+      if(tb._pg&&tb._pg.io)tb._pg.io.disconnect();
+      tb._pg=null;
+      var ok=typeof v==='string'&&tb.tagName==='TBODY'&&v.indexOf('<table')<0&&tb.matches(SEL);
+      var parts=ok?v.split('</tr>'):null;
+      if(parts)parts.pop();
+      if(!parts||parts.length<MIN){tb._pgShown=0;return nativeSet.call(tb,v)}
+      var rows=parts.map(function(p){return p+'</tr>'});
+      var st={rows:rows,shown:Math.min(rows.length,Math.max(PAGE,tb._pgShown||0)),io:null};
+      tb._pg=st;
+      nativeSet.call(tb,rows.slice(0,st.shown).join(''));
+      st.io=new IntersectionObserver(function(es){
+        if(es.some(function(e){return e.isIntersecting}))more(tb,PAGE);
+      },{rootMargin:'700px 0px'});
+      paint(tb,st);
+    }
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.pg-b');if(!b)return;
+    var tb=b.closest('tbody');if(!tb||!tb._pg)return;
+    if(b.dataset.a==='more'){more(tb,PAGE);return}
+    b.classList.add('busy');b.textContent='Загружаю…';
+    requestAnimationFrame(function(){setTimeout(function(){more(tb,tb._pg?tb._pg.rows.length:0)},30)});
+  });
+})();
+</script>
+
 </body>
 </html>
