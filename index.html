@@ -11741,7 +11741,7 @@ function renderUsersTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
-      <td>${escapeHtml(u.name)}</td>
+      <td>${escapeHtml(u.name)}${u.position ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">' + escapeHtml(u.position) + '</div>' : ""}</td>
       <td><span style="color: var(--navy-text);font-weight:600;">${escapeHtml(roleLabel(u.role))}</span></td>
       <td>${u.invoiceCount || 0}</td>
       <td>${(u.invoiceSum || 0).toLocaleString("ru-RU", { maximumFractionDigits: 0 })}</td>
@@ -11754,7 +11754,7 @@ function renderUsersTable() {
     <tr>
       <td style="color:var(--muted)">${i + 1}</td>
       <td><strong>${escapeHtml(u.username)}</strong></td>
-      <td>${escapeHtml(u.name)}</td>
+      <td>${escapeHtml(u.name)}${u.position ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">' + escapeHtml(u.position) + '</div>' : ""}</td>
       <td>${u.role === "admin" ? '<span style="color: var(--navy-text);font-weight:600;">admin</span>' : (u.role === "salary" ? '<span style="color:#8a6d00;font-weight:600;">' + roleLabel("salary") + '</span>' : escapeHtml(roleLabel(u.role)))}
         ${u.mustChangePassword ? '<div style="font-size:10.5px;color:var(--amber-fg);margin-top:2px;"><i class="ti ti-hourglass" aria-hidden="true"></i> ждёт смены пароля</div>' : ""}
       </td>
@@ -15761,6 +15761,7 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     }
     h+='<div class="uc-f"><label>Telegram ID</label><input id="ucTg" inputmode="numeric" autocomplete="off" placeholder="цифры, например 123456789" value="'+esc(UC.id)+'" oninput="ucTgInput()"><div class="uc-hint" id="ucTgHint"></div></div>';
     h+='<div class="uc-f"><label>Имя (для ответственных)</label><input id="ucName" autocomplete="off" value="'+esc(u?(u.name||''):(UC.pre.name||''))+'" oninput="this.dataset.m=1"></div>';
+    if(!ap) h+='<div class="uc-f"><label>Должность</label><input id="ucPos" autocomplete="off" placeholder="например: бухгалтер, юрист" value="'+esc(u?(u.position||''):'')+'"></div>';
     h+='</div></div>';
     if(!ap){ h+='<div class="uc-s"><p class="uc-st">Бот <i id="ucBotCnt"></i></p><div class="uc-chips">';
       listMeta().forEach(function(m){ h+='<button type="button" class="uc-chip'+(UC.listOn[m.k]?' on':'')+'" data-k="'+m.k+'" title="'+esc(m.d||'')+'" onclick="ucList(this)">'+esc(m.t)+'</button>'; });
@@ -15845,10 +15846,11 @@ tr.sb-flash>td,.sb-flash{animation:sbFlash 1.2s ease}
     try{
       var rowIndex=UC.user&&UC.user.rowIndex;
       if(isNew){
-        await apiCall('adminCreateUser',{username:login,password:pass,name:name||login,role:role}); tick();
+        await apiCall('adminCreateUser',{username:login,password:pass,name:name||login,role:role,position:($('ucPos')?$('ucPos').value.trim():'')}); tick();
         var lu=await apiCall('adminListUsers',{}); var nu=(lu.users||[]).filter(function(x){ return String(x.username).toLowerCase()===login.toLowerCase(); })[0];
         rowIndex=nu&&nu.rowIndex; tick();
       }
+      if(!isNew && UC.user && $('ucPos') && $('ucPos').value.trim()!==String(UC.user.position||'')){ await apiCall('adminSetUserPosition',{rowIndex:rowIndex,position:$('ucPos').value.trim()}); tick(); }
       if(id && rowIndex && id!==String(UC.user&&UC.user.chatId||'')){ await apiCall('adminSetUserChatId',{rowIndex:rowIndex,chatId:id}); tick(); }
       if(d.lists){
         var fresh=await apiCall('getBotSettings',{});
