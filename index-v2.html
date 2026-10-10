@@ -2730,6 +2730,7 @@ html .content-area{padding-top:6px!important}
 .pz-left span,.pz-left b{color:var(--green-fg);font-weight:700}
 .pz-note{font-size:12.5px;line-height:1.5;color:var(--muted);margin-top:6px}
 .pz-new{width:100%;margin-top:14px}
+.pz-open{background:transparent;border:1px solid var(--border);color:var(--navy-text)}
 .pz-sib{display:flex;flex-direction:column}
 .pz-sib a{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 6px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;font-size:12px;border-radius:8px}
 .pz-sib a:hover{background:var(--ice-soft)}
@@ -16230,9 +16231,22 @@ function ctPayStats(pi, title) {
     '<div class="pz-st-r"><span>Уже заявлено</span><b>' + ctSumShow(pi.used) + '</b></div>' +
     '<div class="pz-st-r pz-left"><span>Можно заявить ещё</span><b>' + ctSumShow(pi.left) + '</b></div></div>';
 }
+function ctPayCardBlock(c) {
+  var base = (c.info || {}).base, pi = c.payInfo;
+  if (!base) return "";
+  var bc = ctFind(base.id);
+  var sibs = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === base.id && x.status !== "Возвращён"; }).sort(function (a, b) { return b.id - a.id; });
+  var h = pi ? ctPayStats(pi, "Лимит по договору") : '<div class="pz-st-t">Основание</div>';
+  h += '<div class="pz-st-t pz-st-t2">Заявки по договору</div><div class="pz-sib">' + sibs.map(function (x) {
+    var cur = x.id === c.id;
+    return '<a href="#" class="' + (cur ? "cur" : "") + '" onclick="event.preventDefault();' + (cur ? "" : "ctGoCard(" + x.id + ")") + '"><span>Заявка № ' + x.id + '</span><b>' + escapeHtml(ctSumShow((x.info || {}).sum)) + '</b><i>' + (cur ? "Открыта сейчас" : escapeHtml(ctPayStatusF(x.status))) + "</i></a>";
+  }).join("") + "</div>";
+  if (bc) h += '<button class="ct-btn pz-new pz-open" onclick="ctGoCard(' + bc.id + ')"><span class="ct-lbl"><i class="ti ti-file-certificate" aria-hidden="true"></i> Открыть договор № ' + escapeHtml(String((bc.info || {}).number || bc.id)) + "</span></button>";
+  return '<div class="pz-wrap">' + h + "</div>";
+}
 function ctPayBlock(c) {
   var pi = c.payInfo;
-  if (c.kind === "pay") return pi ? ctPayStats(pi, "Лимит по договору") : "";
+  if (c.kind === "pay") return ctPayCardBlock(c);
   if (c.status !== "Утверждён") return "";
   var note = function (t) { return '<div class="pz-st"><div class="pz-st-t">Оплата по договору</div><div class="pz-note">' + t + "</div></div>"; };
   if (!c.didox) return note("Сначала договор должен быть принят в DIDOX. После приёма (галочка DIDOX) здесь можно будет создать заявку на оплату.");
@@ -16549,7 +16563,7 @@ function ctOpenCard(id) {
     '<div class="ct-page"><div class="ct-left">' + (isPay ? ctPayFields(c) : '<div class="ct-fields">' + fields + "</div>") +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" style="' + (isPay ? "display:none" : "") + '" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : (isPay ? "" : '<div class="ct-wait">Файл не приложен</div>')) +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
-    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '' + (isPay ? ctPayRelated(c) : '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div>") + "</div></div>";
+    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '' + (isPay ? "" : '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div>") + "</div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
