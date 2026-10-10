@@ -16468,9 +16468,9 @@ function ctOpenNew() {
     '<div class="ct-new" id="ctNew">' +
     '<div class="toolbar ct-new-g"><div class="filter-field"><label>Организация</label><select id="cnOrg"><option value="" data-ph="1">Выберите</option>' + orgs.map(function (o) { return "<option>" + o + "</option>"; }).join("") + "</select></div>" +
     '<div class="filter-field"><label>Подразделение</label><select id="cnDept"><option value="" data-ph="1">Выберите</option>' + (CT.depts || []).map(function (x) { return "<option>" + escapeHtml(x) + "</option>"; }).join("") + "</select></div>" +
-    '<div class="filter-field"><label>Контрагент</label><input id="cnCp" placeholder="Название контрагента"></div>' +
+    '<div class="filter-field"><label>Контрагент</label><input id="cnCp" placeholder="Название контрагента" oninput="this.dataset.auto=0"></div>' +
     '<div class="filter-field"><label>Тип контрагента</label><select id="cnType" onchange="ctNewType()"><option value="" data-ph="1">Выберите</option><option>Юридическое лицо</option><option>Физическое лицо</option></select></div>' +
-    '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14"></div>' +
+    '<div class="filter-field"><label><span id="cnInnL">ИНН / ПИНФЛ</span></label><input id="cnInn" placeholder="сначала выберите тип" inputmode="numeric" maxlength="14" oninput="ctInnLookup()"><div id="cnInnH" style="font-size:11px;opacity:.6;min-height:14px;margin-top:4px"></div></div>' +
     '<div class="filter-field"><label>№ договора</label><input id="cnNum" placeholder="необязательно"></div>' +
     '<div class="filter-field"><label>Дата договора</label><input id="cnDate" type="date"></div>' +
     '<div class="filter-field"><label>Сумма договора</label><input id="cnSum" placeholder="например, 150 000 000" inputmode="decimal" oninput="ctSumFmt(this)"></div></div>' +
@@ -16508,6 +16508,23 @@ function ctNewType() {
   document.getElementById("cnInnL").textContent = t === "Физическое лицо" ? "ПИНФЛ (14 цифр)" : t === "Юридическое лицо" ? "ИНН (9 цифр)" : "ИНН / ПИНФЛ";
   i.placeholder = t === "Физическое лицо" ? "14 цифр" : t === "Юридическое лицо" ? "9 цифр" : "сначала выберите тип";
   i.maxLength = t === "Физическое лицо" ? 14 : 9;
+}
+var _ctInnSeq = 0;
+async function ctInnLookup() {
+  var i = document.getElementById("cnInn"), h = document.getElementById("cnInnH"), cp = document.getElementById("cnCp");
+  if (!i || !h) return;
+  var d = i.value.replace(/\D/g, ""), need = document.getElementById("cnType").value === "Физическое лицо" ? 14 : 9;
+  var seq = ++_ctInnSeq;
+  if (d.length !== need) { h.textContent = ""; return; }
+  h.textContent = "Ищем контрагента…";
+  try {
+    var r = await apiCall("lookupInn", { inn: d });
+    if (seq !== _ctInnSeq) return;
+    if (r && r.name) {
+      if (!cp.value.trim() || cp.dataset.auto === "1") { cp.value = r.name; cp.dataset.auto = "1"; }
+      h.textContent = "Найдено: " + r.name;
+    } else h.textContent = "Не найдено — введите название вручную";
+  } catch (e) { if (seq === _ctInnSeq) h.textContent = ""; }
 }
 function ctNewFile(inp) {
   var f = inp.files && inp.files[0];
