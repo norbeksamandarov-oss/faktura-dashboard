@@ -2717,6 +2717,13 @@ html .content-area{padding-top:6px!important}
 .pz-rows span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .pz-rows b{font-weight:500;font-size:15px;word-break:break-word}
 @media (max-width:600px){.pz-amt b{font-size:34px}.pz-rows>div{grid-template-columns:1fr;gap:2px}}
+.pz-sib{display:flex;flex-direction:column}
+.pz-sib a{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 6px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;font-size:12px;border-radius:8px}
+.pz-sib a:hover{background:var(--ice-soft)}
+.pz-sib a.cur{background:var(--ice-soft);font-weight:600}
+.pz-sib a span{color:var(--muted)}
+.pz-sib a b{font-weight:600;font-variant-numeric:tabular-nums}
+.pz-sib a i{font-style:normal;color:var(--muted);font-size:11px}
 .ct-limit{margin-top:6px;font-size:12px;color:var(--navy-light);line-height:1.4}
 .ct-limit b{font-weight:700}
 .ct-limit.over{color:var(--red-fg)}
@@ -16154,6 +16161,29 @@ function ctPayFields(c) {
     '<div class="pz-to"><small>Получатель</small><b>' + escapeHtml(c.counterparty) + '</b>' + (info.inn ? '<span>ИНН / ПИНФЛ ' + escapeHtml(info.inn) + "</span>" : "") + "</div></div>" +
     '<div class="pz-rows">' + rows.map(function (r) { return "<div><span>" + r[0] + "</span><b>" + escapeHtml(r[1]) + "</b></div>"; }).join("") + "</div>";
 }
+function ctFind(id) { return (CT.all || []).filter(function (x) { return x.id === id; })[0]; }
+function ctGoCard(id) {
+  var t = ctFind(id); if (!t) return;
+  if (CT.kind !== (t.kind === "pay" ? "pay" : "contract")) showSection(t.kind === "pay" ? "payments" : "contracts");
+  ctOpenCard(id);
+}
+function ctHistHtml(h) {
+  return (h || []).map(function (x) { return "<div>" + escapeHtml(x.at) + " · " + escapeHtml(x.who) + " · " + escapeHtml(x.act) + (x.comment ? ": " + escapeHtml(x.comment) : "") + "</div>"; }).join("");
+}
+function ctPayRelated(c) {
+  var base = (c.info || {}).base; if (!base) return "";
+  var bc = ctFind(base.id);
+  var sibs = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === base.id; }).sort(function (a, b) { return b.id - a.id; });
+  var h = '<div class="ct-sec-t">Заявки по этому договору</div><div class="pz-sib">' + sibs.map(function (x) {
+    return '<a href="#" class="' + (x.id === c.id ? "cur" : "") + '" onclick="event.preventDefault();ctGoCard(' + x.id + ')"><span>№ ' + x.id + '</span><b>' + escapeHtml(ctSumShow((x.info || {}).sum)) + '</b><i>' + escapeHtml(x.status) + "</i></a>";
+  }).join("") + "</div>";
+  if (bc) {
+    h += '<div class="ct-sec-t">Договор № ' + escapeHtml(String((bc.info || {}).number || bc.id)) + ' · ' + escapeHtml(bc.counterparty) + '</div>' +
+      '<a href="#" class="ct-link" onclick="event.preventDefault();ctGoCard(' + bc.id + ')">Открыть договор</a>' +
+      '<div class="ct-sec-t">История согласования договора</div><div class="ct-hist open">' + ctHistHtml(bc.history) + "</div>";
+  }
+  return h;
+}
 function ctPayBlock(c) {
   var pi = c.payInfo;
   if (c.kind === "pay") {
@@ -16167,7 +16197,7 @@ function ctPayBlock(c) {
   var can = CT.canCreate && Number(pi.left) > 0 && !!c.didox;
   return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div>' +
     '<small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено: <b>' + ctSumShow(pi.used) + '</b><br>Можно заявить ещё: <b>' + ctSumShow(pi.left) + '</b></small>' +
-    (linked.length ? '<div style="margin-top:8px;font-size:12px">' + linked.map(function (x) { return '<a href="#" onclick="event.preventDefault();showSection(\'payments\');ctOpenCard(' + x.id + ')">№ ' + x.id + " · " + escapeHtml(ctSumShow((x.info || {}).sum)) + " · " + escapeHtml(x.status) + "</a>"; }).join("<br>") + "</div>" : "") +
+    (linked.length ? '<div style="margin-top:8px;font-size:12px">' + linked.map(function (x) { return '<a href="#" onclick="event.preventDefault();ctGoCard(' + x.id + ')">№ ' + x.id + " · " + escapeHtml(ctSumShow((x.info || {}).sum)) + " · " + escapeHtml(x.status) + "</a>"; }).join("<br>") + "</div>" : "") +
     (can ? '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>' : (!c.didox ? '<small style="display:block;margin-top:8px">Заявку можно создать после приёма договора в DIDOX</small>' : Number(pi.left) <= 0 ? '<small style="display:block;margin-top:8px">Лимит исчерпан</small>' : "")) + "</div>";
 }
 function ctPayFromContract(id) {
@@ -16417,7 +16447,7 @@ function ctFiles(c) {
 }
 CT.cur = 0;
 async function ctDownload(id, btn) {
-  var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var c = ctFind(id); if (!c) return;
   var f = ctFiles(c)[CT.cur || 0]; if (!f) return;
   var url = ctUrl(f.url);
   var info = c.info || {};
@@ -16441,14 +16471,14 @@ async function ctDownload(id, btn) {
 }
 function ctPickFile(id, idx) {
   CT.cur = idx;
-  var c = CT.list.filter(function (x) { return x.id === id; })[0]; if (!c) return;
+  var c = ctFind(id); if (!c) return;
   var f = ctFiles(c)[idx]; if (!f) return;
   var fr = document.getElementById("ctFrame"); if (fr) fr.src = ctUrl(f.url) + CT_PDF_VIEW;
   var op = document.getElementById("ctFrameOpen"); if (op) op.href = ctUrl(f.url);
   document.querySelectorAll(".ct-ftab").forEach(function (b, i) { b.classList.toggle("on", i === idx); });
 }
 function ctOpenCard(id) {
-  var c = CT.list.filter(function (x) { return x.id === id; })[0];
+  var c = ctFind(id);
   if (!c) return;
   CT.openId = id; CT.cur = 0;
   var info = c.info || {};
@@ -16471,7 +16501,7 @@ function ctOpenCard(id) {
     '<div class="ct-page"><div class="ct-left">' + (isPay ? ctPayFields(c) : '<div class="ct-fields">' + fields + "</div>") +
     (f0 ? '<div class="ct-ftabs">' + tabs + '<a class="ct-fopen" id="ctFrameOpen" target="_blank" rel="noopener" href="' + escapeHtml(ctUrl(f0.url)) + '"><i class="ti ti-external-link" aria-hidden="true"></i> В новой вкладке</a><button class="ct-btn ct-dl" id="ctDl" style="' + (isPay ? "display:none" : "") + '" onclick="ctDownload(' + id + ',this)"><span class="ct-lbl"><i class="ti ti-download" aria-hidden="true"></i> Скачать PDF</span></button></div><iframe id="ctFrame" class="ct-frame" src="' + escapeHtml(ctUrl(f0.url) + CT_PDF_VIEW) + '"></iframe>' : (isPay ? "" : '<div class="ct-wait">Файл не приложен</div>')) +
     '</div><div class="ct-right">' + (c.status === "Возвращён" && c.comment ? '<div class="ct-reason">Возвращён: ' + escapeHtml(c.comment) + "</div>" : "") +
-    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">История</div><div class="ct-hist open">' + hist + "</div></div></div>";
+    ctActsHtml(c) + (isPay ? "" : ctDidoxBlock(c)) + ctPayBlock(c) + '<div class="ct-sec-t">Маршрут</div>' + ctTimeline(c) + '<div class="ct-sec-t">' + (isPay ? "История заявки" : "История") + '</div><div class="ct-hist open">' + hist + "</div>" + (isPay ? ctPayRelated(c) : "") + "</div></div>";
   document.getElementById("ctListPanel").style.display = "none";
   d.style.display = "";
   d.classList.remove("ct-in"); void d.offsetWidth; d.classList.add("ct-in");
