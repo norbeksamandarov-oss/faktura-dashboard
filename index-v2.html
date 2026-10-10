@@ -16645,71 +16645,74 @@ function ctOpen() {
 </script>
 
 <style>
+.table-wrap{scroll-margin-top:90px}
 .pg-more td{text-align:center!important;padding:18px 8px!important;color:var(--muted);font-size:13px;border-bottom:none!important}
 html table.invoices tbody tr.pg-more,html table.invoices tbody tr.pg-more:hover{background:transparent!important}
-.pg-more .pg-b{font:inherit;color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 28%,transparent);border-radius:999px;padding:7px 18px;margin:0 5px;cursor:pointer;transition:border-color .2s,color .2s,box-shadow .2s}
-.pg-more .pg-b:hover{border-color:var(--accent,#8a5cff);color:var(--text,inherit);box-shadow:0 0 18px color-mix(in srgb,var(--accent,#8a5cff) 35%,transparent)}
-.pg-more .pg-b.busy{pointer-events:none;opacity:.7}
-.pg-more .pg-b.busy::before{content:"";display:inline-block;width:11px;height:11px;margin-right:8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-1px;animation:pgSpin .7s linear infinite}
-@keyframes pgSpin{to{transform:rotate(360deg)}}
+.pg-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}
+.pg-info{width:100%;margin-bottom:6px;letter-spacing:.02em}
+.pg-b{font:inherit;color:inherit;background:transparent;border:1px solid color-mix(in srgb,currentColor 22%,transparent);border-radius:999px;min-width:36px;height:34px;padding:0 12px;cursor:pointer;transition:border-color .2s,color .2s,box-shadow .2s,background .2s}
+.pg-b:hover:not(.on):not(:disabled){border-color:var(--accent,#8a5cff);color:var(--text,inherit)}
+.pg-b.on{border-color:var(--accent,#8a5cff);color:var(--text,inherit);background:color-mix(in srgb,var(--accent,#8a5cff) 18%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--accent,#8a5cff) 35%,transparent);cursor:default}
+.pg-b:disabled{opacity:.35;cursor:default}
+.pg-dots{padding:0 4px;opacity:.6}
+tbody.pg-swap>tr:not(.pg-more){animation:pgIn .22s ease both}
+@keyframes pgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 </style>
 <script>
-/* Длинные списки: фильтры, поиск и счётчики работают по ВСЕМ строкам (данные целиком в памяти),
-   а в страницу рисуется только первая порция; следующие подгружаются при прокрутке или по кнопке. */
+/* Длинные списки по страницам (1, 2, 3 ...): фильтры, поиск и счётчики работают по ВСЕМ строкам
+   (данные целиком в памяти), а в страницу рисуется только текущая страница из 50 строк. */
 (function(){
-  var PAGE=50, MIN=70;
+  var PAGE=50;
   var SEL='#invoicesBody,#dogovorTable tbody,#dogovorRealTable tbody,#doverennostTable tbody,#bankTable tbody,#realschetTable tbody,#zakaznaryadTable tbody,#otherreqPostTable tbody,#otherreqRealTable tbody,#historyTable tbody,#auditLogTable tbody,#gtdTable tbody,#salaryTable tbody,#vz2otvTable tbody,#rcTable tbody,#rsTable tbody,#rzTable tbody,#bnTable tbody';
   var d=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
-  if(!d||!d.set||!window.IntersectionObserver)return;
+  if(!d||!d.set)return;
   var nativeSet=d.set,nativeGet=d.get;
   function cols(tb){var t=tb.closest('table');var h=t&&t.querySelectorAll('thead tr');var r=h&&h[h.length-1];return (r&&r.children.length)||12}
-  function label(st){return 'Показано '+st.shown+' из '+st.rows.length}
-  function paint(tb,st){
-    var tr=tb.querySelector('tr.pg-more');
-    if(st.shown>=st.rows.length){if(tr)tr.remove();if(st.io)st.io.disconnect();return}
-    if(!tr){
-      tr=document.createElement('tr');tr.className='pg-more';
-      tr.innerHTML='<td colspan="'+cols(tb)+'"><span class="pg-l"></span> <button type="button" class="pg-b" data-a="more">Показать ещё '+PAGE+'</button><button type="button" class="pg-b" data-a="all">Показать все</button></td>';
-      tb.appendChild(tr);
-    }
-    tr.querySelector('.pg-l').textContent=label(st);
-    if(st.io){st.io.unobserve(tr);st.io.observe(tr)}
+  function sig(rows){var m=/data-row="([^"]*)"/.exec(rows[0]);return rows.length+'|'+(m?m[1]:rows[0].slice(0,80))}
+  function pageList(cur,n){
+    var out=[],add=function(x){out.push(x)};
+    for(var i=1;i<=n;i++){if(i===1||i===n||Math.abs(i-cur)<=2)add(i);else if(out[out.length-1]!=='…')add('…')}
+    return out;
   }
-  function more(tb,n){
-    var st=tb._pg;if(!st)return;
-    var tr=tb.querySelector('tr.pg-more');if(!tr)return;
-    var to=Math.min(st.rows.length,st.shown+n);
-    tr.insertAdjacentHTML('beforebegin',st.rows.slice(st.shown,to).join(''));
-    st.shown=to;tb._pgShown=to;
-    paint(tb,st);
+  function pager(tb,st){
+    var n=Math.ceil(st.rows.length/PAGE),from=(st.page-1)*PAGE+1,to=Math.min(st.rows.length,st.page*PAGE);
+    var h='<td colspan="'+cols(tb)+'"><div class="pg-bar"><div class="pg-info">Строки '+from+'–'+to+' из '+st.rows.length+' · страница '+st.page+' из '+n+'</div>';
+    h+='<button type="button" class="pg-b" data-p="'+(st.page-1)+'"'+(st.page<=1?' disabled':'')+'>‹</button>';
+    pageList(st.page,n).forEach(function(x){
+      h+= x==='…' ? '<span class="pg-dots">…</span>' : '<button type="button" class="pg-b'+(x===st.page?' on':'')+'" data-p="'+x+'">'+x+'</button>';
+    });
+    h+='<button type="button" class="pg-b" data-p="'+(st.page+1)+'"'+(st.page>=n?' disabled':'')+'>›</button></div></td>';
+    return h;
+  }
+  function draw(tb,st,swap){
+    nativeSet.call(tb,st.rows.slice((st.page-1)*PAGE,st.page*PAGE).join(''));
+    var tr=document.createElement('tr');tr.className='pg-more';tr.innerHTML=pager(tb,st);tb.appendChild(tr);
+    if(swap){tb.classList.remove('pg-swap');void tb.offsetWidth;tb.classList.add('pg-swap')}
   }
   Object.defineProperty(HTMLTableSectionElement.prototype,'innerHTML',{
     configurable:true,enumerable:d.enumerable,
     get:function(){return nativeGet.call(this)},
     set:function(v){
-      var tb=this;
-      if(tb._pg&&tb._pg.io)tb._pg.io.disconnect();
+      var tb=this,prev=tb._pg;
       tb._pg=null;
       var ok=typeof v==='string'&&tb.tagName==='TBODY'&&v.indexOf('<table')<0&&tb.matches(SEL);
       var parts=ok?v.split('</tr>'):null;
       if(parts)parts.pop();
-      if(!parts||parts.length<MIN){tb._pgShown=0;return nativeSet.call(tb,v)}
+      if(!parts||parts.length<=PAGE)return nativeSet.call(tb,v);
       var rows=parts.map(function(p){return p+'</tr>'});
-      var st={rows:rows,shown:Math.min(rows.length,Math.max(PAGE,tb._pgShown||0)),io:null};
-      tb._pg=st;
-      nativeSet.call(tb,rows.slice(0,st.shown).join(''));
-      st.io=new IntersectionObserver(function(es){
-        if(es.some(function(e){return e.isIntersecting}))more(tb,PAGE);
-      },{rootMargin:'700px 0px'});
-      paint(tb,st);
+      var s=sig(rows),page=1;
+      if(prev&&prev.sig===s)page=Math.min(prev.page,Math.ceil(rows.length/PAGE));
+      var st={rows:rows,page:page,sig:s};
+      tb._pg=st;draw(tb,st,false);
     }
   });
   document.addEventListener('click',function(e){
-    var b=e.target.closest&&e.target.closest('.pg-b');if(!b)return;
-    var tb=b.closest('tbody');if(!tb||!tb._pg)return;
-    if(b.dataset.a==='more'){more(tb,PAGE);return}
-    b.classList.add('busy');b.textContent='Загружаю…';
-    requestAnimationFrame(function(){setTimeout(function(){more(tb,tb._pg?tb._pg.rows.length:0)},30)});
+    var b=e.target.closest&&e.target.closest('.pg-b');if(!b||b.disabled)return;
+    var tb=b.closest('tbody'),st=tb&&tb._pg;if(!st)return;
+    var p=parseInt(b.dataset.p,10);if(!p||p===st.page)return;
+    st.page=p;draw(tb,st,true);
+    var w=tb.closest('.table-wrap')||tb.closest('table');
+    if(w&&w.scrollIntoView)w.scrollIntoView({behavior:'smooth',block:'start'});
   });
 })();
 </script>
