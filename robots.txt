@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /app.html
+Disallow: /app-v1.html
+Disallow: /app-v2.html
+Disallow: /index-v1.html
+Disallow: /index-v2.html
+Disallow: /pozitsiyalar-sxemasi.html
+
+Sitemap: https://crb.uz/sitemap.xml
