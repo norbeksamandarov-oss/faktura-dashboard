@@ -16100,7 +16100,7 @@ html #ctNew .toolbar.ct-new-g input{width:100%}
 </style>
 <script>
 var CT = { depts: [], list: [], filter: "mine", isAdmin: false, hist: {}, reg: [], pos: {}, timer: null };
-var CT_STEPS = ["Инициатор", "Руководитель", "Юрист", "Бюджет", "Главбух", "Фин. директор", "CEO"];
+var CT_STEPS = ["Инициатор", "Руководитель", "Юрист · Бюджет · Главбух", "Фин. директор", "CEO"];
 function ctDate(s) { return s && s.length >= 10 ? s.slice(8, 10) + "." + s.slice(5, 7) + "." + s.slice(0, 4) : ""; }
 async function loadContracts(silent) {
   try {
@@ -16152,7 +16152,7 @@ function ctFiltersBuild() {
     fld("ti-search", "Поиск", '<input id="ctFq" placeholder="Контрагент, ИНН, номер" value="' + escapeHtml(f.q) + '" oninput="CT.f.q=this.value;ctRenderTable()">') +
     fld("ti-building", "Организация", '<select onchange="CT.f.org=this.value;ctRenderTable()">' + opt("", "Все", f.org) + orgs.map(function (o) { return opt(o, o, f.org); }).join("") + "</select>") +
     fld("ti-tag", "Статус", '<select onchange="CT.f.status=this.value;ctRenderTable()">' + opt("", "Все", f.status) + opt("Ожидает инициатора", "Ожидает инициатора", f.status) + opt("На согласовании", "На согласовании", f.status) + opt("Возвращён", "Возвращён", f.status) + opt("Утверждён", "Утверждён", f.status) + "</select>") +
-    fld("ti-route", "Этап", '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все", f.stage) + [["2", "Руководитель"], ["3", "Юрист"], ["4", "Бюджет"], ["5", "Главбух"], ["6", "Фин. директор"], ["7", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>") +
+    fld("ti-route", "Этап", '<select onchange="CT.f.stage=this.value;ctRenderTable()">' + opt("", "Все", f.stage) + [["2", "Руководитель"], ["3", "Юрист · Бюджет · Главбух"], ["4", "Фин. директор"], ["5", "CEO"]].map(function (x) { return opt(x[0], x[1], f.stage); }).join("") + "</select>") +
     fld("ti-building-store", "Подразделение", '<select onchange="CT.f.dept=this.value;ctRenderTable()">' + opt("", "Все", f.dept) + depts.map(function (d) { return opt(d, d, f.dept); }).join("") + "</select>") +
     fld("ti-file-import", "DIDOX", '<select onchange="CT.f.didox=this.value;ctRenderTable()">' + opt("", "Все", f.didox) + opt("no", "Ждут приёма", f.didox) + opt("yes", "Приняты", f.didox) + "</select>") +
     '<div class="filter-field"><label>&nbsp;</label><button onclick="CT.f.mine=!CT.f.mine;ctFiltersSig();ctRender()">' + (f.mine ? "Показать все" : "Мне на решение" + (mineN ? " (" + mineN + ")" : "")) + "</button></div>" +
@@ -16191,7 +16191,7 @@ function ctKpiGo(k) {
   ctRender();
 }
 function ctProg(c) {
-  var n = 7, done = 0, cur = 0, bad = 0;
+  var n = 5, done = 0, cur = 0, bad = 0;
   if (c.status === "Утверждён") done = n;
   else if (c.status === "На согласовании") { done = Math.max(0, (c.stage || 2) - 1); cur = c.stage || 2; }
   else if (c.status === "Возвращён") { bad = 1; }
@@ -16243,7 +16243,7 @@ function ctRow(c) {
   var info = c.info || {};
   var doc = (info.number ? "№ " + info.number + (info.date ? " от " + info.date : "") : (info.docName || ""));
   var act = ctIsMine(c);
-  var stage = c.status === "На согласовании" ? c.stage + "/7 · " + c.stageName : c.status;
+  var stage = c.status === "На согласовании" ? c.stage + "/5 · " + c.stageName : c.status;
   return '<tr class="ct-tr' + (act ? " act" : "") + (c.overdue ? " row-overdue" : "") + '" onclick="ctOpenCard(' + c.id + ')"><td style="color:var(--muted)">' + c.id + "</td><td>" + escapeHtml(info.org || "-") + "</td><td>" + escapeHtml(doc || "-") + "</td><td>" + escapeHtml(c.counterparty) +
     "</td><td>" + escapeHtml(info.inn || "") + "</td><td>" + escapeHtml(c.dept || "-") + '</td><td class="ct-st-cell">' + ctSb(c, stage) + (act ? ' <i class="ct-dot" title="Требует вашего действия"></i>' : "") + '</td><td style="white-space:nowrap">' +
     (c.due ? ctDate(c.due) + (c.overdue ? ' <span class="ct-over">просрочено</span>' : "") : "") + "</td><td>" + ctDidoxBadge(c) + "</td></tr>";
@@ -16255,7 +16255,8 @@ function ctUrl(u) {
   return String(API_URL).replace(/\/api\/?$/, "") + u.slice(i);
 }
 var CT_PDF_VIEW = "#navpanes=0&toolbar=0&view=FitH";
-var CT_STAGE_KEY = { 2: "HEAD", 3: "LAW", 4: "BUD", 5: "ACC", 6: "FIN", 7: "GD" };
+var CT_STAGE_KEY = { 2: ["HEAD"], 3: ["LAW", "BUD", "ACC"], 4: ["FIN"], 5: ["GD"] };
+var CT_POSN = { HEAD: "Руководитель подразделения", LAW: "Юрист", BUD: "Бюджетный контролёр", ACC: "Главный бухгалтер", FIN: "Финансовый директор", GD: "CEO" };
 function ctActsHtml(c) {
   var acts = "";
   (c.myPending || []).forEach(function (k) {
@@ -16302,18 +16303,28 @@ function ctTimeline(c) {
   (c.history || []).forEach(function (h) { if (h.key && h.act === "Согласовано") last[h.key] = h; });
   var skip = {}; (c.history || []).forEach(function (h) { if (h.key && h.act === "Пропущено") skip[h.key] = 1; else if (h.key && h.act === "Согласовано") delete skip[h.key]; });
   var pend = {}; (c.pending || []).forEach(function (p) { pend[p.key] = p; });
-  var names = ["Инициатор", "Руководитель подразделения", "Юрист", "Бюджетный контролёр", "Главный бухгалтер", "Финансовый директор", "CEO"];
+  var names = ["Инициатор", "Руководитель подразделения", "Юрист · Бюджетный контролёр · Главный бухгалтер", "Финансовый директор", "CEO"];
+  function one(k) {
+    var sub = "", st = "";
+    if (skip[k]) { sub = "пропущено: инициатор выше по маршруту"; st = "done"; }
+    else if (last[k]) { sub = last[k].who + " · " + last[k].at; st = "done"; }
+    else if (pend[k]) { sub = (pend[k].names.length ? pend[k].names.join(", ") + " · " : "") + "ожидается" + (c.due ? " до " + ctDate(c.due) : "") + (c.overdue ? " (просрочено)" : ""); st = "cur"; }
+    return { st: st, sub: sub };
+  }
   return '<div class="ct-tl">' + names.map(function (nm, i) {
     var n = i + 1, st = "", sub = "";
     if (c.status === "Утверждён" || n < c.stage) st = "done";
     else if (c.status === "Возвращён" && n === 1) st = "bad";
     else if (n === c.stage && (c.status === "На согласовании" || c.status === "Ожидает инициатора")) st = "cur";
-    var k = CT_STAGE_KEY[n];
+    var ks = CT_STAGE_KEY[n];
     if (n === 1) { sub = c.initiator; }
-    else if (skip[k] && st === "done") sub = "пропущено: инициатор выше по маршруту";
-    else if (last[k] && st === "done") sub = last[k].who + " · " + last[k].at;
-    else if (st === "cur" && pend[k]) sub = (pend[k].names.length ? pend[k].names.join(", ") + " · " : "") + "ожидается" + (c.due ? " до " + ctDate(c.due) : "") + (c.overdue ? " (просрочено)" : "");
-    return '<div class="ct-tl-i ' + st + '"><span class="ct-tl-d"></span><div><b>' + escapeHtml(nm) + '</b>' + (sub ? "<small>" + escapeHtml(sub) + "</small>" : "") + "</div></div>";
+    else if (ks.length > 1) {
+      sub = ks.map(function (k) { var o = one(k); return CT_POSN[k] + ": " + (o.sub || (st === "cur" ? "ожидается" : "")); }).join("\n");
+    } else {
+      var o = one(ks[0]);
+      if (st === "done" || st === "cur") sub = o.sub;
+    }
+    return '<div class="ct-tl-i ' + st + '"><span class="ct-tl-d"></span><div><b>' + escapeHtml(nm) + '</b>' + (sub ? "<small>" + escapeHtml(sub).replace(/\n/g, "<br>") + "</small>" : "") + "</div></div>";
   }).join("") + "</div>";
 }
 function ctFiles(c) {
