@@ -16127,7 +16127,9 @@ function ctPayBlock(c) {
     if (!pi) return "";
     return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Лимит по договору</div><small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено всего: <b>' + ctSumShow(pi.used) + '</b><br>Остаток: <b>' + ctSumShow(pi.left) + '</b></small></div>';
   }
-  if (c.status !== "Утверждён" || !pi) return "";
+  if (c.status !== "Утверждён") return "";
+  if (!c.didox) return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div><small><b>Сначала договор должен быть принят в DIDOX.</b><br>После приёма (галочка DIDOX) можно будет создать заявку на оплату по этому договору.</small></div>';
+  if (!pi) return CT.canCreate ? '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div><small>Сумма договора не указана, лимит не применяется.</small><button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button></div>' : "";
   var linked = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === c.id && x.status !== "Возвращён"; });
   var can = CT.canCreate && Number(pi.left) > 0 && !!c.didox;
   return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div>' +
