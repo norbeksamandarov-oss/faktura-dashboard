@@ -2717,12 +2717,25 @@ html .content-area{padding-top:6px!important}
 .pz-rows span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .pz-rows b{font-weight:500;font-size:15px;word-break:break-word}
 @media (max-width:600px){.pz-amt b{font-size:34px}.pz-rows>div{grid-template-columns:1fr;gap:2px}}
+.pz-wrap,.pz-st{margin-bottom:6px}
+.pz-wrap{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--sk-glass)}
+.pz-wrap .pz-st{margin:0}
+.pz-st-t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pz-st-t2{margin-top:16px;margin-bottom:4px}
+.pz-bar{height:4px;border-radius:2px;background:var(--gray-bg);overflow:hidden;margin-bottom:10px}
+.pz-bar i{display:block;height:100%;background:var(--navy-light);box-shadow:0 0 8px var(--navy-light)}
+.pz-st-r{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.pz-st-r span{color:var(--muted)}
+.pz-st-r b{font-weight:600;font-variant-numeric:tabular-nums}
+.pz-left span,.pz-left b{color:var(--green-fg);font-weight:700}
+.pz-note{font-size:12.5px;line-height:1.5;color:var(--muted);margin-top:6px}
+.pz-new{width:100%;margin-top:14px}
 .pz-sib{display:flex;flex-direction:column}
-.pz-sib a{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 6px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;font-size:12px;border-radius:8px}
+.pz-sib a{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:8px 6px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;font-size:12px;border-radius:8px}
 .pz-sib a:hover{background:var(--ice-soft)}
 .pz-sib a.cur{background:var(--ice-soft);font-weight:600}
 .pz-sib a span{color:var(--muted)}
-.pz-sib a b{font-weight:600;font-variant-numeric:tabular-nums}
+.pz-sib a b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 .pz-sib a i{font-style:normal;color:var(--muted);font-size:11px}
 .ct-limit{margin-top:6px;font-size:12px;color:var(--navy-light);line-height:1.4}
 .ct-limit b{font-weight:700}
@@ -16208,21 +16221,31 @@ function ctPayRelated(c) {
   }
   return h;
 }
+function ctPayStatusF(st) { return { "Утверждён": "Утверждена", "На согласовании": "На согласовании", "Возвращён": "Возвращена", "Ожидает инициатора": "Черновик" }[st] || st; }
+function ctPayStats(pi, title) {
+  var pct = Number(pi.total) > 0 ? Math.min(100, Math.round(Number(pi.used) / Number(pi.total) * 100)) : 0;
+  return '<div class="pz-st"><div class="pz-st-t">' + title + '</div>' +
+    '<div class="pz-bar"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="pz-st-r"><span>Сумма договора</span><b>' + ctSumShow(pi.total) + '</b></div>' +
+    '<div class="pz-st-r"><span>Уже заявлено</span><b>' + ctSumShow(pi.used) + '</b></div>' +
+    '<div class="pz-st-r pz-left"><span>Можно заявить ещё</span><b>' + ctSumShow(pi.left) + '</b></div></div>';
+}
 function ctPayBlock(c) {
   var pi = c.payInfo;
-  if (c.kind === "pay") {
-    if (!pi) return "";
-    return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Лимит по договору</div><small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено всего: <b>' + ctSumShow(pi.used) + '</b><br>Остаток: <b>' + ctSumShow(pi.left) + '</b></small></div>';
-  }
+  if (c.kind === "pay") return pi ? ctPayStats(pi, "Лимит по договору") : "";
   if (c.status !== "Утверждён") return "";
-  if (!c.didox) return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div><small><b>Сначала договор должен быть принят в DIDOX.</b><br>После приёма (галочка DIDOX) можно будет создать заявку на оплату по этому договору.</small></div>';
-  if (!pi) return CT.canCreate ? '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div><small>Сумма договора не указана, лимит не применяется.</small><button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button></div>' : "";
-  var linked = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === c.id && x.status !== "Возвращён"; });
-  var can = CT.canCreate && Number(pi.left) > 0 && !!c.didox;
-  return '<div class="ct-didox"><div class="ct-sec-t" style="margin-top:0">Оплата по договору</div>' +
-    '<small>Сумма договора: <b>' + ctSumShow(pi.total) + '</b><br>Заявлено: <b>' + ctSumShow(pi.used) + '</b><br>Можно заявить ещё: <b>' + ctSumShow(pi.left) + '</b></small>' +
-    (linked.length ? '<div style="margin-top:8px;font-size:12px">' + linked.map(function (x) { return '<a href="#" onclick="event.preventDefault();ctGoCard(' + x.id + ')">№ ' + x.id + " · " + escapeHtml(ctSumShow((x.info || {}).sum)) + " · " + escapeHtml(x.status) + "</a>"; }).join("<br>") + "</div>" : "") +
-    (can ? '<button class="ct-btn ct-yes" style="margin-top:8px" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>' : (!c.didox ? '<small style="display:block;margin-top:8px">Заявку можно создать после приёма договора в DIDOX</small>' : Number(pi.left) <= 0 ? '<small style="display:block;margin-top:8px">Лимит исчерпан</small>' : "")) + "</div>";
+  var note = function (t) { return '<div class="pz-st"><div class="pz-st-t">Оплата по договору</div><div class="pz-note">' + t + "</div></div>"; };
+  if (!c.didox) return note("Сначала договор должен быть принят в DIDOX. После приёма (галочка DIDOX) здесь можно будет создать заявку на оплату.");
+  var btn = '<button class="ct-btn ct-yes pz-new" onclick="ctPayFromContract(' + c.id + ')"><span class="ct-lbl"><i class="ti ti-cash-banknote" aria-hidden="true"></i> Создать заявку на оплату</span></button>';
+  if (!pi) return CT.canCreate ? '<div class="pz-st"><div class="pz-st-t">Оплата по договору</div><div class="pz-note">Сумма договора не указана, лимит не применяется.</div>' + btn + "</div>" : "";
+  var linked = (CT.all || []).filter(function (x) { return x.kind === "pay" && x.info && x.info.base && x.info.base.id === c.id && x.status !== "Возвращён"; }).sort(function (a, b) { return b.id - a.id; });
+  var can = CT.canCreate && Number(pi.left) > 0;
+  var h = ctPayStats(pi, "Оплата по договору");
+  if (linked.length) h += '<div class="pz-st-t pz-st-t2">Заявки на оплату</div><div class="pz-sib">' + linked.map(function (x) {
+    return '<a href="#" onclick="event.preventDefault();ctGoCard(' + x.id + ')"><span>Заявка № ' + x.id + '</span><b>' + escapeHtml(ctSumShow((x.info || {}).sum)) + '</b><i>' + escapeHtml(ctPayStatusF(x.status)) + "</i></a>";
+  }).join("") + "</div>";
+  h += can ? btn : (Number(pi.left) <= 0 ? '<div class="pz-note">Лимит исчерпан: новых заявок по этому договору создать нельзя.</div>' : "");
+  return '<div class="pz-wrap">' + h + "</div>";
 }
 function ctPayFromContract(id) {
   showSection("payments"); ctOpenNewPay(id);
